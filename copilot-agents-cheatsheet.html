@@ -180,13 +180,19 @@
       gap: 12px;
       align-items: center;
       justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
-    .agenda-bar .label {
-      font-weight: 700;
-      color: var(--text-primary);
-      font-size: 14px;
-      margin-right: 4px;
+    [data-theme="dark"] .agenda-bar {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.92)), linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
+    }
+
+    [data-theme="light"] .agenda-bar {
+      background: linear-gradient(135deg, rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.92)), linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
     }
 
     .agenda-item {
@@ -200,6 +206,27 @@
       font-size: 13px;
       color: var(--text-secondary);
       font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      user-select: none;
+    }
+
+    .agenda-item:hover {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .agenda-item.active {
+      background: rgba(99, 102, 241, 0.35);
+      border-color: rgba(99, 102, 241, 0.7);
+      color: var(--text-primary);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .agenda-item.active .num {
+      background: #fff;
+      color: var(--color-reference);
     }
 
     .agenda-item .num {
@@ -224,6 +251,16 @@
       max-width: 1600px;
       margin: 0 auto;
       grid-auto-flow: dense;
+    }
+
+    /* === SECTION GROUPS === */
+    .section-group {
+      display: contents;
+      transition: opacity 0.3s ease;
+    }
+
+    .section-group.hidden {
+      display: none;
     }
 
     /* === ANIMATIONS === */
@@ -587,14 +624,48 @@
     @media (max-width: 900px) {
       .card.wide { grid-column: span 1; }
       .grid { grid-template-columns: 1fr; }
-      .agenda-bar { flex-direction: column; }
+      .agenda-bar {
+        flex-direction: row;
+        padding: 10px 12px;
+        gap: 8px;
+        margin: 0;
+        border-radius: 0;
+        top: 0;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .agenda-bar::-webkit-scrollbar { display: none; }
+      .agenda-item {
+        flex-shrink: 0;
+        padding: 6px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      header { padding: 24px 16px 20px; }
+      header h1 { font-size: 22px; }
+      .top-heading span { font-size: 24px; }
+      .kv-row { flex-direction: column; gap: 2px; }
+      .kv-key { min-width: auto; }
     }
 
     @media (max-width: 600px) {
-      header { padding: 20px; }
-      header h1 { font-size: 22px; }
-      .top-heading span { font-size: 24px; }
-      .grid { padding: 12px; gap: 14px; }
+      header { padding: 16px 12px; }
+      header h1 { font-size: 20px; }
+      .top-heading span { font-size: 22px; }
+      .top-heading svg { width: 34px; height: 34px; }
+      header .subtitle { font-size: 13px; }
+      header .meta { font-size: 11px; }
+      .author-bar { font-size: 12px; flex-wrap: wrap; }
+      .grid { padding: 10px; gap: 12px; }
+      .card-header { padding: 12px 14px 8px; font-size: 14px; }
+      .card-body { padding: 0 14px 14px; }
+      pre { font-size: 11.5px; padding: 10px 12px; }
+      .section-label h2 { font-size: 16px; }
+      .theme-toggle { padding: 4px 10px; font-size: 12px; top: 12px; right: 12px; }
+      footer { padding: 16px 12px; }
     }
 
     /* Syntax highlighting classes */
@@ -1026,17 +1097,18 @@
 
 <!-- Agenda Bar -->
 <div class="agenda-bar">
-  <span class="label">📋 Session Agenda</span>
-  <div class="agenda-item"><span class="num">1</span> Copilot Agents &amp; Skills</div>
-  <div class="agenda-item"><span class="num">2</span> Copilot CLI</div>
-  <div class="agenda-item"><span class="num">3</span> Coding &amp; Review Agents</div>
-  <div class="agenda-item"><span class="num">4</span> VS Code Agent UX</div>
-  <div class="agenda-item"><span class="num">5</span> Demo</div>
+  <div class="agenda-item active" data-section="all" onclick="filterSection('all')"><span class="num">✦</span> All</div>
+  <div class="agenda-item" data-section="1" onclick="filterSection('1')"><span class="num">1</span> Copilot Agents &amp; Skills</div>
+  <div class="agenda-item" data-section="2" onclick="filterSection('2')"><span class="num">2</span> Copilot CLI</div>
+  <div class="agenda-item" data-section="3" onclick="filterSection('3')"><span class="num">3</span> Coding &amp; Review Agents</div>
+  <div class="agenda-item" data-section="4" onclick="filterSection('4')"><span class="num">4</span> VS Code Agent UX</div>
+  <div class="agenda-item" data-section="5" onclick="filterSection('5')"><span class="num">5</span> Quick Reference</div>
 </div>
 
 <main class="grid">
 
   <!-- =================== SECTION 1: AGENTS & SKILLS =================== -->
+  <div class="section-group" data-section="1">
   <div class="section-label"><h2>1 · 🤖 Copilot Agents &amp; Skills</h2></div>
 
   <!-- Custom Agents -->
@@ -1313,7 +1385,10 @@ Summarize findings in a markdown table.</code></pre>
     </div>
   </div>
 
+  </div><!-- end section-group 1 -->
+
   <!-- =================== SECTION 2: COPILOT CLI =================== -->
+  <div class="section-group" data-section="2">
   <div class="section-label"><h2>2 · 💻 Copilot CLI</h2></div>
 
   <!-- INFOGRAPHIC: CLI Modes -->
@@ -1505,7 +1580,10 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
+  </div><!-- end section-group 2 -->
+
   <!-- =================== SECTION 3: CODING & REVIEW AGENTS =================== -->
+  <div class="section-group" data-section="3">
   <div class="section-label"><h2>3 · 🔧 Coding &amp; Review Agents</h2></div>
 
   <!-- INFOGRAPHIC: Coding Agent vs Agent Mode -->
@@ -1709,7 +1787,10 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
+  </div><!-- end section-group 3 -->
+
   <!-- =================== SECTION 4: VS CODE AGENT UX =================== -->
+  <div class="section-group" data-section="4">
   <div class="section-label"><h2>4 · 🎨 VS Code Agent UX</h2></div>
 
   <!-- Chat Customizations Editor -->
@@ -1835,7 +1916,10 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
+  </div><!-- end section-group 4 -->
+
   <!-- =================== REFERENCE =================== -->
+  <div class="section-group" data-section="5">
   <div class="section-label"><h2>5 · 📋 Quick Reference</h2></div>
 
   <!-- File Paths Reference -->
@@ -1901,6 +1985,8 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
+  </div><!-- end section-group 5 -->
+
 </main>
 
 <footer>
@@ -1920,6 +2006,44 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     const html = document.documentElement;
     const current = html.getAttribute('data-theme');
     html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Section filtering
+  function filterSection(section) {
+    // Update active state on agenda items
+    document.querySelectorAll('.agenda-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === section);
+    });
+
+    // Show/hide section groups
+    const groups = document.querySelectorAll('.section-group');
+    groups.forEach(group => {
+      if (section === 'all') {
+        group.classList.remove('hidden');
+      } else {
+        group.classList.toggle('hidden', group.dataset.section !== section);
+      }
+    });
+
+    // Re-trigger animations on visible cards
+    const visibleCards = document.querySelectorAll('.section-group:not(.hidden) .card');
+    visibleCards.forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.animation = 'none';
+      requestAnimationFrame(() => {
+        const delay = 0.06 * (i % 6);
+        el.style.animation = `fadeInUp 0.5s ease ${delay}s both`;
+      });
+    });
+
+    // Scroll to grid on mobile if a section is clicked
+    if (section !== 'all' && window.innerWidth <= 900) {
+      const grid = document.querySelector('.grid');
+      if (grid) {
+        setTimeout(() => grid.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      }
+    }
   }
 
   // Scroll-triggered card animations via IntersectionObserver
