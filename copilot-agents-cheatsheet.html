@@ -1061,12 +1061,14 @@
       <div class="code-block">
         <div class="code-title">.github/agents/security-reviewer.agent.md</div>
         <pre><code><span class="syn-cmt">---</span>
+<span class="syn-kw">name</span>: <span class="syn-str">security-reviewer</span>
 <span class="syn-kw">description</span>: Security-focused code reviewer
-<span class="syn-kw">tools</span>:
-  <span class="syn-kw">allow</span>:
-    - <span class="syn-str">grep_search</span>
-    - <span class="syn-str">read_file</span>
-    - <span class="syn-str">semantic_search</span>
+<span class="syn-kw">tools</span>: [<span class="syn-str">'grep_search'</span>, <span class="syn-str">'read_file'</span>, <span class="syn-str">'semantic_search'</span>]
+<span class="syn-kw">handoffs</span>:
+  - <span class="syn-kw">label</span>: <span class="syn-str">Fix Issues</span>
+    <span class="syn-kw">agent</span>: <span class="syn-str">implementation</span>
+    <span class="syn-kw">prompt</span>: <span class="syn-str">Fix the security issues found above.</span>
+    <span class="syn-kw">send</span>: <span class="syn-num">false</span>
 <span class="syn-kw">model</span>: <span class="syn-str">gpt-5.4</span>
 <span class="syn-cmt">---</span>
 
@@ -1107,7 +1109,6 @@ injection, XSS, and auth bypasses.</code></pre>
         <pre><code><span class="syn-cmt">---</span>
 <span class="syn-kw">name</span>: <span class="syn-str">deploy</span>
 <span class="syn-kw">description</span>: <span class="syn-str">Deploy to staging env</span>
-<span class="syn-kw">user-invocable</span>: <span class="syn-num">true</span>
 <span class="syn-cmt">---</span>
 
 <span class="syn-cmt"># Deploy Skill</span>
@@ -1254,38 +1255,60 @@ Summarize findings in a markdown table.</code></pre>
   </div>
 
   <!-- Hooks -->
-  <div class="card" style="border-left-color: var(--color-control);">
+  <div class="card wide" style="border-left-color: var(--color-control);">
     <div class="card-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), transparent);">
       <span class="card-icon">🪝</span>
-      <h3>Hooks <span class="badge badge-new">NEW</span></h3>
+      <h3>Hooks <span class="badge badge-preview">PREVIEW</span></h3>
     </div>
     <div class="card-body">
-      <p>Run shell commands at key agent lifecycle points.</p>
+      <p>Execute shell commands at key agent lifecycle points via JSON config files.</p>
       <!-- Mini infographic: Hook triggers -->
       <div class="mini-diagram">
         <div class="mini-flow">
           <div class="mini-node arch-amber"><span class="m-icon">✏️</span> Agent edits a file</div>
           <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">🪝</span> post-edit hook fires</div>
+          <div class="mini-node arch-green"><span class="m-icon">🪝</span> PostToolUse hook fires</div>
           <span class="mini-arrow">↓</span>
           <div class="mini-node arch-blue"><span class="m-icon">✨</span> prettier · lint · security scan</div>
         </div>
         <div class="mini-label">Automate quality gates at every lifecycle event</div>
       </div>
       <div class="code-block">
-        <div class="code-title">.github/hooks/post-edit.sh</div>
-        <pre><code><span class="syn-cmt">#!/bin/bash</span>
-<span class="syn-cmt"># Auto-format after every file edit</span>
-npx prettier --write <span class="syn-str">"$EDITED_FILE"</span>
-
-<span class="syn-cmt"># Run security scan</span>
-npm audit --production</code></pre>
+        <div class="code-title">.github/hooks/format.json</div>
+        <pre><code>{
+  <span class="syn-kw">"hooks"</span>: {
+    <span class="syn-str">"PostToolUse"</span>: [
+      {
+        <span class="syn-kw">"type"</span>: <span class="syn-str">"command"</span>,
+        <span class="syn-kw">"command"</span>: <span class="syn-str">"npx prettier --write \"$TOOL_INPUT_FILE_PATH\""</span>
+      }
+    ],
+    <span class="syn-str">"PreToolUse"</span>: [
+      {
+        <span class="syn-kw">"type"</span>: <span class="syn-str">"command"</span>,
+        <span class="syn-kw">"command"</span>: <span class="syn-str">"./scripts/validate-tool.sh"</span>,
+        <span class="syn-kw">"timeout"</span>: <span class="syn-num">15</span>
+      }
+    ]
+  }
+}</code></pre>
       </div>
+      <table class="ref-table">
+        <tr><th>Event</th><th>Fires When</th><th>Use Case</th></tr>
+        <tr><td><code>SessionStart</code></td><td>New agent session begins</td><td>Inject project context, log session start</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>User submits a prompt</td><td>Audit requests, inject system context</td></tr>
+        <tr><td><code>PreToolUse</code></td><td>Before agent invokes any tool</td><td>Block dangerous ops, require approval</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>After tool completes successfully</td><td>Run formatters, log results</td></tr>
+        <tr><td><code>PreCompact</code></td><td>Before context is compacted</td><td>Export important context, save state</td></tr>
+        <tr><td><code>SubagentStart</code></td><td>Subagent is spawned</td><td>Track nested agents, init resources</td></tr>
+        <tr><td><code>SubagentStop</code></td><td>Subagent completes</td><td>Aggregate results, cleanup</td></tr>
+        <tr><td><code>Stop</code></td><td>Agent session ends</td><td>Generate reports, send notifications</td></tr>
+      </table>
       <ul>
-        <li>Generate with <code>/create-hook</code> in Chat</li>
-        <li>Enforce formatting, linting, security policies</li>
-        <li>Trigger on file edits, command runs, etc.</li>
-        <li>Available for coding agent &amp; VS Code</li>
+        <li>Generate with <code>/create-hook</code> or <code>/hooks</code> in Chat</li>
+        <li>Store in <code>.github/hooks/*.json</code></li>
+        <li>Can also be scoped to a custom agent via <code>hooks</code> in frontmatter</li>
+        <li>Works across local agents, CLI, and cloud agents</li>
       </ul>
     </div>
   </div>
@@ -1294,7 +1317,7 @@ npm audit --production</code></pre>
   <div class="section-label"><h2>2 · 💻 Copilot CLI</h2></div>
 
   <!-- INFOGRAPHIC: CLI Modes -->
-  <div class="card wide" style="border-left-color: var(--color-tools);">
+  <div class="card" style="border-left-color: var(--color-tools);">
     <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
       <span class="card-icon">🎯</span>
       <h3>CLI Operating Modes</h3>
@@ -1658,7 +1681,7 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
         <tr><td><strong>Custom Instructions</strong></td><td>Project context, build/test/validate rules</td><td><code>copilot-instructions.md</code> — "Always run <code>npm test</code> before opening PR"</td></tr>
         <tr><td><strong>MCP Servers</strong></td><td>Give agent access to external data &amp; tools</td><td>Connect to Jira, Slack, or a staging DB for context</td></tr>
         <tr><td><strong>Custom Agents</strong></td><td>Specialized versions for specific task types</td><td>A <code>frontend.agent.md</code> that only touches <code>src/components/</code></td></tr>
-        <tr><td><strong>Hooks</strong></td><td>Shell commands at key lifecycle points</td><td><code>post-edit</code> hook runs <code>prettier</code> + <code>eslint --fix</code> after every edit</td></tr>
+        <tr><td><strong>Hooks</strong></td><td>Shell commands at key lifecycle points</td><td><code>PostToolUse</code> hook runs <code>prettier --write</code> after every file edit</td></tr>
         <tr><td><strong>Skills</strong></td><td>Enhance specialized task capabilities</td><td>A deploy skill that builds, tests, and pushes to staging</td></tr>
         <tr><td><strong>Copilot Memory</strong></td><td>Persistent repo knowledge (Pro/Pro+)</td><td>Remembers "This repo uses pnpm, not npm" across sessions</td></tr>
       </table>
@@ -1829,7 +1852,7 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
         <tr><td><code>.github/agents/*.agent.md</code></td><td>Custom agent</td><td>Specialized AI persona</td></tr>
         <tr><td><code>.github/skills/*/SKILL.md</code></td><td>Agent skill</td><td>Reusable multi-step workflow</td></tr>
         <tr><td><code>.github/prompts/*.prompt.md</code></td><td>Prompt file</td><td>Repeatable task template</td></tr>
-        <tr><td><code>.github/hooks/*</code></td><td>Hook</td><td>Lifecycle shell scripts</td></tr>
+        <tr><td><code>.github/hooks/*.json</code></td><td>Hook</td><td>Lifecycle hook JSON configs</td></tr>
         <tr><td><code>.vscode/mcp.json</code></td><td>MCP config</td><td>Model Context Protocol servers</td></tr>
         <tr><td><code>AGENTS.md</code></td><td>Always-on instruction</td><td>Cross-client compatible rules</td></tr>
         <tr><td><code>CLAUDE.md</code></td><td>Always-on instruction</td><td>Claude-specific rules</td></tr>
@@ -1885,6 +1908,7 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     Sources:
     <a href="https://docs.github.com/en/copilot" target="_blank">GitHub Copilot Docs</a> ·
     <a href="https://code.visualstudio.com/docs/copilot/copilot-customization" target="_blank">VS Code Customization</a> ·
+    <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents" target="_blank">Custom Agents</a> ·
     <a href="https://code.visualstudio.com/docs/copilot/copilot-extensibility-overview" target="_blank">VS Code AI Extensibility</a>
   </div>
   <div style="margin-top: 8px;">Created by <strong>Sukumar P</strong> · <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" style="color: #60A5FA;">LinkedIn</a> · Built with GitHub Copilot · March 31, 2026</div>
