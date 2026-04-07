@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot Dev Day — Session Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --color-plugins:     #8B5CF6;
+  --color-slash:       #3B82F6;
+  --color-skills:      #10B981;
+  --color-agents:      #F59E0B;
+  --color-hooks:       #EF4444;
+  --color-mcp:         #06B6D4;
+  --color-review:      #EC4899;
+  --color-tips:        #84CC16;
+  --color-reference:   #6366F1;
+  --color-structure:   #F97316;
+
+  --bg-page:           #0F172A;
+  --bg-card:           #1E293B;
+  --bg-code:           #0F172A;
+  --bg-header:         #020617;
+  --bg-nav:            #1E293B;
+
+  --text-primary:      #F8FAFC;
+  --text-secondary:    #CBD5E1;
+  --text-muted:        #94A3B8;
+  --text-code:         #E2E8F0;
+
+  --syn-keyword:       #C084FC;
+  --syn-string:        #34D399;
+  --syn-number:        #FB923C;
+  --syn-comment:       #64748B;
+  --syn-function:      #60A5FA;
+  --syn-type:          #F472B6;
+}
+
+[data-theme="light"] {
+  --bg-page:           #F1F5F9;
+  --bg-card:           #FFFFFF;
+  --bg-code:           #F1F5F9;
+  --bg-header:         #1E293B;
+  --bg-nav:            #FFFFFF;
+  --text-primary:      #0F172A;
+  --text-secondary:    #475569;
+  --text-muted:        #64748B;
+  --text-code:         #334155;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────── */
+header {
+  background: var(--bg-header);
+  padding: 40px 24px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(236,72,153,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+header .logo {
+  width: 56px; height: 56px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 12px rgba(139,92,246,0.4));
+}
+
+header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #F8FAFC;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+header .subtitle {
+  font-size: 15px;
+  color: #94A3B8;
+  max-width: 700px;
+  margin: 0 auto 6px;
+}
+
+header .focus-line {
+  font-size: 14px;
+  color: #CBD5E1;
+  font-weight: 600;
+  margin-bottom: 12px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header .meta {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 8px;
+}
+
+header .meta a {
+  color: #60A5FA;
+  text-decoration: none;
+}
+
+header .meta a:hover {
+  text-decoration: underline;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #F8FAFC;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ── Section Navigation ─────────────────────────── */
+.section-nav {
+  background: var(--bg-nav);
+  border-bottom: 1px solid rgba(148,163,184,0.15);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.section-nav .nav-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-btn {
+  background: rgba(148,163,184,0.08);
+  border: 1px solid rgba(148,163,184,0.12);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.3);
+  color: var(--text-primary);
+}
+
+/* ── Grid Layout ────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 20px;
+  padding: 24px 40px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+/* ── Section Header ─────────────────────────────── */
+.section-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 4px;
+  border-bottom: 2px solid rgba(148,163,184,0.1);
+  margin-bottom: 4px;
+}
+
+.section-header .section-icon {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.section-header .section-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Cards ──────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border-left: 4px solid;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
+  overflow: visible;
+  break-inside: avoid;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0,0,0,0.4);
+}
+
+[data-section] {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+[data-section].fade-out {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+[data-section].fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card.wide {
+  grid-column: span 2;
+}
+
+.card.full {
+  grid-column: 1 / -1;
+}
+
+.card-header {
+  padding: 14px 18px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(148,163,184,0.08);
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+}
+
+.card-header .card-icon {
+  font-size: 20px;
+}
+
+.card-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.card-header .badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-preview { background: rgba(139,92,246,0.2); color: #C084FC; }
+.badge-ga { background: rgba(16,185,129,0.2); color: #34D399; }
+.badge-new { background: rgba(59,130,246,0.2); color: #60A5FA; }
+
+.card-body {
+  padding: 14px 18px 18px;
+  overflow-x: auto;
+}
+
+.card-body p {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+/* ── Flow Diagrams ──────────────────────────────── */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+.flow-step {
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.flow-caption {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ── Key-Value Rows ─────────────────────────────── */
+.kv-row {
+  display: flex;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(148,163,184,0.06);
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.kv-row:last-child { border-bottom: none; }
+
+.kv-key {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 12.5px;
+  background: rgba(99,102,241,0.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--syn-function);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kv-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── Code Blocks ────────────────────────────────── */
+.code-block {
+  margin: 10px 0;
+  position: relative;
+}
+
+.code-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 8px 12px 4px;
+  background: var(--bg-code);
+  border-radius: 8px 8px 0 0;
+  border: 1px solid rgba(148,163,184,0.1);
+  border-bottom: none;
+}
+
+pre {
+  background: var(--bg-code);
+  border-radius: 8px;
+  padding: 14px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.6;
+  border: 1px solid rgba(148,163,184,0.1);
+  margin: 0;
+}
+
+.code-title + pre {
+  border-radius: 0 0 8px 8px;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: var(--text-code);
+}
+
+p code, li code, td code {
+  background: rgba(99,102,241,0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: rgba(148,163,184,0.15);
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.copy-btn:hover { background: rgba(148,163,184,0.25); color: var(--text-primary); }
+
+/* ── Tables ─────────────────────────────────────── */
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+  min-width: 400px;
+}
+
+.ref-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 2px solid rgba(148,163,184,0.15);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ref-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(148,163,184,0.06);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.ref-table tr:last-child td { border-bottom: none; }
+
+/* ── Callouts ───────────────────────────────────── */
+.callout {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.callout-tip {
+  background: rgba(132,204,22,0.08);
+  border-left: 3px solid #84CC16;
+  color: var(--text-secondary);
+}
+
+.callout-warn {
+  background: rgba(245,158,11,0.08);
+  border-left: 3px solid #F59E0B;
+  color: var(--text-secondary);
+}
+
+.callout-info {
+  background: rgba(59,130,246,0.08);
+  border-left: 3px solid #3B82F6;
+  color: var(--text-secondary);
+}
+
+/* ── Bullet Lists ───────────────────────────────── */
+.card-body ul {
+  list-style: none;
+  padding: 0;
+}
+
+.card-body ul li {
+  padding: 5px 0;
+  padding-left: 18px;
+  position: relative;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.card-body ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+/* ── Comparison Cards ───────────────────────────── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.compare-col {
+  background: rgba(148,163,184,0.04);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(148,163,184,0.08);
+}
+
+.compare-col h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compare-col ul li {
+  font-size: 12.5px;
+}
+
+/* ── Tag Chips ──────────────────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Plugin Structure Visual ────────────────────── */
+.tree {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 12px;
+  color: var(--text-code);
+  line-height: 1.8;
+  padding: 12px;
+  background: var(--bg-code);
+  border-radius: 8px;
+  border: 1px solid rgba(148,163,184,0.1);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.tree .folder { color: #60A5FA; font-weight: 500; }
+.tree .file { color: #94A3B8; }
+.tree .comment { color: #64748B; font-style: italic; }
+
+/* ── Footer ─────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(148,163,184,0.1);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+footer a {
+  color: #60A5FA;
+  text-decoration: none;
+}
+
+footer a:hover { text-decoration: underline; }
+
+footer .sources {
+  margin-bottom: 6px;
+}
+
+/* ── Print ──────────────────────────────────────── */
+@media print {
+  body { background: white; color: #1a1a1a; }
+  .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+  .theme-toggle, .section-nav { display: none; }
+  header { background: #1E293B; }
+  pre { border: 1px solid #ddd; }
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 1100px) {
+  .card.wide, .card.full { grid-column: span 1; }
+  .grid { padding: 24px 20px; }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 14px;
+  }
+  header h1 { font-size: 24px; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     HEADER
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+  <img class="logo" src="https://github.githubassets.com/images/icons/copilot/cp-head-square.svg" alt="GitHub Copilot" />
+  <h1>Copilot Dev Day — Session Cheat Sheet</h1>
+  <p class="subtitle">Agent Plugins, Copilot Code Review &amp; Customization Primitives</p>
+  <p class="focus-line">Redefining developer velocity: Leveraging Copilot as an autonomous agent to ship higher-quality code, faster.</p>
+  <p class="meta">Version 2026.04 · Honeywell Dev Day · April 9, 2026</p>
+  <p class="meta">By Sukumar P · <a href="https://www.linkedin.com/in/sukumar-p/">LinkedIn</a></p>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION NAV
+     ════════════════════════════════════════════════════════════ -->
+<nav class="section-nav">
+  <span class="nav-label">✦ All</span>
+  <button class="nav-btn active" onclick="filterSection('all', this)">All</button>
+  <button class="nav-btn" onclick="filterSection('s1', this)">1 Agent Plugins</button>
+  <button class="nav-btn" onclick="filterSection('s2', this)">2 Plugin Anatomy</button>
+  <button class="nav-btn" onclick="filterSection('s3', this)">3 Skills &amp; Agents</button>
+  <button class="nav-btn" onclick="filterSection('s4', this)">4 Hooks &amp; MCP</button>
+  <button class="nav-btn" onclick="filterSection('s6', this)">5 Quick Reference</button>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1 — AGENT PLUGINS OVERVIEW
+     ════════════════════════════════════════════════════════════ -->
+<main class="grid">
+
+<div class="section-header" data-section="s1">
+  <div class="section-icon" style="background:rgba(139,92,246,0.12);">🔌</div>
+  <h2>1 · Agent Plugins</h2>
+  <span class="section-badge badge-preview">Preview</span>
+</div>
+
+<!-- Card: What Are Agent Plugins -->
+<div class="card" data-section="s1" style="border-left-color: var(--color-plugins);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.1), transparent);">
+    <span class="card-icon">📦</span>
+    <h3>What Are Agent Plugins?</h3>
+    <span class="badge badge-preview">Preview</span>
+  </div>
+  <div class="card-body">
+    <p>Pre-packaged bundles of chat customizations you can discover and install from plugin marketplaces in VS Code. One install → everything you need.</p>
+    <div class="flow">
+      <span class="flow-step">📦 Install 1 Plugin</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">🤖 Agents</span>
+      <span class="flow-step">⚡ Skills</span>
+      <span class="flow-step">🔌 MCP</span>
+      <span class="flow-step">🪝 Hooks</span>
+      <span class="flow-step">⌨️ Commands</span>
+    </div>
+    <div class="callout callout-info">
+      <strong>📌 Enable:</strong> Set <code>chat.plugins.enabled: true</code> in VS Code settings.
+    </div>
+  </div>
+</div>
+
+<!-- Card: What Plugins Provide -->
+<div class="card" data-section="s1" style="border-left-color: var(--color-plugins);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.1), transparent);">
+    <span class="card-icon">🎁</span>
+    <h3>What Plugins Provide</h3>
+  </div>
+  <div class="card-body">
+    <table class="ref-table">
+      <tr><th>Type</th><th>Description</th></tr>
+      <tr><td><strong>Slash Commands</strong></td><td>Additional commands you invoke with <code>/</code> in chat</td></tr>
+      <tr><td><strong>Skills</strong></td><td>Agent skills with instructions, scripts &amp; resources — load on demand</td></tr>
+      <tr><td><strong>Agents</strong></td><td>Custom agents with specialized personas &amp; tool configurations</td></tr>
+      <tr><td><strong>Hooks</strong></td><td>Shell commands executing at agent lifecycle points</td></tr>
+      <tr><td><strong>MCP Servers</strong></td><td>External tool integrations via Model Context Protocol</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Card: Discover & Install -->
+<div class="card" data-section="s1" style="border-left-color: var(--color-slash);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), transparent);">
+    <span class="card-icon">🔍</span>
+    <h3>Discover &amp; Install Plugins</h3>
+  </div>
+  <div class="card-body">
+    <div class="kv-row">
+      <code class="kv-key">@agentPlugins</code>
+      <span class="kv-desc">Search in Extensions sidebar (<kbd>⇧⌘X</kbd>)</span>
+    </div>
+    <div class="kv-row">
+      <code class="kv-key">Install from Source</code>
+      <span class="kv-desc">Command Palette → <code>Chat: Install Plugin From Source</code> with Git URL</span>
+    </div>
+    <div class="kv-row">
+      <code class="kv-key">Local Plugins</code>
+      <span class="kv-desc">Register via <code>chat.pluginLocations</code> setting with path → enabled/disabled</span>
+    </div>
+    <div class="kv-row">
+      <code class="kv-key">Enable/Disable</code>
+      <span class="kv-desc">Context menu in Agent Plugins - Installed or Chat Customizations editor</span>
+    </div>
+    <div class="callout callout-warn">
+      <strong>⚠️ Caution:</strong> Plugins can include hooks and MCP servers that run code on your machine. Review the plugin contents and publisher before installing.
+    </div>
+  </div>
+</div>
+
+<!-- Card: Marketplaces -->
+<div class="card" data-section="s1" style="border-left-color: var(--color-slash);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), transparent);">
+    <span class="card-icon">🏪</span>
+    <h3>Plugin Marketplaces</h3>
+  </div>
+  <div class="card-body">
+    <p>Default: <code>github/copilot-plugins</code> and <code>github/awesome-copilot</code>. Add more via settings.</p>
+    <div class="code-block">
+      <div class="code-title">settings.json</div>
+      <pre><code><span style="color:var(--syn-string)">"chat.plugins.marketplaces"</span>: [
+    <span style="color:var(--syn-string)">"anthropics/claude-code"</span>,
+    <span style="color:var(--syn-string)">"your-org/plugin-marketplace"</span>
+]</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <p style="margin-top:8px;">Supported formats: <code>owner/repo</code>, HTTPS <code>.git</code> URL, SCP-style, <code>file:///</code> URI. Private repos supported.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2 — PLUGIN ANATOMY
+     ════════════════════════════════════════════════════════════ -->
+<div class="section-header" data-section="s2">
+  <div class="section-icon" style="background:rgba(247,151,22,0.12);">📁</div>
+  <h2>2 · Plugin Anatomy</h2>
+</div>
+
+<!-- Card: Directory Structure -->
+<div class="card wide" data-section="s2" style="border-left-color: var(--color-structure);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(247,151,22,0.1), transparent);">
+    <span class="card-icon">🗂️</span>
+    <h3>Plugin Directory Structure</h3>
+  </div>
+  <div class="card-body">
+    <div class="tree">
+<span class="folder">my-testing-plugin/</span>
+  ├── <span class="file">plugin.json</span>              <span class="comment"># Plugin metadata &amp; configuration</span>
+  ├── <span class="file">.mcp.json</span>                <span class="comment"># MCP server definitions</span>
+  ├── <span class="folder">skills/</span>
+  │   └── <span class="folder">test-runner/</span>
+  │       ├── <span class="file">SKILL.md</span>           <span class="comment"># Skill instructions</span>
+  │       └── <span class="file">run-tests.sh</span>       <span class="comment"># Supporting script</span>
+  ├── <span class="folder">agents/</span>
+  │   └── <span class="file">test-reviewer.agent.md</span> <span class="comment"># Custom agent definition</span>
+  ├── <span class="folder">hooks/</span>
+  │   └── <span class="file">hooks.json</span>             <span class="comment"># Hook configuration</span>
+  ├── <span class="folder">prompts/</span>
+  │   └── <span class="file">generate-tests.prompt.md</span> <span class="comment"># Reusable prompt template</span>
+  ├── <span class="folder">instructions/</span>
+  │   └── <span class="file">python-style.instructions.md</span> <span class="comment"># File-scoped rules</span>
+  └── <span class="folder">scripts/</span>
+      └── <span class="file">validate-tests.sh</span>     <span class="comment"># Hook script</span>
+    </div>
+  </div>
+</div>
+
+<!-- Card: plugin.json -->
+<div class="card" data-section="s2" style="border-left-color: var(--color-structure);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(247,151,22,0.1), transparent);">
+    <span class="card-icon">📄</span>
+    <h3>plugin.json — Metadata</h3>
+  </div>
+  <div class="card-body">
+    <p>The manifest file that declares plugin contents.</p>
+    <div class="code-block">
+      <div class="code-title">plugin.json</div>
+      <pre><code>{
+  <span style="color:var(--syn-string)">"name"</span>: <span style="color:var(--syn-string)">"sample-dev-toolkit"</span>,
+  <span style="color:var(--syn-string)">"version"</span>: <span style="color:var(--syn-string)">"1.0.0"</span>,
+  <span style="color:var(--syn-string)">"description"</span>: <span style="color:var(--syn-string)">"All customization primitives"</span>,
+  <span style="color:var(--syn-string)">"agents"</span>: <span style="color:var(--syn-string)">"agents/"</span>,
+  <span style="color:var(--syn-string)">"skills"</span>: [<span style="color:var(--syn-string)">"skills/"</span>],
+  <span style="color:var(--syn-string)">"hooks"</span>: <span style="color:var(--syn-string)">"hooks/hooks.json"</span>,
+  <span style="color:var(--syn-string)">"mcpServers"</span>: <span style="color:var(--syn-string)">".mcp.json"</span>
+}</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card: Customization Primitives -->
+<div class="card wide" data-section="s2" style="border-left-color: var(--color-reference);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.1), transparent);">
+    <span class="card-icon">🧩</span>
+    <h3>Customization Primitives</h3>
+  </div>
+  <div class="card-body">
+    <table class="ref-table">
+      <tr><th>Primitive</th><th>File</th><th>When to Use</th></tr>
+      <tr><td><strong>Instructions</strong></td><td><code>.instructions.md</code></td><td>Always-on guidance for file types</td></tr>
+      <tr><td><strong>Prompts</strong></td><td><code>.prompt.md</code></td><td>Single tasks with <code>/</code> invocation</td></tr>
+      <tr><td><strong>Skills</strong></td><td><code>SKILL.md</code></td><td>Multi-step workflows + assets</td></tr>
+      <tr><td><strong>Agents</strong></td><td><code>.agent.md</code></td><td>Specialized personas + tool restrictions</td></tr>
+      <tr><td><strong>Hooks</strong></td><td><code>hooks.json</code></td><td>Deterministic lifecycle enforcement</td></tr>
+      <tr><td><strong>MCP Servers</strong></td><td><code>.mcp.json</code></td><td>External tool integrations</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3 — SKILLS & AGENTS
+     ════════════════════════════════════════════════════════════ -->
+<div class="section-header" data-section="s3">
+  <div class="section-icon" style="background:rgba(16,185,129,0.12);">⚡</div>
+  <h2>3 · Skills &amp; Agents</h2>
+</div>
+
+<!-- Card: Agent Skills -->
+<div class="card" data-section="s3" style="border-left-color: var(--color-skills);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);">
+    <span class="card-icon">⚡</span>
+    <h3>Agent Skills</h3>
+    <span class="badge badge-ga">GA</span>
+  </div>
+  <div class="card-body">
+    <p>Reusable, multi-step workflows with bundled instructions, scripts, and reference docs. Load on-demand when the agent detects a matching task.</p>
+    <div class="code-block">
+      <div class="code-title">skills/code-review/SKILL.md</div>
+      <pre><code><span style="color:var(--syn-comment)">---</span>
+<span style="color:var(--syn-keyword)">name</span>: code-review
+<span style="color:var(--syn-keyword)">description</span>: <span style="color:var(--syn-string)">"Perform structured code reviews
+  with checklists"</span>
+<span style="color:var(--syn-keyword)">argument-hint</span>: <span style="color:var(--syn-string)">"Paste or reference the code
+  to review"</span>
+<span style="color:var(--syn-comment)">---</span>
+
+<span style="color:var(--syn-comment)"># Code Review Skill</span>
+Perform thorough, structured code reviews
+using a multi-dimensional checklist.</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <ul>
+      <li>Create with <code>/create-skill</code> in Chat</li>
+      <li>Bundle scripts, references, and checklists</li>
+      <li>Manage via <code>Chat: Configure Skills</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Card: Custom Agents -->
+<div class="card" data-section="s3" style="border-left-color: var(--color-agents);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), transparent);">
+    <span class="card-icon">🤖</span>
+    <h3>Custom Agents</h3>
+    <span class="badge badge-ga">GA</span>
+  </div>
+  <div class="card-body">
+    <p>Specialized AI personas with defined tools and behavior. Invoke with <code>@agent-name</code> in Chat.</p>
+    <div class="code-block">
+      <div class="code-title">agents/reviewer.agent.md</div>
+      <pre><code><span style="color:var(--syn-comment)">---</span>
+<span style="color:var(--syn-keyword)">name</span>: <span style="color:var(--syn-string)">"Code Reviewer"</span>
+<span style="color:var(--syn-keyword)">description</span>: <span style="color:var(--syn-string)">"Read-only code analysis"</span>
+<span style="color:var(--syn-keyword)">tools</span>: [read, search]
+<span style="color:var(--syn-keyword)">user-invocable</span>: <span style="color:var(--syn-keyword)">true</span>
+<span style="color:var(--syn-comment)">---</span>
+
+You are a senior code reviewer.
+DO NOT modify any files — read-only.
+Analyze against the review checklist.</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <ul>
+      <li>Create with <code>/create-agent</code></li>
+      <li>Restrict tools: <code>[read, search]</code>, <code>[read, search, web]</code></li>
+      <li>Supports handoffs between agents</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Card: Skills vs Agents vs Prompts -->
+<div class="card wide" data-section="s3" style="border-left-color: var(--color-tips);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(132,204,22,0.1), transparent);">
+    <span class="card-icon">🎯</span>
+    <h3>Skills vs Agents vs Prompts</h3>
+  </div>
+  <div class="card-body">
+    <table class="ref-table">
+      <tr><th>Aspect</th><th>Skill</th><th>Agent</th><th>Prompt</th></tr>
+      <tr><td><strong>Scope</strong></td><td>Multi-step workflow</td><td>Persona + tool set</td><td>Single focused task</td></tr>
+      <tr><td><strong>Trigger</strong></td><td>Auto-detected or skill menu</td><td><code>@agent-name</code></td><td><code>/command</code></td></tr>
+      <tr><td><strong>Assets</strong></td><td>Scripts, references, docs</td><td>—</td><td>—</td></tr>
+      <tr><td><strong>Tool Control</strong></td><td>—</td><td>Restricted tool list</td><td>—</td></tr>
+      <tr><td><strong>File</strong></td><td><code>SKILL.md</code></td><td><code>.agent.md</code></td><td><code>.prompt.md</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4 — HOOKS & MCP
+     ════════════════════════════════════════════════════════════ -->
+<div class="section-header" data-section="s4">
+  <div class="section-icon" style="background:rgba(239,68,68,0.12);">🪝</div>
+  <h2>4 · Hooks &amp; MCP Servers</h2>
+</div>
+
+<!-- Card: Hooks Overview -->
+<div class="card" data-section="s4" style="border-left-color: var(--color-hooks);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), transparent);">
+    <span class="card-icon">🪝</span>
+    <h3>Hooks — Lifecycle Automation</h3>
+    <span class="badge badge-preview">Preview</span>
+  </div>
+  <div class="card-body">
+    <p>Execute shell commands at key agent lifecycle points for deterministic enforcement.</p>
+    <table class="ref-table">
+      <tr><th>Event</th><th>Use Case</th></tr>
+      <tr><td><code>SessionStart</code></td><td>Inject project context, audit logging</td></tr>
+      <tr><td><code>UserPromptSubmit</code></td><td>Validate or transform user input</td></tr>
+      <tr><td><code>PreToolUse</code></td><td>Block dangerous operations</td></tr>
+      <tr><td><code>PostToolUse</code></td><td>Run formatters, linters after edits</td></tr>
+      <tr><td><code>SubagentStart/Stop</code></td><td>Monitor subagent lifecycle</td></tr>
+      <tr><td><code>Stop</code></td><td>Generate reports, cleanup</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Card: Hook Configuration -->
+<div class="card" data-section="s4" style="border-left-color: var(--color-hooks);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), transparent);">
+    <span class="card-icon">⚙️</span>
+    <h3>Hook Configuration</h3>
+  </div>
+  <div class="card-body">
+    <div class="code-block">
+      <div class="code-title">hooks/hooks.json</div>
+      <pre><code>{
+  <span style="color:var(--syn-string)">"hooks"</span>: {
+    <span style="color:var(--syn-string)">"SessionStart"</span>: [{
+      <span style="color:var(--syn-string)">"type"</span>: <span style="color:var(--syn-string)">"command"</span>,
+      <span style="color:var(--syn-string)">"command"</span>: <span style="color:var(--syn-string)">"${CLAUDE_PLUGIN_ROOT}/scripts/session-log.sh"</span>,
+      <span style="color:var(--syn-string)">"timeout"</span>: <span style="color:var(--syn-number)">5</span>
+    }],
+    <span style="color:var(--syn-string)">"PostToolUse"</span>: [{
+      <span style="color:var(--syn-string)">"matcher"</span>: <span style="color:var(--syn-string)">"Write|Edit"</span>,
+      <span style="color:var(--syn-string)">"hooks"</span>: [{
+        <span style="color:var(--syn-string)">"type"</span>: <span style="color:var(--syn-string)">"command"</span>,
+        <span style="color:var(--syn-string)">"command"</span>: <span style="color:var(--syn-string)">"npx prettier --write \"$TOOL_INPUT_FILE_PATH\""</span>
+      }]
+    }]
+  }
+}</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <div class="callout callout-info">
+      <strong>📌 Note:</strong> Use <code>${CLAUDE_PLUGIN_ROOT}</code> to reference scripts within the plugin. VS Code expands it at runtime.
+    </div>
+  </div>
+</div>
+
+<!-- Card: Hook Interactions -->
+<div class="card" data-section="s4" style="border-left-color: var(--color-hooks);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), transparent);">
+    <span class="card-icon">🔗</span>
+    <h3>Hook Interactions</h3>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li>Plugin hooks run <strong>alongside</strong> workspace &amp; user-level hooks</li>
+      <li>Multiple hooks on same event → all execute</li>
+      <li><code>PreToolUse</code> permissions: most restrictive wins (<code>deny</code> &gt; <code>ask</code> &gt; <code>allow</code>)</li>
+      <li>Disabling a plugin also disables its hooks</li>
+    </ul>
+    <div class="callout callout-tip">
+      <strong>💡 Tip:</strong> Use <code>PreToolUse</code> hooks to block dangerous shell commands like <code>rm -rf /</code>, <code>DROP TABLE</code>.
+    </div>
+  </div>
+</div>
+
+<!-- Card: MCP Servers -->
+<div class="card" data-section="s4" style="border-left-color: var(--color-mcp);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.1), transparent);">
+    <span class="card-icon">🔌</span>
+    <h3>MCP Servers in Plugins</h3>
+  </div>
+  <div class="card-body">
+    <p>Bundle MCP servers to provide agents with additional tools and data sources. Auto-start on plugin enable, stop on disable.</p>
+    <div class="code-block">
+      <div class="code-title">.mcp.json</div>
+      <pre><code>{
+  <span style="color:var(--syn-string)">"mcpServers"</span>: {
+    <span style="color:var(--syn-string)">"plugin-database"</span>: {
+      <span style="color:var(--syn-string)">"command"</span>: <span style="color:var(--syn-string)">"${CLAUDE_PLUGIN_ROOT}/servers/db-server"</span>,
+      <span style="color:var(--syn-string)">"args"</span>: [<span style="color:var(--syn-string)">"--config"</span>, <span style="color:var(--syn-string)">"${CLAUDE_PLUGIN_ROOT}/config.json"</span>]
+    },
+    <span style="color:var(--syn-string)">"plugin-api"</span>: {
+      <span style="color:var(--syn-string)">"command"</span>: <span style="color:var(--syn-string)">"npx"</span>,
+      <span style="color:var(--syn-string)">"args"</span>: [<span style="color:var(--syn-string)">"@company/mcp-server"</span>],
+      <span style="color:var(--syn-string)">"cwd"</span>: <span style="color:var(--syn-string)">"${CLAUDE_PLUGIN_ROOT}"</span>
+    }
+  }
+}</code></pre>
+      <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <div class="callout callout-info">
+      <strong>📌 Key:</strong> Top-level key is <code>mcpServers</code> (not <code>servers</code>). Plugin MCP servers are implicitly trusted — no separate trust prompt.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5 — QUICK REFERENCE
+     ════════════════════════════════════════════════════════════ -->
+<div class="section-header" data-section="s6">
+  <div class="section-icon" style="background:rgba(99,102,241,0.12);">📖</div>
+  <h2>5 · Quick Reference</h2>
+</div>
+
+<!-- Card: Resources -->
+<div class="card" data-section="s6" style="border-left-color: var(--color-slash);">
+  <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), transparent);">
+    <span class="card-icon">🔗</span>
+    <h3>Resources</h3>
+  </div>
+  <div class="card-body">
+    <div class="kv-row">
+      <code class="kv-key">Copilot Cheat Sheet</code>
+      <span class="kv-desc"><a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" style="color:#60A5FA;">sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html</a></span>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ════════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════════ -->
+<footer>
+  <p class="sources">Sources: <a href="https://code.visualstudio.com/docs/copilot/customization/agent-plugins">Agent Plugins Docs</a> · <a href="https://code.visualstudio.com/docs/copilot/customization/agent-skills">Agent Skills</a> · <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents">Custom Agents</a> · <a href="https://code.visualstudio.com/docs/copilot/customization/hooks">Hooks</a> · <a href="https://docs.github.com/en/copilot">GitHub Copilot Docs</a></p>
+  <p>Created by Sukumar P · <a href="https://www.linkedin.com/in/sukumar-p/">LinkedIn</a> · Built with GitHub Copilot · April 9, 2026</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════════ -->
+<script>
+// ── Theme Toggle ──────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+
+// Restore saved theme
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+
+// ── Section Filter Nav ────────────────────────────
+function filterSection(section, btn) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const items = document.querySelectorAll('[data-section]');
+
+  // Fade out all visible items first
+  items.forEach(el => {
+    if (el.style.display !== 'none') {
+      el.classList.add('fade-out');
+      el.classList.remove('fade-in');
+    }
+  });
+
+  // After fade-out completes, toggle visibility and fade in
+  setTimeout(() => {
+    items.forEach(el => {
+      const show = section === 'all' || el.dataset.section === section;
+      el.style.display = show ? '' : 'none';
+      if (show) {
+        // Force reflow so the transition triggers
+        void el.offsetWidth;
+        el.classList.remove('fade-out');
+        el.classList.add('fade-in');
+      }
+    });
+  }, 300);
+}
+
+// ── Copy Code ─────────────────────────────────────
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>
