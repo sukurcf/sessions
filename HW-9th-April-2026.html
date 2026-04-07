@@ -1,4 +1,1111 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Dev Day — Agent Plugins, Code Review & Customization</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-dark: #0a0e1a;
+      --bg-slide: #0f1628;
+      --bg-card: rgba(30, 41, 75, 0.6);
+      --bg-card-solid: #1e294b;
+      --bg-code: #080c18;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-red: #ef4444;
+      --accent-orange: #f97316;
+      --accent-indigo: #6366f1;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --grad-main: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      --grad-blue: linear-gradient(135deg, #3b82f6, #60a5fa);
+      --grad-purple: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      --grad-green: linear-gradient(135deg, #10b981, #34d399);
+      --grad-pink: linear-gradient(135deg, #ec4899, #f472b6);
+      --grad-amber: linear-gradient(135deg, #f59e0b, #fbbf24);
+      --grad-cyan: linear-gradient(135deg, #06b6d4, #22d3ee);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+    }
+
+    /* ── Presentation Container ── */
+    .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+    /* ── Slide ── */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 60px 80px 100px;
+      opacity: 0; pointer-events: none; transition: none;
+      background: var(--bg-slide); overflow: hidden;
+    }
+
+    .slide::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
+
+    /* ── Slide Transitions ── */
+    .slide.enter-right  { animation: slideInRight  0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .slide.exit-left    { animation: slideOutLeft   0.6s cubic-bezier(0.22,1,0.36,1) forwards; pointer-events: none; }
+    .slide.enter-left   { animation: slideInLeft    0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .slide.exit-right   { animation: slideOutRight  0.6s cubic-bezier(0.22,1,0.36,1) forwards; pointer-events: none; }
+
+    @keyframes slideInRight  { from { opacity:0; transform:translateX(100px) scale(0.97); } to { opacity:1; transform:translateX(0) scale(1); } }
+    @keyframes slideOutLeft  { from { opacity:1; transform:translateX(0) scale(1); }   to { opacity:0; transform:translateX(-100px) scale(0.97); } }
+    @keyframes slideInLeft   { from { opacity:0; transform:translateX(-100px) scale(0.97); } to { opacity:1; transform:translateX(0) scale(1); } }
+    @keyframes slideOutRight { from { opacity:1; transform:translateX(0) scale(1); }   to { opacity:0; transform:translateX(100px) scale(0.97); } }
+
+    /* ── Element Animations ── */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+    @keyframes scaleUp  { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+    @keyframes popIn    { from { opacity:0; transform:scale(0.5); } 60% { transform:scale(1.05); } to { opacity:1; transform:scale(1); } }
+    @keyframes fadeRight { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+
+    @keyframes gradShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+
+    .slide.active .anim { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+    .slide.active .anim-fade  { animation-name: fadeIn; }
+    .slide.active .anim-scale { animation-name: scaleUp; }
+    .slide.active .anim-pop   { animation-name: popIn; }
+    .slide.active .anim-right { animation-name: fadeRight; }
+
+    .slide.active .d0  { animation-delay: 0s; }
+    .slide.active .d1  { animation-delay: 0.1s; }
+    .slide.active .d2  { animation-delay: 0.2s; }
+    .slide.active .d3  { animation-delay: 0.3s; }
+    .slide.active .d4  { animation-delay: 0.4s; }
+    .slide.active .d5  { animation-delay: 0.5s; }
+    .slide.active .d6  { animation-delay: 0.6s; }
+    .slide.active .d7  { animation-delay: 0.7s; }
+    .slide.active .d8  { animation-delay: 0.8s; }
+    .slide.active .d9  { animation-delay: 0.9s; }
+    .slide.active .d10 { animation-delay: 1.0s; }
+    .slide.active .d11 { animation-delay: 1.1s; }
+    .slide.active .d12 { animation-delay: 1.2s; }
+
+    /* ── Typography ── */
+    .slide-title {
+      font-size: 48px; font-weight: 800; line-height: 1.2;
+      margin-bottom: 10px; letter-spacing: -0.5px;
+    }
+    .slide-title.gradient {
+      background: var(--grad-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; background-size: 200% 200%; animation: gradShift 6s ease infinite;
+    }
+    .slide-subtitle { font-size: 23px; font-weight: 400; color: var(--text-secondary); margin-bottom: 32px; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--accent-blue); margin-bottom: 16px;
+    }
+    .section-tag::after { content: ''; display: inline-block; width: 40px; height: 2px; background: var(--accent-blue); border-radius: 1px; }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; gap: 20px; }
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .s-card {
+      background: var(--bg-card); border: 1px solid rgba(148,163,184,0.08);
+      border-radius: 16px; padding: 28px; backdrop-filter: blur(12px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .s-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+
+    .s-card.accent-blue   { border-left: 4px solid var(--accent-blue); }
+    .s-card.accent-purple { border-left: 4px solid var(--accent-purple); }
+    .s-card.accent-green  { border-left: 4px solid var(--accent-green); }
+    .s-card.accent-pink   { border-left: 4px solid var(--accent-pink); }
+    .s-card.accent-amber  { border-left: 4px solid var(--accent-amber); }
+    .s-card.accent-cyan   { border-left: 4px solid var(--accent-cyan); }
+    .s-card.accent-red    { border-left: 4px solid var(--accent-red); }
+    .s-card.accent-orange { border-left: 4px solid var(--accent-orange); }
+    .s-card.accent-indigo { border-left: 4px solid var(--accent-indigo); }
+
+    .s-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .s-card p, .s-card li { font-size: 16px; color: var(--text-secondary); line-height: 1.6; }
+    .s-card ul { list-style: none; padding: 0; }
+    .s-card li { padding: 4px 0; padding-left: 20px; position: relative; }
+    .s-card li::before { content: '▸'; position: absolute; left: 0; color: var(--text-muted); }
+
+    .icon-circle {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .ic-blue   { background: rgba(59,130,246,0.15); }
+    .ic-purple { background: rgba(139,92,246,0.15); }
+    .ic-green  { background: rgba(16,185,129,0.15); }
+    .ic-pink   { background: rgba(236,72,153,0.15); }
+    .ic-amber  { background: rgba(245,158,11,0.15); }
+    .ic-cyan   { background: rgba(6,182,212,0.15); }
+    .ic-red    { background: rgba(239,68,68,0.15); }
+    .ic-orange { background: rgba(249,115,22,0.15); }
+
+    /* ── Code Blocks ── */
+    .code-box {
+      background: var(--bg-code); border: 1px solid rgba(148,163,184,0.08);
+      border-radius: 12px; padding: 20px 24px;
+      font-family: "JetBrains Mono", monospace; font-size: 14px;
+      line-height: 1.65; color: #e2e8f0; overflow-x: auto;
+      position: relative; white-space: pre-wrap;
+    }
+    .code-box .label {
+      position: absolute; top: 10px; right: 14px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); font-family: "Inter", sans-serif;
+    }
+    .kw   { color: #c084fc; }
+    .str  { color: #34d399; }
+    .cmt  { color: #64748b; }
+    .fn   { color: #60a5fa; }
+    .num  { color: #fb923c; }
+    .type { color: #f472b6; }
+
+    /* ── Flow Diagrams ── */
+    .flow-h { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .flow-node {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 22px; border-radius: 12px;
+      font-size: 17px; font-weight: 600; white-space: nowrap;
+      transition: transform 0.2s;
+    }
+    .flow-node:hover { transform: scale(1.05); }
+    .flow-node .fi { font-size: 20px; }
+
+    .fn-blue   { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); }
+    .fn-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); }
+    .fn-green  { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); }
+    .fn-pink   { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); }
+    .fn-amber  { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); }
+    .fn-cyan   { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); }
+    .fn-center { background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border: 2px solid rgba(99,102,241,0.4); font-size: 17px; padding: 18px 28px; }
+
+    .flow-arrow { font-size: 22px; color: var(--text-muted); }
+
+    /* ── Table ── */
+    .s-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid rgba(148,163,184,0.1); font-size: 14px;
+    }
+    .s-table th {
+      background: rgba(99,102,241,0.12); font-weight: 700; text-align: left;
+      padding: 14px 18px; color: var(--text-primary); font-size: 15px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .s-table td {
+      padding: 12px 18px; color: var(--text-secondary);
+      border-top: 1px solid rgba(148,163,184,0.06); font-size: 15px;
+    }
+    .s-table tr:nth-child(even) td { background: rgba(148,163,184,0.03); }
+    .s-table code {
+      font-family: "JetBrains Mono", monospace; background: rgba(99,102,241,0.12);
+      padding: 2px 7px; border-radius: 4px; font-size: 12px; color: #e2e8f0;
+    }
+
+    /* ── Badge ── */
+    .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 6px; }
+    .badge-ga      { background: rgba(16,185,129,0.2); color: #10b981; }
+    .badge-preview { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .badge-new     { background: rgba(236,72,153,0.2); color: #ec4899; }
+
+    /* ── Pill Tags ── */
+    .pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 50px; font-size: 16px; font-weight: 600; }
+    .pill-blue   { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+    .pill-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd; }
+    .pill-pink   { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); color: #f9a8d4; }
+    .pill-green  { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+    .pill-cyan   { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: #67e8f9; }
+    .pill-amber  { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+    .pill-orange { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #fdba74; }
+
+    /* ── Two Column Layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+    .two-col.wide-left  { grid-template-columns: 1.2fr 0.8fr; }
+    .two-col.wide-right { grid-template-columns: 0.8fr 1.2fr; }
+
+    /* ── Stack layers ── */
+    .stack-layers { display: flex; flex-direction: column; gap: 8px; }
+    .stack-layer {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-radius: 12px; font-size: 15px; font-weight: 600;
+    }
+    .stack-layer .sl-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+    .stack-layer .sl-label { font-weight: 700; min-width: 140px; }
+    .stack-layer .sl-desc { color: var(--text-secondary); font-weight: 400; font-size: 14px; }
+
+    /* ── Hook Timeline ── */
+    .hook-timeline { display: flex; flex-direction: column; gap: 6px; position: relative; padding-left: 24px; }
+    .hook-timeline::before {
+      content: ''; position: absolute; left: 8px; top: 12px; bottom: 12px;
+      width: 2px; background: linear-gradient(to bottom, var(--accent-amber), var(--accent-purple)); border-radius: 1px;
+    }
+    .hook-event { display: flex; align-items: center; gap: 14px; padding: 8px 16px; border-radius: 8px; font-size: 13px; position: relative; }
+    .hook-event::before {
+      content: ''; position: absolute; left: -20px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent-indigo); border: 2px solid var(--bg-slide);
+    }
+    .hook-event .he-name { font-weight: 700; font-family: "JetBrains Mono", monospace; font-size: 12px; min-width: 150px; color: var(--accent-amber); }
+    .hook-event .he-desc { color: var(--text-secondary); }
+
+    /* ── Tree ── */
+    .tree-box {
+      font-family: "JetBrains Mono", monospace; font-size: 13px; color: #e2e8f0;
+      line-height: 1.8; padding: 20px 24px; background: var(--bg-code);
+      border-radius: 12px; border: 1px solid rgba(148,163,184,0.08);
+      white-space: pre; overflow-x: auto;
+    }
+    .tree-box .folder { color: #60a5fa; font-weight: 500; }
+    .tree-box .file   { color: #94a3b8; }
+    .tree-box .tcmt   { color: #64748b; font-style: italic; }
+
+    /* ── Navigation ── */
+    .nav-controls {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px;
+      background: linear-gradient(to top, rgba(10,14,26,0.95), rgba(10,14,26,0.7));
+      backdrop-filter: blur(10px);
+    }
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-btn {
+      width: 40px; height: 40px; border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.15); background: rgba(30,41,75,0.5);
+      color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: var(--text-primary); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .slide-counter { font-size: 14px; font-weight: 600; color: var(--text-secondary); min-width: 70px; text-align: center; }
+    .progress-bar { flex: 1; height: 4px; background: rgba(148,163,184,0.1); border-radius: 2px; margin: 0 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--grad-main); border-radius: 2px; transition: width 0.4s ease; }
+    .nav-brand { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .nav-brand i { font-size: 14px; }
+
+    /* ── Slide Footer ── */
+    .slide-footer {
+      position: absolute; bottom: 80px; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: center; gap: 18px;
+      font-size: 15px; color: var(--text-muted); z-index: 5;
+    }
+    .slide-footer a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .slide-footer a:hover { color: var(--text-primary); }
+    .slide-footer i { font-size: 20px; }
+    .slide-footer .handle { font-weight: 700; font-size: 17px; color: var(--text-secondary); }
+
+    /* ── Title Slide ── */
+    .title-slide { justify-content: center; align-items: center; text-align: center; }
+    .title-slide .github-logo { width: 80px; height: 80px; margin-bottom: 24px; }
+    .title-slide .github-logo svg { fill: var(--text-primary); width: 100%; height: 100%; }
+    .title-slide h1 { font-size: 56px; font-weight: 900; line-height: 1.15; letter-spacing: -1px; margin-bottom: 16px; }
+    .title-slide .tagline { font-size: 22px; color: var(--text-secondary); font-weight: 400; margin-bottom: 40px; }
+    .title-slide .meta-line { font-size: 14px; color: var(--text-muted); display: flex; align-items: center; gap: 16px; justify-content: center; }
+    .title-slide .meta-line span { display: flex; align-items: center; gap: 6px; }
+
+    /* ── Agenda Slide ── */
+    .agenda-items { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; }
+    .agenda-card {
+      display: flex; align-items: flex-start; gap: 16px; padding: 24px;
+      border-radius: 16px; background: var(--bg-card); border: 1px solid rgba(148,163,184,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .agenda-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+    .agenda-num {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; flex-shrink: 0; color: #fff;
+    }
+    .agenda-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .agenda-card p { font-size: 16px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ── Slide Number ── */
+    .slide-num { position: absolute; top: 24px; right: 32px; font-size: 13px; font-weight: 600; color: var(--text-muted); z-index: 5; }
+
+    /* ── Keyboard Hint ── */
+    .key-hint {
+      position: fixed; bottom: 70px; right: 24px; font-size: 11px; color: var(--text-muted);
+      z-index: 1000; display: flex; gap: 12px; opacity: 0.6; transition: opacity 0.3s;
+    }
+    .key-hint:hover { opacity: 1; }
+    .key-hint kbd {
+      display: inline-block; padding: 2px 8px;
+      border: 1px solid rgba(148,163,184,0.2); border-radius: 4px;
+      font-family: "JetBrains Mono", monospace; font-size: 11px; background: rgba(30,41,75,0.5);
+    }
+
+    /* ── Thank You ── */
+    .thank-you { justify-content: center; align-items: center; text-align: center; }
+    .thank-you h1 { font-size: 64px; font-weight: 900; }
+    .social-links { display: flex; justify-content: center; gap: 24px; margin-top: 32px; }
+    .social-link {
+      display: flex; align-items: center; gap: 10px; padding: 14px 28px;
+      border-radius: 14px; font-size: 16px; font-weight: 600; color: var(--text-primary);
+      text-decoration: none; transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .social-link:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    .social-link i { font-size: 20px; }
+    .sl-linkedin  { background: rgba(10,102,194,0.2); border: 1px solid rgba(10,102,194,0.4); }
+    .sl-instagram { background: rgba(225,48,108,0.2); border: 1px solid rgba(225,48,108,0.4); }
+    .sl-youtube   { background: rgba(255,0,0,0.15); border: 1px solid rgba(255,0,0,0.3); }
+
+    /* ── Overview Panel ── */
+    .overview-panel {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(10,14,26,0.95); backdrop-filter: blur(20px);
+      display: none; padding: 40px; overflow-y: auto;
+    }
+    .overview-panel.visible { display: block; }
+    .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; max-width: 1400px; margin: 0 auto; }
+    .overview-thumb {
+      aspect-ratio: 16/9; background: var(--bg-slide); border-radius: 12px;
+      border: 2px solid rgba(148,163,184,0.1); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: var(--text-secondary);
+      padding: 16px; text-align: center; transition: all 0.2s;
+    }
+    .overview-thumb:hover { border-color: var(--accent-blue); transform: scale(1.03); }
+    .overview-thumb.current { border-color: var(--accent-blue); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
+    .overview-close {
+      position: fixed; top: 20px; right: 24px; z-index: 2001;
+      background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5;
+      width: 40px; height: 40px; border-radius: 10px; font-size: 18px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .slide { padding: 40px 40px 100px; }
+      .title-slide h1 { font-size: 40px; }
+      .slide-title { font-size: 32px; }
+      .two-col, .card-grid.cols-3 { grid-template-columns: 1fr; }
+      .agenda-items { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════ SLIDE 1: TITLE ═══════════ -->
+  <div class="slide title-slide active" data-title="Title">
+    <div class="github-logo anim anim-scale d0">
+      <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+      </svg>
+    </div>
+    <h1 class="gradient anim d1">Copilot Dev Day</h1>
+    <h1 class="gradient anim d2" style="font-size: 42px;">Agent Plugins, Code Review &amp; Customization</h1>
+    <p class="tagline anim d3">Redefining developer velocity: Leveraging Copilot as an autonomous agent to ship higher-quality code, faster.</p>
+    <div class="meta-line anim d4">
+      <span><i class="fas fa-user"></i> Sukumar P</span>
+      <span><i class="fas fa-calendar"></i> April 9, 2026</span>
+      <span><i class="fas fa-building"></i> Honeywell Dev Day</span>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 2: AGENDA ═══════════ -->
+  <div class="slide" data-title="Agenda">
+    <span class="slide-num">2 / 13</span>
+    <div class="section-tag anim d0">Overview</div>
+    <h2 class="slide-title anim d1">Session Agenda</h2>
+    <p class="slide-subtitle anim d2">What we'll cover today</p>
+    <div class="agenda-items">
+      <div class="agenda-card anim anim-pop d3">
+        <div class="agenda-num" style="background: var(--grad-purple);">1</div>
+        <div>
+          <h3>🔌 Agent Plugins</h3>
+          <p>Pre-packaged bundles, marketplaces, discovery &amp; install</p>
+        </div>
+      </div>
+      <div class="agenda-card anim anim-pop d4">
+        <div class="agenda-num" style="background: var(--grad-amber);">2</div>
+        <div>
+          <h3>📁 Plugin Anatomy</h3>
+          <p>Directory structure, plugin.json &amp; customization primitives</p>
+        </div>
+      </div>
+      <div class="agenda-card anim anim-pop d5">
+        <div class="agenda-num" style="background: var(--grad-green);">3</div>
+        <div>
+          <h3>⚡ Skills &amp; Agents</h3>
+          <p>Reusable workflows, custom personas &amp; comparisons</p>
+        </div>
+      </div>
+      <div class="agenda-card anim anim-pop d6">
+        <div class="agenda-num" style="background: var(--grad-pink);">4</div>
+        <div>
+          <h3>🪝 Hooks &amp; MCP</h3>
+          <p>Lifecycle automation &amp; external tool integrations</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d7">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 3: WHAT ARE AGENT PLUGINS ═══════════ -->
+  <div class="slide" data-title="What Are Agent Plugins">
+    <span class="slide-num">3 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-purple);">Section 1 · Agent Plugins</div>
+    <h2 class="slide-title anim d1">What Are Agent Plugins? <span class="badge badge-preview">Preview</span></h2>
+    <p class="slide-subtitle anim d2">Pre-packaged bundles of chat customizations — one install, everything you need</p>
+    <div class="flow-h anim d3" style="margin-bottom: 32px; gap: 8px;">
+      <div class="flow-node fn-purple" style="font-size:15px;padding:14px 20px;"><span class="fi">📦</span> Install 1 Plugin</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-blue" style="font-size:14px;padding:12px 16px;"><span class="fi">🤖</span> Agents</div>
+      <div class="flow-node fn-green" style="font-size:14px;padding:12px 16px;"><span class="fi">⚡</span> Skills</div>
+      <div class="flow-node fn-cyan" style="font-size:14px;padding:12px 16px;"><span class="fi">🔌</span> MCP</div>
+      <div class="flow-node fn-amber" style="font-size:14px;padding:12px 16px;"><span class="fi">🪝</span> Hooks</div>
+      <div class="flow-node fn-pink" style="font-size:14px;padding:12px 16px;"><span class="fi">⌨️</span> Commands</div>
+    </div>
+    <div class="two-col anim d4">
+      <div class="s-card accent-purple">
+        <h3><div class="icon-circle ic-purple">🎁</div> What Plugins Provide</h3>
+        <table class="s-table" style="font-size:13px;">
+          <tr><th>Type</th><th>Description</th></tr>
+          <tr><td><strong>Slash Commands</strong></td><td>Additional <code>/</code> commands in chat</td></tr>
+          <tr><td><strong>Skills</strong></td><td>Agent skills with instructions &amp; scripts</td></tr>
+          <tr><td><strong>Agents</strong></td><td>Custom agent personas &amp; tools</td></tr>
+          <tr><td><strong>Hooks</strong></td><td>Shell commands at lifecycle points</td></tr>
+          <tr><td><strong>MCP Servers</strong></td><td>External tool integrations</td></tr>
+        </table>
+      </div>
+      <div class="s-card accent-blue">
+        <h3><div class="icon-circle ic-blue">⚙️</div> Enable</h3>
+        <div class="code-box" style="font-size:13px;padding:14px 18px;margin-bottom:14px;">
+<span class="str">"chat.plugins.enabled"</span>: <span class="kw">true</span></div>
+        <p style="font-size:14px;color:var(--text-secondary);"><strong style="color:var(--accent-amber);">⚠️ Caution:</strong> Plugins can include hooks and MCP servers that run code on your machine. Review contents before installing.</p>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 4: DISCOVER & INSTALL ═══════════ -->
+  <div class="slide" data-title="Discover & Install Plugins">
+    <span class="slide-num">4 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-purple);">Section 1 · Agent Plugins</div>
+    <h2 class="slide-title anim d1">Discover &amp; Install Plugins</h2>
+    <p class="slide-subtitle anim d2">Multiple ways to find and add plugins to your workspace</p>
+    <div class="two-col">
+      <div class="anim d3">
+        <div class="s-card accent-blue" style="margin-bottom:20px;">
+          <h3><div class="icon-circle ic-blue">🔍</div> Discovery Methods</h3>
+          <ul>
+            <li><code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">@agentPlugins</code> — Search in Extensions sidebar (<kbd style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-size:12px;">⇧⌘X</kbd>)</li>
+            <li><strong>Install from Source</strong> — Command Palette → <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">Chat: Install Plugin From Source</code></li>
+            <li><strong>Local Plugins</strong> — Register via <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">chat.pluginLocations</code> setting</li>
+            <li><strong>Enable/Disable</strong> — Context menu in Installed panel</li>
+          </ul>
+        </div>
+      </div>
+      <div class="anim d4">
+        <div class="s-card accent-cyan">
+          <h3><div class="icon-circle ic-cyan">🏪</div> Plugin Marketplaces</h3>
+          <p style="margin-bottom:14px;">Default: <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">github/copilot-plugins</code> and <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">github/awesome-copilot</code></p>
+          <div class="code-box" style="font-size:12px;padding:14px 18px;">
+            <span class="label" style="font-size:9px;">settings.json</span>
+<span class="str">"chat.plugins.marketplaces"</span>: [
+    <span class="str">"anthropics/claude-code"</span>,
+    <span class="str">"your-org/plugin-marketplace"</span>
+]</div>
+          <p style="margin-top:12px;font-size:13px;color:var(--text-muted);font-style:italic;">Formats: owner/repo, HTTPS .git URL, SCP-style, file:/// URI. Private repos supported.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 5: PLUGIN DIRECTORY STRUCTURE ═══════════ -->
+  <div class="slide" data-title="Plugin Directory Structure">
+    <span class="slide-num">5 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-orange);">Section 2 · Plugin Anatomy</div>
+    <h2 class="slide-title anim d1">Plugin Directory Structure</h2>
+    <p class="slide-subtitle anim d2">Everything lives in a single directory with a plugin.json manifest</p>
+    <div class="two-col">
+      <div class="tree-box anim d3">
+<span class="folder">my-testing-plugin/</span>
+  ├── <span class="file">plugin.json</span>              <span class="tcmt"># Plugin metadata</span>
+  ├── <span class="file">.mcp.json</span>                <span class="tcmt"># MCP server defs</span>
+  ├── <span class="folder">skills/</span>
+  │   └── <span class="folder">test-runner/</span>
+  │       ├── <span class="file">SKILL.md</span>           <span class="tcmt"># Skill instructions</span>
+  │       └── <span class="file">run-tests.sh</span>       <span class="tcmt"># Supporting script</span>
+  ├── <span class="folder">agents/</span>
+  │   └── <span class="file">test-reviewer.agent.md</span> <span class="tcmt"># Agent definition</span>
+  ├── <span class="folder">hooks/</span>
+  │   └── <span class="file">hooks.json</span>             <span class="tcmt"># Hook configuration</span>
+  ├── <span class="folder">prompts/</span>
+  │   └── <span class="file">generate-tests.prompt.md</span>
+  ├── <span class="folder">instructions/</span>
+  │   └── <span class="file">python-style.instructions.md</span>
+  └── <span class="folder">scripts/</span>
+      └── <span class="file">validate-tests.sh</span></div>
+      <div class="anim d4">
+        <div class="s-card accent-orange" style="margin-bottom:16px;">
+          <h3><div class="icon-circle ic-orange">📄</div> plugin.json</h3>
+          <p style="margin-bottom:14px;">The manifest file that declares plugin contents.</p>
+          <div class="code-box" style="font-size:12px;padding:14px 18px;">
+            <span class="label" style="font-size:9px;">plugin.json</span>
+{
+  <span class="str">"name"</span>: <span class="str">"sample-dev-toolkit"</span>,
+  <span class="str">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="str">"description"</span>: <span class="str">"All customization primitives"</span>,
+  <span class="str">"agents"</span>: <span class="str">"agents/"</span>,
+  <span class="str">"skills"</span>: [<span class="str">"skills/"</span>],
+  <span class="str">"hooks"</span>: <span class="str">"hooks/hooks.json"</span>,
+  <span class="str">"mcpServers"</span>: <span class="str">".mcp.json"</span>
+}</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 6: CUSTOMIZATION PRIMITIVES ═══════════ -->
+  <div class="slide" data-title="Customization Primitives">
+    <span class="slide-num">6 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-orange);">Section 2 · Plugin Anatomy</div>
+    <h2 class="slide-title anim d1">Customization Primitives</h2>
+    <p class="slide-subtitle anim d2">The building blocks of Copilot extensibility</p>
+    <div class="card-grid cols-3 anim d3">
+      <div class="s-card accent-green" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">📋</span> Instructions</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">.instructions.md</code></p>
+        <p style="font-size:13px;margin-top:8px;">Always-on guidance for file types</p>
+      </div>
+      <div class="s-card accent-orange" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">📝</span> Prompts</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">.prompt.md</code></p>
+        <p style="font-size:13px;margin-top:8px;">Single tasks with <code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-size:11px;">/</code> invocation</p>
+      </div>
+      <div class="s-card accent-pink" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">⚡</span> Skills</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">SKILL.md</code></p>
+        <p style="font-size:13px;margin-top:8px;">Multi-step workflows + assets</p>
+      </div>
+      <div class="s-card accent-purple" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">🤖</span> Agents</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">.agent.md</code></p>
+        <p style="font-size:13px;margin-top:8px;">Specialized personas + tool restrictions</p>
+      </div>
+      <div class="s-card accent-red" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">🪝</span> Hooks</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">hooks.json</code></p>
+        <p style="font-size:13px;margin-top:8px;">Deterministic lifecycle enforcement</p>
+      </div>
+      <div class="s-card accent-cyan" style="padding:20px;">
+        <h3 style="font-size:16px;"><span style="font-size:22px;">🔌</span> MCP Servers</h3>
+        <p style="font-size:14px;"><code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">.mcp.json</code></p>
+        <p style="font-size:13px;margin-top:8px;">External tool integrations</p>
+      </div>
+    </div>
+    <div class="slide-footer anim d4">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 7: AGENT SKILLS ═══════════ -->
+  <div class="slide" data-title="Agent Skills">
+    <span class="slide-num">7 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-green);">Section 3 · Skills &amp; Agents</div>
+    <h2 class="slide-title anim d1">Agent Skills <span class="badge badge-ga">GA</span></h2>
+    <p class="slide-subtitle anim d2">Reusable, multi-step workflows with bundled instructions, scripts &amp; references</p>
+    <div class="two-col">
+      <div>
+        <div class="code-box anim d3" style="font-size:13px;">
+          <span class="label">skills/code-review/SKILL.md</span>
+<span class="cmt">---</span>
+<span class="kw">name</span>: code-review
+<span class="kw">description</span>: <span class="str">"Perform structured code reviews
+  with checklists"</span>
+<span class="kw">argument-hint</span>: <span class="str">"Paste or reference the code
+  to review"</span>
+<span class="cmt">---</span>
+
+<span class="cmt"># Code Review Skill</span>
+Perform thorough, structured code reviews
+using a multi-dimensional checklist.</div>
+        <ul class="anim d4" style="margin-top:16px;list-style:none;padding:0;">
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Create with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">/create-skill</code> in Chat</li>
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Bundle scripts, references, and checklists</li>
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Manage via <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">Chat: Configure Skills</code></li>
+        </ul>
+      </div>
+      <div class="anim d5">
+        <div class="s-card accent-green">
+          <h3><div class="icon-circle ic-green">📦</div> Skill Layers</h3>
+          <div class="stack-layers" style="gap:8px;margin-top:12px;">
+            <div class="stack-layer fn-pink" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">📦</span> <strong>SKILL.md</strong> — Instructions &amp; metadata</div>
+            <div class="stack-layer fn-amber" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">📜</span> <strong>Scripts</strong> — Automation &amp; setup</div>
+            <div class="stack-layer fn-cyan" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">📁</span> <strong>Resources</strong> — Templates &amp; assets</div>
+          </div>
+          <p style="margin-top:14px;font-size:13px;font-style:italic;color:var(--text-muted);">Skills load on-demand when the agent detects a matching task.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 8: CUSTOM AGENTS ═══════════ -->
+  <div class="slide" data-title="Custom Agents">
+    <span class="slide-num">8 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-green);">Section 3 · Skills &amp; Agents</div>
+    <h2 class="slide-title anim d1">Custom Agents <span class="badge badge-ga">GA</span></h2>
+    <p class="slide-subtitle anim d2">Specialized AI personas with defined tools and behavior — invoke with @agent-name</p>
+    <div class="two-col">
+      <div>
+        <div class="flow-h anim d3" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div class="flow-node fn-purple"><span class="fi">📄</span> Define in <code style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px;">.agent.md</code></div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-blue"><span class="fi">🧠</span> Copilot loads agent profile</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-green"><span class="fi">💬</span> @invoke in Chat</div>
+        </div>
+        <ul style="margin-top:20px;" class="anim d4">
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Restrict tools: <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">[read, search]</code></li>
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Create with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">/create-agent</code></li>
+          <li style="padding:5px 0 5px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Supports handoffs between agents</li>
+        </ul>
+      </div>
+      <div class="code-box anim d5" style="font-size:13px;">
+        <span class="label">agents/reviewer.agent.md</span>
+<span class="cmt">---</span>
+<span class="kw">name</span>: <span class="str">"Code Reviewer"</span>
+<span class="kw">description</span>: <span class="str">"Read-only code analysis"</span>
+<span class="kw">tools</span>: [read, search]
+<span class="kw">user-invocable</span>: <span class="kw">true</span>
+<span class="cmt">---</span>
+
+You are a senior code reviewer.
+DO NOT modify any files — read-only.
+Analyze against the review checklist.</div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 9: SKILLS vs AGENTS vs PROMPTS ═══════════ -->
+  <div class="slide" data-title="Skills vs Agents vs Prompts">
+    <span class="slide-num">9 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-green);">Section 3 · Skills &amp; Agents</div>
+    <h2 class="slide-title anim d1">Skills vs Agents vs Prompts</h2>
+    <p class="slide-subtitle anim d2">Choosing the right primitive for the job</p>
+    <table class="s-table anim d3">
+      <tr><th>Aspect</th><th>⚡ Skill</th><th>🤖 Agent</th><th>📝 Prompt</th></tr>
+      <tr><td><strong>Scope</strong></td><td>Multi-step workflow</td><td>Persona + tool set</td><td>Single focused task</td></tr>
+      <tr><td><strong>Trigger</strong></td><td>Auto-detected or skill menu</td><td><code>@agent-name</code></td><td><code>/command</code></td></tr>
+      <tr><td><strong>Assets</strong></td><td>Scripts, references, docs</td><td>—</td><td>—</td></tr>
+      <tr><td><strong>Tool Control</strong></td><td>—</td><td>Restricted tool list</td><td>—</td></tr>
+      <tr><td><strong>File</strong></td><td><code>SKILL.md</code></td><td><code>.agent.md</code></td><td><code>.prompt.md</code></td></tr>
+    </table>
+    <div class="s-card anim d4" style="margin-top:24px;background:rgba(132,204,22,0.06);border:1px solid rgba(132,204,22,0.15);border-left:4px solid #84cc16;padding:16px 24px;">
+      <p style="font-size:15px;color:var(--text-secondary);"><strong style="color:#84cc16;">💡 Tip:</strong> Use <strong>Skills</strong> for reusable workflows, <strong>Agents</strong> for specialized personas, and <strong>Prompts</strong> for quick repeatable tasks.</p>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 10: HOOKS ═══════════ -->
+  <div class="slide" data-title="Hooks">
+    <span class="slide-num">10 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-red);">Section 4 · Hooks &amp; MCP</div>
+    <h2 class="slide-title anim d1">Hooks — Lifecycle Automation <span class="badge badge-preview">Preview</span></h2>
+    <p class="slide-subtitle anim d2">Execute shell commands at key agent lifecycle points</p>
+    <div class="two-col wide-right">
+      <div>
+        <div class="flow-h anim d3" style="flex-direction: column; align-items: stretch; gap: 6px; margin-bottom:20px;">
+          <div class="flow-node fn-amber" style="justify-content:center;font-size:14px;"><span class="fi">✏️</span> Agent edits a file</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-green" style="justify-content:center;font-size:14px;"><span class="fi">🪝</span> PostToolUse hook fires</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-blue" style="justify-content:center;font-size:14px;"><span class="fi">✨</span> prettier · lint · scan</div>
+        </div>
+        <ul class="anim d4" style="list-style:none;padding:0;">
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Plugin hooks run <strong>alongside</strong> workspace hooks</li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">PreToolUse</code>: most restrictive wins</li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Disabling plugin disables its hooks</li>
+        </ul>
+      </div>
+      <div class="anim d5">
+        <div class="hook-timeline">
+          <div class="hook-event"><span class="he-name">SessionStart</span> <span class="he-desc">New agent session begins</span></div>
+          <div class="hook-event"><span class="he-name">UserPromptSubmit</span> <span class="he-desc">User submits a prompt</span></div>
+          <div class="hook-event"><span class="he-name">PreToolUse</span> <span class="he-desc">Before agent invokes tool</span></div>
+          <div class="hook-event"><span class="he-name">PostToolUse</span> <span class="he-desc">After tool completes</span></div>
+          <div class="hook-event"><span class="he-name">SubagentStart</span> <span class="he-desc">Subagent is spawned</span></div>
+          <div class="hook-event"><span class="he-name">SubagentStop</span> <span class="he-desc">Subagent completes</span></div>
+          <div class="hook-event"><span class="he-name">Stop</span> <span class="he-desc">Agent session ends</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 11: HOOK CONFIG & MCP ═══════════ -->
+  <div class="slide" data-title="Hook Config & MCP Servers">
+    <span class="slide-num">11 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-red);">Section 4 · Hooks &amp; MCP</div>
+    <h2 class="slide-title anim d1">Hook Config &amp; MCP Servers</h2>
+    <p class="slide-subtitle anim d2">Configuration examples for lifecycle hooks and external tools</p>
+    <div class="two-col">
+      <div class="anim d3">
+        <div class="s-card accent-red">
+          <h3><div class="icon-circle ic-red">⚙️</div> hooks.json</h3>
+          <div class="code-box" style="font-size:11px;padding:14px 18px;margin-top:12px;">
+            <span class="label" style="font-size:9px;">hooks/hooks.json</span>
+{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"SessionStart"</span>: [{
+      <span class="str">"type"</span>: <span class="str">"command"</span>,
+      <span class="str">"command"</span>: <span class="str">"${CLAUDE_PLUGIN_ROOT}/scripts/session-log.sh"</span>,
+      <span class="str">"timeout"</span>: <span class="num">5</span>
+    }],
+    <span class="str">"PostToolUse"</span>: [{
+      <span class="str">"matcher"</span>: <span class="str">"Write|Edit"</span>,
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"command"</span>,
+        <span class="str">"command"</span>: <span class="str">"npx prettier --write \"$TOOL_INPUT_FILE_PATH\""</span>
+      }]
+    }]
+  }
+}</div>
+        </div>
+      </div>
+      <div class="anim d4">
+        <div class="s-card accent-cyan">
+          <h3><div class="icon-circle ic-cyan">🔌</div> MCP Servers</h3>
+          <p style="margin-bottom:14px;font-size:14px;">Bundle MCP servers to provide agents with additional tools. Auto-start on enable.</p>
+          <div class="code-box" style="font-size:11px;padding:14px 18px;">
+            <span class="label" style="font-size:9px;">.mcp.json</span>
+{
+  <span class="str">"mcpServers"</span>: {
+    <span class="str">"plugin-database"</span>: {
+      <span class="str">"command"</span>: <span class="str">"${CLAUDE_PLUGIN_ROOT}/servers/db-server"</span>,
+      <span class="str">"args"</span>: [<span class="str">"--config"</span>, <span class="str">"${CLAUDE_PLUGIN_ROOT}/config.json"</span>]
+    },
+    <span class="str">"plugin-api"</span>: {
+      <span class="str">"command"</span>: <span class="str">"npx"</span>,
+      <span class="str">"args"</span>: [<span class="str">"@company/mcp-server"</span>],
+      <span class="str">"cwd"</span>: <span class="str">"${CLAUDE_PLUGIN_ROOT}"</span>
+    }
+  }
+}</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-muted);font-style:italic;">Top-level key: <code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">mcpServers</code> (not <code style="background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;">servers</code>)</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 12: QUICK REFERENCE ═══════════ -->
+  <div class="slide" data-title="Quick Reference">
+    <span class="slide-num">12 / 13</span>
+    <div class="section-tag anim d0" style="color:var(--accent-indigo);">Quick Reference</div>
+    <h2 class="slide-title anim d1">Full Extensibility Stack</h2>
+    <p class="slide-subtitle anim d2">Everything in one view</p>
+    <div class="card-grid cols-3 anim d3">
+      <div class="s-card accent-purple" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🤖</span> Agents</h3>
+        <p style="font-size:13px;">.agent.md files with persona, tools, model, handoffs</p>
+      </div>
+      <div class="s-card accent-pink" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">⚡</span> Skills</h3>
+        <p style="font-size:13px;">SKILL.md + scripts + resources bundled together</p>
+      </div>
+      <div class="s-card accent-green" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">📋</span> Instructions</h3>
+        <p style="font-size:13px;">Always-on + file-scoped + org-level</p>
+      </div>
+      <div class="s-card accent-orange" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">📝</span> Prompts</h3>
+        <p style="font-size:13px;">Repeatable templates with mode: agent | ask | edit</p>
+      </div>
+      <div class="s-card accent-cyan" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🔌</span> MCP Servers</h3>
+        <p style="font-size:13px;">External tools via Model Context Protocol</p>
+      </div>
+      <div class="s-card accent-amber" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🪝</span> Hooks</h3>
+        <p style="font-size:13px;">Shell commands at agent lifecycle events</p>
+      </div>
+    </div>
+    <div class="s-card anim d4" style="margin-top:24px;text-align:center;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.2);padding:20px;">
+      <p style="font-size:16px;"><strong>📂 Full Cheat Sheet:</strong></p>
+      <p style="margin-top:8px;"><a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" style="color:#93c5fd;font-size:15px;font-weight:600;text-decoration:underline;">sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html</a></p>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 13: THANK YOU ═══════════ -->
+  <div class="slide thank-you" data-title="Thank You">
+    <span class="slide-num">13 / 13</span>
+    <div class="github-logo anim anim-scale d0" style="width:60px;height:60px;margin:0 auto 20px;">
+      <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" style="fill:var(--text-primary);width:100%;height:100%;">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+      </svg>
+    </div>
+    <h1 class="gradient anim d1">Thank You!</h1>
+    <p class="anim d2" style="font-size:20px;color:var(--text-secondary);margin-top:8px;">Copilot Dev Day — Agent Plugins &amp; Customization</p>
+    <p class="anim d3" style="font-size:16px;color:var(--text-muted);margin-top:8px;">By <strong style="color:var(--text-secondary);">Sukumar P</strong> · Honeywell · April 9, 2026</p>
+    <div class="social-links anim d4">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" class="social-link sl-linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="social-link sl-instagram"><i class="fab fa-instagram"></i> Instagram</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" class="social-link sl-youtube"><i class="fab fa-youtube"></i> YouTube</a>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-controls">
+  <div class="nav-left">
+    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" title="Previous (←)"><i class="fas fa-chevron-left"></i></button>
+    <span class="slide-counter" id="slideCounter">1 / 13</span>
+    <button class="nav-btn" id="nextBtn" onclick="nextSlide()" title="Next (→)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="toggleOverview()" title="Overview (O)"><i class="fas fa-th-large"></i></button>
+    <button class="nav-btn" onclick="toggleFullscreen()" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+    <div class="nav-brand"><i class="fab fa-github"></i> tec_in_sec</div>
+  </div>
+</div>
+
+<div class="key-hint">
+  <span><kbd>←</kbd> <kbd>→</kbd> Navigate</span>
+  <span><kbd>F</kbd> Fullscreen</span>
+  <span><kbd>O</kbd> Overview</span>
+</div>
+
+<!-- Overview Panel -->
+<div class="overview-panel" id="overviewPanel">
+  <button class="overview-close" onclick="toggleOverview()"><i class="fas fa-times"></i></button>
+  <div class="overview-grid" id="overviewGrid"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let transitioning = false;
+
+  function updateUI() {
+    document.getElementById('slideCounter').textContent = `${current + 1} / ${total}`;
+    document.getElementById('progressFill').style.width = `${((current + 1) / total) * 100}%`;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function goToSlide(index, direction) {
+    if (index < 0 || index >= total || index === current || transitioning) return;
+    transitioning = true;
+
+    const oldSlide = slides[current];
+    const newSlide = slides[index];
+    const forward = direction || (index > current ? 'forward' : 'backward');
+
+    slides.forEach(s => {
+      s.classList.remove('active', 'enter-right', 'exit-left', 'enter-left', 'exit-right');
+      s.style.zIndex = '1';
+    });
+
+    newSlide.querySelectorAll('.anim').forEach(el => {
+      el.style.opacity = '0';
+      el.style.animation = 'none';
+    });
+
+    if (forward === 'forward') {
+      oldSlide.classList.add('exit-left');
+      oldSlide.style.zIndex = '9';
+      newSlide.classList.add('active', 'enter-right');
+      newSlide.style.zIndex = '10';
+    } else {
+      oldSlide.classList.add('exit-right');
+      oldSlide.style.zIndex = '9';
+      newSlide.classList.add('active', 'enter-left');
+      newSlide.style.zIndex = '10';
+    }
+
+    requestAnimationFrame(() => {
+      newSlide.querySelectorAll('.anim').forEach(el => {
+        el.style.animation = '';
+      });
+    });
+
+    current = index;
+    updateUI();
+
+    setTimeout(() => {
+      slides.forEach(s => {
+        if (!s.classList.contains('active')) {
+          s.classList.remove('exit-left', 'exit-right', 'enter-right', 'enter-left');
+          s.style.opacity = '0';
+          s.style.zIndex = '1';
+        }
+      });
+      transitioning = false;
+    }, 650);
+  }
+
+  function nextSlide() { goToSlide(current + 1, 'forward'); }
+  function prevSlide() { goToSlide(current - 1, 'backward'); }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function toggleOverview() {
+    const panel = document.getElementById('overviewPanel');
+    const grid = document.getElementById('overviewGrid');
+    if (panel.classList.contains('visible')) {
+      panel.classList.remove('visible');
+      return;
+    }
+    grid.innerHTML = '';
+    slides.forEach((slide, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'overview-thumb' + (i === current ? ' current' : '');
+      thumb.textContent = `${i + 1}. ${slide.dataset.title || 'Slide ' + (i + 1)}`;
+      thumb.onclick = () => {
+        panel.classList.remove('visible');
+        goToSlide(i, i > current ? 'forward' : 'backward');
+      };
+      grid.appendChild(thumb);
+    });
+    panel.classList.add('visible');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('overviewPanel').classList.contains('visible')) {
+      if (e.key === 'Escape' || e.key === 'o' || e.key === 'O') toggleOverview();
+      return;
+    }
+    switch(e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown':
+        e.preventDefault(); nextSlide(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prevSlide(); break;
+      case 'Home': e.preventDefault(); goToSlide(0, 'backward'); break;
+      case 'End':  e.preventDefault(); goToSlide(total - 1, 'forward'); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+      case 'o': case 'O': toggleOverview(); break;
+      case 'Escape': if (document.fullscreenElement) document.exitFullscreen(); break;
+    }
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) nextSlide(); else prevSlide();
+    }
+  }, { passive: true });
+
+  updateUI();
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
