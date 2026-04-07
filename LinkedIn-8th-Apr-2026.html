@@ -1099,10 +1099,9 @@
 <div class="agenda-bar">
   <div class="agenda-item active" data-section="all" onclick="filterSection('all')"><span class="num">✦</span> All</div>
   <div class="agenda-item" data-section="1" onclick="filterSection('1')"><span class="num">1</span> Copilot Agents &amp; Skills</div>
-  <div class="agenda-item" data-section="2" onclick="filterSection('2')"><span class="num">2</span> Copilot CLI</div>
-  <div class="agenda-item" data-section="3" onclick="filterSection('3')"><span class="num">3</span> Coding &amp; Review Agents</div>
-  <div class="agenda-item" data-section="4" onclick="filterSection('4')"><span class="num">4</span> VS Code Agent UX</div>
-  <div class="agenda-item" data-section="5" onclick="filterSection('5')"><span class="num">5</span> Quick Reference</div>
+  <div class="agenda-item" data-section="2" onclick="filterSection('2')"><span class="num">2</span> Coding &amp; Review Agents</div>
+  <div class="agenda-item" data-section="3" onclick="filterSection('3')"><span class="num">3</span> VS Code Agent UX</div>
+  <div class="agenda-item" data-section="4" onclick="filterSection('4')"><span class="num">4</span> Quick Reference</div>
 </div>
 
 <main class="grid">
@@ -1152,7 +1151,7 @@ injection, XSS, and auth bypasses.</code></pre>
         <li>Invoke with <code>@security-reviewer</code> in Chat</li>
         <li>Define tools the agent can use</li>
         <li>Set model preference per agent</li>
-        <li>Works in both VS Code &amp; Copilot CLI</li>
+        <li>Works in VS Code &amp; GitHub.com</li>
       </ul>
     </div>
   </div>
@@ -1387,204 +1386,9 @@ Summarize findings in a markdown table.</code></pre>
 
   </div><!-- end section-group 1 -->
 
-  <!-- =================== SECTION 2: COPILOT CLI =================== -->
+  <!-- =================== SECTION 2: CODING & REVIEW AGENTS =================== -->
   <div class="section-group" data-section="2">
-  <div class="section-label"><h2>2 · 💻 Copilot CLI</h2></div>
-
-  <!-- INFOGRAPHIC: CLI Modes -->
-  <div class="card" style="border-left-color: var(--color-tools);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
-      <span class="card-icon">🎯</span>
-      <h3>CLI Operating Modes</h3>
-    </div>
-    <div class="infographic">
-      <div class="mode-cards">
-        <div class="mode-card mode-interactive">
-          <h4>💬 Interactive Mode</h4>
-          <p>Conversational session — ask questions, steer direction, give feedback. Copilot remembers context.</p>
-          <code>copilot</code>
-        </div>
-        <div class="mode-card mode-programmatic">
-          <h4>⚙️ Programmatic Mode</h4>
-          <p>Single prompt in, result out — ideal for scripts &amp; CI pipelines. Exits after completion.</p>
-          <code>copilot -p "fix the tests"</code>
-        </div>
-        <div class="mode-card mode-plan">
-          <h4>📐 Plan Mode</h4>
-          <p>Copilot analyzes your request, asks clarifying questions, and builds a structured plan before writing code.</p>
-          <code>Shift+Tab to toggle</code>
-        </div>
-        <div class="mode-card mode-autopilot">
-          <h4>🚀 Autopilot Mode</h4>
-          <p>Full autonomy — Copilot executes tools, edits files, and runs commands without per-step approval.</p>
-          <code>copilot --yolo</code>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CLI Overview -->
-  <div class="card" style="border-left-color: var(--color-tools);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
-      <span class="card-icon">🖥️</span>
-      <h3>Copilot CLI Overview</h3>
-    </div>
-    <div class="card-body">
-      <p>A powerful AI agent in your terminal — interactive chat, plan mode, and autonomous coding. Default model: Claude Sonnet 4.5.</p>
-      <div class="kv-row">
-        <code class="kv-key">copilot</code>
-        <span class="kv-desc">Launch interactive session (ask/execute mode)</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">copilot -p "task"</code>
-        <span class="kv-desc">Programmatic — run a single prompt, then exit</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/model</code>
-        <span class="kv-desc">Switch AI model mid-session</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Shift+Tab</code>
-        <span class="kv-desc">Toggle between ask/execute and plan mode</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">@path/to/file</code>
-        <span class="kv-desc">Include a file as context in your prompt</span>
-      </div>
-      <div class="callout callout-tip">
-        <strong>💡 Tip:</strong> Copilot CLI reads <code>copilot-instructions.md</code>, <code>*.instructions.md</code>, and <code>AGENTS.md</code> automatically.
-      </div>
-    </div>
-  </div>
-
-  <!-- Autopilot & Permissions -->
-  <div class="card" style="border-left-color: var(--color-advanced);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.15), transparent);">
-      <span class="card-icon">🚀</span>
-      <h3>Autopilot &amp; Permissions</h3>
-    </div>
-    <div class="card-body">
-      <p>Control how much autonomy Copilot has with granular tool approvals.</p>
-      <!-- Mini infographic: Permission spectrum -->
-      <div class="mini-diagram">
-        <div class="spectrum-bar">
-          <div class="spectrum-segment" style="background: rgba(16,185,129,0.2); border-right: 1px solid rgba(148,163,184,0.1);"><span class="m-icon">🛡️</span> Ask each time</div>
-          <div class="spectrum-segment" style="background: rgba(245,158,11,0.2); border-right: 1px solid rgba(148,163,184,0.1);"><span class="m-icon">🔑</span> --allow-tool</div>
-          <div class="spectrum-segment" style="background: rgba(239,68,68,0.2);"><span class="m-icon">🚀</span> --yolo</div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 6px; padding: 0 4px;">
-          <span>🔒 Most restricted</span>
-          <span>🔓 Full autonomy</span>
-        </div>
-      </div>
-      <div class="code-block">
-        <div class="code-title">Permission controls</div>
-        <pre><code><span class="syn-cmt"># Full autonomy — all tools allowed</span>
-copilot <span class="syn-kw">--allow-all-tools</span>
-copilot <span class="syn-kw">--yolo</span>  <span class="syn-cmt"># alias</span>
-
-<span class="syn-cmt"># Allow specific tools only</span>
-copilot <span class="syn-kw">--allow-tool</span>=<span class="syn-str">'shell(git)'</span>
-copilot <span class="syn-kw">--allow-tool</span>=<span class="syn-str">'write'</span>
-
-<span class="syn-cmt"># Deny dangerous commands</span>
-copilot <span class="syn-kw">--allow-all-tools</span> \
-  <span class="syn-kw">--deny-tool</span>=<span class="syn-str">'shell(rm)'</span> \
-  <span class="syn-kw">--deny-tool</span>=<span class="syn-str">'shell(git push)'</span></code></pre>
-      </div>
-      <div class="callout callout-warn">
-        <strong>⚠️ Caution:</strong> With <code>--allow-all-tools</code>, Copilot has the same access you do — review in sandboxed environments.
-      </div>
-    </div>
-  </div>
-
-  <!-- CLI Advanced Features -->
-  <div class="card" style="border-left-color: var(--color-syntax);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), transparent);">
-      <span class="card-icon">⚡</span>
-      <h3>CLI Advanced Features</h3>
-    </div>
-    <div class="card-body">
-      <div class="kv-row">
-        <code class="kv-key">/compact</code>
-        <span class="kv-desc">Manually compress conversation context</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/context</code>
-        <span class="kv-desc">Visual breakdown of token usage</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/usage</code>
-        <span class="kv-desc">Session stats: requests, duration, lines edited</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/resume</code>
-        <span class="kv-desc">Resume a previous session with saved context</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">copilot --continue</code>
-        <span class="kv-desc">Quick-resume last closed session</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/agent</code>
-        <span class="kv-desc">Select from built-in &amp; custom agents</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/mcp add</code>
-        <span class="kv-desc">Add an MCP server to the session</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Ctrl+T</code>
-        <span class="kv-desc">Toggle reasoning visibility</span>
-      </div>
-      <div class="callout callout-info">
-        <strong>📌 Auto-compaction:</strong> Context auto-compresses at 95% token limit — enables virtually infinite sessions.
-      </div>
-    </div>
-  </div>
-
-  <!-- CLI Built-in Agents -->
-  <div class="card" style="border-left-color: var(--color-data);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), transparent);">
-      <span class="card-icon">🤖</span>
-      <h3>CLI Built-in Agents</h3>
-    </div>
-    <div class="card-body">
-      <p>Copilot CLI includes specialized sub-agents for common workflows. The AI auto-delegates to them.</p>
-      <!-- Mini infographic: Agent delegation flow -->
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-blue"><span class="m-icon">💬</span> Your prompt</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">🧠</span> Main Agent analyzes &amp; delegates</div>
-        </div>
-        <div style="text-align: center; margin: 4px 0;"><span class="mini-arrow" style="font-size: 16px;">↓</span></div>
-        <div style="display: flex; gap: 6px;">
-          <div class="mini-node arch-green" style="flex: 1;"><span class="m-icon">🔍</span> Explore</div>
-          <div class="mini-node arch-amber" style="flex: 1;"><span class="m-icon">⚙️</span> Task</div>
-          <div class="mini-node arch-pink" style="flex: 1;"><span class="m-icon">👁️</span> Review</div>
-        </div>
-        <div class="mini-label">Auto-delegation — main agent routes to the best sub-agent</div>
-      </div>
-      <table class="ref-table">
-        <tr><th>Agent</th><th>Purpose</th></tr>
-        <tr><td><strong>Explore</strong></td><td>Quick codebase analysis without polluting main context</td></tr>
-        <tr><td><strong>Task</strong></td><td>Execute builds &amp; tests — brief on success, full output on failure</td></tr>
-        <tr><td><strong>General-purpose</strong></td><td>Complex multi-step tasks in a separate context</td></tr>
-        <tr><td><strong>Code-review</strong></td><td>Reviews changes, surfaces genuine issues, minimizes noise</td></tr>
-      </table>
-      <ul>
-        <li>Plus: <strong>ACP</strong> (Agent Client Protocol) — use Copilot CLI as an agent in any third-party tool</li>
-        <li>GitHub MCP server is pre-configured for GitHub.com interactions</li>
-      </ul>
-    </div>
-  </div>
-
-  </div><!-- end section-group 2 -->
-
-  <!-- =================== SECTION 3: CODING & REVIEW AGENTS =================== -->
-  <div class="section-group" data-section="3">
-  <div class="section-label"><h2>3 · 🔧 Coding &amp; Review Agents</h2></div>
+  <div class="section-label"><h2>2 · 🔧 Coding &amp; Review Agents</h2></div>
 
   <!-- INFOGRAPHIC: Coding Agent vs Agent Mode -->
   <div class="card wide" style="border-left-color: var(--color-basics);">
@@ -1787,11 +1591,11 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
-  </div><!-- end section-group 3 -->
+  </div><!-- end section-group 2 -->
 
-  <!-- =================== SECTION 4: VS CODE AGENT UX =================== -->
-  <div class="section-group" data-section="4">
-  <div class="section-label"><h2>4 · 🎨 VS Code Agent UX</h2></div>
+  <!-- =================== SECTION 3: VS CODE AGENT UX =================== -->
+  <div class="section-group" data-section="3">
+  <div class="section-label"><h2>3 · 🎨 VS Code Agent UX</h2></div>
 
   <!-- Chat Customizations Editor -->
   <div class="card" style="border-left-color: var(--color-basics);">
@@ -1916,86 +1720,33 @@ copilot <span class="syn-kw">--allow-all-tools</span> \
     </div>
   </div>
 
-  </div><!-- end section-group 4 -->
+  </div><!-- end section-group 3 -->
 
   <!-- =================== REFERENCE =================== -->
-  <div class="section-group" data-section="5">
-  <div class="section-label"><h2>5 · 📋 Quick Reference</h2></div>
+  <div class="section-group" data-section="4">
+  <div class="section-label"><h2>4 · 📋 Quick Reference</h2></div>
 
-  <!-- File Paths Reference -->
   <div class="card wide" style="border-left-color: var(--color-reference);">
     <div class="card-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), transparent);">
       <span class="card-icon">📂</span>
-      <h3>File Paths &amp; Locations</h3>
+      <h3>Full Cheat Sheet</h3>
     </div>
     <div class="card-body">
-      <table class="ref-table">
-        <tr><th>File / Path</th><th>Type</th><th>Purpose</th></tr>
-        <tr><td><code>.github/copilot-instructions.md</code></td><td>Always-on instruction</td><td>Repo-wide coding standards</td></tr>
-        <tr><td><code>.github/instructions/*.instructions.md</code></td><td>File-based instruction</td><td>Scoped rules (uses <code>applyTo</code> glob)</td></tr>
-        <tr><td><code>.github/agents/*.agent.md</code></td><td>Custom agent</td><td>Specialized AI persona</td></tr>
-        <tr><td><code>.github/skills/*/SKILL.md</code></td><td>Agent skill</td><td>Reusable multi-step workflow</td></tr>
-        <tr><td><code>.github/prompts/*.prompt.md</code></td><td>Prompt file</td><td>Repeatable task template</td></tr>
-        <tr><td><code>.github/hooks/*.json</code></td><td>Hook</td><td>Lifecycle hook JSON configs</td></tr>
-        <tr><td><code>.vscode/mcp.json</code></td><td>MCP config</td><td>Model Context Protocol servers</td></tr>
-        <tr><td><code>AGENTS.md</code></td><td>Always-on instruction</td><td>Cross-client compatible rules</td></tr>
-        <tr><td><code>CLAUDE.md</code></td><td>Always-on instruction</td><td>Claude-specific rules</td></tr>
-      </table>
+      <p>For the complete reference — file paths, slash commands, tips &amp; best practices:</p>
+      <p style="text-align: center; margin-top: 12px;">
+        <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" style="display: inline-block; background: linear-gradient(135deg, var(--color-reference), var(--color-syntax)); color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;">🔗 Open GitHub Copilot Cheat Sheet</a>
+      </p>
     </div>
   </div>
 
-  <!-- Slash Commands Reference -->
-  <div class="card wide" style="border-left-color: var(--color-tips);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(132,204,22,0.15), transparent);">
-      <span class="card-icon">⌨️</span>
-      <h3>Slash Commands &amp; Quick Actions</h3>
-    </div>
-    <div class="card-body">
-      <table class="ref-table">
-        <tr><th>Command</th><th>Action</th></tr>
-        <tr><td><code>/init</code></td><td>Generate <code>copilot-instructions.md</code> tailored to your codebase</td></tr>
-        <tr><td><code>/create-instruction</code></td><td>Create file-based instruction with AI assistance</td></tr>
-        <tr><td><code>/create-agent</code></td><td>Create a custom agent definition</td></tr>
-        <tr><td><code>/create-skill</code></td><td>Create an agent skill package</td></tr>
-        <tr><td><code>/create-prompt</code></td><td>Create a reusable prompt file</td></tr>
-        <tr><td><code>/create-hook</code></td><td>Create a lifecycle hook script</td></tr>
-        <tr><td><code>@agent-name</code></td><td>Invoke a custom agent in Chat</td></tr>
-        <tr><td><code>#tool-name</code></td><td>Explicitly reference an MCP or LM tool</td></tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- Tips & Best Practices -->
-  <div class="card wide" style="border-left-color: var(--color-tips);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(132,204,22,0.15), transparent);">
-      <span class="card-icon">💡</span>
-      <h3>Tips &amp; Best Practices</h3>
-    </div>
-    <div class="card-body">
-      <ul>
-        <li><strong>Start incremental</strong> — begin with <code>/init</code>, then add targeted instructions</li>
-        <li><strong>Well-scoped prompts</strong> — include clear descriptions, acceptance criteria, and file hints</li>
-        <li><strong>Specialize agents</strong> — create purpose-built agents for frontend, docs, testing, security</li>
-        <li><strong>Review AI output</strong> — always review code from coding agent before merging</li>
-        <li><strong>Use Copilot Memory</strong> — enable persistent repo knowledge for better context</li>
-        <li><strong>Batch with skills</strong> — package multi-step workflows for reuse</li>
-        <li><strong>Automate reviews</strong> — set up automatic Copilot code review via repo rules</li>
-        <li><strong>Custom instructions for CR</strong> — add review-specific rules to <code>copilot-instructions.md</code></li>
-      </ul>
-    </div>
-  </div>
-
-  </div><!-- end section-group 5 -->
+  </div><!-- end section-group 4 -->
 
 </main>
 
 <footer>
   <div class="footer-sources">
-    Sources:
-    <a href="https://docs.github.com/en/copilot" target="_blank">GitHub Copilot Docs</a> ·
-    <a href="https://code.visualstudio.com/docs/copilot/copilot-customization" target="_blank">VS Code Customization</a> ·
-    <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents" target="_blank">Custom Agents</a> ·
-    <a href="https://code.visualstudio.com/docs/copilot/copilot-extensibility-overview" target="_blank">VS Code AI Extensibility</a>
+    Source:
+    <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank">GitHub Copilot Agents &amp; Extensibility Cheat Sheet</a>
   </div>
   <div style="margin-top: 8px;">Created by <strong>Sukumar P</strong> · <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" style="color: #60A5FA;">LinkedIn</a> · Built with GitHub Copilot · March 31, 2026</div>
 </footer>
