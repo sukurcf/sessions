@@ -1,1904 +1,1422 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub Copilot — Session Cheat Sheet</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
-    :root {
-      /* Card accent colors */
-      --color-basics:      #3B82F6;
-      --color-syntax:      #8B5CF6;
-      --color-data:        #10B981;
-      --color-control:     #F59E0B;
-      --color-functions:   #EC4899;
-      --color-advanced:    #EF4444;
-      --color-tools:       #06B6D4;
-      --color-tips:        #84CC16;
-      --color-examples:    #F97316;
-      --color-reference:   #6366F1;
-
-      /* Backgrounds */
-      --bg-page:           #0F172A;
-      --bg-card:           #1E293B;
-      --bg-code:           #0F172A;
-      --bg-header:         #020617;
-
-      /* Text */
-      --text-primary:      #F8FAFC;
-      --text-secondary:    #CBD5E1;
-      --text-muted:        #94A3B8;
-      --text-code:         #E2E8F0;
-
-      /* Code syntax highlighting */
-      --syn-keyword:       #C084FC;
-      --syn-string:        #34D399;
-      --syn-number:        #FB923C;
-      --syn-comment:       #64748B;
-      --syn-function:      #60A5FA;
-      --syn-type:          #F472B6;
-    }
-
-    [data-theme="light"] {
-      --bg-page:           #F1F5F9;
-      --bg-card:           #FFFFFF;
-      --bg-code:           #F1F5F9;
-      --bg-header:         #1E293B;
-      --text-primary:      #0F172A;
-      --text-secondary:    #475569;
-      --text-muted:        #64748B;
-      --text-code:         #334155;
-      --syn-keyword:       #7C3AED;
-      --syn-string:        #059669;
-      --syn-number:        #C2410C;
-      --syn-comment:       #475569;
-      --syn-function:      #2563EB;
-      --syn-type:          #DB2777;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-      background: var(--bg-page);
-      color: var(--text-primary);
-      line-height: 1.5;
-      min-height: 100vh;
-    }
-
-    /* === HEADER === */
-    header {
-      background: var(--bg-header);
-      padding: 32px 40px 28px;
-      text-align: center;
-      border-bottom: 3px solid var(--color-basics);
-      position: relative;
-    }
-
-    .top-heading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-
-    .top-heading svg {
-      width: 44px;
-      height: 44px;
-      fill: var(--text-primary);
-    }
-
-    .top-heading span {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-
-    header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-top: 4px;
-      background-size: 200% 200%;
-      animation: gradientShift 6s ease infinite;
-    }
-
-    header .subtitle {
-      color: var(--text-secondary);
-      font-size: 15px;
-      margin-top: 6px;
-    }
-
-    header .meta {
-      color: var(--text-muted);
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .author-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 12px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .author-bar a {
-      color: #60A5FA;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .author-bar a:hover {
-      color: #93C5FD;
-      text-decoration: underline;
-    }
-
-    .author-bar .linkedin-icon {
-      width: 16px;
-      height: 16px;
-      vertical-align: middle;
-      fill: #0A66C2;
-    }
-
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 24px;
-      background: rgba(99, 102, 241, 0.2);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: var(--text-primary);
-      padding: 6px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: inherit;
-      transition: all 0.2s;
-    }
-
-    .theme-toggle:hover {
-      background: rgba(99, 102, 241, 0.35);
-    }
-
-    /* === AGENDA BAR === */
-    .agenda-bar {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 12px;
-      margin: 20px auto;
-      max-width: 1560px;
-      padding: 16px 28px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      animation: fadeInUp 0.6s ease 0.2s both;
-    }
-
-    [data-theme="dark"] .agenda-bar {
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.92)), linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
-    }
-
-    [data-theme="light"] .agenda-bar {
-      background: linear-gradient(135deg, rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.92)), linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
-    }
-
-    .agenda-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      user-select: none;
-      animation: scaleIn 0.4s ease both;
-    }
-
-    .agenda-item:nth-child(2) { animation-delay: 0.3s; }
-    .agenda-item:nth-child(3) { animation-delay: 0.4s; }
-    .agenda-item:nth-child(4) { animation-delay: 0.5s; }
-    .agenda-item:nth-child(5) { animation-delay: 0.6s; }
-    .agenda-item:nth-child(6) { animation-delay: 0.7s; }
-    .agenda-item:nth-child(7) { animation-delay: 0.8s; }
-
-    .agenda-item:hover {
-      background: rgba(99, 102, 241, 0.25);
-      border-color: rgba(99, 102, 241, 0.5);
-      transform: translateY(-1px);
-    }
-
-    .agenda-item.active {
-      background: rgba(99, 102, 241, 0.35);
-      border-color: rgba(99, 102, 241, 0.7);
-      color: var(--text-primary);
-      box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
-    }
-
-    .agenda-item.active .num {
-      background: #fff;
-      color: var(--color-reference);
-    }
-
-    .agenda-item .num {
-      background: var(--color-reference);
-      color: #fff;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    /* === GRID === */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      max-width: 1600px;
-      margin: 0 auto;
-      grid-auto-flow: dense;
-    }
-
-    /* === SECTION GROUPS === */
-    .section-group {
-      display: contents;
-      transition: opacity 0.3s ease;
-    }
-
-    .section-group.hidden {
-      display: none;
-    }
-
-    /* === ANIMATIONS === */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .section-label {
-      animation: slideInLeft 0.5s ease both;
-    }
-
-    /* === CARD === */
-    .card {
-      background: var(--bg-card);
-      border-radius: 12px;
-      border-left: 4px solid;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
-      overflow: hidden;
-      break-inside: avoid;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      opacity: 0;
-      animation: fadeInUp 0.5s ease both;
-    }
-
-    .card:hover {
-      transform: translateY(-4px) scale(1.005);
-      box-shadow: 0 12px 30px -5px rgba(0,0,0,0.4), 0 0 0 1px rgba(99, 102, 241, 0.1);
-    }
-
-    .card.wide {
-      grid-column: span 2;
-    }
-
-    .card-header {
-      padding: 14px 18px 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .card-header .card-icon {
-      font-size: 20px;
-    }
-
-    .card-header h3 {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .card-body {
-      padding: 0 18px 18px;
-    }
-
-    .card-body p {
-      color: var(--text-secondary);
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    .card-body ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .card-body ul li {
-      font-size: 13px;
-      color: var(--text-secondary);
-      padding: 3px 0;
-      padding-left: 16px;
-      position: relative;
-    }
-
-    .card-body ul li::before {
-      content: "▸";
-      position: absolute;
-      left: 0;
-      color: var(--text-muted);
-    }
-
-    /* === CODE BLOCKS === */
-    .code-block {
-      margin: 10px 0;
-      position: relative;
-    }
-
-    .code-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    pre {
-      background: var(--bg-code);
-      border-radius: 8px;
-      padding: 12px 14px;
-      overflow-x: auto;
-      font-size: 12.5px;
-      line-height: 1.55;
-      border: 1px solid rgba(148, 163, 184, 0.1);
-      position: relative;
-    }
-
-    code {
-      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
-      color: var(--text-code);
-    }
-
-    /* Inline code */
-    p code, li code, td code, .kv-desc code, .kv-key {
-      background: rgba(99, 102, 241, 0.15);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.88em;
-      font-family: "JetBrains Mono", "Fira Code", monospace;
-      color: var(--text-code);
-    }
-
-    .copy-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(148, 163, 184, 0.15);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      color: var(--text-muted);
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 11px;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-
-    .copy-btn:hover {
-      background: rgba(148, 163, 184, 0.3);
-      color: var(--text-primary);
-    }
-
-    /* === KEY-VALUE PAIRS === */
-    .kv-row {
-      display: flex;
-      gap: 10px;
-      align-items: baseline;
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-      font-size: 13px;
-    }
-
-    .kv-row:last-child {
-      border-bottom: none;
-    }
-
-    .kv-key {
-      flex-shrink: 0;
-      font-weight: 500;
-      min-width: 160px;
-    }
-
-    .kv-desc {
-      color: var(--text-secondary);
-    }
-
-    /* === TABLES === */
-    .ref-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 12.5px;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      margin: 8px 0;
-    }
-
-    .ref-table th {
-      background: rgba(99, 102, 241, 0.1);
-      font-weight: 600;
-      text-align: left;
-      padding: 8px 12px;
-      color: var(--text-primary);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .ref-table td {
-      padding: 7px 12px;
-      color: var(--text-secondary);
-      border-top: 1px solid rgba(148, 163, 184, 0.06);
-    }
-
-    .ref-table tr:nth-child(even) td {
-      background: rgba(148, 163, 184, 0.04);
-    }
-
-    /* === CALLOUTS === */
-    .callout {
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin: 10px 0;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .callout-tip {
-      background: rgba(16, 185, 129, 0.1);
-      border-left: 3px solid #10B981;
-      color: var(--text-secondary);
-    }
-
-    .callout-warn {
-      background: rgba(245, 158, 11, 0.1);
-      border-left: 3px solid #F59E0B;
-      color: var(--text-secondary);
-    }
-
-    .callout-info {
-      background: rgba(59, 130, 246, 0.1);
-      border-left: 3px solid #3B82F6;
-      color: var(--text-secondary);
-    }
-
-    .callout-important {
-      background: rgba(239, 68, 68, 0.1);
-      border-left: 3px solid #EF4444;
-      color: var(--text-secondary);
-    }
-
-    /* === SECTION DIVIDER === */
-    .section-label {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin: 8px 0 0;
-    }
-
-    .section-label h2 {
-      white-space: nowrap;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .section-label::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), transparent);
-    }
-
-    /* === BADGE === */
-    .badge {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-left: 6px;
-    }
-
-    .badge-preview {
-      background: rgba(245, 158, 11, 0.2);
-      color: #F59E0B;
-    }
-
-    .badge-ga {
-      background: rgba(16, 185, 129, 0.2);
-      color: #10B981;
-    }
-
-    .badge-new {
-      background: rgba(236, 72, 153, 0.2);
-      color: #EC4899;
-    }
-
-    /* === FOOTER === */
-    footer {
-      background: var(--bg-header);
-      padding: 24px 40px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 12px;
-      border-top: 1px solid rgba(148, 163, 184, 0.1);
-      margin-top: 20px;
-    }
-
-    footer a {
-      color: var(--color-basics);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    .footer-sources {
-      margin-bottom: 8px;
-    }
-
-    /* === PRINT === */
-    @media print {
-      body { background: white; color: #1a1a1a; }
-      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
-      .theme-toggle { display: none; }
-      header { background: #1E293B; color: white; }
-      .agenda-bar { border: 1px solid #ddd; }
-      footer { background: #f8f8f8; color: #666; }
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 900px) {
-      .card.wide { grid-column: span 1; }
-      .grid { grid-template-columns: 1fr; }
-      .agenda-bar {
-        flex-direction: row;
-        padding: 10px 12px;
-        gap: 8px;
-        margin: 0;
-        border-radius: 0;
-        top: 0;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      }
-      .agenda-bar::-webkit-scrollbar { display: none; }
-      .agenda-item {
-        flex-shrink: 0;
-        padding: 6px 12px;
-        font-size: 12px;
-        white-space: nowrap;
-      }
-      header { padding: 24px 16px 20px; }
-      header h1 { font-size: 22px; }
-      .top-heading span { font-size: 24px; }
-      .kv-row { flex-direction: column; gap: 2px; }
-      .kv-key { min-width: auto; }
-    }
-
-    @media (max-width: 600px) {
-      header { padding: 16px 12px; }
-      header h1 { font-size: 20px; }
-      .top-heading span { font-size: 22px; }
-      .top-heading svg { width: 34px; height: 34px; }
-      header .subtitle { font-size: 13px; }
-      header .meta { font-size: 11px; }
-      .author-bar { font-size: 12px; flex-wrap: wrap; }
-      .grid { padding: 10px; gap: 12px; }
-      .card-header { padding: 12px 14px 8px; font-size: 14px; }
-      .card-body { padding: 0 14px 14px; }
-      pre { font-size: 11.5px; padding: 10px 12px; }
-      .section-label h2 { font-size: 16px; }
-      .theme-toggle { padding: 4px 10px; font-size: 12px; top: 12px; right: 12px; }
-      footer { padding: 16px 12px; }
-    }
-
-    /* Syntax highlighting classes */
-    .syn-kw { color: var(--syn-keyword); }
-    .syn-str { color: var(--syn-string); }
-    .syn-num { color: var(--syn-number); }
-    .syn-cmt { color: var(--syn-comment); }
-    .syn-fn { color: var(--syn-function); }
-    .syn-type { color: var(--syn-type); }
-
-    /* === MINI INFOGRAPHICS === */
-    .mini-diagram {
-      margin: 12px 0 6px;
-      padding: 14px;
-      border-radius: 10px;
-      background: rgba(0,0,0,0.12);
-      border: 1px solid rgba(148, 163, 184, 0.08);
-    }
-
-    .mini-flow {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .mini-flow.horizontal {
-      flex-direction: row;
-      justify-content: center;
-      flex-wrap: nowrap;
-      gap: 6px;
-    }
-
-    .mini-node {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-primary);
-      white-space: nowrap;
-      width: 100%;
-      justify-content: center;
-    }
-
-    .mini-flow.horizontal .mini-node {
-      width: auto;
-    }
-
-    .mini-node .m-icon { font-size: 15px; }
-
-    .mini-arrow {
-      color: var(--text-muted);
-      font-size: 13px;
-      padding: 0;
-      line-height: 1;
-    }
-
-    .mini-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .mini-stack-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 6px;
-      font-size: 11.5px;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    .mini-stack-row .m-icon { font-size: 15px; width: 22px; text-align: center; flex-shrink: 0; }
-
-    .mini-label {
-      text-align: center;
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      font-style: italic;
-    }
-
-    /* Architecture node colors */
-    .arch-blue { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35); }
-    .arch-purple { background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); }
-    .arch-green { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); }
-    .arch-pink { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.35); }
-    .arch-cyan { background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); }
-    .arch-amber { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); }
-    .arch-orange { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.35); }
-
-    /* Spectrum bar */
-    .spectrum-bar {
-      display: flex;
-      align-items: stretch;
-      border-radius: 8px;
-      overflow: hidden;
-      height: 40px;
-    }
-
-    .spectrum-segment {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      font-size: 10.5px;
-      font-weight: 600;
-      color: var(--text-primary);
-      padding: 0 8px;
-      white-space: nowrap;
-    }
-
-    .spectrum-segment .m-icon { font-size: 14px; }
-
-    /* Pill tags */
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 8px 0;
-      justify-content: center;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .pill .m-icon { font-size: 13px; }
-
-    /* Comparison diagram */
-    .compare-grid {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 0;
-      align-items: stretch;
-    }
-
-    .compare-side {
-      padding: 16px;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .compare-side h4 {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .compare-side .compare-item {
-      font-size: 12px;
-      color: var(--text-secondary);
-      padding: 6px 10px;
-      border-radius: 6px;
-      background: rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .compare-left {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.05));
-      border: 1px solid rgba(99, 102, 241, 0.2);
-    }
-
-    .compare-right {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.05));
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .compare-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 12px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-muted);
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      letter-spacing: 2px;
-    }
-
-    /* Infographic card */
-    .infographic {
-      padding: 18px;
-      position: relative;
-    }
-
-    /* Mode cards */
-    .mode-cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .mode-card {
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: transform 0.2s;
-    }
-
-    .mode-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .mode-card h4 {
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-primary);
-    }
-
-    .mode-card p {
-      font-size: 11.5px !important;
-      color: var(--text-secondary) !important;
-      margin: 0 !important;
-      line-height: 1.45;
-    }
-
-    .mode-card code {
-      font-size: 11px;
-    }
-
-    .mode-interactive {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
-      border: 1px solid rgba(59, 130, 246, 0.25);
-    }
-
-    .mode-programmatic {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(249, 115, 22, 0.04));
-      border: 1px solid rgba(249, 115, 22, 0.25);
-    }
-
-    .mode-plan {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(139, 92, 246, 0.04));
-      border: 1px solid rgba(139, 92, 246, 0.25);
-    }
-
-    .mode-autopilot {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
-      border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-
-    @media (max-width: 900px) {
-      .compare-grid { grid-template-columns: 1fr; }
-      .compare-divider { writing-mode: horizontal-tb; padding: 8px 0; }
-      .mode-cards { grid-template-columns: 1fr; }
-    }
-
-    /* Flow steps */
-    .flow-steps {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin: 10px 0;
-      row-gap: 8px;
-    }
-
-    .flow-step {
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 8px;
-      padding: 8px 14px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      transition: background 0.2s, transform 0.2s;
-    }
-
-    .flow-step:hover {
-      background: rgba(99, 102, 241, 0.22);
-      transform: scale(1.05);
-    }
-
-    .flow-arrow {
-      font-size: 18px;
-      color: var(--text-muted);
-      padding: 0 2px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot Dev Day — April 10, 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-card: #1c2128;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-purple: #8b5cf6;
+    --accent-green: #3fb950;
+    --accent-orange: #f0883e;
+    --accent-pink: #f778ba;
+    --accent-cyan: #79c0ff;
+    --accent-red: #f85149;
+    --border: #30363d;
+  }
+
+  .reveal {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 42px;
+  }
+
+  .reveal .slides {
+    text-align: left;
+  }
+
+  .reveal .slides section {
+    padding: 30px 60px 50px 60px;
+    box-sizing: border-box;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .reveal h1 { font-size: 2.4em; line-height: 1.1; }
+  .reveal h2 { font-size: 1.7em; line-height: 1.15; margin-bottom: 0.3em; }
+  .reveal h3 { font-size: 1.25em; line-height: 1.25; }
+  .reveal p, .reveal li { font-size: 0.82em; line-height: 1.5; color: var(--text-secondary); }
+  .reveal ul { list-style: none; padding-left: 0; }
+  .reveal li { padding: 4px 0; }
+  .reveal li::before { content: "▸ "; color: var(--accent-blue); font-weight: 600; }
+
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--accent-cyan);
+  }
+
+  .reveal pre {
+    width: 100%;
+    font-size: 0.58em;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary) !important;
+  }
+
+  .reveal pre code {
+    background: transparent !important;
+    border: none;
+    padding: 20px 24px;
+    line-height: 1.5;
+    max-height: 380px;
+  }
+
+  /* Badge styles */
+  .badge {
+    display: inline-block;
+    font-size: 0.5em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: 10px;
+    position: relative;
+    top: -3px;
+  }
+  .badge-ga { background: rgba(63,185,80,0.2); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-new { background: rgba(139,92,246,0.2); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+  .badge-preview { background: rgba(240,136,62,0.2); color: var(--accent-orange); border: 1px solid rgba(240,136,62,0.3); }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .card-grid-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card h4 {
+    font-size: 0.78em;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+  }
+  .card p, .card li {
+    font-size: 0.68em;
+    margin: 3px 0;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.72em;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    min-width: 80px;
+  }
+  .flow-arrow {
+    font-size: 1em;
+    color: var(--text-secondary);
+  }
+
+  /* Table */
+  .reveal table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72em;
+    margin-top: 12px;
+  }
+  .reveal table th {
+    background: var(--bg-card);
+    color: var(--accent-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.9em;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--accent-blue);
+    text-align: left;
+  }
+  .reveal table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .reveal table tr:hover td {
+    background: rgba(88,166,255,0.05);
+  }
+
+  /* Section title slide */
+  .section-title {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .section-title .section-icon {
+    font-size: 3.5em;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 30px currentColor);
+  }
+  .section-title h2 {
+    font-size: 2em;
+    text-align: center;
+  }
+  .section-title .section-number {
+    font-size: 0.9em;
+    font-weight: 300;
+    color: var(--text-secondary);
+    margin-top: 10px;
+  }
+
+  /* Comparison columns */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .comparison .col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .comparison .col h4 {
+    font-size: 0.85em;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .comparison .col li {
+    font-size: 0.72em;
+    padding: 3px 0;
+  }
+
+  /* Presenter card */
+  .presenter-card {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    background: linear-gradient(135deg, var(--bg-card), rgba(88,166,255,0.08));
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-top: 20px;
+  }
+  .presenter-photo {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-blue);
+    box-shadow: 0 0 40px rgba(88,166,255,0.25);
+    flex-shrink: 0;
+  }
+  .presenter-info h3 {
+    font-size: 1.3em;
+    margin: 0 0 6px 0;
+    color: var(--text-primary);
+  }
+  .presenter-info .title {
+    font-size: 0.8em;
+    color: var(--accent-blue);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .presenter-info .bio {
+    font-size: 0.72em;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .presenter-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72em;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-right: 18px;
+    transition: color 0.3s;
+  }
+  .presenter-social a:hover { color: var(--accent-blue); }
+
+  /* Tip / Note boxes */
+  .tip-box {
+    background: rgba(63,185,80,0.08);
+    border-left: 4px solid var(--accent-green);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 18px;
+    margin-top: 12px;
+    font-size: 0.7em;
+    color: var(--text-secondary);
+  }
+  .tip-box strong { color: var(--accent-green); }
+
+  .note-box {
+    background: rgba(88,166,255,0.08);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 18px;
+    margin-top: 12px;
+    font-size: 0.7em;
+    color: var(--text-secondary);
+  }
+  .note-box strong { color: var(--accent-blue); }
+
+  .warn-box {
+    background: rgba(240,136,62,0.08);
+    border-left: 4px solid var(--accent-orange);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 18px;
+    margin-top: 12px;
+    font-size: 0.7em;
+    color: var(--text-secondary);
+  }
+  .warn-box strong { color: var(--accent-orange); }
+
+  /* Accent text */
+  .text-blue { color: var(--accent-blue) !important; }
+  .text-purple { color: var(--accent-purple) !important; }
+  .text-green { color: var(--accent-green) !important; }
+  .text-orange { color: var(--accent-orange) !important; }
+  .text-pink { color: var(--accent-pink) !important; }
+  .text-cyan { color: var(--accent-cyan) !important; }
+
+  /* Inline tag */
+  .tag {
+    display: inline-block;
+    font-size: 0.62em;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    margin: 3px 4px 3px 0;
+  }
+
+  /* Title slide special */
+  .title-slide {
+    text-align: center !important;
+  }
+  .title-slide h1 {
+    font-size: 2.6em;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .title-slide .subtitle {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    font-weight: 400;
+    max-width: 700px;
+    margin: 0 auto 30px;
+  }
+  .title-slide .meta {
+    font-size: 0.65em;
+    color: var(--text-secondary);
+    margin-top: 30px;
+  }
+  .title-slide .copilot-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 30px rgba(88,166,255,0.4));
+  }
+
+  /* Navigation hint */
+  .nav-hint {
+    font-size: 0.55em;
+    color: var(--text-secondary);
+    margin-top: 30px;
+    opacity: 0.6;
+  }
+  .nav-hint kbd {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9em;
+    margin: 0 2px;
+  }
+
+  /* File path */
+  .file-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62em;
+    color: var(--accent-orange);
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 4px 12px;
+    display: inline-block;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* Permission visual */
+  .perm-bar {
+    display: flex;
+    margin: 20px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 50px;
+  }
+  .perm-bar .segment {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #fff;
+    transition: flex 0.3s;
+  }
+
+  /* Persistent footer */
+  .persistent-footer {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    color: rgba(230,237,243,0.7);
+    background: rgba(13,17,23,0.85);
+    backdrop-filter: blur(8px);
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: 1px solid rgba(48,54,61,0.6);
+  }
+  .persistent-footer a {
+    color: rgba(230,237,243,0.7);
+    text-decoration: none;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 1.1em;
+  }
+  .persistent-footer a:hover {
+    color: var(--accent-blue);
+  }
+  .persistent-footer .handle {
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 1.05em;
+  }
+  .persistent-footer .follow-text {
+    font-size: 0.82em;
+    color: rgba(139,148,158,0.8);
+    font-weight: 400;
+  }
+  .persistent-footer .sep {
+    width: 1px;
+    height: 18px;
+    background: rgba(139,148,158,0.4);
+  }
+
+  /* Slide background overrides */
+  .reveal .slide-background {
+    background: var(--bg-primary);
+  }
+
+  /* Fragment animations */
+  .reveal .fragment.fade-up {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.5s ease;
+  }
+  .reveal .fragment.fade-up.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Progress bar color */
+  .reveal .progress span {
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  }
+
+  /* Slide numbers */
+  .reveal .slide-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    background: transparent;
+    right: 16px;
+    bottom: 28px;
+  }
+
+  /* Controls color */
+  .reveal .controls button {
+    color: var(--accent-blue);
+  }
+
+  /* Q&A slide */
+  .qna-slide {
+    text-align: center !important;
+  }
+  .qna-slide h1 {
+    font-size: 3em;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Capability grid */
+  .cap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .cap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .cap-item .cap-icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .cap-item .cap-text {
+    font-size: 0.68em;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .cap-item .cap-text strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Decorative blob */
+  .blob-bg {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Agenda items */
+  .agenda-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: default;
+  }
+  .agenda-item:hover {
+    transform: translateX(4px);
+    border-color: var(--accent-blue);
+  }
+  .agenda-item .num {
+    font-size: 1.4em;
+    font-weight: 900;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .agenda-item .agenda-text {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .agenda-item .agenda-sub {
+    font-size: 0.62em;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Layer stack visual */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 20px auto;
+    max-width: 500px;
+  }
+  .layer {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.72em;
+    font-weight: 600;
+    text-align: center;
+    color: #fff;
+    position: relative;
+  }
+  .layer::after {
+    content: "↓";
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2em;
+    opacity: 0.5;
+  }
+  .layer:last-child::after { display: none; }
+</style>
 </head>
 <body>
+<div class="reveal" data-background-color="#0d1117">
+<div class="slides">
 
-<header>
-  <div class="top-heading">
-    <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
-    </svg>
-    <span>GitHub Copilot</span>
-  </div>
-  <h1>Copilot Dev Day — Session Cheat Sheet</h1>
-  <p class="subtitle">Custom Instructions, Planning Mode, Agent Mode, Coding Agent, Mission Control &amp; Code Review</p>
-  <p class="meta">Version 2026.04 · GitHub Copilot Dev Day · April 6, 2026</p>
-  <div class="author-bar">
-    <span>By <strong>Sukumar P</strong></span>
-    <span>·</span>
-    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank">
-      <svg class="linkedin-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+<!-- ============================================ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="title-slide">
+    <div class="copilot-icon">
+      <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="48" stroke="url(#grad1)" stroke-width="3" fill="rgba(88,166,255,0.08)"/>
+        <path d="M35 45c0-5 3-9 7-9s7 4 7 9M51 45c0-5 3-9 7-9s7 4 7 9" stroke="#58a6ff" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M30 55c0 0 8 12 20 12s20-12 20-12" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <defs><linearGradient id="grad1" x1="0" y1="0" x2="100" y2="100"><stop offset="0%" stop-color="#58a6ff"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs>
       </svg>
-      LinkedIn
-    </a>
-  </div>
-  <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
-</header>
-
-<!-- Agenda Bar -->
-<div class="agenda-bar">
-  <div class="agenda-item active" data-section="all" onclick="filterSection('all')"><span class="num">✦</span> All</div>
-  <div class="agenda-item" data-section="1" onclick="filterSection('1')"><span class="num">1</span> Custom Instructions</div>
-  <div class="agenda-item" data-section="2" onclick="filterSection('2')"><span class="num">2</span> Planning Mode</div>
-  <div class="agenda-item" data-section="3" onclick="filterSection('3')"><span class="num">3</span> Agent Mode</div>
-  <div class="agenda-item" data-section="4" onclick="filterSection('4')"><span class="num">4</span> Coding Agent</div>
-  <div class="agenda-item" data-section="5" onclick="filterSection('5')"><span class="num">5</span> Mission Control</div>
-  <div class="agenda-item" data-section="6" onclick="filterSection('6')"><span class="num">6</span> Code Review Agent</div>
-</div>
-
-<main class="grid">
-
-  <!-- =================== SECTION 1: CUSTOM INSTRUCTIONS =================== -->
-  <div class="section-group" data-section="1">
-  <div class="section-label"><h2>1 · 📋 Custom Instructions</h2></div>
-
-  <!-- Instruction Types -->
-  <div class="card" style="border-left-color: var(--color-data);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), transparent);">
-      <span class="card-icon">📋</span>
-      <h3>Instruction Types &amp; Scopes <span class="badge badge-ga">GA</span></h3>
     </div>
-    <div class="card-body">
-      <p>Teach Copilot your project conventions with always-on, file-scoped, and organization-level rules.</p>
-      <div class="mini-diagram">
-        <div class="mini-stack">
-          <div class="mini-stack-row arch-blue"><span class="m-icon">🌐</span> <strong>Always-on</strong> — copilot-instructions.md · AGENTS.md · CLAUDE.md</div>
-          <div class="mini-stack-row arch-purple"><span class="m-icon">🎯</span> <strong>File-scoped</strong> — *.instructions.md with <code>applyTo</code> glob patterns</div>
-          <div class="mini-stack-row arch-green"><span class="m-icon">🏢</span> <strong>Org-level</strong> — .github-private repo for enterprise-wide rules</div>
-        </div>
-        <div class="mini-label">Layered: org → repo → file-scoped (all combine, no overrides)</div>
+    <h1>Copilot Dev Day</h1>
+    <p class="subtitle">Custom Instructions · Planning Mode · Agent Mode · Coding Agent · Mission Control · Code Review</p>
+    <p class="meta">Version 2026.04 · April 10, 2026 · Motive Session</p>
+    <p class="nav-hint">
+      Navigate: <kbd>←</kbd> <kbd>→</kbd> arrows &nbsp;|&nbsp; <kbd>Space</kbd> next &nbsp;|&nbsp; <kbd>Esc</kbd> overview &nbsp;|&nbsp; <kbd>F</kbd> fullscreen
+    </p>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SLIDE 2: PRESENTER -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <h2 class="text-blue">Your Presenter</h2>
+  <div class="presenter-card">
+    <img class="presenter-photo" src="presenter.jpg" alt="Sukumar P" onerror="this.src='https://github.com/SukumarP.png'; this.onerror=null;">
+    <div class="presenter-info">
+      <h3>Sukumar P</h3>
+      <div class="title">Developer · Building the Future, One Commit at a Time</div>
+      <div class="bio">
+        Passionate about developer productivity, AI-powered coding, and building tools that make developers' lives easier.
+        Creating educational content about GitHub Copilot and modern development workflows.
       </div>
-      <div class="kv-row">
-        <code class="kv-key">copilot-instructions.md</code>
-        <span class="kv-desc">Always-on — applies to every request in the repo</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">*.instructions.md</code>
-        <span class="kv-desc">File-based — scoped by <code>applyTo</code> glob pattern</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">AGENTS.md</code>
-        <span class="kv-desc">Always-on — cross-client compatible rules</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">CLAUDE.md</code>
-        <span class="kv-desc">Always-on — Claude-specific rules</span>
+      <div class="presenter-social">
+        <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i> YouTube</a>
+        <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://wa.me/message/tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- File-Based Instructions -->
-  <div class="card" style="border-left-color: var(--color-syntax);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), transparent);">
-      <span class="card-icon">🎯</span>
-      <h3>File-Based Instructions</h3>
+<!-- ============================================ -->
+<!-- SLIDE 3: AGENDA -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <h2>Today's Agenda</h2>
+  <div class="agenda-grid">
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(88,166,255,0.15); color: var(--accent-blue);">1</div>
+      <div>
+        <div class="agenda-text">📋 Custom Instructions</div>
+        <div class="agenda-sub">Teach Copilot your project conventions</div>
+      </div>
     </div>
-    <div class="card-body">
-      <p>Scope rules to specific files using glob patterns in the YAML frontmatter.</p>
-      <div class="code-block">
-        <div class="code-title">.github/instructions/react.instructions.md</div>
-        <pre><code><span class="syn-cmt">---</span>
-<span class="syn-kw">applyTo</span>: <span class="syn-str">"src/**/*.tsx"</span>
-<span class="syn-cmt">---</span>
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(139,92,246,0.15); color: var(--accent-purple);">2</div>
+      <div>
+        <div class="agenda-text">📐 Planning Mode</div>
+        <div class="agenda-sub">Think first, code second</div>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(63,185,80,0.15); color: var(--accent-green);">3</div>
+      <div>
+        <div class="agenda-text">🤖 Agent Mode</div>
+        <div class="agenda-sub">Autonomous coding in your IDE</div>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(240,136,62,0.15); color: var(--accent-orange);">4</div>
+      <div>
+        <div class="agenda-text">🔧 Coding Agent</div>
+        <div class="agenda-sub">Cloud-powered autonomous development</div>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(247,120,186,0.15); color: var(--accent-pink);">5</div>
+      <div>
+        <div class="agenda-text">🎛️ Mission Control</div>
+        <div class="agenda-sub">Centralized agent management</div>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="num" style="background: rgba(121,192,255,0.15); color: var(--accent-cyan);">6</div>
+      <div>
+        <div class="agenda-text">👁️ Code Review Agent</div>
+        <div class="agenda-sub">AI-powered pull request reviews</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 1: CUSTOM INSTRUCTIONS -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-blue">📋</div>
+    <h2 class="text-blue">Custom Instructions</h2>
+    <p class="section-number">Section 1 of 6</p>
+  </div>
+</section>
+
+<!-- Slide: Instruction Types -->
+<section data-background-color="#0d1117">
+  <h2>Instruction Types & Scopes <span class="badge badge-ga">GA</span></h2>
+  <p>Teach Copilot your project conventions with layered, always-on rules.</p>
+  <div class="card-grid card-grid-3" style="margin-top: 20px;">
+    <div class="card" style="border-top: 3px solid var(--accent-blue);">
+      <h4 class="text-blue">🌐 Always-On</h4>
+      <p><code>copilot-instructions.md</code></p>
+      <p><code>AGENTS.md</code> / <code>CLAUDE.md</code></p>
+      <p style="font-size:0.55em; color:var(--text-secondary); margin-top:8px;">Applies to every request in the repo</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-purple);">
+      <h4 class="text-purple">🎯 File-Scoped</h4>
+      <p><code>*.instructions.md</code></p>
+      <p>with <code>applyTo</code> glob</p>
+      <p style="font-size:0.55em; color:var(--text-secondary); margin-top:8px;">Scoped by file pattern matching</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-green);">
+      <h4 class="text-green">🏢 Organization</h4>
+      <p><code>.github-private</code> repo</p>
+      <p>Enterprise-wide rules</p>
+      <p style="font-size:0.55em; color:var(--text-secondary); margin-top:8px;">Applies across all org repos</p>
+    </div>
+  </div>
+  <div class="layer-stack" style="margin-top: 24px;">
+    <div class="layer" style="background: linear-gradient(90deg, rgba(63,185,80,0.3), rgba(63,185,80,0.15));">🏢 Organization Level</div>
+    <div class="layer" style="background: linear-gradient(90deg, rgba(88,166,255,0.3), rgba(88,166,255,0.15));">📁 Repository Level</div>
+    <div class="layer" style="background: linear-gradient(90deg, rgba(139,92,246,0.3), rgba(139,92,246,0.15));">🎯 File-Scoped Level</div>
+  </div>
+  <div class="note-box"><strong>📌 Note:</strong> All layers combine — no overrides. More specific instructions add to broader ones.</div>
+</section>
+
+<!-- Slide: File-Based Instructions -->
+<section data-background-color="#0d1117">
+  <h2>File-Based Instructions</h2>
+  <p>Scope rules to specific files using glob patterns in YAML frontmatter.</p>
+  <div class="card-grid card-grid-2" style="margin-top: 16px;">
+    <div>
+      <div class="file-path">.github/instructions/react.instructions.md</div>
+      <pre><code class="language-yaml">---
+applyTo: "src/**/*.tsx"
+---
 
 Use React functional components with hooks.
-Prefer <span class="syn-fn">useReducer</span> over <span class="syn-fn">useState</span> for
-complex state. Always add <span class="syn-fn">aria-*</span> attributes
-for accessibility.</code></pre>
-      </div>
-      <div class="code-block">
-        <div class="code-title">.github/instructions/python.instructions.md</div>
-        <pre><code><span class="syn-cmt">---</span>
-<span class="syn-kw">applyTo</span>: <span class="syn-str">"**/*.py"</span>
-<span class="syn-cmt">---</span>
+Prefer useReducer over useState for complex state.
+Always add aria-* attributes for accessibility.</code></pre>
+    </div>
+    <div>
+      <div class="file-path">.github/instructions/python.instructions.md</div>
+      <pre><code class="language-yaml">---
+applyTo: "**/*.py"
+---
 
 Use 4-space indentation, type hints on all
-public functions, and <span class="syn-fn">pathlib</span> for file paths.</code></pre>
-      </div>
-      <ul>
-        <li>Create with <code>/create-instruction</code> or <code>/init</code></li>
-        <li>Multiple instruction files can apply to the same file</li>
-        <li>All matching instructions combine — no overrides</li>
-      </ul>
+public functions, and pathlib for file paths.</code></pre>
     </div>
   </div>
+  <ul style="margin-top: 16px;">
+    <li>Create with <code>/create-instruction</code> or <code>/init</code></li>
+    <li>Multiple instruction files can apply to the same file</li>
+    <li>All matching instructions combine — no overrides</li>
+  </ul>
+</section>
 
-  <!-- Organization Instructions -->
-  <div class="card" style="border-left-color: var(--color-tools);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
-      <span class="card-icon">🏢</span>
-      <h3>Organization Custom Instructions <span class="badge badge-ga">GA</span></h3>
-    </div>
-    <div class="card-body">
-      <p>Set enterprise-wide coding standards that apply across all repositories in your organization.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-cyan"><span class="m-icon">🏢</span> .github-private repo</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">📋</span> copilot-instructions.md</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">✅</span> Applied to all org repos</div>
-        </div>
-        <div class="mini-label">Organization → Repository → File-scoped (all layers combine)</div>
-      </div>
-      <ul>
-        <li>Create a <code>.github-private</code> repo in your org</li>
-        <li>Add <code>copilot-instructions.md</code> to the root</li>
-        <li>Rules apply to all repos in the organization</li>
-        <li>Repository-level instructions layer on top</li>
-      </ul>
-    </div>
-  </div>
+<!-- Slide: Example copilot-instructions.md -->
+<section data-background-color="#0d1117">
+  <h2>Example: copilot-instructions.md</h2>
+  <div class="file-path">.github/copilot-instructions.md</div>
+  <pre><code class="language-markdown"># Project conventions for Copilot
 
-  <!-- copilot-instructions.md example -->
-  <div class="card" style="border-left-color: var(--color-examples);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(249,115,22,0.15), transparent);">
-      <span class="card-icon">📝</span>
-      <h3>Example: copilot-instructions.md</h3>
-    </div>
-    <div class="card-body">
-      <div class="code-block">
-        <div class="code-title">.github/copilot-instructions.md</div>
-        <pre><code><span class="syn-cmt"># Project conventions for Copilot</span>
+## Build & Test
+- Use pnpm (not npm or yarn)
+- Run `pnpm test` before opening any PR
+- Run `pnpm lint` to validate code style
 
-<span class="syn-cmt">## Build &amp; Test</span>
-- Use <span class="syn-fn">pnpm</span> (not npm or yarn)
-- Run <span class="syn-fn">`pnpm test`</span> before opening any PR
-- Run <span class="syn-fn">`pnpm lint`</span> to validate code style
-
-<span class="syn-cmt">## Code Style</span>
-- TypeScript strict mode — no <span class="syn-kw">any</span> types
+## Code Style
+- TypeScript strict mode — no any types
 - React: functional components + hooks only
 - Max file length: 300 lines
 
-<span class="syn-cmt">## PR Guidelines</span>
+## PR Guidelines
 - Include a summary of changes in PR body
 - Reference the issue number in commits</code></pre>
-      </div>
-      <div class="callout callout-tip">
-        <strong>💡 Tip:</strong> Start with <code>/init</code> to auto-generate a <code>copilot-instructions.md</code> tailored to your codebase.
-      </div>
+  <div class="tip-box"><strong>💡 Tip:</strong> Start with <code>/init</code> to auto-generate a <code>copilot-instructions.md</code> tailored to your codebase.</div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 2: PLANNING MODE -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-purple">📐</div>
+    <h2 class="text-purple">Planning Mode</h2>
+    <p class="section-number">Section 2 of 6</p>
+  </div>
+</section>
+
+<!-- Slide: Plan Agent -->
+<section data-background-color="#0d1117">
+  <h2>Plan Agent <span class="badge badge-ga">GA</span></h2>
+  <p>Copilot analyzes your request and builds a structured plan before writing code.</p>
+  <div class="flow">
+    <div class="flow-step" style="border-color: var(--accent-purple); border-width: 2px;">📝 Your Prompt</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🧠 Analyze & Plan</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">📋 Plan Generated</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">✅ Approve → Execute</div>
+  </div>
+  <div class="card-grid card-grid-2" style="margin-top: 20px;">
+    <div class="card">
+      <h4>🖥️ In VS Code</h4>
+      <p>Select <strong class="text-purple">Plan</strong> from the agent picker in Chat</p>
+      <p>Plan outlines files to create/modify, approach, and dependencies</p>
+    </div>
+    <div class="card">
+      <h4>⌨️ In Copilot CLI</h4>
+      <p><code>Shift+Tab</code> — toggle plan mode</p>
+      <p><code>/plan</code> — switch mid-session</p>
     </div>
   </div>
+  <div class="note-box"><strong>🎯 Think first, code second</strong> — review the approach before any changes are made.</div>
+</section>
 
-  </div><!-- end section-group 1 -->
+<!-- Slide: When to Use Planning -->
+<section data-background-color="#0d1117">
+  <h2>When to Use Planning Mode</h2>
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Why Plan Mode Helps</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🏗️ Multi-file features</td><td>See which files will be created/modified before any changes</td></tr>
+      <tr><td>🔄 Refactoring</td><td>Review the refactoring strategy — ensure nothing breaks</td></tr>
+      <tr><td>🧪 Test generation</td><td>Confirm testing approach, frameworks, and coverage targets</td></tr>
+      <tr><td>📦 New modules</td><td>Approve the architecture and file structure upfront</td></tr>
+      <tr><td>🔀 Complex migrations</td><td>Validate migration steps before touching production code</td></tr>
+    </tbody>
+  </table>
+  <div class="tip-box"><strong>📌 Key:</strong> Planning mode is ideal when you want Copilot to show its reasoning and approach before making changes.</div>
+</section>
 
-  <!-- =================== SECTION 2: PLANNING MODE =================== -->
-  <div class="section-group" data-section="2">
-  <div class="section-label"><h2>2 · 📐 Planning Mode</h2></div>
-
-  <!-- Plan Agent -->
-  <div class="card" style="border-left-color: var(--color-syntax);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), transparent);">
-      <span class="card-icon">📐</span>
-      <h3>Plan Agent <span class="badge badge-ga">GA</span></h3>
+<!-- Slide: Cloud + CLI Planning -->
+<section data-background-color="#0d1117">
+  <h2>Cloud Agent Planning <span class="badge badge-new">NEW</span></h2>
+  <p>Ask the cloud agent to generate an implementation plan before any code is written.</p>
+  <div class="flow">
+    <div class="flow-step">💬 "Create a plan for…"</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🤖 Copilot Generates Plan</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">👁️ You Review</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">⚙️ Implement</div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top: 24px;">
+    <div class="card">
+      <h4 class="text-purple">☁️ Cloud</h4>
+      <p>Available via cloud agent on GitHub.com</p>
     </div>
-    <div class="card-body">
-      <p>Copilot analyzes your request, asks clarifying questions, and builds a structured implementation plan before writing any code.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-purple"><span class="m-icon">📝</span> Your prompt</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-blue"><span class="m-icon">🧠</span> Copilot analyzes &amp; plans</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-amber"><span class="m-icon">📋</span> Structured plan generated</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">✅</span> You approve → execution begins</div>
-        </div>
-        <div class="mini-label">Think first, code second — review the approach before any changes</div>
-      </div>
-      <ul>
-        <li>Select <strong>Plan</strong> from the agent picker in VS Code Chat</li>
-        <li>In CLI: press <code>Shift+Tab</code> to toggle plan mode</li>
-        <li>Plan outlines files to create/modify, approach, and dependencies</li>
-        <li>Review and approve before Copilot starts coding</li>
-      </ul>
+    <div class="card">
+      <h4 class="text-purple">💻 VS Code</h4>
+      <p>Select Plan from agent picker</p>
+    </div>
+    <div class="card">
+      <h4 class="text-purple">⌨️ CLI</h4>
+      <p><code>Shift+Tab</code> to toggle plan mode</p>
     </div>
   </div>
+</section>
 
-  <!-- When to Use Planning Mode -->
-  <div class="card" style="border-left-color: var(--color-tips);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(132,204,22,0.15), transparent);">
-      <span class="card-icon">🎯</span>
-      <h3>When to Use Planning Mode</h3>
+<!-- ============================================ -->
+<!-- SECTION 3: AGENT MODE -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-green">🤖</div>
+    <h2 class="text-green">Agent Mode</h2>
+    <p class="section-number">Section 3 of 6</p>
+  </div>
+</section>
+
+<!-- Slide: Agent Mode Overview -->
+<section data-background-color="#0d1117">
+  <h2>Agent Mode Overview <span class="badge badge-ga">GA</span></h2>
+  <p>Copilot gets full autonomy to plan, edit files, run commands, and iterate.</p>
+  <div class="flow">
+    <div class="flow-step">💬 Prompt</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🧠 Plan</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">✏️ Edit Files</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">⚡ Run Terminal</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">🔄 Iterate</div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top: 24px;">
+    <div class="card" style="border-left: 3px solid var(--accent-green);">
+      <h4>💻 Local</h4>
+      <p>Interactive, full workspace access in your editor</p>
     </div>
-    <div class="card-body">
-      <table class="ref-table">
-        <tr><th>Scenario</th><th>Why Plan Mode Helps</th></tr>
-        <tr><td>🏗️ <strong>Multi-file features</strong></td><td>See which files will be created/modified before any changes</td></tr>
-        <tr><td>🔄 <strong>Refactoring</strong></td><td>Review the refactoring strategy — ensure nothing breaks</td></tr>
-        <tr><td>🧪 <strong>Test generation</strong></td><td>Confirm testing approach, frameworks, and coverage targets</td></tr>
-        <tr><td>📦 <strong>New modules</strong></td><td>Approve the architecture and file structure upfront</td></tr>
-        <tr><td>🔀 <strong>Complex migrations</strong></td><td>Validate migration steps before touching production code</td></tr>
-      </table>
-      <div class="callout callout-info">
-        <strong>📌 Key:</strong> Planning mode is ideal when you want Copilot to show its reasoning and approach before making changes.
-      </div>
+    <div class="card" style="border-left: 3px solid var(--accent-purple);">
+      <h4>☁️ Background</h4>
+      <p>Runs in background — continue working while Copilot codes</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--accent-blue);">
+      <h4>🌐 Cloud</h4>
+      <p>Runs in GitHub Actions — fully remote execution</p>
     </div>
   </div>
+  <ul style="margin-top:16px;">
+    <li>Uses tools: file read/write, search, terminal, browser</li>
+    <li>Creates checkpoints for easy rollback</li>
+  </ul>
+</section>
 
-  <!-- Cloud Agent Planning -->
-  <div class="card" style="border-left-color: var(--color-basics);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), transparent);">
-      <span class="card-icon">☁️</span>
-      <h3>Cloud Agent Planning <span class="badge badge-new">NEW</span></h3>
-    </div>
-    <div class="card-body">
-      <p>Ask the Copilot cloud agent to generate an implementation plan and review the approach before any code is written.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-blue"><span class="m-icon">💬</span> "Create a plan for…"</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">🤖</span> Copilot generates plan</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-amber"><span class="m-icon">👁️</span> You review &amp; approve</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">⚙️</span> Copilot implements plan</div>
-        </div>
-        <div class="mini-label">Plan → Review → Approve → Implement</div>
-      </div>
-      <ul>
-        <li>Available via cloud agent on GitHub.com</li>
-        <li>Ask for a plan in your prompt</li>
-        <li>Review Copilot's proposed approach before any code</li>
-        <li>Once approved, Copilot uses the plan to guide implementation</li>
-      </ul>
-    </div>
+<!-- Slide: Permission Levels -->
+<section data-background-color="#0d1117">
+  <h2>Permission Levels</h2>
+  <p>Control how much autonomy the agent has over tool approvals.</p>
+  <div class="perm-bar">
+    <div class="segment" style="background: linear-gradient(135deg, #2ea043, #3fb950);">🛡️ Ask</div>
+    <div class="segment" style="background: linear-gradient(135deg, #d29922, #e3b341);">🔑 Allow</div>
+    <div class="segment" style="background: linear-gradient(135deg, #da3633, #f85149);">🚀 Yolo</div>
   </div>
+  <table>
+    <thead>
+      <tr><th>Level</th><th>Behavior</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong class="text-green">Ask each time</strong></td><td>Copilot requests approval for every tool use</td></tr>
+      <tr><td><strong class="text-orange">Allow for session</strong></td><td>Auto-approve specific tool categories for the session</td></tr>
+      <tr><td><strong class="text-pink">Yolo mode</strong></td><td>Full autonomy — all tools allowed without approval</td></tr>
+    </tbody>
+  </table>
+  <div class="warn-box"><strong>⚠️ Caution:</strong> With full autonomy, Copilot has the same access you do — review in sandboxed environments.</div>
+</section>
 
-  <!-- Plan Mode in CLI -->
-  <div class="card" style="border-left-color: var(--color-tools);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
-      <span class="card-icon">💻</span>
-      <h3>Plan Mode in Copilot CLI</h3>
-    </div>
-    <div class="card-body">
-      <p>Toggle between ask/execute and plan mode in the terminal.</p>
-      <div class="kv-row">
-        <code class="kv-key">Shift+Tab</code>
-        <span class="kv-desc">Toggle between ask/execute and plan mode</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">copilot -p "plan: ..."</code>
-        <span class="kv-desc">Programmatic mode with plan request</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">/plan</code>
-        <span class="kv-desc">Switch to plan mode mid-session</span>
-      </div>
-      <div class="callout callout-tip">
-        <strong>💡 Tip:</strong> Use plan mode for complex tasks and switch to execute mode for quick fixes.
-      </div>
-    </div>
-  </div>
+<!-- Slide: Custom Agents & MCP -->
+<section data-background-color="#0d1117">
+  <h2>Custom Agents & MCP Servers</h2>
+  <div class="card-grid card-grid-2">
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 12px;">🤖 Custom Agents</h3>
+      <div class="file-path">.github/agents/security-reviewer.agent.md</div>
+      <pre><code class="language-yaml">---
+name: security-reviewer
+description: Security-focused code reviewer
+tools: ['grep_search', 'read_file']
+model: gpt-5.4
+---
 
-  </div><!-- end section-group 2 -->
-
-  <!-- =================== SECTION 3: AGENT MODE =================== -->
-  <div class="section-group" data-section="3">
-  <div class="section-label"><h2>3 · 🤖 Agent Mode</h2></div>
-
-  <!-- Agent Mode Overview -->
-  <div class="card" style="border-left-color: var(--color-reference);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), transparent);">
-      <span class="card-icon">🤖</span>
-      <h3>Agent Mode Overview <span class="badge badge-ga">GA</span></h3>
-    </div>
-    <div class="card-body">
-      <p>Agent mode gives Copilot autonomy to plan, edit files, run terminal commands, and iterate — all within your local VS Code workspace.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-blue"><span class="m-icon">💬</span> Your prompt</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">🧠</span> Copilot plans approach</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-amber"><span class="m-icon">✏️</span> Edits files in workspace</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-cyan"><span class="m-icon">⚡</span> Runs terminal commands</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">🔄</span> Iterates until complete</div>
-        </div>
-        <div class="mini-label">Autonomous coding — Copilot drives, you review</div>
-      </div>
-      <ul>
-        <li>Select <strong>Agent</strong> from the agent picker in Chat</li>
-        <li>Full access to workspace files and integrated terminal</li>
-        <li>Uses tools: file read/write, search, terminal, browser</li>
-        <li>Creates checkpoints for easy rollback</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- Session Types -->
-  <div class="card" style="border-left-color: var(--color-basics);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), transparent);">
-      <span class="card-icon">🎯</span>
-      <h3>Session Types</h3>
-    </div>
-    <div class="card-body">
-      <p>Choose where the agent runs based on your workflow needs.</p>
-      <div class="kv-row">
-        <code class="kv-key">Local</code>
-        <span class="kv-desc">Runs interactively in your editor with full workspace access</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Background</code>
-        <span class="kv-desc">Runs in background — continue working while Copilot codes</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Cloud</code>
-        <span class="kv-desc">Runs in GitHub Actions environment — fully remote</span>
-      </div>
-      <div class="callout callout-info">
-        <strong>📌 Note:</strong> Background and Cloud sessions free up your editor while Copilot works asynchronously.
-      </div>
-    </div>
-  </div>
-
-  <!-- Agent Permissions -->
-  <div class="card" style="border-left-color: var(--color-advanced);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.15), transparent);">
-      <span class="card-icon">🔐</span>
-      <h3>Permission Levels</h3>
-    </div>
-    <div class="card-body">
-      <p>Control how much autonomy the agent has over tool approvals.</p>
-      <div class="mini-diagram">
-        <div class="spectrum-bar">
-          <div class="spectrum-segment" style="background: rgba(16,185,129,0.2); border-right: 1px solid rgba(148,163,184,0.1);"><span class="m-icon">🛡️</span> Ask</div>
-          <div class="spectrum-segment" style="background: rgba(245,158,11,0.2); border-right: 1px solid rgba(148,163,184,0.1);"><span class="m-icon">🔑</span> Allow</div>
-          <div class="spectrum-segment" style="background: rgba(239,68,68,0.2);"><span class="m-icon">🚀</span> Yolo</div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 6px; padding: 0 4px;">
-          <span>🔒 Most restricted</span>
-          <span>🔓 Full autonomy</span>
-        </div>
-      </div>
-      <table class="ref-table">
-        <tr><th>Level</th><th>Behavior</th></tr>
-        <tr><td><strong>Ask each time</strong></td><td>Copilot requests approval for every tool use</td></tr>
-        <tr><td><strong>Allow for session</strong></td><td>Auto-approve specific tool categories</td></tr>
-        <tr><td><strong>Yolo mode</strong></td><td>Full autonomy — all tools allowed without approval</td></tr>
-      </table>
-      <div class="callout callout-warn">
-        <strong>⚠️ Caution:</strong> With full autonomy, Copilot has the same access you do — review in sandboxed environments.
-      </div>
-    </div>
-  </div>
-
-  <!-- Custom Agents -->
-  <div class="card" style="border-left-color: var(--color-functions);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(236,72,153,0.15), transparent);">
-      <span class="card-icon">⚡</span>
-      <h3>Custom Agents &amp; Skills</h3>
-    </div>
-    <div class="card-body">
-      <p>Create specialized AI personas and reusable workflows for your team.</p>
-      <div class="code-block">
-        <div class="code-title">.github/agents/security-reviewer.agent.md</div>
-        <pre><code><span class="syn-cmt">---</span>
-<span class="syn-kw">name</span>: <span class="syn-str">security-reviewer</span>
-<span class="syn-kw">description</span>: Security-focused code reviewer
-<span class="syn-kw">tools</span>: [<span class="syn-str">'grep_search'</span>, <span class="syn-str">'read_file'</span>]
-<span class="syn-kw">model</span>: <span class="syn-str">gpt-5.4</span>
-<span class="syn-cmt">---</span>
-
-You are a security expert. Review code for
-OWASP Top 10 vulnerabilities.</code></pre>
-      </div>
-      <ul>
+You are a security expert. Review code
+for OWASP Top 10 vulnerabilities.</code></pre>
+      <ul style="margin-top:8px;">
         <li>Create with <code>/create-agent</code></li>
         <li>Invoke with <code>@agent-name</code> in Chat</li>
         <li>Supports handoffs between agents</li>
-        <li>Skills via <code>/create-skill</code> — reusable multi-step workflows</li>
       </ul>
     </div>
-  </div>
-
-  <!-- MCP Servers -->
-  <div class="card" style="border-left-color: var(--color-tools);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), transparent);">
-      <span class="card-icon">🔌</span>
-      <h3>MCP Servers &amp; Tools</h3>
-    </div>
-    <div class="card-body">
-      <p>Connect external tools and data via the Model Context Protocol.</p>
-      <div class="code-block">
-        <div class="code-title">.vscode/mcp.json</div>
-        <pre><code>{
-  <span class="syn-kw">"servers"</span>: {
-    <span class="syn-str">"github"</span>: {
-      <span class="syn-kw">"type"</span>: <span class="syn-str">"stdio"</span>,
-      <span class="syn-kw">"command"</span>: <span class="syn-str">"npx"</span>,
-      <span class="syn-kw">"args"</span>: [
-        <span class="syn-str">"@modelcontextprotocol/server-github"</span>
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 12px;">🔌 MCP Servers</h3>
+      <div class="file-path">.vscode/mcp.json</div>
+      <pre><code class="language-json">{
+  "servers": {
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-github"
       ]
     }
   }
 }</code></pre>
-      </div>
-      <ul>
+      <ul style="margin-top:8px;">
         <li>Tools auto-invoked in agent mode</li>
         <li>Works across VS Code, CLI, JetBrains</li>
-        <li>Browse &amp; install from the MCP marketplace</li>
+        <li>Browse & install from MCP marketplace</li>
       </ul>
     </div>
   </div>
+</section>
 
-  </div><!-- end section-group 3 -->
-
-  <!-- =================== SECTION 4: CODING AGENT =================== -->
-  <div class="section-group" data-section="4">
-  <div class="section-label"><h2>4 · 🔧 Coding Agent</h2></div>
-
-  <!-- Coding Agent Overview -->
-  <div class="card wide" style="border-left-color: var(--color-reference);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), transparent);">
-      <span class="card-icon">🔧</span>
-      <h3>Copilot Cloud Agent <span class="badge badge-ga">GA</span></h3>
-    </div>
-    <div class="card-body">
-      <p>Copilot works autonomously in a GitHub Actions environment — research, plan, code, and open PRs.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow horizontal" style="justify-content: center; flex-wrap: wrap; row-gap: 8px;">
-          <div class="mini-node arch-blue" style="width: auto;"><span class="m-icon">📝</span> Create Issue</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-purple" style="width: auto;"><span class="m-icon">🤖</span> Assign Copilot</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-amber" style="width: auto;"><span class="m-icon">🧠</span> Research &amp; Plan</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-cyan" style="width: auto;"><span class="m-icon">⚙️</span> Code on Branch</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-pink" style="width: auto;"><span class="m-icon">🔀</span> Open PR</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-green" style="width: auto;"><span class="m-icon">✅</span> Merge</div>
-        </div>
-        <div class="mini-label">Issue → Research → Plan → Code → PR → Merge — fully autonomous</div>
-      </div>
-      <table class="ref-table">
-        <tr><th>How to Invoke</th><th>Description</th></tr>
-        <tr><td><code>Assign issue → Copilot</code></td><td>Select "Copilot" as assignee on a GitHub Issue</td></tr>
-        <tr><td><code>@copilot on PR</code></td><td>Mention @copilot in a PR comment to request changes</td></tr>
-        <tr><td><code>Agents Panel</code></td><td>Use the agents panel available on every GitHub page</td></tr>
-        <tr><td><code>VS Code Chat</code></td><td>Ask Copilot to open a PR from your IDE</td></tr>
-        <tr><td><code>Security Campaigns</code></td><td>Assign security alerts to Copilot for automated fixes</td></tr>
-      </table>
-    </div>
+<!-- ============================================ -->
+<!-- SECTION 4: CODING AGENT -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-orange">🔧</div>
+    <h2 class="text-orange">Coding Agent</h2>
+    <p class="section-number">Section 4 of 6</p>
   </div>
+</section>
 
-  <!-- Coding Agent vs Agent Mode -->
-  <div class="card wide" style="border-left-color: var(--color-basics);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), transparent);">
-      <span class="card-icon">⚖️</span>
-      <h3>Cloud Agent vs. Agent Mode</h3>
-    </div>
-    <div class="infographic">
-      <div class="compare-grid">
-        <div class="compare-side compare-left">
-          <h4>☁️ Cloud Agent</h4>
-          <div class="compare-item">☁️ Runs in GitHub Actions (cloud)</div>
-          <div class="compare-item">🔀 Opens PRs autonomously</div>
-          <div class="compare-item">📝 Triggered from Issues / PR comments</div>
-          <div class="compare-item">👥 Team-visible — full audit trail</div>
-          <div class="compare-item">⏳ Async — works in background</div>
-          <div class="compare-item">🔬 Deep research capabilities</div>
-        </div>
-        <div class="compare-divider">VS</div>
-        <div class="compare-side compare-right">
-          <h4>💻 Agent Mode</h4>
-          <div class="compare-item">💻 Runs in your local IDE</div>
-          <div class="compare-item">✏️ Edits files directly in editor</div>
-          <div class="compare-item">💬 Triggered from Chat in VS Code</div>
-          <div class="compare-item">👤 Personal — local changes only</div>
-          <div class="compare-item">⚡ Sync — real-time interaction</div>
-          <div class="compare-item">🔓 Access to entire workspace</div>
-        </div>
-      </div>
-    </div>
+<!-- Slide: Cloud Agent -->
+<section data-background-color="#0d1117">
+  <h2>Copilot Cloud Agent <span class="badge badge-ga">GA</span></h2>
+  <p>Autonomous development in a GitHub Actions environment — from issue to PR.</p>
+  <div class="flow">
+    <div class="flow-step">📝 Issue</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🤖 Assign Copilot</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🧠 Research & Plan</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">⚙️ Code</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🔀 Open PR</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">✅ Merge</div>
   </div>
+  <table style="margin-top: 20px;">
+    <thead>
+      <tr><th>How to Invoke</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Assign issue → Copilot</td><td>Select "Copilot" as assignee on a GitHub Issue</td></tr>
+      <tr><td><code>@copilot</code> on PR</td><td>Mention @copilot in a PR comment to request changes</td></tr>
+      <tr><td>Agents Panel</td><td>Available on every GitHub page</td></tr>
+      <tr><td>VS Code Chat</td><td>Ask Copilot to open a PR from your IDE</td></tr>
+      <tr><td>Security Campaigns</td><td>Assign security alerts to Copilot for automated fixes</td></tr>
+    </tbody>
+  </table>
+</section>
 
-  <!-- Capabilities -->
-  <div class="card wide" style="border-left-color: var(--color-data);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), transparent);">
-      <span class="card-icon">✅</span>
-      <h3>Cloud Agent Capabilities</h3>
-    </div>
-    <div class="card-body">
-      <p>What the cloud agent can do — and real-world use cases.</p>
-      <table class="ref-table">
-        <tr><th>Capability</th><th>Use Case</th></tr>
-        <tr><td>🐛 <strong>Fix bugs</strong></td><td>Assign a bug issue — Copilot reads logs, traces root cause, opens fix PR</td></tr>
-        <tr><td>✨ <strong>Features</strong></td><td>"Add dark mode toggle" — scaffolds UI, state, and tests</td></tr>
-        <tr><td>🧪 <strong>Test coverage</strong></td><td>"Write unit tests for auth/" — generates, runs, and fixes tests</td></tr>
-        <tr><td>🔬 <strong>Deep research</strong></td><td>Answer codebase questions requiring thorough investigation</td></tr>
-        <tr><td>📐 <strong>Implementation plans</strong></td><td>Generate plans and get approval before writing code</td></tr>
-        <tr><td>🔒 <strong>Security fixes</strong></td><td>Assign Dependabot/CodeQL alerts — patches vulnerabilities</td></tr>
-        <tr><td>🔄 <strong>Dependency upgrades</strong></td><td>"Upgrade React v18 → v19" — updates, fixes, and tests</td></tr>
-        <tr><td>🔀 <strong>Merge conflicts</strong></td><td><code>@copilot resolve</code> on conflicted PRs</td></tr>
-      </table>
-      <div class="callout callout-tip">
-        <strong>💡 New:</strong> Cloud agent now works on branches without creating a PR — iterate until you're ready for review.
-      </div>
-    </div>
-  </div>
-
-  <!-- Customizing Coding Agent -->
-  <div class="card" style="border-left-color: var(--color-control);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), transparent);">
-      <span class="card-icon">🎛️</span>
-      <h3>Customizing the Cloud Agent</h3>
-    </div>
-    <div class="card-body">
-      <p>Shape how the cloud agent behaves with layered customizations.</p>
-      <div class="mini-diagram">
-        <div class="pill-row">
-          <div class="pill arch-green"><span class="m-icon">📋</span> Instructions</div>
-          <div class="pill arch-cyan"><span class="m-icon">🔌</span> MCP</div>
-          <div class="pill arch-purple"><span class="m-icon">🤖</span> Agents</div>
-          <div class="pill arch-amber"><span class="m-icon">🪝</span> Hooks</div>
-          <div class="pill arch-pink"><span class="m-icon">⚡</span> Skills</div>
-          <div class="pill arch-blue"><span class="m-icon">🧠</span> Memory</div>
-        </div>
-        <div class="mini-label">All layers combine — the agent reads them on every run</div>
-      </div>
+<!-- Slide: Cloud vs Agent Mode -->
+<section data-background-color="#0d1117">
+  <h2>Cloud Agent vs. Agent Mode</h2>
+  <div class="comparison">
+    <div class="col" style="border-top: 3px solid var(--accent-blue);">
+      <h4 class="text-blue">☁️ Cloud Agent</h4>
       <ul>
-        <li>Custom instructions define build/test/validate rules</li>
-        <li>MCP servers give access to external data &amp; tools</li>
-        <li>Hooks automate quality gates at lifecycle events</li>
-        <li>Copilot Memory persists repo knowledge across sessions</li>
+        <li>Runs in GitHub Actions (cloud)</li>
+        <li>Opens PRs autonomously</li>
+        <li>Triggered from Issues / PR comments</li>
+        <li>Team-visible — full audit trail</li>
+        <li>Async — works in background</li>
+        <li>Deep research capabilities</li>
+      </ul>
+    </div>
+    <div class="col" style="border-top: 3px solid var(--accent-green);">
+      <h4 class="text-green">💻 Agent Mode</h4>
+      <ul>
+        <li>Runs in your local IDE</li>
+        <li>Edits files directly in editor</li>
+        <li>Triggered from Chat in VS Code</li>
+        <li>Personal — local changes only</li>
+        <li>Sync — real-time interaction</li>
+        <li>Access to entire workspace</li>
       </ul>
     </div>
   </div>
+</section>
 
-  <!-- Hooks -->
-  <div class="card" style="border-left-color: var(--color-control);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), transparent);">
-      <span class="card-icon">🪝</span>
-      <h3>Hooks <span class="badge badge-preview">PREVIEW</span></h3>
+<!-- Slide: Capabilities -->
+<section data-background-color="#0d1117">
+  <h2>Cloud Agent Capabilities</h2>
+  <div class="cap-grid">
+    <div class="cap-item">
+      <div class="cap-icon">🐛</div>
+      <div class="cap-text"><strong>Fix Bugs</strong>Reads logs, traces root cause, opens fix PR</div>
     </div>
-    <div class="card-body">
-      <p>Execute shell commands at key agent lifecycle points.</p>
-      <div class="code-block">
-        <div class="code-title">.github/hooks/format.json</div>
-        <pre><code>{
-  <span class="syn-kw">"hooks"</span>: {
-    <span class="syn-str">"PostToolUse"</span>: [{
-      <span class="syn-kw">"type"</span>: <span class="syn-str">"command"</span>,
-      <span class="syn-kw">"command"</span>: <span class="syn-str">"npx prettier --write \"$TOOL_INPUT_FILE_PATH\""</span>
+    <div class="cap-item">
+      <div class="cap-icon">✨</div>
+      <div class="cap-text"><strong>Build Features</strong>Scaffolds UI, state, and tests</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🧪</div>
+      <div class="cap-text"><strong>Test Coverage</strong>Generates, runs, and fixes tests</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🔬</div>
+      <div class="cap-text"><strong>Deep Research</strong>Thorough codebase investigation</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🔒</div>
+      <div class="cap-text"><strong>Security Fixes</strong>Patches Dependabot/CodeQL alerts</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🔄</div>
+      <div class="cap-text"><strong>Dependency Upgrades</strong>Updates, fixes breaking changes, tests</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">📐</div>
+      <div class="cap-text"><strong>Implementation Plans</strong>Generate plans before writing code</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🔀</div>
+      <div class="cap-text"><strong>Merge Conflicts</strong>Resolve conflicts via @copilot</div>
+    </div>
+  </div>
+  <div class="tip-box"><strong>💡 New:</strong> Cloud agent now works on branches without creating a PR — iterate until you're ready for review.</div>
+</section>
+
+<!-- Slide: Customizing + Hooks -->
+<section data-background-color="#0d1117">
+  <h2>Customizing the Cloud Agent</h2>
+  <div class="card-grid card-grid-2">
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 14px;">Customization Layers</h3>
+      <div class="flow" style="flex-direction: column; align-items: stretch; gap: 8px;">
+        <div class="flow-step" style="width:100%;">📋 Instructions — build/test/validate rules</div>
+        <div class="flow-step" style="width:100%;">🔌 MCP — external data & tools</div>
+        <div class="flow-step" style="width:100%;">🤖 Agents — specialized personas</div>
+        <div class="flow-step" style="width:100%;">🪝 Hooks — lifecycle automation</div>
+        <div class="flow-step" style="width:100%;">⚡ Skills — reusable workflows</div>
+        <div class="flow-step" style="width:100%;">🧠 Memory — persistent repo knowledge</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 14px;">Hooks <span class="badge badge-preview">Preview</span></h3>
+      <div class="file-path">.github/hooks/format.json</div>
+      <pre><code class="language-json">{
+  "hooks": {
+    "PostToolUse": [{
+      "type": "command",
+      "command": "npx prettier --write \"$TOOL_INPUT_FILE_PATH\""
     }]
   }
 }</code></pre>
-      </div>
-      <table class="ref-table">
-        <tr><th>Event</th><th>Use Case</th></tr>
-        <tr><td><code>SessionStart</code></td><td>Inject project context</td></tr>
-        <tr><td><code>PreToolUse</code></td><td>Block dangerous ops</td></tr>
-        <tr><td><code>PostToolUse</code></td><td>Run formatters / linters</td></tr>
-        <tr><td><code>Stop</code></td><td>Generate reports</td></tr>
+      <table style="margin-top: 10px;">
+        <thead><tr><th>Event</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td>SessionStart</td><td>Inject project context</td></tr>
+          <tr><td>PreToolUse</td><td>Block dangerous ops</td></tr>
+          <tr><td>PostToolUse</td><td>Run formatters/linters</td></tr>
+          <tr><td>Stop</td><td>Generate reports</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
+</section>
 
-  </div><!-- end section-group 4 -->
+<!-- ============================================ -->
+<!-- SECTION 5: MISSION CONTROL -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-pink">🎛️</div>
+    <h2 class="text-pink">Mission Control</h2>
+    <p class="section-number">Section 5 of 6</p>
+  </div>
+</section>
 
-  <!-- =================== SECTION 5: MISSION CONTROL =================== -->
-  <div class="section-group" data-section="5">
-  <div class="section-label"><h2>5 · 🎛️ Mission Control</h2></div>
-
-  <!-- Mission Control Overview -->
-  <div class="card wide" style="border-left-color: var(--color-reference);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), transparent);">
-      <span class="card-icon">🎛️</span>
-      <h3>Mission Control — Agents Dashboard <span class="badge badge-new">NEW</span></h3>
-    </div>
-    <div class="card-body">
-      <p>A centralized dashboard to manage, monitor, and track all your Copilot agent sessions across repos — visible on every GitHub page via the Agents panel.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow horizontal" style="justify-content: center; flex-wrap: wrap; row-gap: 8px;">
-          <div class="mini-node arch-blue" style="width: auto;"><span class="m-icon">📋</span> Create Tasks</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-purple" style="width: auto;"><span class="m-icon">🤖</span> Assign Agent</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-amber" style="width: auto;"><span class="m-icon">👁️</span> Monitor Progress</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-green" style="width: auto;"><span class="m-icon">✅</span> Review &amp; Merge</div>
-        </div>
-        <div class="mini-label">One dashboard for all agent sessions — local, background, and cloud</div>
-      </div>
+<!-- Slide: Agents Dashboard -->
+<section data-background-color="#0d1117">
+  <h2>Agents Dashboard <span class="badge badge-new">NEW</span></h2>
+  <p>Centralized dashboard to manage, monitor, and track all Copilot agent sessions.</p>
+  <div class="flow">
+    <div class="flow-step">📋 Create Tasks</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🤖 Assign Agent</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">👁️ Monitor Progress</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">✅ Review & Merge</div>
+  </div>
+  <div class="card-grid card-grid-2" style="margin-top: 24px;">
+    <div class="card">
+      <h4 class="text-pink">📊 Unified View</h4>
       <ul>
-        <li>The <strong>Agents tab</strong> appears on every GitHub repository page</li>
-        <li>Track active sessions with real-time status updates</li>
-        <li>View session logs, diffs, and implementation plans</li>
-        <li>Iterate with Copilot on a branch before creating a PR</li>
-        <li>Available in GitHub Mobile with native session logs</li>
+        <li>Agents tab on every GitHub repo page</li>
+        <li>Track active sessions with real-time status</li>
+        <li>View session logs, diffs, and plans</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 class="text-pink">📱 Mobile Ready</h4>
+      <ul>
+        <li>Available in GitHub Mobile</li>
+        <li>Native session logs</li>
+        <li>Iterate on branches before creating PR</li>
       </ul>
     </div>
   </div>
+</section>
 
-  <!-- Chat Customizations Editor -->
-  <div class="card" style="border-left-color: var(--color-basics);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), transparent);">
-      <span class="card-icon">🎨</span>
-      <h3>Chat Customizations Editor <span class="badge badge-preview">PREVIEW</span></h3>
-    </div>
-    <div class="card-body">
+<!-- Slide: Customizations Editor + Plugins -->
+<section data-background-color="#0d1117">
+  <h2>Chat Customizations & Plugins</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent-pink);">
+      <h4>🎨 Customizations Editor <span class="badge badge-preview">Preview</span></h4>
       <p>Centralized UI in VS Code for managing all chat customizations.</p>
-      <div class="mini-diagram">
-        <div class="pill-row">
-          <div class="pill arch-blue"><span class="m-icon">📋</span> Instructions</div>
-          <div class="pill arch-purple"><span class="m-icon">🤖</span> Agents</div>
-          <div class="pill arch-pink"><span class="m-icon">⚡</span> Skills</div>
-          <div class="pill arch-orange"><span class="m-icon">📝</span> Prompts</div>
-          <div class="pill arch-cyan"><span class="m-icon">🔌</span> MCP</div>
-          <div class="pill arch-amber"><span class="m-icon">🪝</span> Hooks</div>
-        </div>
-        <div class="mini-label">All customization types in one tabbed editor</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+        <span class="tag">📋 Instructions</span>
+        <span class="tag">🤖 Agents</span>
+        <span class="tag">⚡ Skills</span>
+        <span class="tag">📝 Prompts</span>
+        <span class="tag">🔌 MCP</span>
+        <span class="tag">🪝 Hooks</span>
       </div>
-      <ul>
-        <li>Open via <strong>Configure Chat ⚙️</strong> icon or Command Palette</li>
-        <li>Embedded code editor with syntax highlighting</li>
-        <li>Browse &amp; install MCP servers from marketplace</li>
-        <li>Browse &amp; install agent plugins</li>
-      </ul>
+      <p style="margin-top:10px;">Open via Configure Chat ⚙️ icon or Command Palette</p>
     </div>
-  </div>
-
-  <!-- Agent Plugins -->
-  <div class="card" style="border-left-color: var(--color-examples);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(249,115,22,0.15), transparent);">
-      <span class="card-icon">🔖</span>
-      <h3>Agent Plugins <span class="badge badge-preview">PREVIEW</span></h3>
-    </div>
-    <div class="card-body">
+    <div class="card" style="border-top: 3px solid var(--accent-purple);">
+      <h4>🔖 Agent Plugins <span class="badge badge-preview">Preview</span></h4>
       <p>Pre-packaged bundles of customizations from plugin marketplaces.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-orange"><span class="m-icon">📦</span> Install 1 Plugin</div>
+      <div class="flow" style="flex-direction: column; gap: 4px; margin-top: 10px;">
+        <div class="flow-step" style="width:100%; padding: 8px 12px;">📦 Install 1 Plugin</div>
+        <div style="text-align:center; color: var(--text-secondary); font-size:0.7em;">↓ Includes everything</div>
+        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+          <span class="tag">🤖 Agents</span>
+          <span class="tag">⚡ Skills</span>
+          <span class="tag">🔌 MCP</span>
+          <span class="tag">🪝 Hooks</span>
         </div>
-        <div style="text-align: center; margin: 4px 0;"><span class="mini-arrow" style="font-size: 16px;">↓</span></div>
-        <div class="pill-row">
-          <div class="pill arch-purple"><span class="m-icon">🤖</span> Agents</div>
-          <div class="pill arch-pink"><span class="m-icon">⚡</span> Skills</div>
-          <div class="pill arch-cyan"><span class="m-icon">🔌</span> MCP</div>
-          <div class="pill arch-amber"><span class="m-icon">🪝</span> Hooks</div>
-          <div class="pill arch-blue"><span class="m-icon">⌨️</span> Commands</div>
-        </div>
-        <div class="mini-label">One install → everything you need</div>
-      </div>
-      <ul>
-        <li>Single plugin provides agents, skills, MCP, hooks, commands</li>
-        <li>Install from the plugin marketplace</li>
-        <li>Extend Copilot's capabilities instantly</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- Debugging -->
-  <div class="card" style="border-left-color: var(--color-control);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), transparent);">
-      <span class="card-icon">🔍</span>
-      <h3>Debugging &amp; Troubleshooting</h3>
-    </div>
-    <div class="card-body">
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-amber"><span class="m-icon">❓</span> Customization not working?</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-blue"><span class="m-icon">📝</span> Open Agent Debug Logs</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">🔍</span> Check rules &amp; file paths</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">✅</span> Fix &amp; verify</div>
-        </div>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Agent Debug Logs</code>
-        <span class="kv-desc">Chat menu (…) → Show Agent Debug Logs</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Chat Debug View</code>
-        <span class="kv-desc">Inspect raw system prompt, context, and tool payloads</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Monorepo support</code>
-        <span class="kv-desc">Enable <code>chat.useCustomizationsInParentRepositories</code></span>
       </div>
     </div>
   </div>
+</section>
 
-  </div><!-- end section-group 5 -->
-
-  <!-- =================== SECTION 6: CODE REVIEW AGENT =================== -->
-  <div class="section-group" data-section="6">
-  <div class="section-label"><h2>6 · 👁️ Code Review Agent</h2></div>
-
-  <!-- Code Review Overview -->
-  <div class="card wide" style="border-left-color: var(--color-functions);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(236,72,153,0.15), transparent);">
-      <span class="card-icon">👁️</span>
-      <h3>Copilot Code Review <span class="badge badge-ga">GA</span></h3>
+<!-- Slide: Debugging -->
+<section data-background-color="#0d1117">
+  <h2>Debugging & Troubleshooting</h2>
+  <p>When customizations aren't working as expected:</p>
+  <div class="flow" style="margin: 24px 0;">
+    <div class="flow-step">❓ Not Working?</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">📝 Agent Debug Logs</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🔍 Check Rules & Paths</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">✅ Fix & Verify</div>
+  </div>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4 class="text-pink">📝 Agent Debug Logs</h4>
+      <p>Chat menu (…) → Show Agent Debug Logs</p>
     </div>
-    <div class="card-body">
-      <p>AI-powered code review with inline suggestions and one-click fixes on every pull request.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow horizontal" style="justify-content: center; flex-wrap: wrap; row-gap: 8px;">
-          <div class="mini-node arch-blue" style="width: auto;"><span class="m-icon">🔀</span> Open PR</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-purple" style="width: auto;"><span class="m-icon">🤖</span> Copilot Reviews</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-amber" style="width: auto;"><span class="m-icon">💬</span> Inline Comments</div>
-          <span class="mini-arrow">→</span>
-          <div class="mini-node arch-green" style="width: auto;"><span class="m-icon">✅</span> One-Click Fix</div>
-        </div>
-        <div class="mini-label">Automatic or manual — surfaces issues, never blocks merging</div>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Request review</code>
-        <span class="kv-desc">Select "Copilot" from the Reviewers menu on any PR</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Automatic reviews</code>
-        <span class="kv-desc">Configure via repository rulesets for all PRs</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Suggested changes</code>
-        <span class="kv-desc">Apply fixes with one click or batch commit</span>
-      </div>
-      <div class="kv-row">
-        <code class="kv-key">Implement suggestion</code>
-        <span class="kv-desc">Invoke cloud agent to apply complex multi-file fixes</span>
-      </div>
-      <div class="callout callout-info">
-        <strong>📌 Note:</strong> Copilot leaves "Comment" reviews — it never "Approves" or "Requests changes" and won't block merging.
-      </div>
+    <div class="card">
+      <h4 class="text-pink">🔍 Chat Debug View</h4>
+      <p>Inspect raw system prompt, context, and tool payloads</p>
+    </div>
+    <div class="card">
+      <h4 class="text-pink">📁 Monorepo Support</h4>
+      <p>Enable <code>chat.useCustomizationsInParentRepositories</code></p>
     </div>
   </div>
+</section>
 
-  <!-- Review Types -->
-  <div class="card" style="border-left-color: var(--color-syntax);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), transparent);">
-      <span class="card-icon">🔍</span>
-      <h3>Review Types</h3>
+<!-- ============================================ -->
+<!-- SECTION 6: CODE REVIEW AGENT -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="section-title">
+    <div class="section-icon text-cyan">👁️</div>
+    <h2 class="text-cyan">Code Review Agent</h2>
+    <p class="section-number">Section 6 of 6</p>
+  </div>
+</section>
+
+<!-- Slide: Code Review GA -->
+<section data-background-color="#0d1117">
+  <h2>Copilot Code Review <span class="badge badge-ga">GA</span></h2>
+  <p>AI-powered code review with inline suggestions and one-click fixes on every PR.</p>
+  <div class="flow">
+    <div class="flow-step">🔀 Open PR</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">🤖 Copilot Reviews</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">💬 Inline Comments</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color: var(--accent-green); border-width: 2px;">✅ One-Click Fix</div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top: 24px;">
+    <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+      <h4>👤 Manual Review</h4>
+      <p>Add Copilot as a reviewer on any PR — feedback on demand</p>
     </div>
-    <div class="card-body">
-      <table class="ref-table">
-        <tr><th>Type</th><th>How It Works</th></tr>
-        <tr><td>👤 <strong>Manual review</strong></td><td>Add Copilot as a reviewer on any PR — get feedback on demand</td></tr>
-        <tr><td>⚡ <strong>Automatic review</strong></td><td>Configure via repo rulesets — Copilot reviews every PR automatically</td></tr>
-        <tr><td>🎯 <strong>Targeted review</strong></td><td>Select specific lines/files for Copilot to focus on</td></tr>
-      </table>
-      <div class="callout callout-tip">
-        <strong>💡 Tip:</strong> Combine automatic Copilot reviews with human reviewers for comprehensive coverage.
-      </div>
+    <div class="card" style="border-left: 3px solid var(--accent-purple);">
+      <h4>⚡ Automatic Review</h4>
+      <p>Configure via repo rulesets — Copilot reviews every PR</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--accent-green);">
+      <h4>🎯 Targeted Review</h4>
+      <p>Select specific lines/files for Copilot to focus on</p>
     </div>
   </div>
+  <div class="note-box"><strong>📌 Note:</strong> Copilot leaves "Comment" reviews — it never "Approves" or "Requests changes" and won't block merging.</div>
+</section>
 
-  <!-- Review Customization -->
-  <div class="card" style="border-left-color: var(--color-data);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), transparent);">
-      <span class="card-icon">🎛️</span>
-      <h3>Customizing Code Review</h3>
-    </div>
-    <div class="card-body">
-      <p>Shape what Copilot looks for during code review using custom instructions.</p>
-      <div class="code-block">
-        <div class="code-title">Review-specific instructions in copilot-instructions.md</div>
-        <pre><code><span class="syn-cmt">## Code Review Guidelines</span>
+<!-- Slide: Customizing Review + Fix -->
+<section data-background-color="#0d1117">
+  <h2>Customizing & Acting on Reviews</h2>
+  <div class="card-grid card-grid-2">
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 12px;">🎛️ Custom Review Rules</h3>
+      <div class="file-path">copilot-instructions.md</div>
+      <pre><code class="language-markdown">## Code Review Guidelines
 
-- Flag any use of <span class="syn-kw">any</span> type in TypeScript
+- Flag any use of `any` type in TypeScript
 - Ensure all API endpoints have input validation
 - Check for missing error handling in async code
 - Verify test coverage for new functions
 - Flag hardcoded secrets or credentials</code></pre>
+    </div>
+    <div>
+      <h3 style="font-size:0.82em; margin-bottom: 12px;">🔧 From Review to Fix</h3>
+      <div class="flow" style="flex-direction: column; gap: 8px; margin-top: 0;">
+        <div class="flow-step" style="width:100%; text-align:left;">💬 Copilot leaves review comment</div>
+        <div class="flow-step" style="width:100%; text-align:left;">✏️ Simple fix → <strong class="text-green">one-click apply</strong></div>
+        <div class="flow-step" style="width:100%; text-align:left;">🤖 Complex fix → <strong class="text-orange">invoke cloud agent</strong></div>
+        <div class="flow-step" style="width:100%; text-align:left; border-color: var(--accent-green); border-width: 2px;">✅ Changes committed to PR</div>
       </div>
-      <ul>
-        <li>Add review-specific rules to <code>copilot-instructions.md</code></li>
-        <li>Copilot follows your coding standards during reviews</li>
-        <li>Works with both manual and automatic reviews</li>
+      <ul style="margin-top: 12px;">
+        <li>Batch commit all suggestions at once</li>
+        <li>Security campaigns for CodeQL/Dependabot</li>
       </ul>
     </div>
   </div>
+</section>
 
-  <!-- Implement Suggestions -->
-  <div class="card" style="border-left-color: var(--color-examples);">
-    <div class="card-header" style="background: linear-gradient(135deg, rgba(249,115,22,0.15), transparent);">
-      <span class="card-icon">🔧</span>
-      <h3>From Review to Fix</h3>
+<!-- ============================================ -->
+<!-- SLIDE: THANK YOU / Q&A -->
+<!-- ============================================ -->
+<section data-background-color="#0d1117">
+  <div class="qna-slide">
+    <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
+    <h1>Thank You!</h1>
+    <p style="font-size: 1em; color: var(--text-secondary); margin: 20px 0 10px; text-align:center;">Questions? Let's discuss.</p>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top: 30px; flex-wrap:wrap;">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-linkedin" style="font-size:1.4em;"></i> Sukumar P</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" style="text-decoration:none; color:var(--accent-red); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-youtube" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" style="text-decoration:none; color:var(--accent-pink); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-instagram" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://wa.me/message/tec_in_sec" target="_blank" style="text-decoration:none; color:var(--accent-green); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-whatsapp" style="font-size:1.4em;"></i> tec_in_sec</a>
     </div>
-    <div class="card-body">
-      <p>Seamlessly go from review comments to implemented fixes.</p>
-      <div class="mini-diagram">
-        <div class="mini-flow">
-          <div class="mini-node arch-orange"><span class="m-icon">💬</span> Copilot leaves review comment</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-blue"><span class="m-icon">✏️</span> Simple fix → one-click apply</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-purple"><span class="m-icon">🤖</span> Complex fix → invoke cloud agent</div>
-          <span class="mini-arrow">↓</span>
-          <div class="mini-node arch-green"><span class="m-icon">✅</span> Changes committed to PR</div>
-        </div>
-        <div class="mini-label">One-click fixes for simple issues, agent for complex multi-file changes</div>
-      </div>
-      <ul>
-        <li><strong>Suggested changes</strong> — apply inline with one click</li>
-        <li><strong>Batch commit</strong> — apply all suggestions at once</li>
-        <li><strong>Implement suggestion</strong> — trigger cloud agent for multi-file fixes</li>
-        <li><strong>Security campaigns</strong> — assign CodeQL/Dependabot alerts to Copilot</li>
-      </ul>
-    </div>
+    <p style="font-size: 0.62em; color: var(--text-secondary); margin-top: 30px; text-align:center;">
+      Sources: <a href="https://docs.github.com/en/copilot" style="color:var(--accent-blue);">GitHub Copilot Docs</a> ·
+      <a href="https://code.visualstudio.com/docs/copilot/copilot-customization" style="color:var(--accent-blue);">VS Code Customization</a> ·
+      <a href="https://github.blog/changelog/" style="color:var(--accent-blue);">GitHub Changelog</a>
+    </p>
+    <p style="font-size: 0.58em; color: var(--text-secondary); margin-top: 6px; text-align:center;">
+      Created by Sukumar P · Built with GitHub Copilot · April 2026
+    </p>
   </div>
+</section>
 
-  </div><!-- end section-group 6 -->
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
 
-</main>
+<!-- Persistent tec_in_sec footer -->
+<div class="persistent-footer">
+  <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+  <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+  <a href="https://wa.me/message/tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+  <div class="sep"></div>
+  <span class="handle">tec_in_sec</span>
+  <div class="sep"></div>
+  <span class="follow-text">Follow for more updates</span>
+</div>
 
-<footer>
-  <div class="footer-sources">
-    Sources:
-    <a href="https://docs.github.com/en/copilot" target="_blank">GitHub Copilot Docs</a> ·
-    <a href="https://code.visualstudio.com/docs/copilot/copilot-customization" target="_blank">VS Code Customization</a> ·
-    <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents" target="_blank">Custom Agents</a> ·
-    <a href="https://github.blog/changelog/" target="_blank">GitHub Changelog</a>
-  </div>
-  <div style="margin-top: 8px;">Created by <strong>Sukumar P</strong> · <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" style="color: #60A5FA;">LinkedIn</a> · Built with GitHub Copilot · April 6, 2026</div>
-</footer>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/highlight/highlight.min.js"></script>
 <script>
-  // Theme toggle
-  function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-  }
-
-  // Section filtering
-  function filterSection(section) {
-    // Update active state on agenda items
-    document.querySelectorAll('.agenda-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.section === section);
-    });
-
-    // Show/hide section groups
-    const groups = document.querySelectorAll('.section-group');
-    groups.forEach(group => {
-      if (section === 'all') {
-        group.classList.remove('hidden');
-      } else {
-        group.classList.toggle('hidden', group.dataset.section !== section);
-      }
-    });
-
-    // Re-trigger animations on visible cards
-    const visibleCards = document.querySelectorAll('.section-group:not(.hidden) .card');
-    visibleCards.forEach((el, i) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.animation = 'none';
-      requestAnimationFrame(() => {
-        const delay = 0.06 * (i % 6);
-        el.style.animation = `fadeInUp 0.5s ease ${delay}s both`;
-      });
-    });
-
-    // Scroll to grid on mobile if a section is clicked
-    if (section !== 'all' && window.innerWidth <= 900) {
-      const grid = document.querySelector('.grid');
-      if (grid) {
-        setTimeout(() => grid.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-      }
-    }
-  }
-
-  // Scroll-triggered card animations via IntersectionObserver
-  const allAnimated = document.querySelectorAll('.card, .section-label');
-
-  // Set initial state: hidden, waiting to animate
-  allAnimated.forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(24px)';
-    el.style.animation = 'none';
-  });
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const idx = Array.from(allAnimated).indexOf(el);
-        const delay = 0.06 * (idx % 6);
-        el.style.animation = `fadeInUp 0.5s ease ${delay}s both`;
-        observer.unobserve(el);
-      }
-    });
-  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
-
-  allAnimated.forEach(el => observer.observe(el));
-
-  // Copy buttons for code blocks
-  document.querySelectorAll('pre').forEach(pre => {
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = '📋 Copy';
-    btn.addEventListener('click', () => {
-      const code = pre.querySelector('code') || pre;
-      navigator.clipboard.writeText(code.textContent).then(() => {
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => btn.textContent = '📋 Copy', 2000);
-      });
-    });
-    pre.style.position = 'relative';
-    pre.appendChild(btn);
+  Reveal.initialize({
+    hash: true,
+    history: true,
+    center: true,
+    width: 1920,
+    height: 1080,
+    margin: 0.02,
+    minScale: 0.2,
+    maxScale: 2.0,
+    transition: 'slide',
+    transitionSpeed: 'default',
+    backgroundTransition: 'fade',
+    slideNumber: 'c/t',
+    showSlideNumber: 'all',
+    controls: true,
+    controlsTutorial: true,
+    progress: true,
+    loop: false,
+    autoPlayMedia: true,
+    plugins: [RevealHighlight]
   });
 </script>
-
 </body>
 </html>
