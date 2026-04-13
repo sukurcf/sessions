@@ -498,44 +498,57 @@
       </section>
 
       <!-- ============================================ -->
-      <!-- SLIDE 5: SKILLS — Format & Usage -->
+      <!-- SLIDE 5: CUSTOM AGENTS — .agent.md -->
       <!-- ============================================ -->
       <section data-background-color="#0d1117">
-        <h2><span class="text-purple"><i class="fas fa-file-code"></i></span> Skills — SKILL.md Format</h2>
+        <h2><span class="text-green"><i class="fas fa-robot"></i></span> Custom Agents <span class="badge badge-ga">GA</span></h2>
+        <p style="margin-bottom:14px;">Define specialized chat participants with <code>.agent.md</code> &mdash; custom tools, models &amp; instructions</p>
 
-        <div class="comparison">
+        <div class="comparison" style="margin-bottom:12px;">
           <div class="col">
-            <h4 class="text-cyan">📝 SKILL.md Structure</h4>
+            <h4 class="text-cyan">&#x1F4C4; .agent.md Structure</h4>
             <div class="code-block" style="font-size:0.55em; margin-top:6px;">
 ---
-name: webapp-testing
-description: "When to use + what it does"
-argument-hint: "[test file]"
-user-invocable: true
+name: reviewer
+description: "Code review specialist"
+tools: [read_file, grep_search, get_errors]
+model: claude-sonnet-4
 ---
 # Instructions
-Step-by-step procedures…
-[template](./test-template.js)
+Review code for bugs, security issues...
+Focus on OWASP Top 10 compliance.
             </div>
           </div>
           <div class="col">
-            <h4 class="text-green">⚡ How to Use</h4>
+            <h4 class="text-green">&#x26A1; Key Capabilities</h4>
             <ul>
-              <li>Type <code>/skill-name</code> as slash command</li>
-              <li>Agent auto-loads when task matches</li>
-              <li><code>/create-skill</code> to generate with AI</li>
-              <li>Extract from conversation context</li>
-            </ul>
-            <h4 class="text-orange" style="margin-top:10px;">🔄 Skills vs Instructions</h4>
-            <ul>
-              <li><strong>Skills:</strong> Cross-agent, on-demand, portable</li>
-              <li><strong>Instructions:</strong> VS Code &amp; GitHub.com, always-on</li>
+              <li>Invoke via <code>@agent-name</code> in chat</li>
+              <li>Restrict available tools per agent</li>
+              <li>Choose model per agent (GPT-4o, Claude, etc.)</li>
+              <li>Include custom system instructions</li>
+              <li>Agent-specific MCP server access</li>
+              <li>Nest agents with subagent delegation</li>
             </ul>
           </div>
         </div>
 
-        <div class="note-box">
-          <strong>📌 Open Standard:</strong> Built on <strong>agentskills.io</strong> — works across VS Code, Copilot CLI, and Copilot coding agent
+        <div class="cap-grid" style="margin-bottom:0;">
+          <div class="cap-item">
+            <div class="cap-icon text-blue">&#x1F4C2;</div>
+            <div class="cap-text"><strong>Workspace Agents</strong><br><code>.github/agents/</code> &middot; <code>.agents/</code> &mdash; shared with team</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-orange">&#x1F464;</div>
+            <div class="cap-text"><strong>Personal Agents</strong><br><code>~/.copilot/agents/</code> &mdash; your private agents</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-purple">&#x1F50C;</div>
+            <div class="cap-text"><strong>Plugin Agents</strong><br>Bundled in agent plugins for easy distribution</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-green">&#x1F9EA;</div>
+            <div class="cap-text"><strong>Extension Agents</strong><br>Via <code>chatAgents</code> contribution point in VS Code extensions</div>
+          </div>
         </div>
       </section>
 
@@ -770,61 +783,6 @@ Step-by-step procedures…
               <li>Only loads when matching files are in context</li>
               <li>Supports front-matter in <code>.instructions.md</code></li>
             </ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================ -->
-      <!-- SLIDE 11: CUSTOM AGENTS — .agent.md -->
-      <!-- ============================================ -->
-      <section data-background-color="#0d1117">
-        <h2><span class="text-green"><i class="fas fa-robot"></i></span> Custom Agents <span class="badge badge-ga">GA</span></h2>
-        <p style="margin-bottom:14px;">Define specialized chat participants with <code>.agent.md</code> &mdash; custom tools, models &amp; instructions</p>
-
-        <div class="comparison" style="margin-bottom:12px;">
-          <div class="col">
-            <h4 class="text-cyan">&#x1F4C4; .agent.md Structure</h4>
-            <div class="code-block" style="font-size:0.55em; margin-top:6px;">
----
-name: reviewer
-description: "Code review specialist"
-tools: [read_file, grep_search, get_errors]
-model: claude-sonnet-4
----
-# Instructions
-Review code for bugs, security issues...
-Focus on OWASP Top 10 compliance.
-            </div>
-          </div>
-          <div class="col">
-            <h4 class="text-green">&#x26A1; Key Capabilities</h4>
-            <ul>
-              <li>Invoke via <code>@agent-name</code> in chat</li>
-              <li>Restrict available tools per agent</li>
-              <li>Choose model per agent (GPT-4o, Claude, etc.)</li>
-              <li>Include custom system instructions</li>
-              <li>Agent-specific MCP server access</li>
-              <li>Nest agents with subagent delegation</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="cap-grid" style="margin-bottom:0;">
-          <div class="cap-item">
-            <div class="cap-icon text-blue">&#x1F4C2;</div>
-            <div class="cap-text"><strong>Workspace Agents</strong><br><code>.github/agents/</code> &middot; <code>.agents/</code> &mdash; shared with team</div>
-          </div>
-          <div class="cap-item">
-            <div class="cap-icon text-orange">&#x1F464;</div>
-            <div class="cap-text"><strong>Personal Agents</strong><br><code>~/.copilot/agents/</code> &mdash; your private agents</div>
-          </div>
-          <div class="cap-item">
-            <div class="cap-icon text-purple">&#x1F50C;</div>
-            <div class="cap-text"><strong>Plugin Agents</strong><br>Bundled in agent plugins for easy distribution</div>
-          </div>
-          <div class="cap-item">
-            <div class="cap-icon text-green">&#x1F9EA;</div>
-            <div class="cap-text"><strong>Extension Agents</strong><br>Via <code>chatAgents</code> contribution point in VS Code extensions</div>
           </div>
         </div>
       </section>
