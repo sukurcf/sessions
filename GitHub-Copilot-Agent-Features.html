@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d1117">
+  <title>GitHub Copilot — Advanced Agent Features</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-card: #1c2128;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --accent-blue: #58a6ff;
+      --accent-purple: #a78bfa;
+      --accent-green: #3fb950;
+      --accent-orange: #f0883e;
+      --accent-pink: #f778ba;
+      --accent-cyan: #79c0ff;
+      --accent-red: #f85149;
+      --border: #30363d;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .reveal {
+      font-family: 'Figtree', sans-serif;
+      font-size: 22px;
+      color: var(--text-primary);
+    }
+
+    .reveal .slides section {
+      padding: 24px 36px;
+      text-align: center;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow-y: auto;
+      scrollbar-width: none;
+      background: var(--bg-primary);
+    }
+
+    .reveal .slides section::-webkit-scrollbar { display: none; }
+
+    /* Typography */
+    .reveal h1 { font-size: 1.8em; font-weight: 800; margin-bottom: 12px; line-height: 1.2; text-wrap: balance; }
+    .reveal h2 { font-size: 1.35em; font-weight: 800; margin-bottom: 14px; line-height: 1.2; text-wrap: balance; }
+    .reveal h3 { font-size: 0.95em; font-weight: 700; margin-bottom: 10px; }
+    .reveal h4 { font-size: 0.78em; font-weight: 700; margin-bottom: 6px; }
+    .reveal p { font-size: 0.72em; line-height: 1.5; color: var(--text-secondary); }
+    .reveal ul, .reveal ol { font-size: 0.72em; line-height: 1.5; text-align: left; }
+    .reveal li { margin-bottom: 4px; }
+    .reveal code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; }
+
+    /* Color utilities */
+    .text-blue { color: var(--accent-blue); }
+    .text-purple { color: var(--accent-purple); }
+    .text-green { color: var(--accent-green); }
+    .text-orange { color: var(--accent-orange); }
+    .text-pink { color: var(--accent-pink); }
+    .text-cyan { color: var(--accent-cyan); }
+    .text-red { color: var(--accent-red); }
+
+    /* Card Grids */
+    .card-grid { display: grid; gap: 12px; width: 100%; }
+    .card-grid-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+      transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .card h4 { font-size: 0.78em; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
+    .card p { font-size: 0.62em; line-height: 1.45; color: var(--text-secondary); margin: 0; }
+    .card ul { font-size: 0.62em; line-height: 1.45; color: var(--text-secondary); margin: 0; padding-left: 14px; }
+    .card li { margin-bottom: 2px; }
+
+    /* Flow Diagrams */
+    .flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+    .flow-step {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.65em;
+      font-weight: 600;
+      text-align: center;
+      min-width: 100px;
+    }
+    .flow-arrow { font-size: 1.2em; color: var(--text-secondary); }
+
+    /* Comparison */
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+    .col {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+    }
+    .col h4 { font-size: 0.78em; margin-bottom: 8px; }
+    .col ul { font-size: 0.62em; padding-left: 14px; color: var(--text-secondary); }
+    .col li { margin-bottom: 3px; }
+
+    /* Capability Grid */
+    .cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    .cap-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .cap-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      overflow: hidden;
+    }
+    .cap-icon {
+      font-size: 0.95em;
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .cap-text { font-size: 0.62em; text-align: left; color: var(--text-secondary); line-height: 1.4; }
+    .cap-text strong { color: var(--text-primary); font-weight: 600; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 0.5em;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .badge-ga { background: rgba(63,185,80,0.15); color: var(--accent-green); }
+    .badge-preview { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+    .badge-experimental { background: rgba(240,136,62,0.15); color: var(--accent-orange); }
+
+    /* Tip/Note/Warn Boxes */
+    .tip-box, .note-box, .warn-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.62em;
+      text-align: left;
+      width: 100%;
+      margin-top: 10px;
+      color: var(--text-secondary);
+    }
+    .tip-box { border-color: var(--accent-green); }
+    .note-box { border-color: var(--accent-blue); }
+    .warn-box { border-color: var(--accent-orange); }
+
+    /* Tables */
+    .reveal table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.6em;
+      margin-top: 8px;
+    }
+    .reveal table th {
+      background: var(--bg-secondary);
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border);
+    }
+    .reveal table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      text-align: left;
+    }
+    .reveal table tr:hover td { background: rgba(88,166,255,0.05); }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      font-size: 0.55em;
+      padding: 2px 10px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      margin: 2px;
+    }
+
+    /* Section divider slides */
+    .section-divider {
+      justify-content: center !important;
+      height: 100%;
+    }
+    .section-divider .section-icon {
+      font-size: 1.1em;
+      width: 60px;
+      height: 60px;
+      min-width: 60px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border-radius: 16px;
+      margin-bottom: 16px;
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+
+    /* Title slide gradient */
+    .title-gradient {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientShift 4s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(88,166,255,0.3)); }
+      50% { filter: drop-shadow(0 0 12px rgba(88,166,255,0.6)); }
+    }
+
+    /* Progress bar glow */
+    .reveal .progress span {
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    }
+
+    /* Subtitle */
+    .subtitle { font-size: 0.72em; color: var(--text-secondary); margin-top: 4px; }
+
+    /* Slide number styling */
+    .reveal .slide-number { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+
+    /* Auto-play progress bar */
+    .reveal .progress { height: 4px; }
+
+    /* Code block in card */
+    .code-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58em;
+      text-align: left;
+      overflow-x: auto;
+      color: var(--accent-cyan);
+      width: 100%;
+      margin-top: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Focus states for accessibility */
+    a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
+    .reveal .controls button:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+
+    /* Stat number */
+    .stat-number { font-size: 2.2em; font-weight: 900; line-height: 1.1; }
+
+    /* Responsive fallbacks */
+    @media (max-width: 1024px) {
+      .card-grid-3 { grid-template-columns: 1fr 1fr; }
+      .card-grid-4 { grid-template-columns: 1fr 1fr; }
+      .comparison { grid-template-columns: 1fr; }
+      .flow { flex-wrap: wrap; justify-content: center; }
+    }
+    @media (max-width: 640px) {
+      .card-grid-2, .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
+      .cap-grid, .cap-grid-3 { grid-template-columns: 1fr; }
+      .reveal .slides section { padding: 16px 20px; }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Persistent QR corner */
+    .qr-corner {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      pointer-events: auto;
+      opacity: 0.88;
+      transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .qr-corner:hover { opacity: 1; }
+    .qr-corner img {
+      width: 112px;
+      height: 112px;
+      border-radius: 6px;
+      background: #fff;
+      padding: 3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .qr-corner span {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-family: 'Figtree', sans-serif;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="qr-corner">
+      <img src="qr-cs.png" alt="Scan to know more">
+      <span>Scan to know more</span>
+    </div>
+    <div class="slides">
+
+      <!-- ============================================ -->
+      <!-- SLIDE 1: TITLE -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+          <h1><span class="title-gradient">GitHub Copilot</span></h1>
+          <h2 style="font-weight:400; color:var(--text-secondary); font-size:0.9em; margin-top:0;">Advanced Agent Features</h2>
+          <div style="display:flex; gap:8px; margin-top:20px; flex-wrap:wrap; justify-content:center;">
+            <span class="tag">MCP</span>
+            <span class="tag">Skills</span>
+            <span class="tag">Orchestration</span>
+            <span class="tag">Permissions</span>
+            <span class="tag">Instructions</span>
+            <span class="tag">Custom Agents</span>
+            <span class="tag">Hooks</span>
+            <span class="tag">Debug Logs</span>
+            <span class="tag">Plugins</span>
+          </div>
+          <p style="margin-top:20px; font-size:0.6em; color:var(--text-secondary);">April 2026 · Auto-advancing every 5 seconds</p>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 2: MCP — What Is It -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-blue"><i class="fas fa-plug"></i></span> MCP — Model Context Protocol <span class="badge badge-ga">GA</span></h2>
+        <p style="margin-bottom:14px;">An open standard connecting AI models to external tools and data sources</p>
+
+        <div class="flow" style="margin-bottom:14px;">
+          <div class="flow-step" style="border-color: var(--accent-blue);"><i class="fas fa-user"></i> User Prompt</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent-purple);"><i class="fas fa-brain"></i> Copilot Agent</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent-green);"><i class="fas fa-server"></i> MCP Server</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent-orange);"><i class="fas fa-database"></i> Tools &amp; Data</div>
+        </div>
+
+        <div class="card-grid card-grid-4" style="margin-top:4px;">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-blue">🔧 Tools</h4>
+            <p>Perform actions — file ops, DB queries, API calls</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-green">📄 Resources</h4>
+            <p>Read-only data context from servers</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">💬 Prompts</h4>
+            <p>Preconfigured prompt templates</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-orange">🖼️ MCP Apps</h4>
+            <p>Interactive UI in chat</p>
+          </div>
+        </div>
+
+        <div class="tip-box" style="margin-top:10px;">
+          <strong>💡 Transports:</strong> <code>stdio</code> for local servers · <code>http</code> (Streamable HTTP) for remote servers
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 3: MCP — Configuration -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-blue"><i class="fas fa-gear"></i></span> MCP — Setup &amp; Servers</h2>
+
+        <div class="comparison" style="margin-bottom:10px;">
+          <div class="col">
+            <h4 class="text-cyan">📁 Configuration Locations</h4>
+            <ul>
+              <li><strong>Workspace:</strong> <code>.vscode/mcp.json</code></li>
+              <li><strong>User:</strong> <code>MCP: Open User Configuration</code></li>
+              <li><strong>Extensions:</strong> Search <code>@mcp</code> in gallery</li>
+              <li><strong>CLI:</strong> Install from command line</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h4 class="text-green">🌐 Popular MCP Servers</h4>
+            <ul>
+              <li><strong>GitHub:</strong> Issues, PRs, repos, search</li>
+              <li><strong>Playwright:</strong> Browser automation &amp; testing</li>
+              <li><strong>Fetch:</strong> Web content retrieval</li>
+              <li><strong>Custom:</strong> Build your own with any language</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-block">
+<span style="color:var(--text-secondary);">// .vscode/mcp.json</span>
+{
+  "<span style="color:var(--accent-blue);">servers</span>": {
+    "<span style="color:var(--accent-green);">github</span>": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp"
+    },
+    "<span style="color:var(--accent-purple);">playwright</span>": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@microsoft/mcp-server-playwright"]
+    }
+  }
+}
+        </div>
+
+        <div class="note-box">
+          <strong>📌 Enterprise:</strong> Central management via GitHub policies · Settings Sync across devices · Secure secrets store for API keys
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 4: SKILLS — What Are They -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-purple"><i class="fas fa-wand-magic-sparkles"></i></span> Agent Skills <span class="badge badge-ga">GA</span></h2>
+        <p style="margin-bottom:14px;">Portable, on-demand capability packs that extend what Copilot can do</p>
+
+        <div class="flow" style="margin-bottom:14px;">
+          <div class="flow-step" style="border-color: var(--accent-purple);">📋 Discovery<br><span style="font-size:0.8em; color:var(--text-secondary);">Reads name + desc only</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent-blue);">📖 Instructions<br><span style="font-size:0.8em; color:var(--text-secondary);">Full SKILL.md body loads</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent-green);">🗂️ Resources<br><span style="font-size:0.8em; color:var(--text-secondary);">Scripts &amp; files on demand</span></div>
+        </div>
+
+        <div class="card-grid card-grid-3">
+          <div class="card">
+            <h4 class="text-blue">📂 Project Skills</h4>
+            <p><code>.github/skills/</code><br><code>.agents/skills/</code><br><code>.claude/skills/</code></p>
+          </div>
+          <div class="card">
+            <h4 class="text-orange">👤 Personal Skills</h4>
+            <p><code>~/.copilot/skills/</code><br><code>~/.agents/skills/</code><br><code>~/.claude/skills/</code></p>
+          </div>
+          <div class="card">
+            <h4 class="text-green">🧩 Extension &amp; Plugin</h4>
+            <p>Via <code>chatSkills</code> contribution point or bundled in agent plugins</p>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <strong>💡 Zero-cost install:</strong> Many skills can be installed without consuming context — only matched skills load their full instructions.
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 5: SKILLS — Format & Usage -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-purple"><i class="fas fa-file-code"></i></span> Skills — SKILL.md Format</h2>
+
+        <div class="comparison">
+          <div class="col">
+            <h4 class="text-cyan">📝 SKILL.md Structure</h4>
+            <div class="code-block" style="font-size:0.55em; margin-top:6px;">
+---
+name: webapp-testing
+description: "When to use + what it does"
+argument-hint: "[test file]"
+user-invocable: true
+---
+# Instructions
+Step-by-step procedures…
+[template](./test-template.js)
+            </div>
+          </div>
+          <div class="col">
+            <h4 class="text-green">⚡ How to Use</h4>
+            <ul>
+              <li>Type <code>/skill-name</code> as slash command</li>
+              <li>Agent auto-loads when task matches</li>
+              <li><code>/create-skill</code> to generate with AI</li>
+              <li>Extract from conversation context</li>
+            </ul>
+            <h4 class="text-orange" style="margin-top:10px;">🔄 Skills vs Instructions</h4>
+            <ul>
+              <li><strong>Skills:</strong> Cross-agent, on-demand, portable</li>
+              <li><strong>Instructions:</strong> VS Code &amp; GitHub.com, always-on</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note-box">
+          <strong>📌 Open Standard:</strong> Built on <strong>agentskills.io</strong> — works across VS Code, Copilot CLI, and Copilot coding agent
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 6: AGENT ORCHESTRATION — The Loop -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-cyan"><i class="fas fa-diagram-project"></i></span> Agent Orchestration</h2>
+        <p style="margin-bottom:14px;">Autonomous planning, execution, and validation in a continuous loop</p>
+
+        <div class="flow" style="margin-bottom:16px;">
+          <div class="flow-step" style="border-color:var(--accent-blue); padding:12px 20px;">
+            <div style="font-size:1.4em;">📖</div>
+            <div><strong>Understand</strong></div>
+            <div style="font-size:0.85em; color:var(--text-secondary);">Read files, search code, look up docs</div>
+          </div>
+          <div class="flow-arrow" style="font-size:1.5em;">→</div>
+          <div class="flow-step" style="border-color:var(--accent-green); padding:12px 20px;">
+            <div style="font-size:1.4em;">⚡</div>
+            <div><strong>Act</strong></div>
+            <div style="font-size:0.85em; color:var(--text-secondary);">Edit code, run commands, call tools</div>
+          </div>
+          <div class="flow-arrow" style="font-size:1.5em;">→</div>
+          <div class="flow-step" style="border-color:var(--accent-purple); padding:12px 20px;">
+            <div style="font-size:1.4em;">✅</div>
+            <div><strong>Validate</strong></div>
+            <div style="font-size:0.85em; color:var(--text-secondary);">Run tests, check errors, iterate</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:8px;">Built-in Plan Agent — 4 Phases</h3>
+        <div class="card-grid card-grid-4">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-blue">🔬 Discovery</h4>
+            <p>Research with read-only tools</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-orange">🤝 Alignment</h4>
+            <p>Ask clarifying questions</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">📐 Design</h4>
+            <p>Draft structured plan</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-green">🔄 Refinement</h4>
+            <p>Iterate on feedback</p>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <strong>💡 Key:</strong> The Plan agent does NOT make code changes until the plan is explicitly approved.
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 7: AGENT ORCHESTRATION — Subagents -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-cyan"><i class="fas fa-sitemap"></i></span> Subagents &amp; Patterns</h2>
+        <p style="margin-bottom:12px;">Delegate focused work to independent AI agents with their own context</p>
+
+        <div class="cap-grid" style="margin-bottom:12px;">
+          <div class="cap-item">
+            <div class="cap-icon text-blue">🔒</div>
+            <div class="cap-text"><strong>Context Isolation</strong><br>Each subagent runs in its own context window</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-green">⚡</div>
+            <div class="cap-text"><strong>Parallel Execution</strong><br>Multiple subagents can run simultaneously</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-purple">📊</div>
+            <div class="cap-text"><strong>Focused Results</strong><br>Only the final summary returns to main agent</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-orange">🪆</div>
+            <div class="cap-text"><strong>Max 5 Levels</strong><br>Nested subagent depth limit for safety</div>
+          </div>
+        </div>
+
+        <div class="comparison">
+          <div class="col">
+            <h4 class="text-blue">🏗️ Coordinator &amp; Worker</h4>
+            <ul>
+              <li>Main agent delegates to specialized workers</li>
+              <li>Planner → Architect → Implementer → Reviewer</li>
+              <li>Each worker defines own tools &amp; model</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h4 class="text-purple">👁️ Multi-Perspective Review</h4>
+            <ul>
+              <li>Parallel reviewers: Correctness, Security, Quality, Architecture</li>
+              <li>Results synthesized into prioritized summary</li>
+              <li>Handoffs for sequential workflows</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 8: PERMISSION MODES — Overview -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-orange"><i class="fas fa-shield-halved"></i></span> Permission Modes</h2>
+        <p style="margin-bottom:14px;">Control how much autonomy the agent has — from manual approvals to full autopilot</p>
+
+        <div class="card-grid card-grid-3" style="margin-bottom:14px;">
+          <div class="card" style="text-align:center;">
+            <div class="stat-number text-blue">🔐</div>
+            <h4 style="margin-top:4px;">Default Approvals</h4>
+            <p>Tools requiring approval show confirmation dialogs. You review each action.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="stat-number text-orange">⚡</div>
+            <h4 style="margin-top:4px;">Bypass Approvals</h4>
+            <p>Auto-approves all tool calls. Auto-retries on errors. Faster iteration.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="stat-number text-purple">🤖</div>
+            <h4 style="margin-top:4px;">Autopilot <span class="badge badge-ga">GA</span></h4>
+            <p>Auto-approves all + auto-responds to questions. Fully autonomous agent.</p>
+          </div>
+        </div>
+
+        <div class="cap-grid" style="margin-bottom:0;">
+          <div class="cap-item">
+            <div class="cap-icon text-green">🖥️</div>
+            <div class="cap-text"><strong>Terminal Approval</strong><br>Regex-based auto-approve rules for safe commands</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-blue">🔧</div>
+            <div class="cap-text"><strong>Tool Approval</strong><br>Session / workspace / user scope levels</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-orange">🌐</div>
+            <div class="cap-text"><strong>URL Approval</strong><br>Two-step: trust domain → review content</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-purple">📝</div>
+            <div class="cap-text"><strong>File Edit Review</strong><br>Diff editor for all suggested changes</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 9: PERMISSION MODES — Trust & Sandboxing -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-orange"><i class="fas fa-lock"></i></span> Trust Boundaries &amp; Security</h2>
+
+        <div class="card-grid card-grid-2" style="margin-bottom:12px;">
+          <div class="card">
+            <h4 class="text-blue">🏗️ Trust Boundaries</h4>
+            <table style="margin-top:6px;">
+              <tr><td><strong class="text-cyan">Workspace</strong></td><td>Untrusted → restricted mode, agents disabled</td></tr>
+              <tr><td><strong class="text-purple">Extension</strong></td><td>Trust publisher before activation</td></tr>
+              <tr><td><strong class="text-green">MCP Server</strong></td><td>Trust prompt before first run</td></tr>
+              <tr><td><strong class="text-orange">Network</strong></td><td>Trust domain before fetching content</td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h4 class="text-green">🔒 Security Best Practices</h4>
+            <ul>
+              <li>Use dev containers for isolated environments</li>
+              <li>Review tool calls before approving actions</li>
+              <li>Scope file access to workspace boundaries</li>
+              <li>Leverage session-scoped permissions</li>
+              <li>Use request limits for cost control</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card-grid card-grid-3">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-cyan">🏢 Enterprise</h4>
+            <p>Centralized policies: disable agents, restrict MCP, require manual approval</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">📦 Scope Isolation</h4>
+            <p>Workspace-limited file access, session-scoped permissions, request limits</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-orange">🔑 Secrets</h4>
+            <p>Secure credentials store for MCP auth tokens &amp; sensitive parameters</p>
+          </div>
+        </div>
+
+        <div class="tip-box" style="margin-top:10px;">
+          <strong>💡 Best Practice:</strong> Use a dev container for maximum security isolation. Review auto-approval rules carefully — shell aliases and complex syntax may bypass them.
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 10: CUSTOM INSTRUCTIONS & PROMPT FILES -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-orange"><i class="fas fa-scroll"></i></span> Custom Instructions <span class="badge badge-ga">GA</span></h2>
+        <p style="margin-bottom:14px;">Guide agent behavior with persistent rules &mdash; always-on context for every conversation</p>
+
+        <div class="card-grid card-grid-3" style="margin-bottom:12px;">
+          <div class="card">
+            <h4 class="text-blue">&#x1F3E2; Organization</h4>
+            <p>GitHub org-level instructions via admin settings. Applied to all repos &amp; users in the org.</p>
+          </div>
+          <div class="card">
+            <h4 class="text-green">&#x1F4C1; Repository</h4>
+            <p><code>.github/copilot-instructions.md</code><br>Shared with all contributors via version control.</p>
+          </div>
+          <div class="card">
+            <h4 class="text-purple">&#x1F464; User-Level</h4>
+            <p>VS Code settings or <code>~/.copilot/</code> instructions. Personal preferences across all projects.</p>
+          </div>
+        </div>
+
+        <div class="comparison">
+          <div class="col">
+            <h4 class="text-cyan">&#x1F4DD; Prompt Files (<code>.prompt.md</code>)</h4>
+            <ul>
+              <li>Reusable prompt templates in <code>.github/prompts/</code></li>
+              <li>Run as slash commands: <code>/my-prompt</code></li>
+              <li>Support variables &amp; file references</li>
+              <li><code>mode: agent|ask|edit</code> front-matter</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h4 class="text-orange">&#x1F3AF; applyTo Patterns</h4>
+            <ul>
+              <li>Scope instructions to specific files or languages</li>
+              <li>Use glob patterns: <code>**/*.py</code>, <code>src/**</code></li>
+              <li>Only loads when matching files are in context</li>
+              <li>Supports front-matter in <code>.instructions.md</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 11: CUSTOM AGENTS — .agent.md -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-green"><i class="fas fa-robot"></i></span> Custom Agents <span class="badge badge-ga">GA</span></h2>
+        <p style="margin-bottom:14px;">Define specialized chat participants with <code>.agent.md</code> &mdash; custom tools, models &amp; instructions</p>
+
+        <div class="comparison" style="margin-bottom:12px;">
+          <div class="col">
+            <h4 class="text-cyan">&#x1F4C4; .agent.md Structure</h4>
+            <div class="code-block" style="font-size:0.55em; margin-top:6px;">
+---
+name: reviewer
+description: "Code review specialist"
+tools: [read_file, grep_search, get_errors]
+model: claude-sonnet-4
+---
+# Instructions
+Review code for bugs, security issues...
+Focus on OWASP Top 10 compliance.
+            </div>
+          </div>
+          <div class="col">
+            <h4 class="text-green">&#x26A1; Key Capabilities</h4>
+            <ul>
+              <li>Invoke via <code>@agent-name</code> in chat</li>
+              <li>Restrict available tools per agent</li>
+              <li>Choose model per agent (GPT-4o, Claude, etc.)</li>
+              <li>Include custom system instructions</li>
+              <li>Agent-specific MCP server access</li>
+              <li>Nest agents with subagent delegation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="cap-grid" style="margin-bottom:0;">
+          <div class="cap-item">
+            <div class="cap-icon text-blue">&#x1F4C2;</div>
+            <div class="cap-text"><strong>Workspace Agents</strong><br><code>.github/agents/</code> &middot; <code>.agents/</code> &mdash; shared with team</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-orange">&#x1F464;</div>
+            <div class="cap-text"><strong>Personal Agents</strong><br><code>~/.copilot/agents/</code> &mdash; your private agents</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-purple">&#x1F50C;</div>
+            <div class="cap-text"><strong>Plugin Agents</strong><br>Bundled in agent plugins for easy distribution</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-green">&#x1F9EA;</div>
+            <div class="cap-text"><strong>Extension Agents</strong><br>Via <code>chatAgents</code> contribution point in VS Code extensions</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION DIVIDER: PREVIEW FEATURES -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117" class="section-divider">
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+          <div class="section-icon"><i class="fas fa-flask" style="color:var(--accent-purple);"></i></div>
+          <h2 style="margin-bottom:8px;"><span class="text-purple">Preview Features</span></h2>
+          <p style="color:var(--text-secondary); font-size:0.72em;">Coming soon &mdash; currently available for early access testing</p>
+          <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; justify-content:center;">
+            <span class="badge badge-preview" style="font-size:0.6em;">Hooks</span>
+            <span class="badge badge-preview" style="font-size:0.6em;">Debug Logs</span>
+            <span class="badge badge-preview" style="font-size:0.6em;">Plugins</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 12: HOOKS — What Are They -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-green"><i class="fas fa-anchor"></i></span> Agent Hooks <span class="badge badge-preview">Preview</span></h2>
+        <p style="margin-bottom:12px;">Deterministic shell commands that fire at agent lifecycle points — guaranteed outcomes</p>
+
+        <div class="card-grid card-grid-4">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-blue">🚀 SessionStart</h4>
+            <p>Initialize resources, validate project state</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">✍️ UserPromptSubmit</h4>
+            <p>Audit requests, inject system context</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-orange">🛡️ PreToolUse</h4>
+            <p>Block dangerous ops, require approval</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-green">✅ PostToolUse</h4>
+            <p>Run formatters, log results</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-cyan">📦 PreCompact</h4>
+            <p>Export context before truncation</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-pink">🔀 SubagentStart</h4>
+            <p>Track nested agent usage</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-red">🔁 SubagentStop</h4>
+            <p>Aggregate results, cleanup</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">🏁 Stop</h4>
+            <p>Generate reports, send notifications</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 13: HOOKS — Config & Use Cases -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-green"><i class="fas fa-terminal"></i></span> Hooks — Configuration &amp; Security</h2>
+
+        <div class="comparison">
+          <div class="col">
+            <h4 class="text-cyan">📁 Hook Locations</h4>
+            <ul>
+              <li><strong>Workspace:</strong> <code>.github/hooks/*.json</code></li>
+              <li><strong>Claude format:</strong> <code>.claude/settings.json</code></li>
+              <li><strong>User:</strong> <code>~/.copilot/hooks/</code></li>
+              <li><strong>Agent:</strong> <code>hooks</code> in <code>.agent.md</code></li>
+              <li><strong>Plugin:</strong> <code>hooks/hooks.json</code></li>
+            </ul>
+          </div>
+          <div class="col">
+            <h4 class="text-orange">⚡ Permission Decisions</h4>
+            <div class="flow" style="margin-top:8px; margin-bottom:8px;">
+              <div class="flow-step" style="border-color:var(--accent-red); font-size:0.6em;">🚫 deny</div>
+              <div class="flow-arrow" style="font-size:0.9em;">&gt;</div>
+              <div class="flow-step" style="border-color:var(--accent-orange); font-size:0.6em;">❓ ask</div>
+              <div class="flow-arrow" style="font-size:0.9em;">&gt;</div>
+              <div class="flow-step" style="border-color:var(--accent-green); font-size:0.6em;">✅ allow</div>
+            </div>
+            <ul>
+              <li>Input via <strong>stdin</strong> (JSON)</li>
+              <li>Output via <strong>stdout</strong> (JSON)</li>
+              <li>Exit 0 = success, exit 2 = block</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card-grid card-grid-3" style="margin-top:10px;">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-red">🔒 Security</h4>
+            <p>Block <code>rm -rf</code>, <code>DROP TABLE</code> before execution</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-green">✨ Code Quality</h4>
+            <p>Auto-format with Prettier/ESLint after edits</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-blue">📋 Audit Trails</h4>
+            <p>Log every tool invocation for compliance</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 14: AGENT DEBUG LOGS — Overview -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-orange"><i class="fas fa-bug"></i></span> Agent Debug Logs <span class="badge badge-preview">Preview</span></h2>
+        <p style="margin-bottom:12px;">Inspect every agent interaction — tool calls, LLM requests, prompt discovery, and errors</p>
+
+        <div class="card-grid card-grid-3" style="margin-bottom:12px;">
+          <div class="card">
+            <h4 class="text-blue">📋 Logs View</h4>
+            <p>Chronological event list with timestamps, types &amp; expandable details. Filter by event type. Flat or tree view by subagent.</p>
+          </div>
+          <div class="card">
+            <h4 class="text-purple">📊 Summary View</h4>
+            <p>Aggregate stats: total tool calls, token usage, error count, overall duration per session.</p>
+          </div>
+          <div class="card">
+            <h4 class="text-green">🔀 Flow Chart</h4>
+            <p>Visual map of agent ↔ sub-agent interactions. Pan, zoom &amp; click nodes for event details.</p>
+          </div>
+        </div>
+
+        <div class="flow">
+          <div class="flow-step" style="border-color:var(--accent-orange); font-size:0.6em;"><i class="fas fa-ellipsis"></i> Chat ··· Menu</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:var(--accent-blue); font-size:0.6em;">Show Agent Debug Logs</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:var(--accent-green); font-size:0.6em;">Logs / Summary / Flow Chart</div>
+        </div>
+
+        <div class="note-box" style="margin-top:10px;">
+          <strong>📌 Enable:</strong> Set <code>github.copilot.chat.agentDebugLog.enabled</code> · Or run <code>Developer: Open Agent Debug Logs</code>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 15: AGENT DEBUG LOGS — Features -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-orange"><i class="fas fa-microscope"></i></span> Debug Logs — Power Features</h2>
+
+        <div class="cap-grid cap-grid-3" style="margin-bottom:12px;">
+          <div class="cap-item">
+            <div class="cap-icon text-blue">✨</div>
+            <div class="cap-text"><strong>Ask AI About Session</strong><br>Attach debug snapshot to chat &amp; query with AI</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-purple">💬</div>
+            <div class="cap-text"><strong>/troubleshoot</strong><br>Query sessions directly without opening the panel</div>
+          </div>
+          <div class="cap-item">
+            <div class="cap-icon text-green">📤</div>
+            <div class="cap-text"><strong>Export / Import</strong><br>Save sessions as OTLP JSON · Share with teammates</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:6px; margin-bottom:8px;">Common Troubleshooting</h3>
+        <div class="card-grid card-grid-2">
+          <div class="card">
+            <h4 class="text-red">🔍 AI Ignores Files</h4>
+            <p>Check Discovery events → verify workspace indexing → add <code>#file</code> or <code>#codebase</code> mentions</p>
+          </div>
+          <div class="card">
+            <h4 class="text-orange">🔧 MCP Tool Not Called</h4>
+            <p>Check Tool calls filter → verify tool in System prompt → reference with <code>#tool-name</code></p>
+          </div>
+          <div class="card">
+            <h4 class="text-purple">✂️ Response Cut Off</h4>
+            <p>Check LLM request token usage → full context window triggers truncation → start new session</p>
+          </div>
+          <div class="card">
+            <h4 class="text-cyan">📝 Prompt File Not Applied</h4>
+            <p>Check Discovery events for load/skip/fail → verify <code>applyTo</code> pattern matches context</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 16: AGENT PLUGINS -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117">
+        <h2><span class="text-pink"><i class="fas fa-puzzle-piece"></i></span> Agent Plugins <span class="badge badge-preview">Preview</span></h2>
+        <p style="margin-bottom:14px;">Prepackaged bundles of chat customizations — install once, get everything</p>
+
+        <div class="card-grid card-grid-2" style="margin-bottom:12px;">
+          <div class="card">
+            <h4 class="text-blue">📦 What's Inside a Plugin?</h4>
+            <div class="cap-grid" style="grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;">
+              <div class="cap-item" style="padding:6px 10px;">
+                <div class="cap-icon text-purple" style="font-size:0.8em;">⚡</div>
+                <div class="cap-text" style="font-size:0.58em;"><strong>Skills</strong><br>SKILL.md files</div>
+              </div>
+              <div class="cap-item" style="padding:6px 10px;">
+                <div class="cap-icon text-green" style="font-size:0.8em;">🤖</div>
+                <div class="cap-text" style="font-size:0.58em;"><strong>Agents</strong><br>.agent.md files</div>
+              </div>
+              <div class="cap-item" style="padding:6px 10px;">
+                <div class="cap-icon text-orange" style="font-size:0.8em;">🪝</div>
+                <div class="cap-text" style="font-size:0.58em;"><strong>Hooks</strong><br>hooks.json</div>
+              </div>
+              <div class="cap-item" style="padding:6px 10px;">
+                <div class="cap-icon text-blue" style="font-size:0.8em;">🔌</div>
+                <div class="cap-text" style="font-size:0.58em;"><strong>MCP Servers</strong><br>.mcp.json</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h4 class="text-green">🛒 Discovery &amp; Install</h4>
+            <ul>
+              <li>Browse: Extensions view → <code>@agentPlugins</code></li>
+              <li>Install from source: Git repo URL</li>
+              <li>Marketplace: <code>github/copilot-plugins</code></li>
+              <li>Custom marketplaces via settings</li>
+              <li>Private repos supported</li>
+              <li>Auto-updates every 24 hours</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <strong>💡 Trust:</strong> Plugin MCP servers are <strong>implicitly trusted</strong> (no separate trust prompt) · Hooks run alongside workspace hooks (most restrictive wins)
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SLIDE 17: QR CODE — Learn More -->
+      <!-- ============================================ -->
+      <section data-background-color="#0d1117" data-autoslide="45000">
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+          <h2 style="margin-bottom:6px;"><span class="text-blue">Want to learn more?</span></h2>
+          <p style="color:var(--text-secondary); font-size:0.72em; margin-bottom:20px;">Scan the QR code to share your feedback</p>
+          <div style="background:#fff; padding:16px; border-radius:16px; display:inline-block; box-shadow: 0 8px 32px rgba(88,166,255,0.15), 0 0 0 1px rgba(88,166,255,0.1);">
+            <img src="data:image/png;base64,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" alt="Scan to share feedback" style="width:240px; height:240px; display:block; border-radius:4px;">
+          </div>
+          <p style="margin-top:16px; font-size:0.62em; color:var(--text-secondary);"><i class="fas fa-mobile-screen" style="color:var(--accent-blue);"></i>&nbsp; Point your camera &amp; explore</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+  <script>
+    Reveal.initialize({
+      history: true,
+      center: false,
+      width: 960,
+      height: 540,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.0,
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+      slideNumber: 'c/t',
+      showSlideNumber: 'all',
+      controls: true,
+      controlsTutorial: false,
+      progress: true,
+      loop: true,
+      autoSlide: 5000,
+      autoSlideStoppable: true,
+      autoPlayMedia: true,
+      plugins: []
+    });
+
+    // Disable auto-slide for users who prefer reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      Reveal.configure({ autoSlide: 0 });
+    }
+  </script>
+</body>
+</html>
