@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Orchestration &amp; Skills — GitHub Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-card: #1c2128;
+    --bg-card-hover: #22272e;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-purple: #8b5cf6;
+    --accent-green: #3fb950;
+    --accent-orange: #f0883e;
+    --accent-pink: #f778ba;
+    --accent-cyan: #79c0ff;
+    --accent-red: #f85149;
+    --accent-yellow: #e3b341;
+    --border: #30363d;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .reveal {
+    font-family: 'Figtree', sans-serif;
+    font-size: 22px;
+    color: var(--text-primary);
+  }
+
+  .reveal .slides section {
+    padding: 24px 36px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+  }
+  .reveal .slides section::-webkit-scrollbar { display: none; }
+  .reveal .slides section { scrollbar-width: none; -ms-overflow-style: none; }
+
+  /* ── Typography ── */
+  .reveal h1 { font-size: 1.8em; font-weight: 800; line-height: 1.15; margin-bottom: 8px; letter-spacing: -0.02em; text-transform: none; }
+  .reveal h2 { font-size: 1.35em; font-weight: 800; line-height: 1.2; margin-bottom: 12px; letter-spacing: -0.01em; text-transform: none; }
+  .reveal h3 { font-size: 0.95em; font-weight: 700; line-height: 1.3; margin-bottom: 8px; text-transform: none; }
+  .reveal h4 { font-size: 0.78em; font-weight: 700; line-height: 1.3; margin-bottom: 4px; text-transform: none; }
+  .reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; color: var(--text-secondary); }
+  .reveal ul { list-style: none; text-align: left; }
+  .reveal li { padding-left: 1em; position: relative; margin-bottom: 4px; }
+  .reveal li::before { content: '▸'; position: absolute; left: 0; color: var(--accent-blue); font-weight: 700; }
+
+  /* ── Color Utility Classes ── */
+  .text-blue { color: var(--accent-blue); }
+  .text-purple { color: var(--accent-purple); }
+  .text-green { color: var(--accent-green); }
+  .text-orange { color: var(--accent-orange); }
+  .text-pink { color: var(--accent-pink); }
+  .text-cyan { color: var(--accent-cyan); }
+  .text-red { color: var(--accent-red); }
+  .text-yellow { color: var(--accent-yellow); }
+
+  /* ── Card Grids ── */
+  .card-grid { display: grid !important; gap: 12px; width: 100%; margin: 8px 0; }
+  .card-grid-2 { grid-template-columns: 1fr 1fr !important; }
+  .card-grid-3 { grid-template-columns: 1fr 1fr 1fr !important; }
+  .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: left;
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    background: var(--bg-card-hover);
+  }
+  .card h4 { color: var(--text-primary); }
+  .card p { font-size: 0.62em; margin-top: 4px; }
+
+  /* ── Flow Diagrams ── */
+  .flow { display: flex !important; align-items: center; justify-content: center; gap: 6px; width: 100%; flex-wrap: wrap; }
+  .flow-step {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 0.68em;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  .flow-arrow { font-size: 1em; color: var(--text-secondary); font-weight: 700; }
+
+  /* ── Comparison Layout ── */
+  .comparison { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px; width: 100%; }
+  .comparison .col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: left;
+  }
+  .comparison .col h4 { margin-bottom: 6px; }
+  .comparison .col li { font-size: 0.6em; }
+
+  /* ── Capability Grid ── */
+  .cap-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px; width: 100%; }
+  .cap-item {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .cap-item:hover { transform: translateY(-2px); }
+  .cap-icon {
+    font-size: 0.95em;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .cap-text { text-align: left; font-size: 0.62em; line-height: 1.4; color: var(--text-secondary); }
+  .cap-text strong { color: var(--text-primary); font-weight: 700; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    font-size: 0.5em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .badge-new { background: rgba(63,185,80,0.15); color: var(--accent-green); }
+  .badge-preview { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    font-size: 0.55em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(88,166,255,0.12);
+    color: var(--accent-blue);
+    margin: 2px 3px;
+  }
+
+  /* ── Tip/Note/Warn Boxes ── */
+  .tip-box, .note-box, .warn-box {
+    width: 100%;
+    text-align: left;
+    font-size: 0.62em;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .tip-box { background: rgba(63,185,80,0.08); color: var(--accent-green); }
+  .note-box { background: rgba(88,166,255,0.08); color: var(--accent-blue); }
+  .warn-box { background: rgba(248,81,73,0.08); color: var(--accent-red); }
+
+  /* ── Tables ── */
+  .reveal table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.62em;
+    margin-top: 8px;
+  }
+  .reveal th {
+    background: var(--bg-secondary);
+    color: var(--accent-blue);
+    font-weight: 700;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .reveal td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-align: left;
+  }
+  .reveal tr:hover td { background: rgba(88,166,255,0.04); }
+
+  /* ── Section Icon ── */
+  .section-icon {
+    font-size: 1.1em;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    line-height: 40px;
+    text-align: center;
+    overflow: hidden;
+    margin: 0 auto 6px auto;
+    animation: iconPulse 3s ease-in-out infinite;
+  }
+
+  /* ── Subtitle ── */
+  .subtitle { font-size: 0.72em; color: var(--text-secondary); font-weight: 400; }
+
+  /* ── Title Gradient ── */
+  .gradient-title {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease-in-out infinite;
+  }
+
+  /* ── Animations ── */
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes iconPulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(88,166,255,0.3)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 12px rgba(88,166,255,0.6)); transform: scale(1.08); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gradient-title { animation: none; }
+    .section-icon { animation: none; }
+    .card, .cap-item, .layer, .flow-step { transition: none; }
+  }
+
+  /* ── Persistent Footer ── */
+  .persistent-footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 22px;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    font-size: 16px;
+    z-index: 100;
+    color: var(--text-secondary);
+  }
+  .persistent-footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .persistent-footer a:hover { color: var(--accent-blue); }
+  .persistent-footer .handle { font-weight: 600; color: var(--text-primary); }
+
+  /* ── Slide Number above footer ── */
+  .reveal .slide-number {
+    bottom: 36px !important;
+    right: 12px !important;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: transparent !important;
+  }
+  .reveal .progress { bottom: 34px; height: 3px; }
+  .reveal .progress span { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+
+  /* ── Vertical center helper for title/divider slides ── */
+  .vcenter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  /* ── Delegation tree ── */
+  .tree { display: flex !important; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+  .tree-row { display: flex !important; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+  .tree-node {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 0.65em;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 140px;
+    text-align: center;
+  }
+  .tree-connector { font-size: 0.8em; color: var(--text-secondary); }
+
+  /* ── Layer stack visual ── */
+  .layer-stack { width: 100%; display: flex !important; flex-direction: column; gap: 3px; }
+  .layer {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.6em;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  .layer:hover { transform: translateX(4px); }
+  .layer-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85em;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* ── Focus visible ── */
+  a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .card-grid-3 { grid-template-columns: 1fr 1fr; }
+    .card-grid-4 { grid-template-columns: 1fr 1fr; }
+    .comparison { grid-template-columns: 1fr; }
+    .flow { flex-wrap: wrap; justify-content: center; }
+  }
+  @media (max-width: 640px) {
+    .card-grid-2, .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
+    .cap-grid { grid-template-columns: 1fr; }
+    .reveal .slides section { padding: 16px 20px; }
+    .persistent-footer { font-size: 12px; padding: 6px 14px; gap: 8px; }
+  }
+  /* ── Copilot Icon ── */
+  .copilot-icon-lg {
+    width: 38px;
+    height: 38px;
+    fill: var(--accent-blue);
+    filter: drop-shadow(0 0 8px rgba(88,166,255,0.4));
+  }
+</style>
+</head>
+<body>
+
+<!-- Hidden SVG sprite for Copilot icon -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="copilot-logo" viewBox="0 0 24 24">
+    <path d="M9.75 14a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 .75-.75Zm4.5 0a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 .75-.75Z"/>
+    <path d="M12 2c2.214 0 4.248.657 5.747 1.756.136.099.268.204.397.312.584.235 1.077.546 1.474.952.85.869 1.132 2.037 1.132 3.368 0 .368-.014.733-.052 1.086l.633 1.478.043.022A4.75 4.75 0 0 1 24 15.222v1.028c0 .529-.309.987-.565 1.293-.28.336-.636.653-.966.918a13.84 13.84 0 0 1-1.299.911l-.024.015-.006.004-.039.025c-.223.135-.45.264-.68.386-.46.245-1.122.571-1.941.895C16.845 21.344 14.561 22 12 22c-2.561 0-4.845-.656-6.479-1.303a19.046 19.046 0 0 1-1.942-.894 14.081 14.081 0 0 1-.535-.3l-.144-.087-.04-.025-.006-.004-.024-.015a13.16 13.16 0 0 1-1.299-.911 6.913 6.913 0 0 1-.967-.918C.31 17.237 0 16.779 0 16.25v-1.028a4.75 4.75 0 0 1 2.626-4.248l.043-.022.633-1.478a10.195 10.195 0 0 1-.052-1.086c0-1.331.282-2.498 1.132-3.368.397-.406.89-.717 1.474-.952.129-.108.261-.213.397-.312C7.752 2.657 9.786 2 12 2Zm-8 9.654v6.669a17.59 17.59 0 0 0 2.073.98C7.595 19.906 9.686 20.5 12 20.5c2.314 0 4.405-.594 5.927-1.197a17.59 17.59 0 0 0 2.073-.98v-6.669l-.038-.09c-.046.061-.095.12-.145.177-.793.9-2.057 1.259-3.782 1.259-1.59 0-2.738-.544-3.508-1.492a4.323 4.323 0 0 1-.355-.508h-.344a4.323 4.323 0 0 1-.355.508C10.704 12.456 9.555 13 7.965 13c-1.725 0-2.989-.359-3.782-1.259a3.026 3.026 0 0 1-.145-.177Zm6.309-1.092c.445-.547.708-1.334.851-2.301.057-.357.087-.718.09-1.079v-.031c-.001-.762-.166-1.26-.43-1.568l-.008-.01c-.341-.391-1.046-.689-2.533-.689-1.572 0-2.292.337-2.657.751C5.273 6.29 5.2 6.75 5.2 7.388c0 .565.044 1.087.135 1.544.128.64.352 1.14.665 1.464.577.597 1.49.804 2.965.804.795 0 1.33-.152 1.658-.338.162-.092.274-.2.346-.32a.756.756 0 0 0 .09-.18Zm3.307.142c.126.072.243.125.364.16.318.093.768.136 1.462.136 1.476 0 2.39-.207 2.966-.804.313-.324.537-.824.665-1.464.091-.457.135-.979.135-1.544 0-.639-.073-1.097-.422-1.494-.365-.414-1.084-.751-2.657-.751-1.486 0-2.191.298-2.533.689l-.008.01c-.264.308-.43.806-.43 1.568v.031c.003.36.033.722.09 1.079.143.967.406 1.754.851 2.301.063.078.13.151.199.22l.018.018a1.01 1.01 0 0 0 .3.145Z"/>
+  </symbol>
+</svg>
+
+<div class="reveal">
+
+  <!-- Persistent Footer -->
+  <div class="persistent-footer">
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer">
+      <i class="fab fa-linkedin"></i> Sukumar P
+    </a>
+    <span style="color:var(--border);">|</span>
+    <span class="handle">Agent Orchestration & Skills</span>
+    <span style="color:var(--border);">|</span>
+    <span style="color:var(--text-secondary);">April 27, 2026</span>
+  </div>
+
+  <div class="slides">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 1 — TITLE
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="vcenter">
+        <div class="section-icon" style="width:50px; height:50px; min-width:50px; line-height:50px; background:rgba(88,166,255,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+          <svg class="copilot-icon-lg" style="width:32px; height:32px;" aria-hidden="true"><use href="#copilot-logo"/></svg>
+        </div>
+        <h1 class="gradient-title" style="font-size:2em; margin-bottom:12px;">Agent Orchestration<br>&amp; Skills</h1>
+        <p class="subtitle" style="font-size:0.78em; max-width:600px;">How AI agents plan, delegate, optimize context,<br>and extend their capabilities through skills</p>
+        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          <span class="tag" style="background:rgba(139,92,246,0.15); color:var(--accent-purple);">GitHub Copilot</span>
+          <span class="tag" style="background:rgba(63,185,80,0.15); color:var(--accent-green);">VS Code</span>
+          <span class="tag" style="background:rgba(240,136,62,0.15); color:var(--accent-orange);">April 2026</span>
+        </div>
+        <p style="margin-top:18px; font-size:0.6em; color:var(--text-secondary);">Use arrow keys or swipe to navigate <span style="color:var(--accent-blue);">→</span></p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 2 — AGENDA
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <h2 class="text-blue">What We'll Cover</h2>
+      <div class="card-grid card-grid-4" style="margin-top:8px;">
+        <div class="card" style="border-top:3px solid var(--accent-blue);">
+          <div style="font-size:1.3em; margin-bottom:6px;">🎯</div>
+          <h4 class="text-blue">Agent Orchestration</h4>
+          <p>The autonomous loop: understand, act, validate — and iterate until done</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent-purple);">
+          <div style="font-size:1.3em; margin-bottom:6px;">🔀</div>
+          <h4 class="text-purple">Sub-agents</h4>
+          <p>Context-isolated workers that research, analyze, and report back summaries</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent-green);">
+          <div style="font-size:1.3em; margin-bottom:6px;">📐</div>
+          <h4 class="text-green">Context Window</h4>
+          <p>7 layers of context, compaction strategies, and token management</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent-orange);">
+          <div style="font-size:1.3em; margin-bottom:6px;">🧩</div>
+          <h4 class="text-orange">Skills</h4>
+          <p>Extend agent capabilities with reusable, on-demand instruction packages</p>
+        </div>
+      </div>
+      <div class="tip-box" style="margin-top:14px;">
+        <strong>💡 This deck:</strong> Covers GitHub Copilot's agent architecture in VS Code — local agents, CLI agents, cloud agents, and the skills ecosystem powering them all.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 3 — AGENT ORCHESTRATION
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">🎯</div>
+      <h2>Agent Orchestration <span class="badge badge-new">Core</span></h2>
+      <p style="margin-bottom:12px; max-width:700px;">An agent receives a high-level goal, breaks it into steps, executes with tools, and self-corrects — autonomously.</p>
+
+      <h3 style="margin-bottom:8px; color:var(--accent-blue);">The Agent Loop</h3>
+      <div class="flow" style="margin-bottom:14px;">
+        <div class="flow-step" style="border-color:var(--accent-blue);">
+          <span class="text-blue">🔍</span> <strong>Understand</strong><br><span style="font-size:0.85em; color:var(--text-secondary);">Read files, search code, fetch docs</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="border-color:var(--accent-green);">
+          <span class="text-green">⚡</span> <strong>Act</strong><br><span style="font-size:0.85em; color:var(--text-secondary);">Edit code, run commands, call tools</span>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="border-color:var(--accent-purple);">
+          <span class="text-purple">✅</span> <strong>Validate</strong><br><span style="font-size:0.85em; color:var(--text-secondary);">Run tests, check errors, review</span>
+        </div>
+        <div class="flow-arrow" style="color:var(--accent-orange);">↻</div>
+      </div>
+
+      <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="cap-item">
+          <div class="cap-icon text-blue">📝</div>
+          <div class="cap-text"><strong>Multi-file Edits</strong><br>Inline diff review</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-green">🖥️</div>
+          <div class="cap-text"><strong>Terminal Commands</strong><br>Auto-approve mode</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-purple">🔧</div>
+          <div class="cap-text"><strong>128 Tools/Request</strong><br>Built-in + MCP + Extensions</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-orange">🔌</div>
+          <div class="cap-text"><strong>MCP Servers</strong><br>External APIs &amp; services</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-cyan">💾</div>
+          <div class="cap-text"><strong>Checkpoints</strong><br>Auto-snapshots for rollback</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-pink">🪝</div>
+          <div class="cap-text"><strong>Hooks</strong><br>Custom lifecycle events</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 4 — AGENT TYPES & MODES
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">🏗️</div>
+      <h2>Agent Types &amp; Modes</h2>
+
+      <div class="card-grid card-grid-4" style="margin-bottom:12px;">
+        <div class="card">
+          <h4><span class="text-blue">💻</span> Local</h4>
+          <p>Interactive in VS Code with full workspace &amp; tool access</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-purple">⌨️</span> Copilot CLI</h4>
+          <p>Background worker using Git worktrees for parallel tasks</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-green">☁️</span> Cloud</h4>
+          <p>Runs on GitHub infra, creates PRs, assignable to issues</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-orange">🔗</span> Third-party</h4>
+          <p>Anthropic, OpenAI agents via SDK — local or cloud</p>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom:8px; color:var(--accent-cyan);">Built-in Modes</h3>
+      <div class="card-grid card-grid-3">
+        <div class="card" style="text-align:center;">
+          <h4 class="text-green">⚡ Agent</h4>
+          <p>Autonomous plan + implement + run terminal + tools</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h4 class="text-blue">📋 Plan</h4>
+          <p>Multi-phase research &amp; design before implementation</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h4 class="text-purple">💬 Ask</h4>
+          <p>Read-only Q&amp;A — no file changes, deep understanding</p>
+        </div>
+      </div>
+
+      <div class="note-box" style="margin-top:10px;">
+        <strong>📌 Hand-off:</strong> Start with <strong>Plan</strong> for design → hand to <strong>Agent</strong> or <strong>CLI</strong> for implementation → <strong>Cloud</strong> agent for PR &amp; review.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 5 — SUB-AGENTS
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">🔀</div>
+      <h2>Sub-agents <span class="badge badge-new">Key Concept</span></h2>
+      <p style="margin-bottom:12px; max-width:680px;">Independent agents that work in <strong style="color:var(--accent-blue);">isolated context windows</strong> — research, analyze, and return only a focused summary.</p>
+
+      <div class="card-grid card-grid-2" style="margin-bottom:12px;">
+        <div class="card">
+          <h4><span class="text-blue">🧊</span> Context Isolation</h4>
+          <p>Each sub-agent gets its own context window. Does NOT inherit the parent's conversation history — receives only the task prompt.</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-green">⚡</span> Parallel Execution</h4>
+          <p>VS Code spawns multiple sub-agents simultaneously — e.g., security + performance + accessibility analysis in one pass.</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-purple">📊</span> Focused Results</h4>
+          <p>Only the final summary returns to the parent agent. Intermediate steps stay in the sub-agent's context — keeps parent lean.</p>
+        </div>
+        <div class="card">
+          <h4><span class="text-orange">🔄</span> Synchronous Wait</h4>
+          <p>Main agent waits for sub-agent results before continuing. Findings directly inform the next decision or step.</p>
+        </div>
+      </div>
+
+      <h3 style="color:var(--accent-cyan); margin-bottom:6px;">Sub-agent Types</h3>
+      <div class="flow">
+        <div class="flow-step" style="border-color:var(--accent-blue);"><span class="text-blue">🔎</span> Search</div>
+        <div class="flow-step" style="border-color:var(--accent-green);"><span class="text-green">🏃</span> Execution</div>
+        <div class="flow-step" style="border-color:var(--accent-purple);"><span class="text-purple">🔬</span> Research</div>
+        <div class="flow-step" style="border-color:var(--accent-orange);"><span class="text-orange">🛡️</span> Custom</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 6 — SUB-AGENT DELEGATION FLOW
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">🌐</div>
+      <h2>Sub-agent Delegation Flow</h2>
+      <p style="margin-bottom:12px;">Parent agent decomposes tasks → delegates to specialized sub-agents → aggregates results</p>
+
+      <div class="tree">
+        <div class="tree-row">
+          <div class="tree-node" style="border-color:var(--accent-blue); min-width:200px;">
+            <span class="text-blue">👤</span> <strong>User Prompt</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">"Refactor auth module"</span>
+          </div>
+        </div>
+        <div class="tree-connector">↓</div>
+        <div class="tree-row">
+          <div class="tree-node" style="border-color:var(--accent-purple); min-width:220px;">
+            <span class="text-purple">🧠</span> <strong>Main Agent (Plan)</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">Decomposes into sub-tasks</span>
+          </div>
+        </div>
+        <div class="tree-connector">↓ &nbsp; ↓ &nbsp; ↓</div>
+        <div class="tree-row">
+          <div class="tree-node" style="border-color:var(--accent-blue);">
+            <span class="text-blue">🔎</span> <strong>Search Agent</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">Find auth files &amp; deps</span>
+          </div>
+          <div class="tree-node" style="border-color:var(--accent-green);">
+            <span class="text-green">🛡️</span> <strong>Security Agent</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">Audit vulnerabilities</span>
+          </div>
+          <div class="tree-node" style="border-color:var(--accent-orange);">
+            <span class="text-orange">🏃</span> <strong>Test Agent</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">Run existing tests</span>
+          </div>
+        </div>
+        <div class="tree-connector">↓ summaries only ↓</div>
+        <div class="tree-row">
+          <div class="tree-node" style="border-color:var(--accent-green); min-width:280px;">
+            <span class="text-green">✅</span> <strong>Main Agent Aggregates &amp; Implements</strong><br>
+            <span style="font-size:0.85em; color:var(--text-secondary);">Uses summaries to write code → run tests → verify</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box" style="margin-top:10px;">
+        <strong>💡 Why this works:</strong> Sub-agent research doesn't pollute the main context window. Only concise summaries come back — keeping the main agent focused and efficient.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 7 — CONTEXT WINDOW
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">📐</div>
+      <h2>Context Window — 7 Layers</h2>
+      <p style="margin-bottom:10px;">Everything the model can see when generating a response. What's outside is invisible.</p>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; width:100%;">
+        <div class="layer-stack">
+          <div class="layer" style="background:rgba(88,166,255,0.1);">
+            <div class="layer-num" style="background:var(--accent-blue); color:var(--bg-primary);">1</div>
+            <span><strong>System Instructions</strong> — Agent behavior rules</span>
+          </div>
+          <div class="layer" style="background:rgba(139,92,246,0.1);">
+            <div class="layer-num" style="background:var(--accent-purple); color:var(--bg-primary);">2</div>
+            <span><strong>Customizations</strong> — Skills, custom instructions, AGENTS.md</span>
+          </div>
+          <div class="layer" style="background:rgba(63,185,80,0.1);">
+            <div class="layer-num" style="background:var(--accent-green); color:var(--bg-primary);">3</div>
+            <span><strong>User Message</strong> — Current prompt</span>
+          </div>
+          <div class="layer" style="background:rgba(240,136,62,0.1);">
+            <div class="layer-num" style="background:var(--accent-orange); color:var(--bg-primary);">4</div>
+            <span><strong>Conversation History</strong> — Previous turns</span>
+          </div>
+          <div class="layer" style="background:rgba(247,120,186,0.1);">
+            <div class="layer-num" style="background:var(--accent-pink); color:var(--bg-primary);">5</div>
+            <span><strong>Implicit Context</strong> — Active file, selection, errors</span>
+          </div>
+          <div class="layer" style="background:rgba(121,192,255,0.1);">
+            <div class="layer-num" style="background:var(--accent-cyan); color:var(--bg-primary);">6</div>
+            <span><strong>Explicit References</strong> — #file, #codebase, #fetch</span>
+          </div>
+          <div class="layer" style="background:rgba(227,179,65,0.1);">
+            <div class="layer-num" style="background:var(--accent-yellow); color:var(--bg-primary);">7</div>
+            <span><strong>Tool Outputs</strong> — Terminal, search, file reads</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:6px; color:var(--accent-cyan);">Model Context Sizes</h4>
+          <table>
+            <thead><tr><th>Model</th><th>Context</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Opus 4.6</td><td style="color:var(--accent-green); font-weight:700;">1M tokens</td></tr>
+              <tr><td>Claude Sonnet 4.6</td><td style="color:var(--accent-green); font-weight:700;">1M tokens</td></tr>
+              <tr><td>GPT-5.4</td><td style="color:var(--accent-green); font-weight:700;">1M tokens</td></tr>
+              <tr><td>Gemini 2.5 Flash</td><td style="color:var(--accent-green); font-weight:700;">1M tokens</td></tr>
+            </tbody>
+          </table>
+          <div class="note-box" style="margin-top:8px; font-size:0.58em;">
+            <strong>📌 VS Code shows</strong> a context window control with live token usage — e.g., <span style="color:var(--accent-green);">15K/128K</span>. Hover for breakdown by category.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 8 — CONTEXT MANAGEMENT
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">⚙️</div>
+      <h2>Context Optimization</h2>
+      <p style="margin-bottom:10px;">Strategies to maximize signal-to-noise in your context window</p>
+
+      <div class="cap-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:12px;">
+        <div class="cap-item">
+          <div class="cap-icon text-blue">🔀</div>
+          <div class="cap-text"><strong>Sub-agents</strong><br>Isolate research in separate context — return summary only</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-purple">📦</div>
+          <div class="cap-text"><strong>Progressive Skill Loading</strong><br>3-level: name → instructions → resources (on demand)</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-green">🗜️</div>
+          <div class="cap-text"><strong>Auto Compaction</strong><br>VS Code summarizes older messages transparently</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-orange">📌</div>
+          <div class="cap-text"><strong>Explicit #-mentions</strong><br>Reference specific files instead of entire codebase</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-cyan">🔧</div>
+          <div class="cap-text"><strong>Tool Sets</strong><br>Group tools, enable only relevant ones per request</div>
+        </div>
+        <div class="cap-item">
+          <div class="cap-icon text-pink">🆕</div>
+          <div class="cap-text"><strong>New Chat Session</strong><br>Fresh context for unrelated tasks — maximum savings</div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <div class="col">
+          <h4 class="text-orange">❌ Don't</h4>
+          <ul>
+            <li>Dump entire codebase into context</li>
+            <li>Keep stale conversation history</li>
+            <li>Load all tools for every request</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h4 class="text-green">✅ Do</h4>
+          <ul>
+            <li>Use <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">#file</code> for targeted context</li>
+            <li>Run <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">/compact</code> with focus instructions</li>
+            <li>Delegate research to sub-agents</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 9 — SKILLS
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="section-icon">🧩</div>
+      <h2>Skills — Extending Agent Capabilities</h2>
+      <p style="margin-bottom:10px;">Reusable instruction packages that teach agents specialized workflows</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%;">
+        <div>
+          <h4 style="margin-bottom:6px; color:var(--accent-purple);">SKILL.md Anatomy</h4>
+          <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; text-align:left; font-family:'JetBrains Mono',monospace; font-size:0.52em; line-height:1.6; color:var(--text-secondary);">
+            <span style="color:var(--text-secondary);">---</span><br>
+            <span style="color:var(--accent-blue);">name:</span> webapp-testing<br>
+            <span style="color:var(--accent-blue);">description:</span> <span style="color:var(--accent-green);">"E2E tests..."</span><br>
+            <span style="color:var(--accent-blue);">argument-hint:</span> <span style="color:var(--accent-green);">"[options]"</span><br>
+            <span style="color:var(--accent-blue);">user-invocable:</span> <span style="color:var(--accent-orange);">true</span><br>
+            <span style="color:var(--text-secondary);">---</span><br>
+            <span style="color:var(--accent-purple);"># Instructions body</span><br>
+            <span style="color:var(--text-secondary);">Step-by-step procedures,</span><br>
+            <span style="color:var(--text-secondary);">examples, linked resources</span>
+          </div>
+
+          <h4 style="margin-top:10px; margin-bottom:6px; color:var(--accent-cyan);">Storage Locations</h4>
+          <div style="font-size:0.58em; text-align:left; color:var(--text-secondary); line-height:1.7;">
+            <span class="text-blue">Project:</span> <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">.github/skills/</code> &nbsp;
+            <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">.agents/skills/</code><br>
+            <span class="text-green">Personal:</span> <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">~/.copilot/skills/</code> &nbsp;
+            <code style="font-family:'JetBrains Mono'; font-size:0.9em; background:var(--bg-secondary); padding:1px 5px; border-radius:4px;">~/.agents/skills/</code>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:6px; color:var(--accent-green);">3-Level Progressive Loading</h4>
+          <div class="layer-stack">
+            <div class="layer" style="background:rgba(88,166,255,0.1);">
+              <div class="layer-num" style="background:var(--accent-blue); color:var(--bg-primary);">1</div>
+              <span><strong>Discovery</strong> — Read name &amp; description only</span>
+            </div>
+            <div class="layer" style="background:rgba(139,92,246,0.1);">
+              <div class="layer-num" style="background:var(--accent-purple); color:var(--bg-primary);">2</div>
+              <span><strong>Instructions</strong> — Load SKILL.md body</span>
+            </div>
+            <div class="layer" style="background:rgba(63,185,80,0.1);">
+              <div class="layer-num" style="background:var(--accent-green); color:var(--bg-primary);">3</div>
+              <span><strong>Resources</strong> — Access linked files on demand</span>
+            </div>
+          </div>
+
+          <h4 style="margin-top:10px; margin-bottom:6px; color:var(--accent-orange);">Ecosystem Scale</h4>
+          <div class="card-grid card-grid-2" style="gap:8px;">
+            <div class="card" style="text-align:center; padding:10px;">
+              <div style="font-size:1.4em; font-weight:900; color:var(--accent-blue);">5,400+</div>
+              <p style="font-size:0.56em; margin-top:2px;">OpenClaw Skills</p>
+            </div>
+            <div class="card" style="text-align:center; padding:10px;">
+              <div style="font-size:1.4em; font-weight:900; color:var(--accent-purple);">114K ★</div>
+              <p style="font-size:0.56em; margin-top:2px;">Anthropic Skills Repo</p>
+            </div>
+            <div class="card" style="text-align:center; padding:10px;">
+              <div style="font-size:1.4em; font-weight:900; color:var(--accent-green);">28+</div>
+              <p style="font-size:0.56em; margin-top:2px;">Dedicated Repos</p>
+            </div>
+            <div class="card" style="text-align:center; padding:10px;">
+              <div style="font-size:1.4em; font-weight:900; color:var(--accent-orange);">Open Std</div>
+              <p style="font-size:0.56em; margin-top:2px;">agentskills.io</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SLIDE 10 — KEY TAKEAWAYS + LINKEDIN
+    ═══════════════════════════════════════════════════════════ -->
+    <section data-background-color="#0d1117">
+      <div class="vcenter">
+        <h2 class="gradient-title" style="margin-bottom:16px;">Key Takeaways</h2>
+
+        <div class="card-grid card-grid-2" style="max-width:780px; margin-bottom:16px;">
+          <div class="card" style="text-align:center;">
+            <h4 class="text-blue">🎯 Agent Loop</h4>
+            <p>Understand → Act → Validate → Iterate.<br>128 tools per request. Auto checkpoints.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-purple">🔀 Sub-agents</h4>
+            <p>Context-isolated workers. Parallel execution.<br>Only summaries return — lean &amp; focused.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-green">📐 Context</h4>
+            <p>7 layers assembled per request.<br>Compaction, #-mentions, tool sets for optimization.</p>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h4 class="text-orange">🧩 Skills</h4>
+            <p>Open standard. 5,400+ skills.<br>3-level progressive loading. On-demand only.</p>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; margin-top:12px;">
+          <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"
+             style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;">
+            <i class="fab fa-linkedin" style="font-size:1.4em;"></i> Connect on LinkedIn — Sukumar P
+          </a>
+        </div>
+
+        <p style="margin-top:14px; font-size:0.65em; color:var(--text-secondary);">Thank you! Questions?</p>
+      </div>
+    </section>
+
+  </div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    history: true,
+    center: false,
+    width: 960,
+    height: 540,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    transition: 'slide',
+    transitionSpeed: 'default',
+    backgroundTransition: 'fade',
+    slideNumber: 'c/t',
+    showSlideNumber: 'all',
+    controls: true,
+    controlsTutorial: true,
+    progress: true,
+    loop: false,
+    autoPlayMedia: true,
+    plugins: [RevealHighlight]
+  });
+</script>
+</body>
+</html>
