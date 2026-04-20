@@ -166,8 +166,8 @@
 
 /* Tables */
 table { width: 100%; border-collapse: collapse; font-size: 0.62em; }
-th { background: var(--bg-secondary); padding: 8px 12px; text-align: left; font-weight: 700; color: var(--accent-blue); border-bottom: 2px solid var(--border); }
-td { padding: 6px 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+th { background: var(--bg-secondary); padding: 8px 12px; text-align: center; font-weight: 700; color: var(--accent-blue); border-bottom: 2px solid var(--border); }
+td { padding: 6px 12px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
 tr:hover td { background: rgba(88,166,255,0.04); }
 
 .subtitle { font-size: 0.72em; color: var(--text-secondary); margin-bottom: 12px; }
@@ -325,7 +325,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
     <div class="card"><h4><span class="text-green">03</span> &nbsp;Code &amp; Agent Mode</h4><p>Completions, chat, autonomous coding</p></div>
     <div class="card"><h4><span class="text-orange">04</span> &nbsp;PRs &amp; Cloud Agent</h4><p>Assign issues to Copilot, get PRs back</p></div>
     <div class="card"><h4><span class="text-pink">05</span> &nbsp;Review &amp; CI/CD</h4><p>AI code review, fix failing builds</p></div>
-    <div class="card"><h4><span class="text-cyan">06</span> &nbsp;Security &amp; Governance</h4><p>Enterprise-grade controls &amp; compliance</p></div>
+    <div class="card"><h4><span class="text-cyan">06</span> &nbsp;Security</h4><p>Shift left &amp; fix vulnerabilities early</p></div>
   </div>
 </section>
 
@@ -450,13 +450,11 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
   <div class="section-icon">&#x1F6E1;&#xFE0F;</div>
   <h2>Security: Shift Left with Copilot</h2>
   <p class="subtitle">Find and fix vulnerabilities before they reach production</p>
-  <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="cap-grid">
     <div class="cap-item"><div class="cap-icon text-blue"><i class="fas fa-code"></i></div><div class="cap-text"><strong>Code Scanning</strong><br>CodeQL + Copilot Autofix generates remediation PRs</div></div>
     <div class="cap-item"><div class="cap-icon text-green"><i class="fas fa-lock"></i></div><div class="cap-text"><strong>Secret Scanning</strong><br>Detects leaked secrets &amp; credentials in real-time</div></div>
     <div class="cap-item"><div class="cap-icon text-purple"><i class="fas fa-box-open"></i></div><div class="cap-text"><strong>Dependabot</strong><br>Auto-updates vulnerable deps, Copilot fixes breakage</div></div>
     <div class="cap-item"><div class="cap-icon text-orange"><i class="fas fa-ban"></i></div><div class="cap-text"><strong>Content Exclusions</strong><br>Admins control which files Copilot can access</div></div>
-    <div class="cap-item"><div class="cap-icon text-pink"><i class="fas fa-file-alt"></i></div><div class="cap-text"><strong>Audit Logs</strong><br>Complete trail of all Copilot activity across org</div></div>
-    <div class="cap-item"><div class="cap-icon text-cyan"><i class="fas fa-globe"></i></div><div class="cap-text"><strong>Data Residency</strong><br>Choose US or EU data processing <span class="badge badge-new">NEW</span></div></div>
   </div>
 </section>
 
@@ -477,20 +475,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
   </table>
 </section>
 
-<!-- SLIDE 13: ENTERPRISE GOVERNANCE -->
-<section data-background-color="#0d1117">
-  <div class="section-icon">&#x1F3E2;</div>
-  <h2>Enterprise Governance &amp; Compliance</h2>
-  <p class="subtitle">Built for the most regulated industries</p>
-  <div class="card-grid card-grid-3">
-    <div class="card" style="text-align:center;"><h4><span class="text-green"><i class="fas fa-lock"></i></span> Zero Training</h4><p>Your code is <strong>NEVER</strong> used to train AI models.</p></div>
-    <div class="card" style="text-align:center;"><h4><span class="text-blue"><i class="fas fa-shield-alt"></i></span> IP Indemnity</h4><p>GitHub indemnifies Enterprise customers against IP claims.</p></div>
-    <div class="card" style="text-align:center;"><h4><span class="text-purple"><i class="fas fa-globe"></i></span> Data Residency <span class="badge badge-new">NEW</span></h4><p>Choose US or EU data processing.</p></div>
-    <div class="card" style="text-align:center;"><h4><span class="text-orange"><i class="fas fa-certificate"></i></span> Compliance</h4><p>FedRAMP, SOC 1/2/3, ISO 27001, ISO 42001.</p></div>
-    <div class="card" style="text-align:center;"><h4><span class="text-pink"><i class="fas fa-sliders-h"></i></span> Admin Controls</h4><p>Enable/disable features, content exclusions, allowed models.</p></div>
-    <div class="card" style="text-align:center;"><h4><span class="text-cyan"><i class="fas fa-chart-bar"></i></span> Usage Metrics</h4><p>Dashboards showing adoption and productivity impact.</p></div>
-  </div>
-</section>
+
 
 <!-- SLIDE 14: GETTING STARTED -->
 <section data-background-color="#0d1117">
