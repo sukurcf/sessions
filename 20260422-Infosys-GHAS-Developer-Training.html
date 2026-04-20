@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Coding with GHAS &amp; Copilot Autofix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --accent-blue: #58a6ff;
+  --accent-purple: #8b5cf6;
+  --accent-green: #3fb950;
+  --accent-orange: #f0883e;
+  --accent-pink: #f778ba;
+  --accent-cyan: #79c0ff;
+  --accent-red: #f85149;
+  --border: #30363d;
+}
+
+.reveal {
+  font-family: 'Figtree', sans-serif;
+  font-size: 22px;
+  color: var(--text-primary);
+}
+
+.reveal .slides section {
+  padding: 24px 36px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+}
+.reveal .slides section::-webkit-scrollbar { display: none; }
+.reveal .slides section { scrollbar-width: none; -ms-overflow-style: none; }
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 { text-transform: none; }
+.reveal h1 { font-size: 1.8em; font-weight: 800; margin-bottom: 0.3em; line-height: 1.15; }
+.reveal h2 { font-size: 1.35em; font-weight: 800; margin-bottom: 0.4em; line-height: 1.2; }
+.reveal h3 { font-size: 0.95em; font-weight: 700; margin-bottom: 0.3em; }
+.reveal h4 { font-size: 0.78em; font-weight: 700; margin-bottom: 0.15em; }
+.reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; }
+.reveal ul, .reveal ol { margin: 0; text-align: left; }
+.reveal li { margin-bottom: 0.2em; }
+
+.text-blue { color: var(--accent-blue); }
+.text-purple { color: var(--accent-purple); }
+.text-green { color: var(--accent-green); }
+.text-orange { color: var(--accent-orange); }
+.text-pink { color: var(--accent-pink); }
+.text-cyan { color: var(--accent-cyan); }
+.text-red { color: var(--accent-red); }
+.text-secondary { color: var(--text-secondary); }
+
+/* Card Grids */
+.card-grid { display: grid; gap: 14px; width: 100%; }
+.card-grid-2 { grid-template-columns: 1fr 1fr; }
+.card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: left;
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+.card h4 { margin: 0 0 6px 0; }
+.card p { font-size: 0.65em; margin: 0; color: var(--text-secondary); line-height: 1.45; }
+.card ul { padding-left: 1.2em; margin: 4px 0 0; }
+.card li { font-size: 0.62em; color: var(--text-secondary); margin-bottom: 2px; }
+
+/* Flow */
+.flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+.flow-step {
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.68em; font-weight: 600;
+  min-width: 100px;
+}
+.flow-step div { text-align: center; }
+.flow-arrow { font-size: 1.2em; color: var(--text-secondary); }
+
+/* Comparison */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.comparison .col {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: left;
+}
+.comparison .col h4 { margin: 0 0 8px; }
+.comparison .col li { font-size: 0.62em; color: var(--text-secondary); }
+
+/* Cap Grid */
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.cap-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  overflow: hidden;
+}
+.cap-icon {
+  font-size: 0.95em;
+  width: 30px; min-width: 30px; height: 30px;
+  line-height: 30px; text-align: center; overflow: hidden;
+}
+.cap-text { text-align: left; font-size: 0.62em; line-height: 1.4; }
+.cap-text strong { color: var(--text-primary); }
+
+/* Badges */
+.badge {
+  display: inline-block; font-size: 0.5em; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
+  vertical-align: middle; margin-left: 6px;
+}
+.badge-ga { background: var(--accent-green); color: #0d1117; }
+.badge-new { background: var(--accent-blue); color: #0d1117; }
+.badge-preview { background: var(--accent-purple); color: #fff; }
+
+/* Tags */
+.tag {
+  display: inline-block; font-size: 0.55em; font-weight: 600;
+  padding: 2px 10px; border-radius: 12px;
+  background: rgba(88,166,255,0.12); color: var(--accent-blue);
+  margin: 2px 3px;
+}
+
+/* Tip/Note/Warn */
+.tip-box, .note-box, .warn-box {
+  width: 100%; text-align: left; border-radius: 8px;
+  padding: 10px 14px; font-size: 0.62em; margin-top: 10px;
+}
+.tip-box { background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); }
+.note-box { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.3); }
+.warn-box { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); }
+
+/* Tables */
+.reveal table { width: 100%; border-collapse: collapse; font-size: 0.62em; margin-top: 8px; }
+.reveal th {
+  background: var(--bg-card); color: var(--accent-blue); font-weight: 700;
+  padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border);
+}
+.reveal td {
+  padding: 6px 12px; border-bottom: 1px solid var(--border); text-align: left;
+  color: var(--text-secondary);
+}
+.reveal tr:hover td { background: rgba(88,166,255,0.04); }
+
+/* Stat card */
+.stat-value { font-size: 2.5em; font-weight: 900; line-height: 1.1; }
+.stat-label { font-size: 0.62em; color: var(--text-secondary); margin-top: 4px; }
+
+/* Section icon */
+.section-icon {
+  font-size: 1.1em; width: 40px; height: 40px; min-width: 40px;
+  line-height: 40px; text-align: center; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+/* Title gradient */
+.gradient-title {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-blue), var(--accent-cyan));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes iconPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(63,185,80,0.3)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 12px rgba(63,185,80,0.5)); transform: scale(1.05); }
+}
+
+/* Code block */
+.code-block {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58em;
+  color: var(--text-primary);
+  width: 100%;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.code-block .comment { color: var(--text-secondary); }
+.code-block .keyword { color: var(--accent-purple); }
+.code-block .string { color: var(--accent-green); }
+.code-block .func { color: var(--accent-blue); }
+
+/* Presenter */
+.presenter-card {
+  display: flex; align-items: center; gap: 28px; width: 100%;
+  background: var(--bg-card); border-radius: 14px; padding: 24px;
+  border: 1px solid var(--border);
+}
+.presenter-photo {
+  width: 120px; height: 120px; border-radius: 50%;
+  object-fit: cover; border: 3px solid var(--accent-green);
+  flex-shrink: 0;
+}
+.presenter-info { text-align: left; }
+.presenter-info h3 { font-size: 1em; margin: 0 0 4px; }
+.presenter-info .title { font-size: 0.65em; color: var(--accent-green); margin-bottom: 8px; }
+.presenter-info .bio { font-size: 0.6em; color: var(--text-secondary); line-height: 1.5; }
+.presenter-social {
+  display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap;
+}
+.presenter-social a {
+  display: flex; align-items: center; gap: 6px;
+  text-decoration: none; font-size: 0.62em; color: var(--text-secondary);
+  transition: color 0.2s ease-out;
+}
+.presenter-social a:hover { color: var(--accent-green); }
+
+/* Persistent footer */
+.persistent-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: rgba(13,17,23,0.92); backdrop-filter: blur(8px);
+  padding: 6px 20px; font-size: 20px;
+  border-top: 1px solid var(--border);
+}
+.persistent-footer a {
+  color: var(--text-secondary); text-decoration: none;
+  transition: color 0.2s ease-out;
+}
+.persistent-footer a:hover { color: var(--accent-green); }
+.persistent-footer .sep {
+  width: 1px; height: 14px; background: var(--border);
+}
+.persistent-footer .handle {
+  color: var(--accent-green); font-weight: 600; font-size: 0.85em;
+}
+.persistent-footer .follow-text {
+  color: var(--text-secondary); font-size: 0.72em;
+}
+
+/* Slide number above footer */
+.reveal .slide-number {
+  bottom: 36px !important; right: 12px !important;
+  font-size: 14px !important; color: var(--text-secondary) !important;
+  background: rgba(13,17,23,0.7) !important; padding: 3px 8px !important;
+  border-radius: 4px !important;
+}
+.reveal .progress { bottom: 34px; height: 3px; }
+
+/* Focus visible */
+a:focus-visible, .card:focus-visible {
+  outline: 2px solid var(--accent-green);
+  outline-offset: 2px;
+}
+
+/* Step number circle */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; min-width: 28px;
+  border-radius: 50%; font-weight: 800; font-size: 0.72em;
+  color: #0d1117;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .card-grid-3 { grid-template-columns: 1fr 1fr; }
+  .comparison { grid-template-columns: 1fr; }
+  .presenter-card { flex-direction: column; text-align: center; }
+  .flow { flex-wrap: wrap; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; }
+  .cap-grid { grid-template-columns: 1fr; }
+  .reveal .slides section { padding: 16px 20px; }
+  .persistent-footer { font-size: 12px; padding: 6px 14px; gap: 8px; }
+  .presenter-photo { width: 140px; height: 140px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-title { animation: none; }
+  .section-icon { animation: none; }
+  .card { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- Slide 1: Title -->
+<section data-background-color="#0d1117">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em; width:56px; height:56px; min-width:56px; line-height:56px;">💻</div>
+    <h1 class="gradient-title" style="margin-bottom:0.15em;">Secure Coding with GHAS</h1>
+    <h2 style="font-size:1em; font-weight:600; color:var(--text-secondary); margin-bottom:0.5em;">&amp; Copilot Autofix</h2>
+    <p style="font-size:0.72em; color:var(--text-secondary); margin:0;">Developer Training — Identify, Fix &amp; Prevent Security Issues</p>
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag">Code Scanning</span>
+      <span class="tag">Copilot Autofix</span>
+      <span class="tag">Push Protection</span>
+      <span class="tag">Supply Chain</span>
+    </div>
+    <p style="font-size:0.55em; color:var(--text-secondary); margin-top:24px;">
+      <i class="fas fa-code" style="margin-right:4px;"></i> Developers with GitHub Copilot Licenses
+    </p>
+  </div>
+</section>
+
+<!-- Slide 2: Presenter -->
+<section data-background-color="#0d1117">
+  <h2 class="text-green">Your Presenter</h2>
+  <div class="presenter-card">
+    <img class="presenter-photo" src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P" onerror="this.src='https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png'; this.onerror=null;">
+    <div class="presenter-info">
+      <h3>Sukumar P</h3>
+      <div class="title">Developer · Building the Future, One Commit at a Time</div>
+      <div class="bio">Passionate about developer productivity, AI-powered coding, and building tools that make developers' lives easier. Creating educational content about GitHub Copilot and modern development workflows.</div>
+      <div class="presenter-social">
+        <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> YouTube</a>
+        <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 3: Agenda -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">📋</div>
+  <h2>Training Agenda</h2>
+  <div class="cap-grid">
+    <div class="cap-item">
+      <div class="cap-icon text-green">1</div>
+      <div class="cap-text"><strong>Shift-Left Security</strong><br>Developer workflow integration with GHAS</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-blue">2</div>
+      <div class="cap-text"><strong>Code Scanning &amp; Autofix</strong><br>Understanding alerts &amp; AI-powered fixes</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-purple">3</div>
+      <div class="cap-text"><strong>Hands-on Labs</strong><br>Fix real vulnerabilities with Copilot Autofix</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-orange">4</div>
+      <div class="cap-text"><strong>Secret &amp; Supply Chain Security</strong><br>Push protection &amp; dependency management</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-pink">5</div>
+      <div class="cap-text"><strong>Secure PR Checklist</strong><br>Daily security hygiene for developers</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-cyan">6</div>
+      <div class="cap-text"><strong>Q&amp;A</strong><br>Discussion &amp; next steps</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 4: Shift-Left Security -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">⬅️</div>
+  <h2>Shift-Left Security with GHAS</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:14px;">Find and fix vulnerabilities <strong class="text-green">where you code</strong> — not after deployment</p>
+  <div class="flow" style="margin-bottom:16px;">
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>Write Code</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue);">
+      <div>Push / PR</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-purple);">
+      <div>Auto-Scan</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-orange);">
+      <div>Alert + Autofix</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>Merge Safe Code</div>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="col">
+      <h4 class="text-red">❌ Traditional Security</h4>
+      <ul>
+        <li>Vulnerabilities found in production</li>
+        <li>Separate security team reviews</li>
+        <li>Weeks/months to remediate</li>
+        <li>Context lost between writing and fixing</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="text-green">✅ With GHAS</h4>
+      <ul>
+        <li>Vulnerabilities caught in PR</li>
+        <li>Inline alerts in your workflow</li>
+        <li>AI-generated fixes in seconds</li>
+        <li>Fix while context is fresh</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 5: Understanding Code Scanning Alerts -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🔍</div>
+  <h2>Understanding Code Scanning Alerts</h2>
+  <div class="card-grid card-grid-3" style="margin-bottom:12px;">
+    <div class="card">
+      <h4><span class="text-red"><i class="fas fa-circle-exclamation"></i></span> Critical / High</h4>
+      <p>Remote code execution, SQL injection, XSS — must fix before merge. Blocks PR if configured.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-orange"><i class="fas fa-triangle-exclamation"></i></span> Medium</h4>
+      <p>SSRF, path traversal, insecure deserialization — fix in current sprint. Should not accumulate.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-blue"><i class="fas fa-circle-info"></i></span> Low / Note</h4>
+      <p>Informational findings, code quality hints — review and address when convenient.</p>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-purple"><i class="fas fa-location-dot"></i></span> Alert Anatomy</h4>
+      <ul>
+        <li>Vulnerability type &amp; CWE reference</li>
+        <li>Exact file, line number, and data flow path</li>
+        <li>Explanation of why the code is vulnerable</li>
+        <li>Suggested remediation guidance</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-code-branch"></i></span> Where Alerts Appear</h4>
+      <ul>
+        <li>Pull request checks &amp; conversation tab</li>
+        <li>Repository Security tab</li>
+        <li>Security Overview dashboard (org-wide)</li>
+        <li>Email &amp; webhook notifications</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 6: Copilot Autofix Deep Dive -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🪄</div>
+  <h2>Copilot Autofix — How It Works</h2>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-red);">
+      <div>CodeQL Alert</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-purple);">
+      <div>SARIF + Code Context</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue);">
+      <div>LLM Analysis</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>Fix Suggestion</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-blue"><i class="fas fa-microchip"></i></span> What Autofix Sends to LLM</h4>
+      <ul>
+        <li>CodeQL alert data (SARIF format)</li>
+        <li>Surrounding code snippets for context</li>
+        <li>Query help text explaining the vulnerability</li>
+        <li>Internally tested before display</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-check-circle"></i></span> Developer Review Steps</h4>
+      <ul>
+        <li>Review the suggested code change</li>
+        <li>Edit the fix if needed</li>
+        <li>Commit the change to the PR</li>
+        <li>Verify CI passes, then merge</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
+    <span class="tag">C#</span><span class="tag">C/C++</span><span class="tag">Go</span>
+    <span class="tag">Java/Kotlin</span><span class="tag">JS/TS</span><span class="tag">Python</span>
+    <span class="tag">Ruby</span><span class="tag">Rust</span><span class="tag">Swift</span>
+  </div>
+</section>
+
+<!-- Slide 7: Autofix Quality & Limitations -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">⚖️</div>
+  <h2>Autofix — Quality &amp; Limitations</h2>
+  <div class="comparison">
+    <div class="col">
+      <h4 class="text-green">✅ Strengths</h4>
+      <ul>
+        <li>Majority of alerts receive a fix suggestion</li>
+        <li>Most fixes can be committed as-is or with minor edits</li>
+        <li>Each suggestion is internally tested before display</li>
+        <li>No Copilot subscription required</li>
+        <li>Data is never used for LLM training</li>
+        <li>Red teaming + filters prevent harmful suggestions</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="text-orange">⚠️ Limitations</h4>
+      <ul>
+        <li>Non-deterministic (LLM-based)</li>
+        <li>Complex multi-file flows may be difficult</li>
+        <li>Large files may have truncated context</li>
+        <li>May suggest partial or syntactically incorrect fixes</li>
+        <li>Could suggest fabricated/insecure dependencies</li>
+        <li>Always validate before merging</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn-box"><strong>⚠️ Important:</strong> Copilot Autofix is an assistant, not a replacement for developer judgment. Always review, test, and validate suggested fixes before merging.</div>
+</section>
+
+<!-- Slide 8: Hands-on Lab -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🧪</div>
+  <h2>Hands-on Lab</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:14px;">Fixing vulnerabilities with Copilot Autofix &amp; Security Campaigns</p>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-flask"></i></span> Lab 1: Fix a Code Scanning Vulnerability</h4>
+      <ul>
+        <li>Navigate to a code scanning alert on your repo</li>
+        <li>Review the Copilot Autofix suggestion</li>
+        <li>Edit the fix if needed</li>
+        <li>Commit, verify CI, and merge the PR</li>
+        <li>Confirm the alert is resolved</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-purple"><i class="fas fa-bullseye"></i></span> Lab 2: Security Campaigns</h4>
+      <ul>
+        <li>View assigned campaign alerts</li>
+        <li>Understand alert prioritization</li>
+        <li>Use Autofix on campaign alerts</li>
+        <li>Track remediation progress</li>
+        <li>Collaborate with campaign manager</li>
+      </ul>
+    </div>
+  </div>
+  <div class="flow" style="margin-top:14px;">
+    <div class="flow-step" style="border-color:var(--accent-red);">
+      <div>Find Alert</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue);">
+      <div>Review Autofix</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-purple);">
+      <div>Edit &amp; Commit</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>Verify &amp; Merge</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 9: Secret Protection for Developers -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🔑</div>
+  <h2>Secret Protection &amp; Push Protection</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:12px;">What happens when you accidentally push a secret</p>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>git push</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-red);">
+      <div>🛑 Push Blocked</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-orange);">
+      <div>Review &amp; Decide</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div>Remove Secret</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-shield-halved"></i></span> Remove It</h4>
+      <p>Best option — remove the secret from your commit, rotate the credential, and push clean code.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-orange"><i class="fas fa-forward"></i></span> Bypass</h4>
+      <p>Provide a reason: "used in tests", "false positive", or "fix later". Creates an alert for tracking.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-purple"><i class="fas fa-user-shield"></i></span> Request Review</h4>
+      <p>If delegated bypass is enabled, your bypass request goes to designated reviewers for approval.</p>
+    </div>
+  </div>
+  <div class="tip-box"><strong>💡 Pro Tip:</strong> User push protection is enabled by default for <em>all</em> GitHub.com users on public repos — even without a GHAS license.</div>
+</section>
+
+<!-- Slide 10: Supply Chain Security -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">📦</div>
+  <h2>Supply Chain Security</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-blue"><i class="fas fa-diagram-project"></i></span> Dependency Graph</h4>
+      <p>Automatically maps all direct and transitive dependencies across your repository. Supports npm, pip, Maven, NuGet, Go, Cargo, and more.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-orange"><i class="fas fa-bell"></i></span> Dependabot Alerts</h4>
+      <p>Notifies you when a dependency has a known vulnerability (CVE). Automatically opens PRs to update to a patched version.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-magnifying-glass-chart"></i></span> Dependency Review</h4>
+      <p>Shows dependency changes in every PR — new vulnerabilities introduced, license changes, and ecosystem impact before merge.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-purple"><i class="fas fa-gears"></i></span> Auto-Triage Rules</h4>
+      <p>Custom rules to automatically dismiss low-risk Dependabot alerts based on ecosystem, severity, scope, or package name patterns.</p>
+      <p style="margin-top:4px;"><span class="badge badge-new">CODE SECURITY</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 11: Secure PR Checklist -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">✅</div>
+  <h2>Secure PR Checklist for Developers</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>No code scanning alerts</strong><br>All critical/high alerts resolved or Autofix applied</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>No secret scanning alerts</strong><br>Push protection passed, no hardcoded credentials</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>Dependencies reviewed</strong><br>No new vulnerabilities introduced in dependencies</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>Autofix suggestions reviewed</strong><br>AI suggestions validated and tested locally</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>Input validation</strong><br>User inputs sanitized and validated at boundaries</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>Authentication &amp; authorization</strong><br>Proper access controls on new endpoints/routes</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>Error handling</strong><br>No sensitive data leaked in error messages/logs</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green"><i class="fas fa-check"></i></div>
+      <div class="cap-text"><strong>CI passes</strong><br>All security checks green before requesting review</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 12: Daily Security Hygiene -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🧹</div>
+  <h2>Daily Security Hygiene</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4><span class="text-green"><i class="fas fa-clock"></i></span> Morning</h4>
+      <ul>
+        <li>Check Security tab for new alerts</li>
+        <li>Review Dependabot PRs</li>
+        <li>Triage any assigned campaign alerts</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-blue"><i class="fas fa-code"></i></span> During Development</h4>
+      <ul>
+        <li>Use environment variables for secrets</li>
+        <li>Validate all user inputs</li>
+        <li>Keep dependencies up to date</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-purple"><i class="fas fa-code-pull-request"></i></span> Before PR</h4>
+      <ul>
+        <li>Run through secure PR checklist</li>
+        <li>Review Autofix suggestions</li>
+        <li>Check dependency review results</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note-box" style="margin-top:14px;"><strong>📌 Remember:</strong> Security is not a gate at the end — it's a practice woven into every step of your development workflow. GHAS makes this frictionless.</div>
+</section>
+
+<!-- Slide 13: Key Takeaways -->
+<section data-background-color="#0d1117">
+  <div class="section-icon">🎯</div>
+  <h2>Key Takeaways</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2em; margin-bottom:6px;">🛡️</div>
+      <h4>Shift Left</h4>
+      <p>Find and fix vulnerabilities in your PR, not in production. GHAS integrates security into your existing workflow.</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2em; margin-bottom:6px;">🪄</div>
+      <h4>Copilot Autofix</h4>
+      <p>AI-powered fix suggestions save hours of manual remediation. Always review before committing.</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2em; margin-bottom:6px;">🔑</div>
+      <h4>Push Protection</h4>
+      <p>Secrets are blocked before they ever reach the repository. Your first line of defense.</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2em; margin-bottom:6px;">📦</div>
+      <h4>Supply Chain</h4>
+      <p>Dependabot and dependency review keep your dependencies secure and up to date automatically.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 14: Thank You -->
+<section data-background-color="#0d1117">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em; width:56px; height:56px; min-width:56px; line-height:56px;">🙏</div>
+    <h1 style="margin-bottom:0.2em;">Thank You!</h1>
+    <p style="font-size:0.82em; color:var(--text-secondary); margin-bottom:8px;">Questions &amp; Next Steps</p>
+    <p style="font-size:0.62em; color:var(--text-secondary); max-width:600px;">Start using Copilot Autofix on your next PR. Check your repo's Security tab for existing alerts. Join active security campaigns to contribute to org-wide remediation.</p>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:30px; flex-wrap:wrap;">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-linkedin" style="font-size:1.4em;"></i> Sukumar P</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-red); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-youtube" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-pink); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-instagram" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-green); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-whatsapp" style="font-size:1.4em;"></i> tec_in_sec</a>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides -->
+
+<!-- Persistent Footer -->
+<div class="persistent-footer">
+  <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+  <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+  <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
+  <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+  <div class="sep"></div>
+  <span class="handle">tec_in_sec</span>
+  <div class="sep"></div>
+  <span class="follow-text">Follow for more updates</span>
+</div>
+
+</div><!-- /reveal -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  history: true,
+  center: false,
+  width: 960,
+  height: 540,
+  margin: 0.04,
+  minScale: 0.2,
+  maxScale: 2.0,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  backgroundTransition: 'fade',
+  slideNumber: 'c/t',
+  showSlideNumber: 'all',
+  controls: true,
+  controlsTutorial: true,
+  progress: true,
+  loop: false,
+  autoPlayMedia: true,
+  plugins: [RevealHighlight]
+});
+</script>
+</body>
+</html>
