@@ -178,7 +178,6 @@
   border-radius: 20px;
   vertical-align: middle;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   margin-left: 4px;
 }
 .badge-ga { background: rgba(63,185,80,0.18); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.35); }
@@ -374,8 +373,8 @@ code.inline {
   transition: opacity 0.3s ease-out;
 }
 .qr-corner:hover { opacity: 1; }
-.qr-corner img { width: 64px; height: 64px; border-radius: 6px; border: 1px solid var(--border); }
-.qr-corner span { font-size: 9px; color: var(--text-secondary); margin-top: 3px; font-weight: 400; }
+.qr-corner img { width: 96px; height: 96px; border-radius: 8px; border: 1px solid var(--border); }
+.qr-corner span { font-size: 12px; color: var(--text-secondary); margin-top: -4px; font-weight: 400; }
 
 /* ── Large QR on dedicated slide ── */
 .qr-large img { width: 220px; height: 220px; border-radius: 10px; }
@@ -471,7 +470,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
       <span class="tag">Copilot SDK</span>
       <span class="tag">Autopilot Mode</span>
       <span class="tag">Remote CLI</span>
-      <span class="tag">Data Residency</span>
+      <span class="tag">Debug Tools</span>
     </div>
     <p style="font-size: 0.56em; color: var(--text-secondary); margin-top: 18px;">Decathlon &middot; April 30, 2026</p>
   </div>
@@ -483,7 +482,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 <section data-background-color="#0d1117">
   <h2 class="text-blue">Your Presenter</h2>
   <div class="presenter-card">
-    <img class="presenter-photo" src="presenter.jpg" alt="Sukumar P" onerror="this.src='https://github.com/SukumarP.png'; this.onerror=null;">
+    <img class="presenter-photo" src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P" onerror="this.src='https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png'; this.onerror=null;">
     <div class="presenter-info">
       <h3>Sukumar P</h3>
       <div class="title">Developer &middot; Building the Future, One Commit at a Time</div>
@@ -502,7 +501,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 <!-- SLIDE 3: Feature 1 — Cloud Agent -->
 <!-- ============================================================ -->
 <section data-background-color="#0d1117">
-  <h2><span class="text-purple"><svg style="width:24px; height:24px; fill:var(--accent-purple);" aria-hidden="true"><use href="#copilot-logo"/></svg></span> Cloud Agent: Research, Plan &amp; Code <span class="badge badge-new">NEW</span></h2>
+  <h2><span class="text-purple"><svg style="width:24px; height:24px; fill:var(--accent-purple);" aria-hidden="true"><use href="#copilot-logo"/></svg></span> Cloud Agent: Research, Plan &amp; Code <span class="badge badge-new">New</span></h2>
   <div class="flow" style="margin-bottom: 8px;">
     <div class="flow-step" style="border-color: var(--accent-blue);">&#x1F50D; Research<br><span style="font-size:0.8em; color:var(--text-secondary);">Ask questions</span></div>
     <div class="flow-arrow">&rarr;</div>
@@ -541,7 +540,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 <!-- SLIDE 4: Feature 2 — Copilot SDK -->
 <!-- ============================================================ -->
 <section data-background-color="#0d1117">
-  <h2><span class="text-blue">&#x1F6E0;&#xFE0F;</span> Copilot SDK <span class="badge badge-preview">PREVIEW</span></h2>
+  <h2><span class="text-blue">&#x1F6E0;&#xFE0F;</span> Copilot SDK <span class="badge badge-preview">Preview</span></h2>
   <p style="margin-bottom: 6px;">Build your own Copilot-powered apps &mdash; same agent runtime that powers Cloud Agent &amp; CLI</p>
   <div class="card-grid card-grid-3" style="margin-bottom: 6px;">
     <div class="card" style="text-align: center;">
@@ -581,11 +580,11 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 <!-- SLIDE 5: Feature 3 — VS Code March Releases -->
 <!-- ============================================================ -->
 <section data-background-color="#0d1117">
-  <h2><span class="text-green"><i class="fas fa-code" style="font-size:0.8em;"></i></span> VS Code March Releases <span class="badge badge-new">NEW</span></h2>
+  <h2><span class="text-green"><i class="fas fa-code" style="font-size:0.8em;"></i></span> VS Code March Releases <span class="badge badge-new">New</span></h2>
   <p style="margin-bottom: 6px;">The biggest VS Code Copilot update &mdash; agent-native development as the default</p>
   <div class="card-grid card-grid-3" style="margin-bottom: 6px;">
     <div class="card">
-      <h4><span class="text-green">&#x1F3AE;</span> Autopilot Mode <span class="badge badge-preview">PREVIEW</span></h4>
+      <h4><span class="text-green">&#x1F3AE;</span> Autopilot Mode <span class="badge badge-preview">Preview</span></h4>
       <p>Agents auto-approve actions, auto-retry errors, work fully autonomously. Zero manual approvals.</p>
     </div>
     <div class="card">
@@ -599,8 +598,8 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
   </div>
   <div class="card-grid card-grid-3" style="margin-top: 0;">
     <div class="card">
-      <h4><span class="text-orange">&#x1F5BC;&#xFE0F;</span> Images &amp; Video in Chat</h4>
-      <p>Attach screenshots &amp; videos. Agents return images in a zoomable carousel.</p>
+      <h4><span class="text-orange">&#x1F5BC;&#xFE0F;</span> Images in Chat</h4>
+      <p>Attach screenshots &amp; images as context. Agents return images in a zoomable carousel.</p>
     </div>
     <div class="card">
       <h4><span class="text-cyan">&#x2699;&#xFE0F;</span> Customizations Editor</h4>
@@ -617,7 +616,7 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 <!-- SLIDE 6: Feature 4 — Remote Control CLI -->
 <!-- ============================================================ -->
 <section data-background-color="#0d1117">
-  <h2><span class="text-orange">&#x1F4F1;</span> Remote Control CLI Sessions <span class="badge badge-preview">PREVIEW</span></h2>
+  <h2><span class="text-orange">&#x1F4F1;</span> Remote Control CLI Sessions <span class="badge badge-preview">Preview</span></h2>
   <p style="margin-bottom: 6px;">Monitor and steer Copilot CLI from your phone, tablet, or another browser</p>
   <div class="flow" style="margin-bottom: 8px;">
     <div class="flow-step" style="border-color: var(--accent-orange);">&#x1F4BB; Start<br><span style="font-size:0.8em; color:var(--text-secondary);">copilot --remote</span></div>
@@ -645,44 +644,45 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
 </section>
 
 <!-- ============================================================ -->
-<!-- SLIDE 7: Feature 5 — Data Residency -->
+<!-- SLIDE 7: Debugging & Troubleshooting Copilot -->
 <!-- ============================================================ -->
 <section data-background-color="#0d1117">
-  <h2><span class="text-red">&#x1F30D;</span> Data Residency &amp; FedRAMP <span class="badge badge-ga">GA</span></h2>
-  <p style="margin-bottom: 8px;">All inference processing stays within your designated region &mdash; US or EU</p>
+  <h2><span class="text-cyan">&#x1F50D;</span> Debugging &amp; Troubleshooting Copilot</h2>
+  <p style="margin-bottom: 8px;">Two powerful built-in tools to understand what Copilot is doing under the hood</p>
   <div class="comparison">
     <div class="col">
-      <h4 class="text-blue">&#x1F1FA;&#x1F1F8; US Region</h4>
+      <h4 class="text-blue">&#x1F4AC; Chat Debug View</h4>
       <ul>
-        <li>&#x2705; FedRAMP Moderate authorization</li>
-        <li>&#x2705; US government customers</li>
-        <li>&#x2705; GPT-5.4, Claude Sonnet 4.6, Claude Opus 4.6</li>
-        <li>&#x2705; All GA Copilot features covered</li>
+        <li><strong>Command:</strong> <code class="inline">Developer: Show Chat Debug View</code></li>
+        <li>See the raw conversation with the LLM</li>
+        <li>Inspect system prompts sent by VS Code</li>
+        <li>View tool calls and their responses</li>
+        <li>Debug why Copilot gave unexpected answers</li>
       </ul>
     </div>
     <div class="col">
-      <h4 class="text-blue">&#x1F1EA;&#x1F1FA; EU Region</h4>
+      <h4 class="text-purple">&#x1F4CB; Agent Debug Logs</h4>
       <ul>
-        <li>&#x2705; GDPR-compliant inference</li>
-        <li>&#x2705; EU data sovereignty</li>
-        <li>&#x2705; GPT-5.4, Claude Sonnet 4.6, Claude Opus 4.6</li>
-        <li>&#x2705; All GA Copilot features covered</li>
+        <li>JSONL files recording all agent activity</li>
+        <li>Track tool invocations and subagent calls</li>
+        <li>See which skills and instructions loaded</li>
+        <li>Diagnose slow or stuck agent sessions</li>
+        <li>Located in VS Code workspace storage</li>
       </ul>
     </div>
   </div>
-  <div class="card-grid card-grid-3" style="margin-top: 8px;">
-    <div class="card" style="text-align: center;">
-      <h4><span class="text-green">&#x2705;</span> Coverage</h4>
-      <p>Agent mode, inline suggestions, chat, cloud agent, code review, PR summaries, CLI</p>
+  <div class="cap-grid" style="margin-top: 8px;">
+    <div class="cap-item">
+      <div class="cap-icon" style="background: rgba(88,166,255,0.15);">&#x1F4A1;</div>
+      <div class="cap-text"><strong>When to use Chat Debug View</strong>Understanding prompt engineering, checking context sent to the model</div>
     </div>
-    <div class="card" style="text-align: center;">
-      <h4><span class="text-orange">&#x1F4B0;</span> Pricing</h4>
-      <p>10% increase in model multiplier for data-resident and FedRAMP requests</p>
+    <div class="cap-item">
+      <div class="cap-icon" style="background: rgba(139,92,246,0.15);">&#x1F527;</div>
+      <div class="cap-text"><strong>When to use Agent Debug Logs</strong>Investigating why tools weren&rsquo;t invoked, or why agent took unexpected actions</div>
     </div>
-    <div class="card" style="text-align: center;">
-      <h4><span class="text-purple">&#x1F5FA;&#xFE0F;</span> Coming Soon</h4>
-      <p>Japan &amp; Australia regions planned for later 2026</p>
-    </div>
+  </div>
+  <div class="tip-box" style="margin-top: 6px;">
+    <strong>&#x1F4A1; Pro tip:</strong> Use the <code class="inline">@troubleshoot</code> skill to analyze debug logs automatically and get actionable insights
   </div>
 </section>
 
@@ -718,6 +718,9 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
       <tr><td><strong class="text-purple">Copilot Chat</strong></td><td>Questions, large code gen, iterating on ideas</td><td><code class="inline">&#x2303;&#x2318;I</code></td></tr>
       <tr><td><strong class="text-green">Inline Chat</strong></td><td>In-place refactors, quick fixes</td><td><code class="inline">&#x2318;I</code></td></tr>
       <tr><td><strong class="text-orange">Agent / Ask / Plan</strong></td><td>Multi-file tasks &bull; Codebase Q&amp;A &bull; Step-by-step plans</td><td>Chat modes</td></tr>
+      <tr><td><strong class="text-cyan">Next Edit Suggestions</strong></td><td>Predictive edits in related code after a change</td><td><code class="inline">Tab</code></td></tr>
+      <tr><td><strong class="text-red">Code Review</strong></td><td>AI-powered review for pull requests</td><td>PR tab</td></tr>
+      <tr><td><strong class="text-pink">Copilot CLI</strong></td><td>Terminal assistance, command explanations, shell scripts</td><td><code class="inline">ghcs</code></td></tr>
     </tbody>
   </table>
 </section>
