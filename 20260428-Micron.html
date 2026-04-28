@@ -444,8 +444,10 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
     <div class="col">
       <h4 class="text-orange">File-based (Conditional)</h4>
       <div class="code-block">
-        <span class="comment"># .github/instructions/python.md</span><br>
+        <span class="comment"># .github/instructions/python.instructions.md</span><br>
+        <span class="string">---</span><br>
         <span class="keyword">applyTo:</span> <span class="string">'**/*.py'</span><br>
+        <span class="string">---</span><br>
         <span class="string">- Follow PEP 8 style guide</span><br>
         <span class="string">- Use type hints for all functions</span><br>
         <span class="string">- Write docstrings for public API</span>
@@ -460,12 +462,15 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
   <h2 style="margin-bottom:12px;">Prompt Files & Custom Agents</h2>
   <div class="comparison">
     <div class="col" style="border-top:3px solid var(--accent-cyan);">
-      <h4 class="text-cyan"><i class="fas fa-file-lines"></i> Prompt Files <code>.prompt.md</code></h4>
+      <h4 class="text-cyan"><i class="fas fa-file-lines"></i> Prompt Files - <code>.prompt.md</code></h4>
       <p style="font-size:0.6em; margin-bottom:8px;">Reusable slash commands in <code>.github/prompts/</code></p>
       <div class="code-block">
+        <span class="string">---</span><br>
         <span class="keyword">name:</span> <span class="string">create-react-form</span><br>
         <span class="keyword">agent:</span> <span class="string">agent</span><br>
         <span class="keyword">tools:</span> <span class="string">['file', 'terminal']</span><br>
+        <span class="string">---</span><br>
+        <span class="string">Create react form with certain organization standards</span><br>
         <span class="comment"># Invoke with /create-react-form</span>
       </div>
       <ul style="margin-top:6px;">
@@ -475,13 +480,16 @@ a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); ou
       </ul>
     </div>
     <div class="col" style="border-top:3px solid var(--accent-purple);">
-      <h4 class="text-purple"><i class="fas fa-robot"></i> Custom Agents <code>.agent.md</code></h4>
+      <h4 class="text-purple"><i class="fas fa-robot"></i> Custom Agents - <code>.agent.md</code></h4>
       <p style="font-size:0.6em; margin-bottom:8px;">Specialized AI personas in <code>.github/agents/</code></p>
       <div class="code-block">
+        <span class="string">---</span><br>
         <span class="keyword">name:</span> <span class="string">planner</span><br>
         <span class="keyword">tools:</span> <span class="string">['search', 'file']</span><br>
         <span class="keyword">model:</span> <span class="string">Claude Sonnet 4.5</span><br>
-        <span class="keyword">handoffs:</span> <span class="string">[implementer]</span>
+        <span class="keyword">handoffs:</span> <span class="string">[implementer]</span><br>
+        <span class="string">---</span><br>
+        <span class="string">Specialized agent that plans tasks and delegates to implementers</span><br>
       </div>
       <ul style="margin-top:6px;">
         <li>Tool restrictions (least privilege)</li>
