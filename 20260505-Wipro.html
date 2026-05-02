@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure DevOps → GitHub Migration Guide</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900;1,6..12,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1B0056;
+  --bg-secondary: #2F2452;
+  --bg-card: #362358;
+  --bg-card-alt: #0E3570;
+  --text-primary: #FFFFFF;
+  --text-secondary: #C4B5E3;
+  --accent-teal: #297F94;
+  --accent-lavender: #8D96FF;
+  --accent-aqua: #00A796;
+  --accent-yellow: #FBCD2E;
+  --accent-maroon: #85144B;
+  --accent-green: #7EC45F;
+  --accent-blue: #3498B3;
+  --accent-red: #E05252;
+  --border: #4A3875;
+  --font-display: 'Nunito Sans', 'Proxima Nova', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+.reveal { font-size: 22px; font-family: var(--font-display); color: var(--text-primary); }
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 { text-transform: none; font-family: var(--font-display); }
+.reveal h1 { font-size: 1.8em; font-weight: 800; }
+.reveal h2 { font-size: 1.35em; font-weight: 800; }
+.reveal h3 { font-size: 0.95em; font-weight: 700; }
+.reveal h4 { font-size: 0.78em; font-weight: 700; }
+
+.reveal .slides section {
+  padding: 24px 36px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+}
+.reveal .slides section::-webkit-scrollbar { display: none; }
+.reveal .slides section { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Color utility */
+.text-teal { color: var(--accent-teal); }
+.text-lavender { color: var(--accent-lavender); }
+.text-aqua { color: var(--accent-aqua); }
+.text-yellow { color: var(--accent-yellow); }
+.text-maroon { color: var(--accent-maroon); }
+.text-green { color: var(--accent-green); }
+.text-blue { color: var(--accent-blue); }
+.text-red { color: var(--accent-red); }
+.text-muted { color: var(--text-secondary); }
+
+/* Card grid */
+.card-grid { display: grid !important; gap: 14px; width: 100%; }
+.card-grid-2 { grid-template-columns: 1fr 1fr !important; }
+.card-grid-3 { grid-template-columns: 1fr 1fr 1fr !important; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0px;
+  padding: 16px 18px;
+  text-align: left;
+  transition: transform 0.2s ease-out, border-color 0.2s ease-out;
+}
+.card:hover { transform: translateY(-2px); border-color: var(--accent-teal); }
+.card h4 { margin: 0 0 8px 0; font-size: 0.78em; }
+.card p { margin: 0; font-size: 0.62em; line-height: 1.5; color: var(--text-secondary); }
+.card ul { margin: 6px 0 0 0; padding-left: 16px; font-size: 0.62em; line-height: 1.6; color: var(--text-secondary); }
+.card li { margin-bottom: 3px; }
+
+/* Flow */
+.flow { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; width: 100%; }
+.flow-step {
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  padding: 10px 16px; border: 2px solid var(--accent-teal); border-radius: 0px;
+  background: var(--bg-card); font-size: 0.68em; font-weight: 600; min-width: 90px;
+}
+.flow-step div { text-align: center; }
+.flow-arrow { font-size: 1.1em; color: var(--accent-lavender); font-weight: 700; }
+
+/* Comparison */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.col {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 0px;
+  padding: 16px 18px; text-align: left;
+}
+.col h4 { margin: 0 0 10px 0; font-size: 0.78em; }
+.col ul { margin: 0; padding-left: 16px; font-size: 0.62em; line-height: 1.6; color: var(--text-secondary); }
+.col li { margin-bottom: 4px; }
+
+/* Cap grid */
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.cap-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 0px;
+  overflow: hidden;
+}
+.cap-icon {
+  font-size: 0.95em; width: 30px; min-width: 30px; height: 30px;
+  line-height: 30px; text-align: center; overflow: hidden;
+}
+.cap-text { font-size: 0.62em; text-align: left; line-height: 1.4; }
+.cap-text strong { color: var(--text-primary); }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 0.62em; }
+th { background: var(--bg-card); color: var(--accent-lavender); font-weight: 700; padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+td { padding: 7px 12px; border: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(141, 150, 255, 0.06); }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 0.55em; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+.badge-new { background: var(--accent-aqua); color: #fff; }
+.badge-ga { background: var(--accent-green); color: #1B0056; }
+.badge-preview { background: var(--accent-yellow); color: #1B0056; }
+.badge-ado { background: var(--accent-maroon); color: #fff; }
+.badge-gh { background: var(--accent-teal); color: #fff; }
+
+/* Tip / Note / Warn */
+.tip-box { background: rgba(0,167,150,0.1); border: 1px solid var(--accent-aqua); border-radius: 0px; padding: 12px 16px; font-size: 0.62em; text-align: left; width: 100%; margin-top: 10px; }
+.note-box { background: rgba(141,150,255,0.1); border: 1px solid var(--accent-lavender); border-radius: 0px; padding: 12px 16px; font-size: 0.62em; text-align: left; width: 100%; margin-top: 10px; }
+.warn-box { background: rgba(251,205,46,0.1); border: 1px solid var(--accent-yellow); border-radius: 0px; padding: 12px 16px; font-size: 0.62em; text-align: left; width: 100%; margin-top: 10px; }
+
+/* Tags */
+.tag { display: inline-block; padding: 2px 10px; border: 1px solid var(--border); border-radius: 100px; font-size: 0.55em; color: var(--text-secondary); margin: 2px; }
+
+/* Section icon */
+.section-icon {
+  font-size: 1.1em; width: 40px; height: 40px; min-width: 40px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px auto; overflow: hidden;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+/* Presenter */
+.presenter-card {
+  display: flex; align-items: center; gap: 30px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 0px; padding: 24px 30px;
+  width: 100%; text-align: left;
+}
+.presenter-photo {
+  width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--accent-teal); flex-shrink: 0;
+}
+.presenter-info h3 { margin: 0 0 6px 0; font-size: 0.95em; color: var(--text-primary); }
+.presenter-info .title { font-size: 0.68em; color: var(--accent-lavender); margin-bottom: 8px; }
+.presenter-info .bio { font-size: 0.62em; color: var(--text-secondary); line-height: 1.5; }
+.presenter-social { display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap; }
+.presenter-social a { color: var(--text-secondary); text-decoration: none; font-size: 0.62em; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+.presenter-social a:hover { color: var(--accent-teal); }
+
+/* Persistent footer */
+.persistent-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 7px 20px; background: rgba(27, 0, 86, 0.95);
+  border-top: 1px solid var(--border); font-size: 20px;
+}
+.persistent-footer a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+.persistent-footer a:hover { color: var(--accent-teal); }
+.persistent-footer .sep { width: 1px; height: 14px; background: var(--border); }
+.persistent-footer .handle { color: var(--accent-lavender); font-weight: 600; font-size: 0.8em; }
+.persistent-footer .follow-text { color: var(--text-secondary); font-size: 0.7em; }
+
+/* Slide number above footer */
+.reveal .slide-number { bottom: 36px; right: 12px; font-size: 14px; color: var(--text-secondary); }
+.reveal .progress { bottom: 34px; height: 3px; }
+.reveal .progress span { background: linear-gradient(90deg, var(--accent-teal), var(--accent-lavender)); }
+
+/* Title gradient animation */
+.gradient-title {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-lavender), var(--accent-aqua), var(--accent-teal));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes iconPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(141,150,255,0.3)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 10px rgba(141,150,255,0.6)); transform: scale(1.05); }
+}
+
+/* Migration arrow */
+.migration-arrow {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  margin: 14px 0; width: 100%;
+}
+.migration-logo { font-size: 1.6em; }
+.migration-connector { display: flex; align-items: center; gap: 4px; }
+.migration-connector .line { width: 60px; height: 3px; background: linear-gradient(90deg, var(--accent-maroon), var(--accent-teal)); border-radius: 2px; }
+.migration-connector .chevron { color: var(--accent-teal); font-size: 1.2em; font-weight: 800; }
+
+/* Step number */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; font-size: 0.6em; font-weight: 800;
+  background: var(--accent-teal); color: #fff; margin-right: 8px; flex-shrink: 0;
+}
+
+/* Phase label */
+.phase-label {
+  display: inline-block; padding: 4px 14px; border-radius: 100px;
+  font-size: 0.6em; font-weight: 700; margin-bottom: 8px;
+}
+
+/* Accessibility */
+a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .gradient-title { animation: none; }
+  .section-icon { animation: none; }
+  .card { transition: none; }
+}
+
+/* Responsive fallbacks - minimal since Reveal.js scales the virtual canvas */
+@media (max-width: 1024px) {
+  .presenter-card { flex-direction: column; text-align: center; }
+  .flow { flex-wrap: wrap; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .reveal .slides section { padding: 16px 20px; }
+  .persistent-footer { font-size: 12px; padding: 6px 14px; gap: 8px; }
+  .presenter-photo { width: 100px; height: 100px; }
+}
+</style>
+</head>
+<body>
+<div class="reveal">
+
+<!-- Persistent Footer -->
+<div class="persistent-footer">
+  <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+  <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+  <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+  <div class="sep"></div>
+  <span class="handle">tec_in_sec</span>
+  <div class="sep"></div>
+  <span class="follow-text">Follow for more updates</span>
+</div>
+
+<div class="slides">
+
+<!-- SLIDE 1: Title -->
+<section data-background-color="#1B0056">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="migration-arrow">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i class="fab fa-microsoft" style="font-size:1.6em; color:var(--accent-lavender);"></i>
+        <span style="font-size:0.78em; font-weight:700; color:var(--text-secondary);">Azure DevOps</span>
+      </div>
+      <div class="migration-connector">
+        <div class="line"></div>
+        <span class="chevron">→</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i class="fab fa-github" style="font-size:1.6em; color:var(--accent-teal);"></i>
+        <span style="font-size:0.78em; font-weight:700; color:var(--text-primary);">GitHub</span>
+      </div>
+    </div>
+    <h1 class="gradient-title" style="margin:10px 0 8px 0;">Migration Guide</h1>
+    <p style="font-size:0.72em; color:var(--text-secondary); margin:0 0 6px 0;">Area Paths, Teams, Iterations, Access & Work Items</p>
+    <p style="font-size:0.62em; color:var(--text-secondary); margin:0;">Wipro — May 2026</p>
+    <div style="margin-top:18px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag"><i class="fab fa-github"></i> GitHub Projects</span>
+      <span class="tag"><i class="fas fa-users"></i> Teams</span>
+      <span class="tag"><i class="fas fa-sync-alt"></i> Migration</span>
+      <span class="tag"><i class="fas fa-shield-alt"></i> Access Control</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: Presenter -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:16px;">Your Presenter</h2>
+  <div class="presenter-card">
+    <img class="presenter-photo" src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P">
+    <div class="presenter-info">
+      <h3>Sukumar P</h3>
+      <div class="title">Developer · Building the Future, One Commit at a Time</div>
+      <div class="bio">Passionate about developer productivity, AI-powered coding, and building tools that make developers' lives easier. Creating educational content about GitHub Copilot and modern development workflows.</div>
+      <div class="presenter-social">
+        <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> YouTube</a>
+        <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: Agenda -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:16px;">What We'll Cover</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent-teal);">
+      <h4><span class="text-teal">01</span> Area Paths & Teams</h4>
+      <p>What they are in Azure DevOps, how they map to GitHub, and how to set up Teams</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-lavender);">
+      <h4><span class="text-lavender">02</span> Iterations</h4>
+      <p>Creating and managing sprints in GitHub Projects; migrating from Azure DevOps</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-aqua);">
+      <h4><span class="text-aqua">03</span> Access Management</h4>
+      <p>Permission model, roles, and providing user access to areas and repositories</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-yellow);">
+      <h4><span class="text-yellow">04</span> Work Items & Migration</h4>
+      <p>Creating issues, mapping work item types, and migration tools</p>
+    </div>
+  </div>
+  <div class="note-box" style="margin-top:14px;">
+    <strong>📌 Context:</strong> This guide is for teams migrating from Azure DevOps Boards to GitHub Issues + Projects v2.
+  </div>
+</section>
+
+<!-- SLIDE 4: Why Migrate? -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:14px;">Why Migrate to GitHub?</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="cap-item">
+      <div class="cap-icon text-teal">🤖</div>
+      <div class="cap-text"><strong>AI-First Platform</strong><br>Copilot deeply integrated — code, issues, PRs, agent mode</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-lavender">🌍</div>
+      <div class="cap-text"><strong>100M+ Developers</strong><br>Largest developer community, InnerSource, open-source</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-aqua">🚀</div>
+      <div class="cap-text"><strong>Faster Innovation</strong><br>50+ changelog updates per month vs Azure DevOps</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-yellow">🔒</div>
+      <div class="cap-text"><strong>Security Built-in</strong><br>Advanced Security, CodeQL, secret scanning, Dependabot</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green">🔗</div>
+      <div class="cap-text"><strong>Unified DevSecOps</strong><br>Code + CI/CD + Security + Project Management in one</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-blue">🏢</div>
+      <div class="cap-text"><strong>Enterprise Ready</strong><br>Data residency (US/EU), FedRAMP, SAML SSO, EMU</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: Concept Mapping Overview -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:12px;">Concept Mapping: Azure DevOps → GitHub</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:35%;">Azure DevOps <span class="badge badge-ado">ADO</span></th>
+        <th style="width:35%;">GitHub <span class="badge badge-gh">GH</span></th>
+        <th style="width:30%;">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Area Paths</td><td>Labels, Custom Fields, Repos</td><td>No direct equivalent; multiple options</td></tr>
+      <tr><td>Iterations / Sprints</td><td>Iteration Fields (Projects)</td><td>Flexible duration, supports breaks</td></tr>
+      <tr><td>Teams</td><td>GitHub Teams (Org level)</td><td>Nested hierarchy, permissions</td></tr>
+      <tr><td>Work Items</td><td>GitHub Issues</td><td>Types, sub-issues, custom fields</td></tr>
+      <tr><td>Epics / Features</td><td>Issues with Sub-Issues</td><td>Parent-child hierarchy, up to 100 children</td></tr>
+      <tr><td>Boards</td><td>Project Board View</td><td>Kanban-style with custom columns</td></tr>
+      <tr><td>Queries</td><td>Filtered Views + Search</td><td>Advanced search with AND/OR</td></tr>
+      <tr><td>Dashboards</td><td>Project Insights</td><td>Charts, status updates</td></tr>
+      <tr><td>Pipelines</td><td>GitHub Actions</td><td>20,000+ marketplace actions</td></tr>
+      <tr><td>Repos</td><td>GitHub Repositories</td><td>Direct migration supported</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SLIDE 6: Section Divider - Area Paths & Teams -->
+<section data-background-color="#2F2452">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em;" aria-hidden="true">🗂️</div>
+    <h1 style="color:var(--accent-teal); margin:8px 0;">Area Paths & Teams</h1>
+    <p style="font-size:0.72em; color:var(--text-secondary);">Organizing work and people in GitHub</p>
+  </div>
+</section>
+
+<!-- SLIDE 7: What Are Area Paths? -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:12px;">What Are Area Paths?</h2>
+  <div class="comparison">
+    <div class="col" style="border-top: 3px solid var(--accent-maroon);">
+      <h4 class="text-maroon"><i class="fab fa-microsoft"></i> Azure DevOps</h4>
+      <ul>
+        <li><strong>Hierarchical classification</strong> for work items</li>
+        <li>Organize by team, feature, or component</li>
+        <li>Each work item belongs to exactly one area</li>
+        <li>Tree structure: <code style="font-size:0.9em;">Project\Team\Feature</code></li>
+        <li>Used for security, filtering, and team assignment</li>
+      </ul>
+    </div>
+    <div class="col" style="border-top: 3px solid var(--accent-teal);">
+      <h4 class="text-teal"><i class="fab fa-github"></i> GitHub Equivalents</h4>
+      <ul>
+        <li><strong>Labels</strong> — tag issues with team/area/component</li>
+        <li><strong>Custom Fields</strong> — single-select fields in Projects</li>
+        <li><strong>Repositories</strong> — one repo per component/team</li>
+        <li><strong>Projects</strong> — one project per team/initiative</li>
+        <li>Issues can have <strong>multiple labels</strong> (more flexible)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box">
+    <strong>💡 Key Insight:</strong> GitHub doesn't have a single "Area Path" equivalent. Use a <strong>combination</strong> of labels + custom fields + repo structure for the same organizational power.
+  </div>
+</section>
+
+<!-- SLIDE 8: Mapping Area Paths to GitHub -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:12px;">Mapping Area Paths to GitHub</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top: 3px solid var(--accent-teal);">
+      <h4><span class="text-teal">🏷️</span> Strategy 1: Labels</h4>
+      <p>Create labels matching your area paths</p>
+      <ul>
+        <li><code>team:frontend</code></li>
+        <li><code>area:payments</code></li>
+        <li><code>component:api</code></li>
+      </ul>
+      <p style="margin-top:6px; color:var(--accent-aqua);"><strong>Best for:</strong> Simple hierarchies</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-lavender);">
+      <h4><span class="text-lavender">📋</span> Strategy 2: Custom Fields</h4>
+      <p>Add a single-select "Area" field in Projects</p>
+      <ul>
+        <li>Define values for each team/area</li>
+        <li>Group and filter views by field</li>
+        <li>Up to 50 fields per project</li>
+      </ul>
+      <p style="margin-top:6px; color:var(--accent-aqua);"><strong>Best for:</strong> Project-level views</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-aqua);">
+      <h4><span class="text-aqua">📦</span> Strategy 3: Repositories</h4>
+      <p>One repo per component or service</p>
+      <ul>
+        <li>Natural code + issue separation</li>
+        <li>Cross-repo issues in Projects</li>
+        <li>Team permissions per repo</li>
+      </ul>
+      <p style="margin-top:6px; color:var(--accent-aqua);"><strong>Best for:</strong> Microservices, large orgs</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: Creating Teams in GitHub -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:12px;">Creating Teams in GitHub</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:14px;">Teams are organizational units under a GitHub Organization for managing access and mentions</p>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-teal);">
+      <div><strong>Org Settings</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Navigate to org</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-lavender);">
+      <div><strong>Teams Tab</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Click "New team"</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-aqua);">
+      <div><strong>Configure</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Name, parent, visibility</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-yellow);">
+      <div><strong>Add Members</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Invite users</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div><strong>Assign Repos</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Set permissions</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-lavender">🏗️</span> Team Features</h4>
+      <ul>
+        <li><strong>Nested teams</strong> — parent/child hierarchy (mirrors area paths)</li>
+        <li><strong>Visibility:</strong> Visible (all org members can see) or Secret</li>
+        <li><strong>Roles:</strong> Member (default) and Maintainer (manage team)</li>
+        <li><strong>Mentions:</strong> <code>@org/team-name</code> notifies all members</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-aqua">⚙️</span> Team Capabilities</h4>
+      <ul>
+        <li><strong>Code review assignment</strong> — auto-assign PR reviewers</li>
+        <li><strong>Repository access</strong> — granular per-repo permissions</li>
+        <li><strong>CODEOWNERS</strong> — auto-request reviews by file path</li>
+        <li><strong>Team sync</strong> — integrate with identity providers (IdP)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: Team Hierarchy Example -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:12px;">Team Hierarchy: ADO Area Paths → GitHub Teams</h2>
+  <div class="comparison">
+    <div class="col" style="border-top: 3px solid var(--accent-maroon);">
+      <h4 class="text-maroon"><i class="fab fa-microsoft"></i> Azure DevOps Area Paths</h4>
+      <div style="font-size:0.62em; font-family:var(--font-mono); line-height:1.8; color:var(--text-secondary);">
+        <div>📁 MyProject</div>
+        <div style="padding-left:16px;">📁 Backend</div>
+        <div style="padding-left:32px;">📁 API</div>
+        <div style="padding-left:32px;">📁 Database</div>
+        <div style="padding-left:16px;">📁 Frontend</div>
+        <div style="padding-left:32px;">📁 Web App</div>
+        <div style="padding-left:32px;">📁 Mobile</div>
+        <div style="padding-left:16px;">📁 DevOps</div>
+        <div style="padding-left:16px;">📁 QA</div>
+      </div>
+    </div>
+    <div class="col" style="border-top: 3px solid var(--accent-teal);">
+      <h4 class="text-teal"><i class="fab fa-github"></i> GitHub Teams (Nested)</h4>
+      <div style="font-size:0.62em; font-family:var(--font-mono); line-height:1.8; color:var(--text-secondary);">
+        <div>👥 engineering <span class="badge badge-gh" style="font-size:0.8em;">parent</span></div>
+        <div style="padding-left:16px;">👥 backend</div>
+        <div style="padding-left:32px;">👥 backend-api</div>
+        <div style="padding-left:32px;">👥 backend-db</div>
+        <div style="padding-left:16px;">👥 frontend</div>
+        <div style="padding-left:32px;">👥 frontend-web</div>
+        <div style="padding-left:32px;">👥 frontend-mobile</div>
+        <div style="padding-left:16px;">👥 devops</div>
+        <div style="padding-left:16px;">👥 qa</div>
+      </div>
+    </div>
+  </div>
+  <div class="tip-box">
+    <strong>💡 Pro Tip:</strong> Child teams inherit parent team's repository access. You can add or restrict access at the child level.
+  </div>
+</section>
+
+<!-- SLIDE 11: Section Divider - Iterations -->
+<section data-background-color="#2F2452">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em;" aria-hidden="true">🔄</div>
+    <h1 style="color:var(--accent-lavender); margin:8px 0;">Iterations</h1>
+    <p style="font-size:0.72em; color:var(--text-secondary);">Sprint planning and iteration management in GitHub</p>
+  </div>
+</section>
+
+<!-- SLIDE 12: What Are Iterations? -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-lavender); margin-bottom:12px;">Iterations in Azure DevOps vs GitHub</h2>
+  <div class="comparison">
+    <div class="col" style="border-top: 3px solid var(--accent-maroon);">
+      <h4 class="text-maroon"><i class="fab fa-microsoft"></i> Azure DevOps Iterations</h4>
+      <ul>
+        <li><strong>Hierarchical sprints</strong> under project settings</li>
+        <li>Fixed start and end dates</li>
+        <li>Team-specific iteration paths</li>
+        <li>Capacity planning built-in</li>
+        <li>Sprint backlog, burndown charts</li>
+        <li>Velocity tracking across sprints</li>
+      </ul>
+    </div>
+    <div class="col" style="border-top: 3px solid var(--accent-teal);">
+      <h4 class="text-teal"><i class="fab fa-github"></i> GitHub Iterations</h4>
+      <ul>
+        <li><strong>Iteration field</strong> in GitHub Projects v2</li>
+        <li>Flexible duration (days, weeks, custom)</li>
+        <li>Supports <strong>breaks</strong> between iterations</li>
+        <li>Filter with <code>@current</code>, <code>@next</code>, <code>@previous</code></li>
+        <li>Roadmap view with timeline</li>
+        <li>Insights charts for tracking</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13: Creating Iterations Step by Step -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-lavender); margin-bottom:12px;">Creating Iterations in GitHub Projects</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="step-num">1</span> Open Project Settings</h4>
+      <p>Navigate to your GitHub Project → click <strong>⋯</strong> menu → <strong>Settings</strong> → <strong>Custom Fields</strong></p>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">2</span> Add Iteration Field</h4>
+      <p>Click <strong>New field</strong> → select <strong>Iteration</strong> type → name it (e.g., "Sprint")</p>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">3</span> Configure Iterations</h4>
+      <p>Set <strong>start date</strong> and <strong>duration</strong> for each iteration. 3 iterations are auto-created.</p>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">4</span> Add Breaks (Optional)</h4>
+      <p>Insert <strong>breaks</strong> between iterations for holidays, planning weeks, or PI boundaries</p>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">5</span> Assign Issues</h4>
+      <p>Drag issues to iterations in Board or Table view, or bulk-assign using the field dropdown</p>
+    </div>
+    <div class="card">
+      <h4><span class="step-num">6</span> Create Views</h4>
+      <p>Filter by <code>@current</code> iteration for sprint board. Use <strong>Roadmap</strong> view for timeline.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14: Migrating Iterations from ADO -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-lavender); margin-bottom:12px;">Migrating Iterations from Azure DevOps</h2>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-maroon);">
+      <div><strong>Export</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">ADO iterations</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-lavender);">
+      <div><strong>Map</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Dates & names</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal);">
+      <div><strong>Create</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">GH iterations</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green);">
+      <div><strong>Assign</strong></div>
+      <div style="font-size:0.85em; color:var(--text-secondary);">Issues to sprints</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4><span class="text-maroon">📤</span> Export from Azure DevOps</h4>
+      <ul>
+        <li>Use <strong>ADO REST API</strong> to export iteration paths</li>
+        <li><code>GET /{org}/{project}/_apis/work/teamsettings/iterations</code></li>
+        <li>Extract: name, start date, end date, path</li>
+        <li>Export to CSV/JSON for mapping</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-teal">📥</span> Import to GitHub</h4>
+      <ul>
+        <li>Use <strong>GitHub GraphQL API</strong> to create iterations</li>
+        <li><code>updateProjectV2</code> mutation for iteration field</li>
+        <li>Script to match dates and names</li>
+        <li>Reassign work items by iteration after import</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn-box">
+    <strong>⚠️ Note:</strong> No automated tool migrates iterations directly. Use the APIs to script the migration, or recreate manually if the number of iterations is small.
+  </div>
+</section>
+
+<!-- SLIDE 15: Section Divider - Access Management -->
+<section data-background-color="#2F2452">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em;" aria-hidden="true">🔐</div>
+    <h1 style="color:var(--accent-aqua); margin:8px 0;">Access Management</h1>
+    <p style="font-size:0.72em; color:var(--text-secondary);">Permissions, roles, and user access control</p>
+  </div>
+</section>
+
+<!-- SLIDE 16: Permission Model -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-aqua); margin-bottom:12px;">GitHub Permission Model</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Roles</th>
+        <th>Key Permissions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Organization</strong></td>
+        <td>Owner, Member, Billing Mgr</td>
+        <td>Manage teams, repos, policies, billing</td>
+      </tr>
+      <tr>
+        <td><strong>Team</strong></td>
+        <td>Member, Maintainer</td>
+        <td>Manage members, repo access for team</td>
+      </tr>
+      <tr>
+        <td><strong>Repository</strong></td>
+        <td>Read, Triage, Write, Maintain, Admin</td>
+        <td>Code access, issue management, settings</td>
+      </tr>
+      <tr>
+        <td><strong>Project</strong></td>
+        <td>Read, Write, Admin</td>
+        <td>View, edit, manage project settings</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:14px;">
+    <h4 style="color:var(--accent-aqua); margin-bottom:8px;">Repository Roles Explained</h4>
+    <div class="flow">
+      <div class="flow-step" style="border-color:var(--text-secondary); min-width:80px;">
+        <div><strong>Read</strong></div>
+        <div style="font-size:0.8em; color:var(--text-secondary);">View code</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent-teal); min-width:80px;">
+        <div><strong>Triage</strong></div>
+        <div style="font-size:0.8em; color:var(--text-secondary);">Manage issues</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent-lavender); min-width:80px;">
+        <div><strong>Write</strong></div>
+        <div style="font-size:0.8em; color:var(--text-secondary);">Push code</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent-yellow); min-width:80px;">
+        <div><strong>Maintain</strong></div>
+        <div style="font-size:0.8em; color:var(--text-secondary);">Manage repo</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent-green); min-width:80px;">
+        <div><strong>Admin</strong></div>
+        <div style="font-size:0.8em; color:var(--text-secondary);">Full control</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 17: Providing Access -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-aqua); margin-bottom:12px;">Providing Access to Users</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top: 3px solid var(--accent-teal);">
+      <h4><span class="step-num">1</span> Add to Organization</h4>
+      <ul>
+        <li>Org Settings → People → Invite</li>
+        <li>Via SAML SSO (Enterprise)</li>
+        <li>SCIM provisioning from Azure AD</li>
+        <li>Enterprise Managed Users (EMU)</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-lavender);">
+      <h4><span class="step-num">2</span> Add to Team</h4>
+      <ul>
+        <li>Org → Teams → Select team</li>
+        <li>Click "Add member"</li>
+        <li>Set role: Member or Maintainer</li>
+        <li>Inherits parent team access</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-aqua);">
+      <h4><span class="step-num">3</span> Set Repo Permissions</h4>
+      <ul>
+        <li>Team Settings → Repositories</li>
+        <li>Add repos to team</li>
+        <li>Set role: Read/Write/Admin</li>
+        <li>Or per-repo: Settings → Collaborators</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:10px;">
+    <strong>💡 Best Practice:</strong> Use <strong>teams for access control</strong> instead of individual user permissions. This mirrors Azure DevOps area path security — assign teams to repos, and all members get the appropriate access level.
+  </div>
+</section>
+
+<!-- SLIDE 18: ADO vs GitHub Permissions Mapping -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-aqua); margin-bottom:12px;">Permission Mapping: ADO → GitHub</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Azure DevOps Role</th>
+        <th>GitHub Equivalent</th>
+        <th>How to Assign</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Project Administrator</td><td>Org Owner / Repo Admin</td><td>Org Settings → People → Owner role</td></tr>
+      <tr><td>Contributors</td><td>Write (Repo Role)</td><td>Team → Repository → Write access</td></tr>
+      <tr><td>Readers</td><td>Read (Repo Role)</td><td>Team → Repository → Read access</td></tr>
+      <tr><td>Stakeholders</td><td>Triage (Repo Role)</td><td>Team → Repository → Triage access</td></tr>
+      <tr><td>Build Administrators</td><td>Write + Actions permissions</td><td>Branch protection rules + custom role</td></tr>
+      <tr><td>Area Path security</td><td>Team-based repo access</td><td>Create teams mirroring area paths</td></tr>
+    </tbody>
+  </table>
+  <div class="note-box" style="margin-top:10px;">
+    <strong>📌 Enterprise tip:</strong> Use <strong>GitHub Enterprise Managed Users (EMU)</strong> with Azure AD/Entra ID for automatic user provisioning and SSO — ideal for Wipro's enterprise scale.
+  </div>
+</section>
+
+<!-- SLIDE 19: Section Divider - Work Items -->
+<section data-background-color="#2F2452">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div class="section-icon" style="font-size:1.6em;" aria-hidden="true">📋</div>
+    <h1 style="color:var(--accent-yellow); margin:8px 0;">Work Items</h1>
+    <p style="font-size:0.72em; color:var(--text-secondary);">Creating, mapping, and migrating work items to GitHub Issues</p>
+  </div>
+</section>
+
+<!-- SLIDE 20: Work Item Mapping -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-yellow); margin-bottom:12px;">Work Item Type Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ADO Work Item <span class="badge badge-ado">ADO</span></th>
+        <th>GitHub Issue <span class="badge badge-gh">GH</span></th>
+        <th>Implementation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Epic</strong></td>
+        <td>Issue (Type: Epic)</td>
+        <td>Custom issue type + sub-issues; tracked in Roadmap view</td>
+      </tr>
+      <tr>
+        <td><strong>Feature</strong></td>
+        <td>Issue (Type: Feature)</td>
+        <td>Sub-issue of Epic; has its own sub-issues for stories</td>
+      </tr>
+      <tr>
+        <td><strong>User Story</strong></td>
+        <td>Issue (Type: Story/Task)</td>
+        <td>Standard issue with labels, assignees, and iteration</td>
+      </tr>
+      <tr>
+        <td><strong>Task</strong></td>
+        <td>Issue or Tasklist item</td>
+        <td>Sub-issue or checklist within parent issue</td>
+      </tr>
+      <tr>
+        <td><strong>Bug</strong></td>
+        <td>Issue (Type: Bug)</td>
+        <td>Bug issue type with bug report template</td>
+      </tr>
+      <tr>
+        <td><strong>Test Case</strong></td>
+        <td>Issue + Actions workflow</td>
+        <td>No direct equivalent; use automation</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SLIDE 21: GitHub Issues Features -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-yellow); margin-bottom:12px;">GitHub Issues: Modern Features</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4><span class="text-teal">📝</span> Issue Types <span class="badge badge-ga">GA</span></h4>
+      <p>Organization-level classification: Bug, Feature, Task, Epic. Up to 25 types per org. Filter and group by type.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-lavender">🔗</span> Sub-Issues <span class="badge badge-ga">GA</span></h4>
+      <p>Parent-child hierarchy. Up to 100 sub-issues per parent. Cross-repo support. Progress tracking built-in.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-aqua">📊</span> Issue Fields <span class="badge badge-preview">Preview</span></h4>
+      <p>Structured metadata directly on issues. Custom fields beyond project-level. Announced March 2026.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-yellow">🔀</span> Dependencies <span class="badge badge-new">New</span></h4>
+      <p>Define <code>blocks</code> / <code>blocked-by</code> relationships between issues natively.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-green">🏗️</span> Hierarchy View <span class="badge badge-ga">GA</span></h4>
+      <p>Browse full sub-issue hierarchy visually within Projects. GA since March 2026.</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-blue">🔍</span> Advanced Search <span class="badge badge-ga">GA</span></h4>
+      <p>AND/OR operators, nested search queries. GA since April 2026. Much more powerful filtering.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 22: Creating a Work Item in GitHub -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-yellow); margin-bottom:12px;">Creating Work Items (Issues) in GitHub</h2>
+  <div class="card-grid card-grid-2" style="margin-bottom:12px;">
+    <div class="card">
+      <h4><span class="text-teal">🖥️</span> Via Web UI</h4>
+      <ul>
+        <li>Repository → <strong>Issues</strong> → <strong>New Issue</strong></li>
+        <li>Select an <strong>issue template</strong> (Bug, Feature, etc.)</li>
+        <li>Fill title, description (Markdown supported)</li>
+        <li>Set: assignees, labels, milestone, project, iteration</li>
+        <li>Set issue type (Bug, Feature, Task, Epic)</li>
+        <li>Add to Project → set custom fields</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="text-lavender">⚡</span> Via GitHub CLI / API</h4>
+      <ul>
+        <li><code>gh issue create --title "..." --body "..."</code></li>
+        <li><code>--label bug --assignee @user</code></li>
+        <li><code>--project "Sprint Board"</code></li>
+        <li>Bulk create via <strong>GraphQL API</strong></li>
+        <li>Import from CSV with scripting</li>
+        <li>Copilot can <strong>create issues from Slack</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="cap-item">
+      <div class="cap-icon text-aqua">📋</div>
+      <div class="cap-text"><strong>Templates</strong><br>Standardized forms per repo</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-yellow">🏷️</div>
+      <div class="cap-text"><strong>Labels</strong><br>Categorize and filter</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green">🎯</div>
+      <div class="cap-text"><strong>Milestones</strong><br>Group by release/sprint</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 23: Migration Tools -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-yellow); margin-bottom:12px;">Migration Tools Overview</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>What It Migrates</th>
+        <th>What It Doesn't</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>GitHub Enterprise Importer (GEI)</strong><br><span style="color:var(--accent-teal); font-size:0.9em;"><code>gh ado2gh</code></span></td>
+        <td>Git repos, PRs, branch policies</td>
+        <td>Work items, pipelines, wiki, test plans, permissions</td>
+      </tr>
+      <tr>
+        <td><strong>ADO Migration Tools</strong><br><span style="color:var(--text-secondary); font-size:0.9em;">Open Source (nkdAgility)</span></td>
+        <td>Work items, area/iteration paths, links, attachments, test plans</td>
+        <td>Pipelines, repo history (use GEI for repos)</td>
+      </tr>
+      <tr>
+        <td><strong>GitHub Importer</strong><br><span style="color:var(--text-secondary); font-size:0.9em;">Web-based</span></td>
+        <td>Git history from any URL</td>
+        <td>Everything except code</td>
+      </tr>
+      <tr>
+        <td><strong>Manual / API Scripts</strong><br><span style="color:var(--text-secondary); font-size:0.9em;">Custom scripting</span></td>
+        <td>Anything (with effort)</td>
+        <td>Requires development and testing</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="tip-box" style="margin-top:10px;">
+    <strong>💡 Recommendation:</strong> Use <strong>GEI for repos</strong> + <strong>ADO Migration Tools for work items</strong> + <strong>manual conversion for pipelines</strong> (Azure Pipelines → GitHub Actions).
+  </div>
+</section>
+
+<!-- SLIDE 24: Migration Flow -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-yellow); margin-bottom:12px;">Recommended Migration Phases</h2>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-teal);">
+      <div><span class="phase-label" style="background:var(--accent-teal); color:#fff;">Phase 1</span></div>
+      <div><strong>Source Code</strong></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-lavender);">
+      <div><span class="phase-label" style="background:var(--accent-lavender); color:#1B0056;">Phase 2</span></div>
+      <div><strong>CI/CD Pipelines</strong></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-aqua);">
+      <div><span class="phase-label" style="background:var(--accent-aqua); color:#fff;">Phase 3</span></div>
+      <div><strong>Work Items</strong></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-yellow);">
+      <div><span class="phase-label" style="background:var(--accent-yellow); color:#1B0056;">Phase 4</span></div>
+      <div><strong>Remaining</strong></div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent-teal);">
+      <h4><span class="text-teal">Phase 1:</span> Source Code <span style="color:var(--accent-green); font-size:0.85em;">· Lowest risk</span></h4>
+      <p>Git repos via GEI, branch policies, pull requests, CODEOWNERS setup</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-lavender);">
+      <h4><span class="text-lavender">Phase 2:</span> CI/CD Pipelines <span style="color:var(--accent-yellow); font-size:0.85em;">· Medium effort</span></h4>
+      <p>Azure Pipelines → Actions, YAML translation, service connections</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-aqua);">
+      <h4><span class="text-aqua">Phase 3:</span> Work Items <span style="color:var(--accent-yellow); font-size:0.85em;">· Most complex</span></h4>
+      <p>ADO Migration Tools, area paths → labels/teams, iterations, links</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-yellow);">
+      <h4><span class="text-yellow">Phase 4:</span> Remaining <span style="color:var(--accent-red); font-size:0.85em;">· Rebuild needed</span></h4>
+      <p>Test plans, Artifacts → Packages, Wiki → repo docs, Dashboards</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 25: Best Practices -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-aqua); margin-bottom:12px;">Migration Best Practices</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent-green);">
+      <h4><span class="text-green">✅</span> Do</h4>
+      <ul>
+        <li><strong>Run a pilot migration</strong> — test with one project first</li>
+        <li><strong>Map identities</strong> — Azure AD → GitHub usernames upfront</li>
+        <li><strong>Keep ADO read-only</strong> during transition period</li>
+        <li><strong>Redesign workflows</strong> instead of replicating 1:1</li>
+        <li><strong>Train teams</strong> on GitHub-specific features</li>
+        <li><strong>Designate champions</strong> per team for adoption</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-red);">
+      <h4><span class="text-red">❌</span> Don't</h4>
+      <ul>
+        <li><strong>Migrate everything at once</strong> — use phased approach</li>
+        <li><strong>Expect 1:1 feature parity</strong> — GitHub is different by design</li>
+        <li><strong>Skip test migrations</strong> — always do dry runs</li>
+        <li><strong>Cut over abruptly</strong> — run dual systems briefly</li>
+        <li><strong>Ignore branch policies</strong> — recreate as rulesets</li>
+        <li><strong>Forget attachments</strong> — export separately from ADO</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 26: Key Takeaways -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:14px;">Key Takeaways</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent-teal);">
+      <h4><span class="text-teal">🗂️</span> Area Paths → Teams + Labels</h4>
+      <p>Use GitHub Teams for people organization and labels/custom fields for work categorization. Teams support nested hierarchy mirroring ADO area paths.</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-lavender);">
+      <h4><span class="text-lavender">🔄</span> Iterations → Project Fields</h4>
+      <p>GitHub Projects v2 iteration fields are flexible, support breaks, and integrate with roadmap views. Migrate via API scripting.</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-aqua);">
+      <h4><span class="text-aqua">🔐</span> Access → Team-Based Permissions</h4>
+      <p>5-level repo roles (Read through Admin) + team-based access. Use EMU + Azure AD for enterprise-scale identity management.</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-yellow);">
+      <h4><span class="text-yellow">📋</span> Work Items → Issues + Projects</h4>
+      <p>GitHub Issues now support types, sub-issues, dependencies, and hierarchy views. Use GEI for repos + ADO Migration Tools for work items.</p>
+    </div>
+  </div>
+  <div class="note-box" style="margin-top:12px;">
+    <strong>📌 Remember:</strong> GitHub is not a clone of Azure DevOps — it's a different, more integrated platform. Redesign your workflows to leverage GitHub's strengths rather than replicating ADO patterns.
+  </div>
+</section>
+
+<!-- SLIDE 27: Resources -->
+<section data-background-color="#1B0056">
+  <h2 style="color:var(--accent-teal); margin-bottom:14px;">Official Resources</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="cap-item">
+      <div class="cap-icon text-teal">📖</div>
+      <div class="cap-text"><strong>GitHub Projects Docs</strong><br><a href="https://docs.github.com/en/issues/planning-and-tracking-with-projects" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/projects</a></div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-lavender">👥</div>
+      <div class="cap-text"><strong>Teams Documentation</strong><br><a href="https://docs.github.com/en/organizations/organizing-members-into-teams" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/teams</a></div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-aqua">🔄</div>
+      <div class="cap-text"><strong>Iteration Fields</strong><br><a href="https://docs.github.com/en/issues/planning-and-tracking-with-projects/understanding-fields/about-iteration-fields" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/iterations</a></div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-yellow">📦</div>
+      <div class="cap-text"><strong>GitHub Enterprise Importer</strong><br><a href="https://docs.github.com/en/migrations/using-github-enterprise-importer" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/gei</a></div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green">🔐</div>
+      <div class="cap-text"><strong>Access Management</strong><br><a href="https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/access</a></div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-blue">📋</div>
+      <div class="cap-text"><strong>About Issues</strong><br><a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);">docs.github.com/issues</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 28: Thank You -->
+<section data-background-color="#2F2452">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%;">
+    <div style="font-size:2em; margin-bottom:10px;">🙏</div>
+    <h1 style="color:var(--accent-teal); margin:0 0 8px 0;">Thank You</h1>
+    <p style="font-size:0.78em; color:var(--text-secondary); margin:0 0 6px 0;">Questions & Discussion</p>
+    <p style="font-size:0.62em; color:var(--text-secondary); margin:0 0 18px 0;">Wipro — May 2026</p>
+    <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-linkedin" style="font-size:1.4em;"></i> Sukumar P</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-red); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-youtube" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-lavender); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-instagram" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-green); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-whatsapp" style="font-size:1.4em;"></i> tec_in_sec</a>
+    </div>
+  </div>
+</section>
+
+</div><!-- end slides -->
+</div><!-- end reveal -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  history: true,
+  center: false,
+  width: 960,
+  height: 540,
+  margin: 0.04,
+  minScale: 0.2,
+  maxScale: 2.0,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  backgroundTransition: 'fade',
+  slideNumber: 'c/t',
+  showSlideNumber: 'all',
+  controls: true,
+  controlsTutorial: true,
+  progress: true,
+  loop: false,
+  autoPlayMedia: true,
+  plugins: [RevealHighlight]
+});
+</script>
+</body>
+</html>
