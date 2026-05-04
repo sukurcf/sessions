@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub DevSecOps — Session 1: Organization, Projects & Migration</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== ROOT VARIABLES — WIPRO THEME ========== */
+:root {
+  --bg-primary: #1B0056;
+  --bg-secondary: #2F2452;
+  --bg-card: #362358;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D6D0E5;
+  --accent-blue: #297F94;
+  --accent-purple: #8D96FF;
+  --accent-green: #7EC45F;
+  --accent-orange: #FBCD2E;
+  --accent-pink: #85144B;
+  --accent-cyan: #3498B3;
+  --accent-red: #E04040;
+  --accent-teal: #00A796;
+  --accent-lavender: #8D96FF;
+  --border: #4A3D6B;
+  --font-display: 'Figtree', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ========== BASE ========== */
+.reveal { font-family: var(--font-display); font-size: 22px; color: var(--text-primary); }
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 { text-transform: none; font-family: var(--font-display); }
+.reveal h1 { font-size: 1.8em; font-weight: 800; margin-bottom: 0.3em; }
+.reveal h2 { font-size: 1.35em; font-weight: 800; margin-bottom: 0.4em; }
+.reveal h3 { font-size: 0.95em; font-weight: 700; margin-bottom: 0.3em; }
+.reveal h4 { font-size: 0.78em; font-weight: 700; margin-bottom: 0.2em; }
+.reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; }
+.reveal ul, .reveal ol { margin: 0.3em 0; }
+.reveal a { color: var(--accent-cyan); }
+a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+
+/* ========== SLIDE SECTIONS ========== */
+.reveal .slides section {
+  padding: 20px 20px 44px 20px;
+  text-align: center;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+.reveal .slides section::-webkit-scrollbar { width: 4px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.reveal .slides section { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+/* Prevent content overflow pushing slides right */
+.reveal .slides section > * { max-width: 100%; box-sizing: border-box; }
+.reveal .slides section pre { max-width: 100%; overflow-x: auto; }
+
+/* Block components stretch to full available width */
+.card-grid, .flow, .comparison, .cap-grid, table,
+.tip-box, .note-box, .warn-box, .presenter-card,
+.hierarchy, .card { width: 100%; }
+
+/* ========== CARD GRID ========== */
+.card-grid { display: grid; gap: 14px; width: 100%; }
+.card-grid-2 { grid-template-columns: 1fr 1fr; }
+.card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: left;
+  transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s cubic-bezier(.22,1,.36,1);
+  box-sizing: border-box;
+  min-width: 0;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+.card h4 { margin: 0 0 6px 0; }
+.card p { font-size: 0.65em; color: var(--text-secondary); margin: 0; }
+.card ul { font-size: 0.62em; color: var(--text-secondary); margin: 4px 0 0 0; padding-left: 16px; }
+.card li { margin-bottom: 3px; }
+
+/* ========== FLOW ========== */
+.flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+.flow-step {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-blue);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.68em;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+.flow-arrow { font-size: 1.2em; color: var(--accent-purple); font-weight: 700; }
+
+/* ========== COMPARISON ========== */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.col {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: left;
+}
+.col ul { font-size: 0.62em; color: var(--text-secondary); padding-left: 16px; }
+.col li { margin-bottom: 4px; }
+
+/* ========== CAP GRID ========== */
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.cap-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+.cap-icon {
+  font-size: 0.95em;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  overflow: hidden;
+}
+.cap-text { text-align: left; font-size: 0.62em; color: var(--text-secondary); }
+.cap-text strong { color: var(--text-primary); }
+
+/* ========== TABLE ========== */
+.reveal table { width: 100%; border-collapse: collapse; font-size: 0.62em; margin-top: 10px; }
+.reveal th { background: var(--bg-card); color: var(--accent-lavender); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+.reveal td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); text-align: left; }
+.reveal tr:hover td { background: rgba(141,150,255,0.06); }
+
+/* ========== TIP / NOTE / WARN ========== */
+.tip-box, .note-box, .warn-box { border-radius: 8px; padding: 10px 14px; font-size: 0.62em; text-align: left; margin-top: 10px; width: 100%; box-sizing: border-box; }
+.tip-box { background: rgba(126,196,95,0.1); border-left: 4px solid var(--accent-green); }
+.note-box { background: rgba(41,127,148,0.1); border-left: 4px solid var(--accent-blue); }
+.warn-box { background: rgba(251,205,46,0.1); border-left: 4px solid var(--accent-orange); }
+
+/* ========== BADGES ========== */
+.badge { display: inline-block; font-size: 0.52em; font-weight: 700; padding: 2px 8px; border-radius: 100px; vertical-align: middle; margin-left: 4px; }
+.badge-ga { background: var(--accent-green); color: #1a1a1a; }
+.badge-new { background: var(--accent-purple); color: #fff; }
+.badge-preview { background: var(--accent-orange); color: #1a1a1a; }
+
+/* ========== TAGS ========== */
+.tag { display: inline-block; font-size: 0.55em; padding: 2px 10px; border-radius: 100px; border: 1px solid var(--border); color: var(--text-secondary); margin: 2px; }
+
+/* ========== TEXT COLORS ========== */
+.text-blue { color: var(--accent-blue); }
+.text-purple { color: var(--accent-purple); }
+.text-green { color: var(--accent-green); }
+.text-orange { color: var(--accent-orange); }
+.text-pink { color: var(--accent-pink); }
+.text-cyan { color: var(--accent-cyan); }
+.text-teal { color: var(--accent-teal); }
+.text-red { color: var(--accent-red); }
+
+/* ========== COPILOT ICON ========== */
+.copilot-icon { width: 1em; height: 1em; fill: currentColor; vertical-align: middle; }
+.copilot-icon-lg { width: 38px; height: 38px; fill: var(--accent-purple); filter: drop-shadow(0 0 12px rgba(141,150,255,0.5)); }
+
+/* ========== GRADIENT TEXT ========== */
+.gradient-title {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan), var(--accent-teal), var(--accent-green));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+/* ========== SECTION ICON ========== */
+.section-icon {
+  font-size: 1.1em;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  line-height: 40px;
+  text-align: center;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(141,150,255,0.12);
+  margin-bottom: 8px;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+@keyframes iconPulse { 0%,100% { filter: drop-shadow(0 0 4px rgba(141,150,255,0.3)); } 50% { filter: drop-shadow(0 0 12px rgba(141,150,255,0.6)); } }
+
+/* ========== PRESENTER ========== */
+.presenter-card { display: flex; gap: 24px; align-items: center; background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); width: 100%; }
+.presenter-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-purple); }
+.presenter-info { text-align: left; flex: 1; }
+.presenter-info h3 { margin: 0 0 4px 0; font-size: 1em; }
+.presenter-info .title { font-size: 0.65em; color: var(--accent-purple); margin-bottom: 6px; }
+.presenter-info .bio { font-size: 0.6em; color: var(--text-secondary); line-height: 1.5; }
+.presenter-social { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.presenter-social a { color: var(--text-secondary); text-decoration: none; font-size: 0.62em; display: flex; align-items: center; gap: 6px; transition: color 0.25s ease; }
+.presenter-social a:hover { color: var(--accent-cyan); }
+
+/* ========== PERSISTENT FOOTER ========== */
+.persistent-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 6px 24px;
+  background: linear-gradient(180deg, transparent, rgba(27,0,86,0.95));
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+.persistent-footer a { color: var(--text-secondary); text-decoration: none; transition: color 0.25s ease; }
+.persistent-footer a:hover { color: var(--accent-cyan); }
+.persistent-footer .sep { width: 1px; height: 14px; background: var(--border); }
+.persistent-footer .handle { color: var(--accent-purple); font-weight: 600; }
+.persistent-footer .follow-text { font-size: 12px; color: var(--text-secondary); }
+.reveal .slide-number { bottom: 36px; right: 12px; font-size: 14px; color: var(--text-secondary); }
+.reveal .progress { bottom: 34px; }
+
+/* ========== HIERARCHY DIAGRAM ========== */
+.hierarchy { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.h-level {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 0.82em;
+  font-weight: 600;
+  position: relative;
+  min-width: 200px;
+  text-align: center;
+}
+.h-connector { width: 2px; height: 16px; background: var(--border); }
+
+/* ========== STEP CIRCLE ========== */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 0.65em; font-weight: 800;
+  background: var(--accent-purple); color: #fff;
+  margin-right: 8px; flex-shrink: 0;
+}
+
+/* ========== REVEAL.JS GRID LOCK ========== */
+.reveal .slides .card-grid-2 { grid-template-columns: 1fr 1fr !important; }
+.reveal .slides .card-grid-3 { grid-template-columns: 1fr 1fr 1fr !important; }
+.reveal .slides .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+.reveal .slides .comparison { grid-template-columns: 1fr 1fr !important; }
+.reveal .slides .cap-grid { grid-template-columns: 1fr 1fr !important; }
+
+/* ========== RESPONSIVE (non-Reveal contexts only) ========== */
+@media (max-width: 640px) {
+  .persistent-footer { font-size: 12px; padding: 6px 14px; gap: 8px; }
+}
+
+/* ========== PREFERS REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .gradient-title { animation: none; }
+  .section-icon { animation: none; }
+  .card { transition: none; }
+  .presenter-social a,
+  .persistent-footer a { transition: none; }
+}
+
+/* ========== VERTICAL CENTER UTILITY ========== */
+.v-center { justify-content: center !important; height: 100%; }
+
+/* ========== CODE INLINE ========== */
+.reveal code { background: rgba(141,150,255,0.12); padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.9em; }
+
+/* ========== HELP TOOLTIP ========== */
+.help-tip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 50%;
+  background: rgba(141,150,255,0.25);
+  color: var(--accent-purple);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: help;
+  margin-left: 5px;
+  position: relative;
+  vertical-align: middle;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.help-tip:hover { background: rgba(141,150,255,0.5); }
+.help-tip .tip-popup {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-purple);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.45;
+  text-align: left;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 200;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(.22,1,.36,1), visibility 0.25s;
+}
+.help-tip .tip-popup code { font-size: 11px; }
+.help-tip .tip-popup::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--accent-purple);
+}
+.help-tip:hover .tip-popup { visibility: visible; opacity: 1; }
+/* Flip popup to right if near left edge */
+.help-tip.tip-right .tip-popup { left: 0; transform: translateX(0); }
+.help-tip.tip-right .tip-popup::after { left: 12px; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- SVG Sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="copilot-logo" viewBox="0 0 24 24">
+    <path d="M23.922 16.992c-.861 1.495-5.859 5.023-11.922 5.023-6.063 0-11.061-3.528-11.922-5.023A.641.641 0 0 1 0 16.736v-2.869a.841.841 0 0 1 .053-.22c.372-.935 1.347-2.292 2.605-2.656.167-.429.414-1.055.644-1.517a10.195 10.195 0 0 1-.052-1.086c0-1.331.282-2.499 1.132-3.368.397-.406.89-.717 1.474-.952 1.399-1.136 3.392-2.093 6.122-2.093 2.731 0 4.767.957 6.166 2.093.584.235 1.077.546 1.474.952.85.869 1.132 2.037 1.132 3.368 0 .368-.014.733-.052 1.086.23.462.477 1.088.644 1.517 1.258.364 2.233 1.721 2.605 2.656a.832.832 0 0 1 .053.22v2.869a.641.641 0 0 1-.078.256ZM12.172 11h-.344a4.323 4.323 0 0 1-.355.508C10.703 12.455 9.555 13 7.965 13c-1.725 0-2.989-.359-3.782-1.259a2.005 2.005 0 0 1-.085-.104L4 11.741v6.585c1.435.779 4.514 2.179 8 2.179 3.486 0 6.565-1.4 8-2.179v-6.585l-.098-.104s-.033.045-.085.104c-.793.9-2.057 1.259-3.782 1.259-1.59 0-2.738-.545-3.508-1.492a4.323 4.323 0 0 1-.355-.508h-.016.016Zm.641-2.935c.136 1.057.403 1.913.878 2.497.442.544 1.134.938 2.344.938 1.573 0 2.292-.337 2.657-.751.384-.435.558-1.15.558-2.361 0-1.14-.243-1.847-.705-2.319-.477-.488-1.319-.862-2.824-1.025-1.487-.161-2.192.138-2.533.529-.269.307-.437.808-.438 1.578v.021c0 .265.021.562.063.893Zm-1.626 0c.042-.331.063-.628.063-.894v-.02c-.001-.77-.169-1.271-.438-1.578-.341-.391-1.046-.69-2.533-.529-1.505.163-2.347.537-2.824 1.025-.462.472-.705 1.179-.705 2.319 0 1.211.175 1.926.558 2.361.365.414 1.084.751 2.657.751 1.21 0 1.902-.394 2.344-.938.475-.584.742-1.44.878-2.497Z"/>
+    <path d="M14.5 14.25a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1Zm-5 0a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1Z"/>
+  </symbol>
+</svg>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ==================== SLIDE 1: TITLE ==================== -->
+<section data-background-color="#1B0056">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; gap:8px;">
+    <div style="margin-bottom:6px;">
+      <svg class="copilot-icon-lg" style="fill:var(--accent-purple);"><use href="#copilot-logo"/></svg>
+    </div>
+    <h1 class="gradient-title" style="font-size:1.7em; margin:0;">GitHub DevSecOps</h1>
+    <h2 style="font-size:0.85em; font-weight:500; color:var(--text-secondary); margin:0;">Session 1 — Organization, Projects, Permissions &amp; Migration</h2>
+    <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag">Organizations</span>
+      <span class="tag">Projects</span>
+      <span class="tag">Permissions</span>
+      <span class="tag">RBAC</span>
+      <span class="tag">User Migration</span>
+    </div>
+    <p style="font-size:0.55em; color:var(--text-secondary); margin-top:18px;">
+      <i class="fas fa-calendar-alt"></i> May 2026 &nbsp;·&nbsp; <i class="fas fa-building"></i> Wipro
+    </p>
+    <p style="font-size:0.5em; color:var(--text-secondary); margin:4px 0 0 0;">Use <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">→</kbd> arrow keys to navigate</p>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 2: PRESENTER ==================== -->
+<section data-background-color="#1B0056">
+  <h2 class="text-purple">Your Presenter</h2>
+  <div class="presenter-card">
+    <img class="presenter-photo" src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P" onerror="this.style.display='none';">
+    <div class="presenter-info">
+      <h3>Sukumar P</h3>
+      <div class="title">Developer · Building the Future, One Commit at a Time</div>
+      <div class="bio">Passionate about developer productivity, AI-powered coding, and building tools that make developers' lives easier. Creating educational content about GitHub Copilot and modern development workflows.</div>
+      <div class="presenter-social">
+        <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> YouTube</a>
+        <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 3: AGENDA ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📋</div>
+  <h2>Session Agenda</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="cap-item">
+      <div class="step-num">1</div>
+      <div class="cap-text"><strong>Create an Organization</strong><br>Enterprise hierarchy &amp; setup</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">2</div>
+      <div class="cap-text"><strong>Create a Project</strong><br>Boards, views &amp; workflows</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">3</div>
+      <div class="cap-text"><strong>Define Process</strong><br>Templates, fields &amp; automation</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">4</div>
+      <div class="cap-text"><strong>Permission Groups</strong><br>Restrict access per project</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">5</div>
+      <div class="cap-text"><strong>RBAC Roles</strong><br>Reader / Contributor / Admin</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">6</div>
+      <div class="cap-text"><strong>ADO → GitHub Migration</strong><br>Migrate users to GitHub</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 4: ENTERPRISE HIERARCHY (font ↑) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🏗️</div>
+  <h2>GitHub Enterprise Hierarchy</h2>
+  <div class="hierarchy">
+    <div class="h-level" style="border-color:var(--accent-purple); background:rgba(141,150,255,0.08); width:85%;">
+      <div style="font-size:1em; color:var(--accent-purple); font-weight:700;">🏢 Enterprise Account</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Centralized policy · SAML SSO · SCIM · Billing · Audit logs</div>
+    </div>
+    <div class="h-connector"></div>
+    <div class="h-level" style="border-color:var(--accent-blue); background:rgba(41,127,148,0.08); width:72%;">
+      <div style="font-size:1em; color:var(--accent-blue); font-weight:700;">🏛️ Organization</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Workspace container · Teams · Repos · Projects · Settings</div>
+    </div>
+    <div class="h-connector"></div>
+    <div style="display:flex; gap:12px; width:72%; justify-content:center;">
+      <div class="h-level" style="border-color:var(--accent-teal); background:rgba(0,167,150,0.08); flex:1;">
+        <div style="font-size:0.92em; color:var(--accent-teal); font-weight:700;">👥 Teams</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);">Nested sub-teams · Cascading permissions</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-green); background:rgba(126,196,95,0.08); flex:1;">
+        <div style="font-size:0.92em; color:var(--accent-green); font-weight:700;">📂 Repositories</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);">Code · Issues · PRs · Actions</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-orange); background:rgba(251,205,46,0.08); flex:1;">
+        <div style="font-size:0.92em; color:var(--accent-orange); font-weight:700;">📊 Projects</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);">Cross-repo tracking · Kanban · Table</div>
+      </div>
+    </div>
+  </div>
+  <div class="note-box" style="margin-top:12px; font-size:0.78em;">
+    <strong>📌 Key:</strong> Enterprise → Organizations (multiple) → Teams + Repos + Projects per org
+  </div>
+</section>
+
+<!-- ==================== SLIDE 5: CREATING AN ORG (Enterprise flow) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🏛️</div>
+  <h2><span class="step-num">1</span> Creating an Organization under Enterprise</h2>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-purple); font-size:0.78em;">
+      <div>🏢</div>
+      <div>Enterprise Account</div>
+      <div>Settings → Organizations</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue); font-size:0.78em;">
+      <div>➕</div>
+      <div>New Organization</div>
+      <div>Click "Add organization"</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal); font-size:0.78em;">
+      <div>✏️</div>
+      <div>Name &amp; Admin</div>
+      <div>Org name + admin email</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green); font-size:0.78em;">
+      <div>✅</div>
+      <div>Configure</div>
+      <div>SSO · Teams · Repos</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.92em;"><span class="text-purple">🏢</span> Enterprise → Org Flow</h4>
+      <ul style="font-size:0.76em;">
+        <li>Go to <code>github.com/enterprises/YOUR_ENTERPRISE</code></li>
+        <li>Navigate to <strong>Settings → Organizations</strong></li>
+        <li>Click <strong>"New organization"</strong></li>
+        <li>Enter org name, admin email, and confirm</li>
+        <li>Org inherits enterprise policies (SSO, audit, IP allow list)</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.92em;"><span class="text-teal">⚙️</span> Post-Creation Setup</h4>
+      <ul style="font-size:0.76em;">
+        <li>Configure <strong>base member permissions</strong> (recommend: Read)</li>
+        <li>Set <strong>repo creation policy</strong> (restrict to admins)</li>
+        <li>Enable <strong>2FA requirement</strong> for all members</li>
+        <li>Create initial <strong>teams</strong> matching project structure</li>
+        <li>Enterprise SAML SSO applies automatically</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box" style="font-size:0.76em;">
+    <strong>💡 Note:</strong> Enterprise Owners can create unlimited organizations. Each org inherits the enterprise's authentication, policy, and billing configuration.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 6: ORG SETTINGS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">⚙️</div>
+  <h2>Organization Settings — Key Configuration</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="cap-item">
+      <div class="cap-icon text-purple">🔐</div>
+      <div class="cap-text"><strong>Authentication</strong><br>SAML SSO · 2FA enforcement</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-blue">👥</div>
+      <div class="cap-text"><strong>Member Privileges</strong><br>Base permissions · Fork policy</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-teal">🛡️</div>
+      <div class="cap-text"><strong>Security</strong><br>Secret scanning · Dependabot</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-green">🤖</div>
+      <div class="cap-text"><strong>Actions</strong><br>Runner groups · Allowed actions</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-orange">📦</div>
+      <div class="cap-text"><strong>Packages</strong><br>Package visibility defaults</div>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon text-pink">📊</div>
+      <div class="cap-text"><strong>Audit Log</strong><br>Activity tracking · Streaming</div>
+    </div>
+  </div>
+  <div class="tip-box">
+    <strong>💡 Best Practice:</strong> Set base repo permission to <strong>Read</strong> at org level, then grant higher access via Teams per repository. Enforce 2FA for all members.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 7: CREATING A PROJECT (font ↑) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📊</div>
+  <h2><span class="step-num">2</span> Creating a GitHub Project</h2>
+  <div class="flow" style="margin-bottom:12px;">
+    <div class="flow-step" style="border-color:var(--accent-purple); font-size:0.78em;">
+      <div>📋</div>
+      <div>Org → Projects</div>
+      <div>→ New Project</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue); font-size:0.78em;">
+      <div>📝</div>
+      <div>Choose Template</div>
+      <div>Board / Table / Roadmap</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal); font-size:0.78em;">
+      <div>⚙️</div>
+      <div>Configure Fields</div>
+      <div>Status · Priority · Sprint</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green); font-size:0.78em;">
+      <div>🔗</div>
+      <div>Link Repos</div>
+      <div>Cross-repo tracking</div>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="col">
+      <h4 class="text-purple" style="font-size:0.92em;">📊 Project Views</h4>
+      <ul style="font-size:0.78em;">
+        <li><strong>Board</strong> — Kanban-style drag &amp; drop</li>
+        <li><strong>Table</strong> — Spreadsheet with filters</li>
+        <li><strong>Roadmap</strong> — Timeline / Gantt view</li>
+        <li>Create <strong>saved views</strong> per team or sprint</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="text-teal" style="font-size:0.92em;">🔧 Custom Fields</h4>
+      <ul style="font-size:0.78em;">
+        <li><strong>Status</strong> — Todo, In Progress, Done</li>
+        <li><strong>Priority</strong> — P0 / P1 / P2 / P3</li>
+        <li><strong>Iteration</strong> — Sprint 1, Sprint 2…</li>
+        <li><strong>Type</strong> — Feature, Bug, Epic, Task</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 8: DEFINE THE PROCESS (font ↑) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔄</div>
+  <h2><span class="step-num">3</span> Defining the Process</h2>
+  <p style="font-size:0.78em; color:var(--text-secondary); margin-bottom:12px;">Configure workflows, automation rules, and issue templates for your project</p>
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.92em;"><span class="text-purple">📝</span> Issue Templates</h4>
+      <ul style="font-size:0.76em;">
+        <li>Bug report template</li>
+        <li>Feature request template</li>
+        <li>Task &amp; Epic templates</li>
+        <li><code>.github/ISSUE_TEMPLATE/</code></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4 style="font-size:0.92em;"><span class="text-blue">⚡</span> Built-in Automation</h4>
+      <ul style="font-size:0.76em;">
+        <li>Auto-add issues from repo</li>
+        <li>Auto-set status on PR merge</li>
+        <li>Auto-archive completed items</li>
+        <li>Auto-close stale issues</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.92em;"><span class="text-teal">🛡️</span> Branch Protection</h4>
+      <ul style="font-size:0.76em;">
+        <li>Require PR reviews (1–6)</li>
+        <li>Require status checks to pass</li>
+        <li>Require signed commits</li>
+        <li>Restrict who can push</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2" style="margin-top:12px;">
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4 style="font-size:0.92em;"><span class="text-green">🔁</span> GitHub Actions CI/CD</h4>
+      <ul style="font-size:0.76em;">
+        <li>Run tests on every PR</li>
+        <li>Deploy on merge to <code>main</code></li>
+        <li>Security scans (CodeQL, SAST)</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-orange);">
+      <h4 style="font-size:0.92em;"><span class="text-orange">📋</span> CODEOWNERS</h4>
+      <ul style="font-size:0.76em;">
+        <li>Auto-assign reviewers per path</li>
+        <li><code>*.java @backend-team</code></li>
+        <li>Enforce team-based reviews</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 9: PERMISSION GROUPS (font ↑) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔒</div>
+  <h2><span class="step-num">4</span> Restricting Permissions per Project</h2>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-purple); font-size:0.78em;">
+      <div>🏛️</div>
+      <div>Org Level</div>
+      <div>Base = Read</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-blue); font-size:0.78em;">
+      <div>👥</div>
+      <div>Create Teams</div>
+      <div>Per project/domain</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal); font-size:0.78em;">
+      <div>📂</div>
+      <div>Assign Repos</div>
+      <div>Team → Repo access</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green); font-size:0.78em;">
+      <div>🔐</div>
+      <div>Set Role</div>
+      <div>Read/Write/Admin</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2">
+    <div class="card">
+      <h4 style="font-size:0.92em;"><span class="text-blue">👥</span> Team-Based Access</h4>
+      <ul style="font-size:0.76em;">
+        <li>Create teams like <code>project-alpha-devs</code></li>
+        <li>Add only relevant repos to each team</li>
+        <li>Members only see repos assigned to their teams</li>
+        <li>Nested sub-teams inherit parent permissions</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.92em;"><span class="text-teal">🛡️</span> Isolation Strategies</h4>
+      <ul style="font-size:0.76em;">
+        <li>Set <strong>org base permission = No access</strong></li>
+        <li>Use <strong>internal repos</strong> for cross-project visibility</li>
+        <li>Use <strong>private repos</strong> for restricted projects</li>
+        <li>Enable <strong>CODEOWNERS</strong> for review gates</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box" style="font-size:0.76em;">
+    <strong>💡 Enterprise Tip:</strong> Use <strong>custom repository roles</strong> (Enterprise only) to create fine-grained roles beyond the 5 built-in levels.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 10: RBAC ROLES ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🎭</div>
+  <h2><span class="step-num">5</span> RBAC — Role-Based Access Control</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Permission</th>
+        <th style="color:var(--accent-teal);">Read</th>
+        <th style="color:var(--accent-blue);">Triage</th>
+        <th style="color:var(--accent-green);">Write</th>
+        <th style="color:var(--accent-orange);">Maintain</th>
+        <th style="color:var(--accent-purple);">Admin</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>View code &amp; issues</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Manage labels &amp; milestones</td><td>—</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Push code / Create branches</td><td>—</td><td>—</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Merge pull requests</td><td>—</td><td>—</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Manage Actions &amp; environments</td><td>—</td><td>—</td><td>—</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Manage branch protection</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+      <tr><td>Delete repo / Manage settings</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✅</td></tr>
+    </tbody>
+  </table>
+  <div class="note-box" style="margin-top:10px;">
+    <strong>📌 Mapping:</strong> Reader → <strong>Read</strong> &nbsp;|&nbsp; Contributor → <strong>Write</strong> &nbsp;|&nbsp; Admin → <strong>Admin</strong> &nbsp;|&nbsp; Plus: <strong>Triage</strong> (issue management) &amp; <strong>Maintain</strong> (repo settings without destructive access)
+  </div>
+</section>
+
+<!-- ==================== SLIDE 11: ORG-LEVEL ROLES ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">👑</div>
+  <h2>Organization-Level Roles (Predefined)</h2>
+  <div class="card-grid card-grid-3" style="margin-bottom:10px;">
+    <div class="card" style="border-left:4px solid var(--accent-purple);">
+      <h4><span class="text-purple">👑</span> Owner</h4>
+      <p>Complete admin access. Manage members, billing, settings, teams, and all repos. Limit to ≥ 2 people.</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-blue);">
+      <h4><span class="text-blue">👤</span> Member</h4>
+      <p>Default non-admin role. Can create repos &amp; projects (if allowed). Access via base permissions + teams.</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-cyan);">
+      <h4><span class="text-teal">🛡️</span> Moderator</h4>
+      <p>Block/unblock non-members, set interaction limits, hide comments in public repos.</p>
+    </div>
+  </div>
+  <div class="card-grid card-grid-4">
+    <div class="card" style="border-left:4px solid var(--accent-orange);">
+      <h4><span class="text-orange">💰</span> Billing Manager</h4>
+      <p>Manage billing &amp; payment info. No code or member access.</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-teal);">
+      <h4><span class="text-teal">🔐</span> Security Manager</h4>
+      <p>View security alerts &amp; manage security settings across all repos. Read access to all repos.</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-lavender);">
+      <h4><span class="text-purple">⚙️</span> GitHub App Manager</h4>
+      <p>Manage GitHub App registrations. Does not grant install/uninstall permissions.</p>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent-green);">
+      <h4><span class="text-green">🤝</span> Outside Collaborator</h4>
+      <p>Repo-specific access only. Not an org member. Called "Repository Collaborator" with EMU.</p>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:8px; font-size:0.72em;">
+    <strong>💡 Custom Roles:</strong> Enterprise Cloud orgs can create <strong>custom organization roles</strong> with granular permissions (e.g., "View audit log" only) without granting full admin access.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 12: ADO → GITHUB ROLE MAPPING ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔄</div>
+  <h2>ADO → GitHub Role Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Azure DevOps Role</th>
+        <th>GitHub Equivalent</th>
+        <th>Scope</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Collection Admin</td><td style="color:var(--accent-purple);">Enterprise Owner</td><td>Top-level admin</td></tr>
+      <tr><td>Project Admin</td><td style="color:var(--accent-blue);">Organization Owner</td><td>Full org control</td></tr>
+      <tr><td>Build Admin</td><td style="color:var(--accent-orange);">Repo Maintain / Admin</td><td>CI/CD management</td></tr>
+      <tr><td>Contributor</td><td style="color:var(--accent-green);">Write</td><td>Push code, manage issues</td></tr>
+      <tr><td>Reader</td><td style="color:var(--accent-teal);">Read</td><td>View only</td></tr>
+      <tr><td>Stakeholder</td><td style="color:var(--accent-cyan);">Outside Collaborator</td><td>Limited, repo-specific</td></tr>
+      <tr><td>Team Admin</td><td style="color:var(--accent-lavender);">Team Maintainer</td><td>Manage team members</td></tr>
+    </tbody>
+  </table>
+  <div class="warn-box" style="margin-top:10px;">
+    <strong>⚠️ Key Difference:</strong> ADO uses <strong>project-scoped</strong> permissions. GitHub uses <strong>repo-scoped</strong> + <strong>team-based</strong> access. Plan your team structure carefully during migration.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 13: PERMISSION HIERARCHY (font ↑) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📐</div>
+  <h2>GitHub Permission Hierarchy</h2>
+  <div class="hierarchy">
+    <div class="h-level" style="border-color:var(--accent-purple); background:rgba(141,150,255,0.1); width:90%;">
+      <div style="font-size:1em; color:var(--accent-purple); font-weight:700;">🏢 Enterprise</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Enterprise Owner · Billing Manager · Policies &amp; SAML</div>
+    </div>
+    <div class="h-connector"></div>
+    <div class="h-level" style="border-color:var(--accent-blue); background:rgba(41,127,148,0.08); width:78%;">
+      <div style="font-size:1em; color:var(--accent-blue); font-weight:700;">🏛️ Organization</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Owner · Member · Moderator · Billing Manager · Security Manager · GitHub App Manager · Outside Collaborator · Custom Roles</div>
+    </div>
+    <div class="h-connector"></div>
+    <div class="h-level" style="border-color:var(--accent-teal); background:rgba(0,167,150,0.08); width:66%;">
+      <div style="font-size:1em; color:var(--accent-teal); font-weight:700;">👥 Teams</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Member · Maintainer · Nested sub-teams (permissions cascade down)</div>
+    </div>
+    <div class="h-connector"></div>
+    <div class="h-level" style="border-color:var(--accent-green); background:rgba(126,196,95,0.08); width:54%;">
+      <div style="font-size:1em; color:var(--accent-green); font-weight:700;">📂 Repository</div>
+      <div style="font-size:0.78em; color:var(--text-secondary);">Read · Triage · Write · Maintain · Admin · Custom Roles (Enterprise)</div>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:10px; font-size:0.76em;">
+    <strong>💡 Rule of Least Privilege:</strong> Set org base = <strong>No access</strong> → grant via teams → highest role wins when multiple teams grant different access to same repo.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 14: WHY MIGRATE (renamed) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🚀</div>
+  <h2><span class="step-num">6</span> Why Migrate from Azure DevOps to GitHub</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4><span class="text-purple"><svg class="copilot-icon" style="fill:var(--accent-purple);"><use href="#copilot-logo"/></svg></span> AI-Powered Dev</h4>
+      <p>GitHub Copilot — Agent mode, Copilot Autofix, AI code reviews. Only available on GitHub.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4><span class="text-teal">🛡️</span> Unified Security</h4>
+      <p>CodeQL, secret scanning, Dependabot, Copilot Autofix — security built into every step.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4><span class="text-blue">🌍</span> Largest Dev Platform</h4>
+      <p>World's largest dev platform. InnerSource best practices. Community-driven innovation.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4><span class="text-green">⚡</span> Actions Marketplace</h4>
+      <p>20,000+ pre-built actions for CI/CD automation. Extensive marketplace ecosystem.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-orange);">
+      <h4><span class="text-orange">🔐</span> Enterprise Identity</h4>
+      <p>EMU + SAML SSO + SCIM. Full lifecycle user management via Azure AD / Entra ID.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-lavender);">
+      <h4><span class="text-purple">📊</span> Strategic Direction</h4>
+      <p>Microsoft's investment focus shifting to GitHub as the primary dev platform.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 15: USER MIGRATION — COMPLETE GUIDE (scrollable) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📋</div>
+  <h2>User Migration — ADO to GitHub (Complete Guide)</h2>
+  <p style="font-size:0.6em; color:var(--text-secondary); margin-bottom:8px;">⬇️ Scroll down for all steps — Prerequisites → Identity Mapping → SAML/SCIM → Execution → Validation</p>
+
+  <!-- ── PREREQUISITES ── -->
+  <h3 style="color:var(--accent-purple); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 1 — Prerequisites &amp; Tools</h3>
+  <div class="card-grid card-grid-2" style="margin-bottom:10px;">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.82em;"><span class="text-purple">🔧</span> Required Tools</h4>
+      <ul style="font-size:0.66em;">
+        <li><strong>GitHub CLI</strong> — <code>gh</code> (install via <code>brew install gh</code>)</li>
+        <li><strong>ADO2GH CLI</strong> — GitHub Enterprise Importer<br><code>gh extension install github/gh-ado2gh</code></li>
+        <li><strong>PowerShell 7+</strong> — for SCIM scripts</li>
+        <li><strong>Azure AD (Entra ID)</strong> admin access</li>
+        <li><strong>GitHub Enterprise</strong> owner access</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.82em;"><span class="text-teal">🔑</span> Required Tokens &amp; Access</h4>
+      <ul style="font-size:0.66em;">
+        <li><strong>GitHub PAT</strong> — <code>admin:org</code>, <code>user</code>, <code>repo</code> scopes</li>
+        <li><strong>ADO PAT</strong> — Full access for user export</li>
+        <li><strong>Azure AD</strong> — Global Admin or Application Admin role</li>
+        <li><strong>SCIM endpoint</strong> — Enabled on GitHub Enterprise</li>
+        <li><strong>SAML SSO</strong> — Configured for the org/enterprise</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn-box" style="font-size:0.66em; margin-bottom:14px;">
+    <strong>⚠️ Important:</strong> Decide between <strong>EMU (Enterprise Managed Users)</strong> — users fully controlled by IdP, or <strong>personal accounts + SAML SSO</strong> — users link existing GitHub accounts. EMU is recommended for enterprise.
+  </div>
+
+  <!-- ── IDENTITY MAPPING ── -->
+  <h3 style="color:var(--accent-blue); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 2 — Identity Mapping &amp; Preparation</h3>
+  <div class="flow" style="margin-bottom:12px;">
+    <div class="flow-step" style="border-color:var(--accent-blue); font-size:0.72em;">
+      <div>📤</div>
+      <div>Export ADO Users</div>
+      <div>via ADO REST API</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-purple); font-size:0.72em;">
+      <div>📋</div>
+      <div>Build Mapping CSV</div>
+      <div>ADO → GitHub identity</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal); font-size:0.72em;">
+      <div>🔍</div>
+      <div>Validate &amp; Review</div>
+      <div>Check duplicates/gaps</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-green); font-size:0.72em;">
+      <div>👥</div>
+      <div>Prepare AD Groups</div>
+      <div>Map to GitHub Teams</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2" style="margin-bottom:6px;">
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4 style="font-size:0.82em;"><span class="text-blue">📤</span> Export ADO Users</h4>
+      <ul style="font-size:0.66em;">
+        <li>Use ADO REST API: <code>GET _apis/graph/users</code> <span class="help-tip">?<span class="tip-popup">The Azure DevOps Graph API returns all users in the organization. Use continuation tokens to page through large user sets. Endpoint: <code>https://vssps.dev.azure.com/{org}/_apis/graph/users</code></span></span></li>
+        <li>Export: display name, email, UPN, group membership <span class="help-tip">?<span class="tip-popup"><strong>UPN</strong> = User Principal Name (e.g. user@company.com). This is the primary identifier used to match users between Azure AD and GitHub. Also export group memberships to map to GitHub Teams.</span></span></li>
+        <li>Include project-level role assignments <span class="help-tip">?<span class="tip-popup">Capture each user's role per ADO project (Reader, Contributor, Admin). This data drives the GitHub team + repo role mapping.</span></span></li>
+        <li>Identify service accounts (exclude from migration) <span class="help-tip">?<span class="tip-popup">Service accounts (build agents, pipeline identities) should NOT be migrated as users. They'll be replaced by GitHub Apps, deploy keys, or machine user accounts in GitHub.</span></span></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.82em;"><span class="text-purple">📋</span> Build Identity Map</h4>
+      <ul style="font-size:0.66em;">
+        <li>Create CSV with identity columns based on approach <span class="help-tip">?<span class="tip-popup"><strong>EMU approach:</strong> Use <code>ado_email, emu_login</code> — the EMU login (<code>shortcode_username</code>) IS the GitHub identity.<br><br><strong>Personal accounts + SSO:</strong> Use <code>ado_email, github_handle</code> — map to users' existing GitHub usernames.</span></span></li>
+        <li>For EMU: format is <code>shortcode_username</code> <span class="help-tip">?<span class="tip-popup"><strong>EMU naming convention:</strong> The enterprise shortcode (e.g. "wipro") is prefixed to the username with an underscore: <code>wipro_jsmith</code>. These accounts are fully controlled by the enterprise IdP.</span></span></li>
+        <li>Map ADO groups → GitHub teams (1:1 or restructured) <span class="help-tip">?<span class="tip-popup">ADO security groups and project teams should map to GitHub Teams. You can keep a 1:1 mapping or restructure — e.g., flatten nested ADO groups into a simpler GitHub team hierarchy.</span></span></li>
+        <li>Flag users needing new GitHub accounts <span class="help-tip">?<span class="tip-popup">Users without existing GitHub accounts need to be provisioned. With EMU, accounts are auto-created by SCIM. With personal accounts, users must create accounts manually and link via SAML SSO.</span></span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box" style="font-size:0.66em; margin-bottom:14px;">
+    <strong>💡 Output Files:</strong> Steps above produce <code>ado-users.json</code> (user export), <code>identity-map.csv</code> (ADO → GitHub mapping), and <code>team-map.csv</code> (group → team mapping). Keep these for the execution phase.
+  </div>
+
+  <!-- ── SAML + SCIM SETUP ── -->
+  <h3 style="color:var(--accent-teal); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 3 — SAML SSO + SCIM Setup</h3>
+  <div class="flow" style="margin-bottom:14px;">
+    <div class="flow-step" style="border-color:var(--accent-blue); min-width:130px;">
+      <div>🔵</div>
+      <div><strong>Azure AD</strong></div>
+      <div style="font-size:0.85em;">Users &amp; Groups</div>
+    </div>
+    <div class="flow-arrow" style="display:flex; flex-direction:column; align-items:center;">
+      <div style="font-size:0.55em; color:var(--accent-purple);">SAML SSO</div>
+      <div>→</div>
+      <div style="font-size:0.55em; color:var(--accent-teal);">SCIM 2.0</div>
+    </div>
+    <div class="flow-step" style="border-color:var(--accent-purple); min-width:130px;">
+      <div>🟣</div>
+      <div><strong>GitHub EMU</strong></div>
+      <div style="font-size:0.85em;">Enterprise Managed Users</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:var(--accent-teal); min-width:130px;">
+      <div>👥</div>
+      <div><strong>Teams</strong></div>
+      <div style="font-size:0.85em;">Auto-mapped from AD Groups</div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <h4 style="font-size:0.82em;"><span class="text-blue">🔵</span> Azure AD Configuration</h4>
+      <ul style="font-size:0.66em;">
+        <li>Add <strong>GitHub EMU</strong> app from Azure Gallery <span class="help-tip">?<span class="tip-popup">In Azure Portal → Enterprise Applications → New Application → search "GitHub Enterprise Managed User". This pre-built gallery app has SAML + SCIM configuration templates ready to use.</span></span></li>
+        <li>Configure <strong>SAML SSO</strong>: Entity ID, Reply URL, Sign-on URL <span class="help-tip">?<span class="tip-popup"><strong>Entity ID:</strong> <code>https://github.com/enterprises/SLUG</code><br><strong>Reply URL:</strong> <code>https://github.com/enterprises/SLUG/saml/consume</code><br><strong>Sign-on URL:</strong> <code>https://github.com/enterprises/SLUG/sso</code></span></span></li>
+        <li>Upload GitHub SAML certificate <span class="help-tip">?<span class="tip-popup">Download the Base64 certificate from Azure AD's SAML config page. Upload it in GitHub Enterprise → Settings → Authentication security → SAML SSO section.</span></span></li>
+        <li>Enable <strong>SCIM provisioning</strong> in the app settings <span class="help-tip">?<span class="tip-popup"><strong>SCIM</strong> (System for Cross-domain Identity Management) auto-syncs user accounts and group memberships from Azure AD to GitHub. Go to Provisioning tab → Set mode to Automatic.</span></span></li>
+        <li>Enter GitHub SCIM endpoint + Bearer token <span class="help-tip">?<span class="tip-popup"><strong>Tenant URL:</strong> <code>https://api.github.com/scim/v2/enterprises/SLUG</code><br><strong>Secret Token:</strong> Generated in GitHub Enterprise → Settings → Authentication → SCIM → Generate token. Store securely.</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.82em;"><span class="text-purple">🟣</span> GitHub Enterprise Setup</h4>
+      <ul style="font-size:0.66em;">
+        <li>Go to Enterprise → Settings → Authentication security <span class="help-tip">?<span class="tip-popup">Navigate to <code>github.com/enterprises/SLUG/settings/auth_security</code>. You need Enterprise Owner role to access this page.</span></span></li>
+        <li>Enable <strong>SAML single sign-on</strong> <span class="help-tip">?<span class="tip-popup">Toggle SAML SSO on. This enforces that all users must authenticate through your IdP (Azure AD) before accessing GitHub resources. Can be set to "required" after testing.</span></span></li>
+        <li>Paste Azure AD SSO URL, Issuer, and public cert <span class="help-tip">?<span class="tip-popup"><strong>SSO URL:</strong> Found in Azure AD → SAML config → Login URL<br><strong>Issuer:</strong> Azure AD Identifier (Entity ID)<br><strong>Public cert:</strong> The Base64 X.509 certificate from Azure AD</span></span></li>
+        <li>Test SAML configuration with admin account <span class="help-tip">?<span class="tip-popup">Click "Test SAML configuration" in GitHub. This opens a new window that attempts SSO login. Verify it completes successfully before enforcing for all users.</span></span></li>
+        <li>Enable <strong>SCIM</strong> → generate provisioning token <span class="help-tip">?<span class="tip-popup">After enabling SCIM, GitHub generates a one-time Bearer token. Copy it immediately — it won't be shown again. Paste this token into Azure AD's SCIM provisioning configuration.</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── EXECUTION & VALIDATION ── -->
+  <h3 style="color:var(--accent-green); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 4 — Execution &amp; Validation</h3>
+  <div class="card-grid card-grid-2" style="margin-bottom:6px;">
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.82em;"><span class="text-teal">🚀</span> Execute Provisioning</h4>
+      <ul style="font-size:0.66em;">
+        <li><strong>Assign users/groups</strong> to the GitHub app in Azure AD <span class="help-tip">?<span class="tip-popup">In Azure AD → Enterprise Applications → GitHub EMU → Users and groups → Add assignment. Assign individual users or entire AD security groups. SCIM provisioning triggers within ~40 minutes or manually via "Provision on demand".</span></span></li>
+        <li>SCIM auto-creates accounts: <code>shortcode_username</code> <span class="help-tip">?<span class="tip-popup">SCIM reads user attributes (displayName, email, userName) from Azure AD and creates matching GitHub accounts with the enterprise shortcode prefix. Example: AD user <code>jsmith</code> → GitHub <code>wipro_jsmith</code>.</span></span></li>
+        <li>AD groups auto-map to <strong>GitHub Teams</strong> <span class="help-tip">?<span class="tip-popup">Azure AD groups assigned to the GitHub app are automatically synced as GitHub Teams. Group membership changes in AD propagate to GitHub via SCIM within the provisioning cycle (~40 min).</span></span></li>
+        <li>Users receive email invitation to authenticate <span class="help-tip">?<span class="tip-popup">Once provisioned, users get an email from GitHub to complete their first SSO authentication. They click the link, authenticate via Azure AD, and their GitHub EMU account becomes active.</span></span></li>
+        <li>First login via SSO activates the account <span class="help-tip">?<span class="tip-popup">The account exists in GitHub after SCIM provisioning, but remains inactive until the user completes their first SAML SSO login. After activation, they can access repos based on their team assignments.</span></span></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4 style="font-size:0.82em;"><span class="text-green">✅</span> Validate &amp; Verify</h4>
+      <ul style="font-size:0.66em;">
+        <li>Check provisioning logs in Azure AD → Audit logs <span class="help-tip">?<span class="tip-popup">Go to Azure AD → Enterprise Applications → GitHub EMU → Provisioning → Provisioning logs. Filter by status (Success/Failure) to identify any users that failed to provision. Common errors: duplicate emails, invalid characters in usernames.</span></span></li>
+        <li>Verify users appear in GitHub Org → People <span class="help-tip">?<span class="tip-popup">Navigate to <code>github.com/orgs/YOUR_ORG/people</code>. All SCIM-provisioned users should appear with their <code>shortcode_username</code>. Check that the total count matches your expected migration scope.</span></span></li>
+        <li>Confirm team membership matches AD groups <span class="help-tip">?<span class="tip-popup">Go to <code>github.com/orgs/YOUR_ORG/teams</code>. Each team should mirror the corresponding AD group. Click into each team to verify member lists match. Mismatches usually indicate SCIM group mapping issues.</span></span></li>
+        <li>Test SSO login with sample users from each role <span class="help-tip">?<span class="tip-popup">Pick 2-3 users from different roles (admin, contributor, reader). Have them log in via SSO and verify they can access only the repos their team grants. This confirms both SSO and RBAC are working correctly.</span></span></li>
+        <li>Validate repo access based on team assignments <span class="help-tip">?<span class="tip-popup">For each team, verify repo permissions match the intended RBAC: Read-only teams should not be able to push, Write teams can create branches and PRs, Admin teams can manage settings. Test with actual Git operations.</span></span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-bottom:14px;">
+    <div class="card">
+      <h4 style="font-size:0.78em;"><span class="text-blue">🔄</span> Auto-Provision</h4>
+      <p style="font-size:0.62em;">Users created automatically when assigned the GitHub app in Azure AD.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.78em;"><span class="text-purple">📛</span> Namespaced Accounts</h4>
+      <p style="font-size:0.62em;">EMU accounts use: <code>shortcode_username</code>. Fully managed by enterprise.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.78em;"><span class="text-green">🗑️</span> Auto-Deprovision</h4>
+      <p style="font-size:0.62em;">Unassign in AD → user suspended in GitHub. Clean lifecycle management.</p>
+    </div>
+  </div>
+
+  <!-- ── MIGRATION COMMANDS ── -->
+  <h3 style="color:var(--accent-orange); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 5 — Migration Commands (Step by Step)</h3>
+
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-purple">1️⃣</span> Install Tools &amp; Set Up Access</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Install GitHub CLI + ADO2GH extension + Azure CLI
+brew install gh && gh extension install github/gh-ado2gh
+brew install azure-cli && az login
+gh auth login --hostname github.com
+
+# Set environment variables
+export ADO_ORG="https://dev.azure.com/yourorg"
+export ADO_PAT="your-ado-pat-token"
+export GH_ORG="your-github-org"
+export GH_PAT="ghp_your-github-pat"
+echo $GH_PAT | gh auth login --hostname github.com --with-token</code></pre>
+  </div>
+
+  <div class="card" style="border-top:3px solid var(--accent-blue); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-blue">2️⃣</span> Export ADO Users &amp; Groups</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Export all users → ado-users.json
+curl -s -u ":$ADO_PAT" "$ADO_ORG/_apis/graph/users?api-version=7.1" \
+  | jq '.value[] | {displayName, mailAddress, principalName, origin}' > ado-users.json
+
+# Export all groups → ado-groups.json
+curl -s -u ":$ADO_PAT" "$ADO_ORG/_apis/graph/groups?api-version=7.1" \
+  | jq '.value[] | {displayName, descriptor}' > ado-groups.json
+
+# Get members of a specific group
+curl -s -u ":$ADO_PAT" \
+  "$ADO_ORG/_apis/graph/memberships/$GROUP_DESCRIPTOR?direction=down&api-version=7.1"</code></pre>
+  </div>
+
+  <div class="card" style="border-top:3px solid var(--accent-teal); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-teal">3️⃣</span> Generate Identity Mapping CSV</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Convert ado-users.json → identity-map.csv
+cat ado-users.json | jq -r -s '
+  ["ado_email","display_name","emu_login","ado_role"],
+  (.[] | [.mailAddress, .displayName,
+    ("SHORTCODE_" + (.mailAddress | split("@")[0])), "pending"
+  ]) | @csv' > identity-map.csv
+
+# Review: remove service accounts, verify emu_login format</code></pre>
+    <table style="font-size:0.52em; margin-top:4px;">
+      <thead><tr><th>ado_email</th><th>emu_login</th><th>ado_role</th></tr></thead>
+      <tbody>
+        <tr><td>jsmith@wipro.com</td><td style="color:var(--accent-purple);">wipro_jsmith</td><td>Contributor</td></tr>
+        <tr><td>apriya@wipro.com</td><td style="color:var(--accent-purple);">wipro_apriya</td><td>Admin</td></tr>
+        <tr><td style="color:var(--accent-orange);">svc-build@wipro.com</td><td style="color:var(--accent-orange);">— SKIP —</td><td style="color:var(--accent-orange);">Service</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="border-top:3px solid var(--accent-green); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-green">4️⃣</span> Build Team Mapping &amp; Create Teams</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Create team-map.csv
+echo "ado_group,github_team,github_repo_role" > team-map.csv
+echo "ProjectAlpha-Contributors,project-alpha-devs,write" >> team-map.csv
+echo "ProjectAlpha-Readers,project-alpha-readonly,read" >> team-map.csv
+echo "ProjectAlpha-Admins,project-alpha-admins,admin" >> team-map.csv
+
+# Create teams in GitHub from CSV
+while IFS=, read -r ado_group gh_team role; do
+  gh api orgs/$GH_ORG/teams -f name="$gh_team" -f privacy="closed" \
+    -f description="Migrated from ADO: $ado_group"
+done < <(tail -n +2 team-map.csv)
+
+# Assign repos to teams  (push=Write, pull=Read, admin=Admin)
+gh api orgs/$GH_ORG/teams/project-alpha-devs/repos/$GH_ORG/my-repo \
+  -X PUT -f permission="push"
+
+# Set org base permission to none
+gh api orgs/$GH_ORG -X PATCH -f default_repository_permission="none"</code></pre>
+  </div>
+
+  <div class="card" style="border-top:3px solid var(--accent-orange); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-orange">5️⃣</span> Reclaim Mannequin Users (Post-Migration)</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Generate mannequin mapping → mannequins.csv
+gh ado2gh generate-mannequin-csv --github-org $GH_ORG --output mannequins.csv
+
+# Edit target_login column in mannequins.csv, then reclaim in bulk
+gh ado2gh reclaim-mannequin --github-org $GH_ORG --csv mannequins.csv</code></pre>
+  </div>
+
+  <div class="card" style="border-top:3px solid var(--accent-lavender); width:100%;">
+    <h4 style="font-size:0.82em;"><span class="text-purple">📂</span> Files Created During Migration</h4>
+    <table style="font-size:0.52em; margin-top:4px;">
+      <thead><tr><th>File</th><th>Purpose</th><th>Created by</th></tr></thead>
+      <tbody>
+        <tr><td><code>ado-users.json</code></td><td>All ADO users with emails &amp; UPNs</td><td>curl + ADO API</td></tr>
+        <tr><td><code>ado-groups.json</code></td><td>ADO groups with descriptors</td><td>curl + ADO API</td></tr>
+        <tr><td><code>identity-map.csv</code></td><td>ADO email → GitHub EMU login</td><td>jq script</td></tr>
+        <tr><td><code>team-map.csv</code></td><td>ADO group → GitHub team + role</td><td>Manual</td></tr>
+        <tr><td><code>mannequins.csv</code></td><td>ADO2GH placeholder → real user</td><td>gh ado2gh</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 23: ADO → GITHUB CONCEPT MAPPING ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🗺️</div>
+  <h2>ADO → GitHub Concept Mapping</h2>
+  <table style="font-size:0.58em;">
+    <thead>
+      <tr>
+        <th style="color:var(--accent-blue);">Azure DevOps</th>
+        <th style="color:var(--accent-purple);">GitHub</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Organization</td><td>Organization</td><td>1:1 mapping</td></tr>
+      <tr><td>Project</td><td>Repo group + Project board</td><td>ADO Project ≈ Org + repo grouping</td></tr>
+      <tr><td>Area Paths</td><td>Labels + custom fields</td><td><code>area/frontend</code>, <code>area/backend</code></td></tr>
+      <tr><td>Iterations / Sprints</td><td>Iteration fields in Projects</td><td><code>@current</code>, <code>@next</code> filters</td></tr>
+      <tr><td>Epic / Feature / Story</td><td>Issue types + Task lists</td><td>Parent–child via sub-issues</td></tr>
+      <tr><td>Pipelines</td><td>GitHub Actions</td><td><code>.github/workflows/</code></td></tr>
+      <tr><td>Variable Groups</td><td>Secrets + Variables</td><td>Multi-level (org/repo/env)</td></tr>
+      <tr><td>Service Connections</td><td>Secrets + OIDC</td><td>Workload identity federation</td></tr>
+      <tr><td>Artifacts / Feeds</td><td>GitHub Packages</td><td>npm, NuGet, Maven, Docker</td></tr>
+      <tr><td>Dashboards</td><td>Project Insights</td><td>Charts from project data</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ==================== SLIDE 20: KEY TAKEAWAYS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🎯</div>
+  <h2>Key Takeaways</h2>
+  <div class="card-grid card-grid-3">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4><span class="text-purple">🏛️</span> Organization</h4>
+      <p>Create via Enterprise Settings → Organizations. Inherits enterprise SSO, policies, and billing automatically.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4><span class="text-blue">📊</span> Projects</h4>
+      <p>Use Board/Table/Roadmap views. Add custom fields. Automate with built-in workflows and Actions.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4><span class="text-teal">🔄</span> Process</h4>
+      <p>Define issue templates, branch protection, CODEOWNERS, and CI/CD pipelines per repository.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4><span class="text-green">🔒</span> Permissions</h4>
+      <p>Team-based RBAC. Set org base = No access. Grant via teams. 5 built-in + custom roles (Enterprise).</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-orange);">
+      <h4><span class="text-orange">🎭</span> RBAC</h4>
+      <p>Read → Triage → Write → Maintain → Admin. Map ADO roles carefully. Least privilege principle.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-lavender);">
+      <h4><span class="text-purple">🚀</span> User Migration</h4>
+      <p>SAML SSO + SCIM via Azure AD. EMU for managed accounts. Auto-provision &amp; deprovision lifecycle.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 21: THANK YOU ==================== -->
+<section data-background-color="#1B0056">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; gap:12px;">
+    <svg class="copilot-icon-lg" style="fill:var(--accent-purple); width:48px; height:48px;"><use href="#copilot-logo"/></svg>
+    <h1 class="gradient-title" style="font-size:1.8em; margin:0;">Thank You!</h1>
+    <h3 style="font-weight:400; color:var(--text-secondary); margin:0;">Questions &amp; Discussion</h3>
+    <p style="font-size:0.65em; color:var(--text-secondary); margin:10px 0 0 0;">Session 1 — GitHub DevSecOps for Wipro</p>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:20px; flex-wrap:wrap;">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-linkedin" style="font-size:1.4em;"></i> Sukumar P</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-red); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-youtube" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-pink); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-instagram" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-green); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-whatsapp" style="font-size:1.4em;"></i> tec_in_sec</a>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- Persistent Footer -->
+<div class="persistent-footer">
+  <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+  <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+  <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
+  <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+  <div class="sep"></div>
+  <span class="handle">tec_in_sec</span>
+  <div class="sep"></div>
+  <span class="follow-text">Follow for more updates</span>
+</div>
+
+<!-- Reveal.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  history: true,
+  center: false,
+  width: 960,
+  height: 540,
+  margin: 0,
+  minScale: 0.2,
+  maxScale: 2.0,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  backgroundTransition: 'fade',
+  slideNumber: 'c/t',
+  showSlideNumber: 'all',
+  controls: true,
+  controlsTutorial: true,
+  progress: true,
+  loop: false,
+  autoPlayMedia: true,
+  plugins: [RevealHighlight]
+});
+</script>
+</body>
+</html>
