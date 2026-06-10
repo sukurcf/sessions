@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP Innovation Days India — Hands-On Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #111827;
+    --bg-card: #1a2236;
+    --bg-card-hover: #1f2b42;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-pink: #ec4899;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e293b;
+    --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    --gradient-2: linear-gradient(135deg, #06b6d4, #3b82f6);
+    --gradient-3: linear-gradient(135deg, #10b981, #06b6d4);
+    --gradient-4: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-5: linear-gradient(135deg, #ec4899, #8b5cf6);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+  }
+
+  /* ─── Slide Container ─── */
+  .deck {
+    width: 100%; height: 100%;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px 100px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+    overflow-y: auto;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ─── Background Effects ─── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .slide::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: -20%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ─── Typography ─── */
+  .slide-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .tag-day1 { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+  .tag-day2 { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+  .tag-overview { background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); }
+  .tag-usecase { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .tag-arch { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
+  .tag-impl { background: rgba(236,72,153,0.15); color: var(--accent-pink); border: 1px solid rgba(236,72,153,0.3); }
+  .tag-wrap { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+
+  h1 {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -1.5px;
+  }
+
+  h1 .gradient-text {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h2 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.8px;
+  }
+
+  h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 20px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 750px;
+    font-weight: 400;
+  }
+
+  p { font-size: 17px; line-height: 1.7; color: var(--text-secondary); }
+
+  /* ─── Cards Grid ─── */
+  .cards-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .cards-2 { grid-template-columns: 1fr 1fr; }
+  .cards-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cards-4 { grid-template-columns: 1fr 1fr; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(59,130,246,0.3);
+    transform: translateY(-2px);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .card.accent-blue::before { background: var(--gradient-2); }
+  .card.accent-green::before { background: var(--gradient-3); }
+  .card.accent-purple::before { background: var(--gradient-5); }
+  .card.accent-orange::before { background: var(--gradient-4); }
+
+  .card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .card-icon.blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .card-icon.green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+  .card-icon.purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .card-icon.orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .card-icon.cyan { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+  .card-icon.red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .card-icon.pink { background: rgba(236,72,153,0.15); color: var(--accent-pink); }
+
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+  .card p { font-size: 14px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+
+  /* ─── Bullet List ─── */
+  .bullet-list {
+    list-style: none;
+    margin-top: 16px;
+  }
+
+  .bullet-list li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+  }
+
+  .bullet-list li:last-child { border-bottom: none; }
+
+  .bullet-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+  }
+
+  .bullet-list.green li::before { background: var(--accent-green); }
+  .bullet-list.purple li::before { background: var(--accent-purple); }
+  .bullet-list.orange li::before { background: var(--accent-orange); }
+
+  .bullet-list li strong { color: var(--text-primary); font-weight: 600; }
+
+  /* ─── Code blocks ─── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+
+  .code-block .comment { color: #8b949e; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .string { color: #a5d6ff; }
+  .code-block .func { color: #d2a8ff; }
+
+  /* ─── Table ─── */
+  .slide-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+
+  .slide-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .slide-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .slide-table tr:hover td { background: rgba(59,130,246,0.03); }
+  .slide-table td:first-child { font-weight: 600; color: var(--text-primary); }
+  .slide-table td code {
+    background: rgba(59,130,246,0.1);
+    color: var(--accent-blue);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* ─── Flow Diagram ─── */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 22px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .flow-step .step-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+  }
+
+  .flow-step .step-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .flow-arrow {
+    color: var(--text-muted);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ─── Highlight Box ─── */
+  .highlight-box {
+    background: rgba(59,130,246,0.06);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 24px;
+    margin-top: 20px;
+  }
+
+  .highlight-box.green { background: rgba(16,185,129,0.06); border-color: var(--accent-green); }
+  .highlight-box.purple { background: rgba(139,92,246,0.06); border-color: var(--accent-purple); }
+  .highlight-box.orange { background: rgba(245,158,11,0.06); border-color: var(--accent-orange); }
+
+  .highlight-box p { font-size: 15px; color: var(--text-secondary); margin: 0; }
+  .highlight-box strong { color: var(--text-primary); }
+
+  /* ─── Pill badges ─── */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin: 3px 4px 3px 0;
+  }
+  .pill.blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .pill.green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+  .pill.purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .pill.orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .pill.cyan { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+
+  /* ─── Two column layout ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 20px;
+  }
+
+  .col-divider {
+    border-left: 1px solid var(--border);
+    padding-left: 32px;
+  }
+
+  /* ─── Title slide special ─── */
+  .title-slide {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-slide h1 {
+    font-size: 62px;
+    margin-bottom: 20px;
+  }
+
+  .title-slide .subtitle {
+    font-size: 22px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .event-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 24px;
+    margin-bottom: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .event-badge i { color: var(--accent-blue); }
+
+  .day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .day-badge.day1 { background: rgba(59,130,246,0.12); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.25); }
+  .day-badge.day2 { background: rgba(139,92,246,0.12); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.25); }
+
+  /* ─── Section divider slides ─── */
+  .section-slide {
+    text-align: center;
+    align-items: center;
+  }
+
+  .section-slide .section-number {
+    font-size: 100px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 10px;
+    opacity: 0.08;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    letter-spacing: -4px;
+  }
+
+  .section-slide h2 {
+    font-size: 44px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── Navigation ─── */
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(10,14,26,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 1000;
+  }
+
+  .nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .nav-btn:disabled:hover {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-secondary);
+  }
+
+  .slide-counter {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slide-counter .current {
+    color: var(--text-primary);
+    font-size: 16px;
+  }
+
+  /* ─── Progress bar ─── */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--gradient-1);
+    transition: width 0.4s ease;
+    z-index: 1000;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ─── Slide title bar ─── */
+  .slide-title-bar {
+    position: fixed;
+    top: 12px;
+    right: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    z-index: 100;
+  }
+
+  /* ─── Architecture diagram ─── */
+  .arch-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .arch-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .arch-box {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .arch-box .box-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .arch-box .box-content {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .arch-arrow-down {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 18px;
+    padding: 4px 0;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 900px) {
+    .slide { padding: 40px 32px 100px; }
+    h1 { font-size: 36px; }
+    .title-slide h1 { font-size: 42px; }
+    h2 { font-size: 28px; }
+    .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .flow-row { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+
+  /* ─── Intro animation ─── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide.active .animate-in {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+  }
+
+  .slide.active .delay-1 { animation-delay: 0.1s; }
+  .slide.active .delay-2 { animation-delay: 0.2s; }
+  .slide.active .delay-3 { animation-delay: 0.3s; }
+  .slide.active .delay-4 { animation-delay: 0.4s; }
+  .slide.active .delay-5 { animation-delay: 0.5s; }
+  .slide.active .delay-6 { animation-delay: 0.6s; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-title-bar" id="slideTopLabel"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 1: TITLE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide title-slide active" data-label="">
+    <div class="event-badge animate-in delay-1">
+      <i class="fas fa-microchip"></i> SAP Innovation Days India &middot; Goa
+    </div>
+    <h1 class="animate-in delay-2">
+      Agentic Development with<br>
+      <span class="gradient-text">GitHub Copilot</span>
+    </h1>
+    <p class="subtitle animate-in delay-3" style="margin-top: 12px;">
+      A 2-day hands-on workshop building AI-powered agents<br>
+      for the enterprise software development lifecycle
+    </p>
+    <div style="margin-top: 32px; display: flex; gap: 16px; justify-content: center;" class="animate-in delay-4">
+      <div class="pill blue">Day 1 &middot; PR &amp; SRE Agents</div>
+      <div class="pill purple">Day 2 &middot; Security &amp; Golden Path</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 2: WORKSHOP OVERVIEW -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="Overview">
+    <span class="slide-tag tag-overview animate-in delay-1">Workshop Overview</span>
+    <h2 class="animate-in delay-2">What We'll Build Over 2 Days</h2>
+    <p class="subtitle animate-in delay-3">Four production-grade agentic workflows, each addressing a real bottleneck in SAP's software delivery lifecycle.</p>
+
+    <div class="cards-grid cards-4 animate-in delay-4">
+      <div class="card accent-blue">
+        <div class="card-icon blue"><i class="fas fa-code-pull-request"></i></div>
+        <h3>Use Case 1 — PR Workflow Automation</h3>
+        <p>AI-powered PR summaries, reviewer routing, CI triage, and compliance pre-checks in SAP language.</p>
+        <div style="margin-top:10px"><span class="pill blue">Day 1 • Morning</span></div>
+      </div>
+      <div class="card accent-green">
+        <div class="card-icon green"><i class="fas fa-heartbeat"></i></div>
+        <h3>Use Case 2 — SRE / AIOps Agent</h3>
+        <p>Incident-response bot that correlates logs, alerts, and code changes to suggest remediation.</p>
+        <div style="margin-top:10px"><span class="pill green">Day 1 • Afternoon</span></div>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-icon purple"><i class="fas fa-shield-halved"></i></div>
+        <h3>Use Case 3 — Compliance PreReview</h3>
+        <p>Shift-left governance scanning for security, GDPR, tenant isolation, and OSS licensing.</p>
+        <div style="margin-top:10px"><span class="pill purple">Day 2 • Morning</span></div>
+      </div>
+      <div class="card accent-orange">
+        <div class="card-icon orange"><i class="fas fa-road"></i></div>
+        <h3>Use Case 4 — CAP + Fiori Golden Path</h3>
+        <p>AI-guided bootstrapper for full-stack SAP applications with MCP-grounded context.</p>
+        <div style="margin-top:10px"><span class="pill orange">Day 2 • Afternoon</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 3: THE AGENTIC SDLC -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="Overview">
+    <span class="slide-tag tag-overview animate-in delay-1">Context</span>
+    <h2 class="animate-in delay-2">The Agentic SDLC Pipeline</h2>
+    <p class="subtitle animate-in delay-3">Our four use cases map directly to the stages of the software development lifecycle.</p>
+
+    <div class="flow-row animate-in delay-4">
+      <div class="flow-step" style="border-color: rgba(59,130,246,0.3);">
+        <div class="step-label" style="color: var(--accent-cyan);">Plan</div>
+        <div class="step-text">Design &amp; Spec</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color: rgba(16,185,129,0.3);">
+        <div class="step-label" style="color: var(--accent-green);">Build</div>
+        <div class="step-text">Code &amp; Scaffold</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color: rgba(245,158,11,0.3);">
+        <div class="step-label" style="color: var(--accent-orange);">Test</div>
+        <div class="step-text">Validate &amp; Scan</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color: rgba(139,92,246,0.3);">
+        <div class="step-label" style="color: var(--accent-purple);">PR</div>
+        <div class="step-text">Review &amp; Merge</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color: rgba(236,72,153,0.3);">
+        <div class="step-label" style="color: var(--accent-pink);">Release</div>
+        <div class="step-text">Deploy &amp; Observe</div>
+      </div>
+    </div>
+
+    <div class="cards-grid cards-4 animate-in delay-5" style="margin-top: 28px;">
+      <div class="card" style="padding: 16px 20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-code-pull-request" style="color:var(--accent-blue)"></i>
+          <span style="font-weight:600;font-size:14px;">UC1 — PR Automation</span>
+        </div>
+        <p style="font-size:12px;margin-top:6px;">Covers: PR → Release stages</p>
+      </div>
+      <div class="card" style="padding: 16px 20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-heartbeat" style="color:var(--accent-green)"></i>
+          <span style="font-weight:600;font-size:14px;">UC2 — SRE / AIOps</span>
+        </div>
+        <p style="font-size:12px;margin-top:6px;">Covers: Release → Observe → Fix</p>
+      </div>
+      <div class="card" style="padding: 16px 20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-shield-halved" style="color:var(--accent-purple)"></i>
+          <span style="font-weight:600;font-size:14px;">UC3 — Compliance</span>
+        </div>
+        <p style="font-size:12px;margin-top:6px;">Covers: Test → PR stages</p>
+      </div>
+      <div class="card" style="padding: 16px 20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-road" style="color:var(--accent-orange)"></i>
+          <span style="font-weight:600;font-size:14px;">UC4 — Golden Path</span>
+        </div>
+        <p style="font-size:12px;margin-top:6px;">Covers: Plan → Build stages</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 4: DAY 1 DIVIDER -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide section-slide" data-label="Day 1">
+    <div class="section-number" style="color: var(--accent-blue);">DAY 1</div>
+    <div class="day-badge day1 animate-in delay-1"><i class="fas fa-calendar-day"></i> Day 1</div>
+    <h2 class="animate-in delay-2" style="font-size: 42px;">
+      PR Workflow Automation<br>&amp; SRE / AIOps
+    </h2>
+    <p class="subtitle animate-in delay-3" style="text-align:center; margin: 0 auto; margin-top: 12px;">
+      Tackle the two biggest bottlenecks in SAP's delivery lifecycle:<br>
+      PR latency and incident response time.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 5: UC1 — PROBLEM -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC1 — PR Automation">
+    <span class="slide-tag tag-day1 animate-in delay-1">Use Case 1</span>
+    <h2 class="animate-in delay-2">PR Workflow Automation</h2>
+    <p class="subtitle animate-in delay-3">The 3–7 day P90 shipping latency problem across SAP LoBs.</p>
+
+    <div class="two-col animate-in delay-4">
+      <div>
+        <h3 style="color: var(--accent-red); margin-bottom: 12px;">
+          <i class="fas fa-triangle-exclamation"></i> The Problem
+        </h3>
+        <ul class="bullet-list" style="margin-top:0;">
+          <li><strong>Multi-repo coordination</strong> — CAP + UI5 changes require cross-team reviews</li>
+          <li><strong>Sequential approval gates</strong> — Security, architecture, compliance sign-offs</li>
+          <li><strong>CI failures from drift</strong> — Environment/config issues mistaken for code bugs</li>
+          <li><strong>Days-long review cycles</strong> — 3–7 day P90 shipping latency</li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3 style="color: var(--accent-green); margin-bottom: 12px;">
+          <i class="fas fa-bullseye"></i> The Goal
+        </h3>
+        <div class="highlight-box green" style="margin-top:0;">
+          <p><strong>Build an agentic PR workflow</strong> embedded inside GitHub that performs four automated functions on every pull request — summarize, route, triage, and pre-validate.</p>
+        </div>
+        <div style="margin-top: 20px;">
+          <span class="pill blue">GitHub Actions</span>
+          <span class="pill green">Copilot API</span>
+          <span class="pill purple">MCP Server</span>
+          <span class="pill cyan">REST/GraphQL</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 6: UC1 — SOLUTION (4 Functions) -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC1 — PR Automation">
+    <span class="slide-tag tag-usecase animate-in delay-1">Use Case 1 — Solution</span>
+    <h2 class="animate-in delay-2">Four Automated Functions</h2>
+
+    <div class="cards-grid cards-4 animate-in delay-3">
+      <div class="card accent-blue">
+        <div class="card-icon blue"><i class="fas fa-file-lines"></i></div>
+        <h3>Auto-Summarize PRs</h3>
+        <p>Interpret changes in SAP context — CAP, CDS, OData, UI5 — not generic diffs. E.g., <em>"Adds a new OData entity projection in the CAP CDS model."</em></p>
+      </div>
+      <div class="card accent-green">
+        <div class="card-icon green"><i class="fas fa-user-group"></i></div>
+        <h3>Smart Reviewer Routing</h3>
+        <p>Analyze files changed, git blame, CODEOWNERS to recommend and auto-assign the right reviewers instantly.</p>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-icon purple"><i class="fas fa-bug"></i></div>
+        <h3>CI Failure Triage</h3>
+        <p>Fetch logs, parse errors via LLM, post diagnosis + suggested fix. <em>"❌ NullPointerException — OrderDate not initialized in test fixture."</em></p>
+      </div>
+      <div class="card accent-orange">
+        <div class="card-icon orange"><i class="fas fa-clipboard-check"></i></div>
+        <h3>Compliance Pre-Validation</h3>
+        <p>Run security, data privacy, and OSS license checks before any human reviewer sees the PR.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box animate-in delay-4" style="margin-top: 20px;">
+      <p><i class="fas fa-lightbulb" style="color: var(--accent-orange); margin-right: 8px;"></i>
+      <strong>Key Principle:</strong> The agent lives where SAP developers already work — PRs, checks, reviews. Context comes from real SAP repos, not generic prompts.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 7: UC1 — ARCHITECTURE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC1 — PR Automation">
+    <span class="slide-tag tag-arch animate-in delay-1">Use Case 1 — Architecture</span>
+    <h2 class="animate-in delay-2">Architecture &amp; Integration Points</h2>
+
+    <div class="flow-row animate-in delay-3">
+      <div class="flow-step">
+        <div class="step-label">Trigger</div>
+        <div class="step-text">PR Event</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Fetch</div>
+        <div class="step-text">Diff + Metadata</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Analyze</div>
+        <div class="step-text">On-Prem Copilot</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Act</div>
+        <div class="step-text">Comment + Assign</div>
+      </div>
+    </div>
+
+    <div class="cards-grid cards-3 animate-in delay-4" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-icon cyan"><i class="fab fa-github"></i></div>
+        <h3>GitHub Interfaces</h3>
+        <p>REST/GraphQL API to fetch PR details, post comments, assign reviewers, update check statuses.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon blue"><i class="fas fa-brain"></i></div>
+        <h3>AI Engine (On-Prem)</h3>
+        <p>On-premises Copilot as reasoning backend. MCP tools provide domain knowledge for SAP-aware analysis.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green"><i class="fas fa-magnifying-glass-chart"></i></div>
+        <h3>Static Analysis</h3>
+        <p>Code scanning + dependency auditing feed into the compliance report. Deterministic first, AI second.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 8: UC1 — IMPLEMENTATION -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC1 — PR Automation">
+    <span class="slide-tag tag-impl animate-in delay-1">Use Case 1 — Implementation</span>
+    <h2 class="animate-in delay-2">Implementation Guidance</h2>
+
+    <div class="two-col animate-in delay-3">
+      <div>
+        <h3><i class="fas fa-gear" style="color:var(--accent-blue);margin-right:8px;"></i>Trigger &amp; Prompts</h3>
+        <ul class="bullet-list" style="margin-top: 8px;">
+          <li><strong>GitHub Actions workflow</strong> triggered on <code>pull_request</code> events (opened, synchronize)</li>
+          <li><strong>SAP-aware prompts:</strong> <em>"You are an expert SAP developer assistant familiar with CAP, SAPUI5/Fiori, and OData…"</em></li>
+          <li><strong>MCP grounding</strong> — <code>@cap-js/mcp-server</code> for <code>search_model</code> and <code>search_docs</code></li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3><i class="fas fa-sliders" style="color:var(--accent-orange);margin-right:8px;"></i>Design Principles</h3>
+        <ul class="bullet-list orange" style="margin-top: 8px;">
+          <li><strong>Modular adoption</strong> — Each function is a separate workflow step; teams adopt incrementally</li>
+          <li><strong>Calibrate noise</strong> — Start with high-confidence outputs, expand iteratively</li>
+          <li><strong>Label AI outputs</strong> — All comments authored by <code>SAP-Copilot-Agent</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box orange animate-in delay-4" style="margin-top: 20px;">
+      <p><i class="fas fa-scale-balanced" style="color: var(--accent-orange); margin-right: 8px;"></i>
+      <strong>Tradeoff:</strong> Automated PR comments save time but create noise if not calibrated. The agent should supplement, not replace, human judgment.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 9: UC2 SECTION DIVIDER -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide section-slide" data-label="UC2 — SRE / AIOps">
+    <div class="section-number" style="color: var(--accent-green);">02</div>
+    <span class="slide-tag tag-day1 animate-in delay-1">Day 1 &middot; Afternoon</span>
+    <h2 class="animate-in delay-2" style="margin-top: 8px;">
+      SRE / AIOps Agent
+    </h2>
+    <p class="subtitle animate-in delay-3" style="text-align:center; margin: 0 auto; margin-top: 12px;">
+      You Build It, You Run It<br>
+      <span style="color: var(--accent-green);">Bridging operational signals with development artifacts</span>
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 10: UC2 — PROBLEM -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC2 — SRE / AIOps">
+    <span class="slide-tag tag-day1 animate-in delay-1">Use Case 2</span>
+    <h2 class="animate-in delay-2">SRE / AIOps — The Challenge</h2>
+    <p class="subtitle animate-in delay-3">SAP developers who write code are also responsible for operating their services in production.</p>
+
+    <div class="two-col animate-in delay-4">
+      <div>
+        <h3 style="color: var(--accent-red); margin-bottom: 12px;">
+          <i class="fas fa-fire"></i> The Reality
+        </h3>
+        <ul class="bullet-list">
+          <li><strong>BTP services, CAP apps, microservices</strong> deployed across SAP's cloud landscape</li>
+          <li><strong>24/7 on-call rotations</strong> with full production responsibility</li>
+          <li><strong>Manual correlation</strong> between logs, metrics, deployments, and code changes</li>
+          <li><strong>Time-consuming triage</strong> — sifting through systems, cross-referencing history</li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3 style="color: var(--accent-green); margin-bottom: 12px;">
+          <i class="fas fa-robot"></i> What We'll Build
+        </h3>
+        <p style="font-size: 15px;">A Copilot-powered SRE Agent that:</p>
+        <div class="cards-grid" style="grid-template-columns:1fr; gap:10px; margin-top: 12px;">
+          <div class="card" style="padding: 12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-download" style="color:var(--accent-cyan);margin-right:8px;"></i>Ingests logs + alerts + recent PRs</p></div>
+          <div class="card" style="padding: 12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-link" style="color:var(--accent-blue);margin-right:8px;"></i>Correlates incident → code change → deploy</p></div>
+          <div class="card" style="padding: 12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-code-pull-request" style="color:var(--accent-green);margin-right:8px;"></i>Suggests remediation PRs</p></div>
+          <div class="card" style="padding: 12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-file-medical" style="color:var(--accent-purple);margin-right:8px;"></i>Creates post-incident GitHub Issues</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 11: UC2 — ARCHITECTURE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC2 — SRE / AIOps">
+    <span class="slide-tag tag-arch animate-in delay-1">Use Case 2 — Architecture</span>
+    <h2 class="animate-in delay-2">Detection → Diagnosis → Remediation</h2>
+
+    <div class="flow-row animate-in delay-3">
+      <div class="flow-step">
+        <div class="step-label">Alert</div>
+        <div class="step-text">Log / Metric Spike</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Ingest</div>
+        <div class="step-text">Logs + PRs + Deploys</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Correlate</div>
+        <div class="step-text">AI Reasoning</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-label">Act</div>
+        <div class="step-text">PR + Issue</div>
+      </div>
+    </div>
+
+    <div class="cards-grid cards-2 animate-in delay-4" style="margin-top: 24px;">
+      <div class="card accent-green">
+        <div class="card-icon green"><i class="fas fa-chart-line"></i></div>
+        <h3>Monitoring Integration</h3>
+        <p>BTP logging service, Azure Monitor, or simulated alert payloads (JSON). Log analysis via LLM reads unstructured text and summarizes key errors.</p>
+      </div>
+      <div class="card accent-blue">
+        <div class="card-icon blue"><i class="fab fa-github"></i></div>
+        <h3>GitHub Automation</h3>
+        <p>Programmatically create Issues (incident reports) and PRs (code fixes). All AI-generated artifacts labeled <code>aiops-suggested</code>.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box green animate-in delay-5" style="margin-top: 16px;">
+      <p><strong>Copilot's role:</strong> The repository becomes the system of record for learning loops — all correlations and fixes tracked in the development lifecycle, not siloed in monitoring dashboards.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 12: UC2 — IMPLEMENTATION -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC2 — SRE / AIOps">
+    <span class="slide-tag tag-impl animate-in delay-1">Use Case 2 — Implementation</span>
+    <h2 class="animate-in delay-2">Building the SRE Agent</h2>
+
+    <div class="two-col animate-in delay-3">
+      <div>
+        <h3><i class="fas fa-code" style="color:var(--accent-green);margin-right:8px;"></i>Hackathon MVP</h3>
+        <ul class="bullet-list green" style="margin-top:8px;">
+          <li><strong>Start narrow:</strong> One incident type — app error logs correlated with recent commits</li>
+          <li><strong>Sample input:</strong> Log file with a stack trace + list of recent PRs</li>
+          <li><strong>Expected output:</strong> Diagnosis + suggested fix as a new PR</li>
+          <li><strong>Validation cycle:</strong> Detection → Suggestion → CI test → Human approval</li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3><i class="fas fa-book" style="color:var(--accent-purple);margin-right:8px;"></i>Post-Incident Learning</h3>
+        <ul class="bullet-list purple" style="margin-top:8px;">
+          <li><strong>Auto-generate</strong> structured GitHub Issues with timeline, root cause, actions</li>
+          <li><strong>Runbook generation:</strong> Append incident summaries to a markdown knowledge base</li>
+          <li><strong>Searchable history</strong> feeding organizational learning</li>
+        </ul>
+
+        <div class="highlight-box orange" style="margin-top: 16px;">
+          <p><i class="fas fa-scale-balanced" style="color: var(--accent-orange); margin-right: 8px;"></i>
+          <strong>Tradeoff:</strong> Agent suggests and drafts PRs — does NOT auto-execute. Human approval for rollbacks; gradual autonomy for low-risk actions (feature flags).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 13: DAY 2 DIVIDER -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide section-slide" data-label="Day 2">
+    <div class="section-number" style="color: var(--accent-purple);">DAY 2</div>
+    <div class="day-badge day2 animate-in delay-1"><i class="fas fa-calendar-day"></i> Day 2</div>
+    <h2 class="animate-in delay-2" style="font-size: 42px;">
+      Compliance PreReview<br>&amp; Golden Path Scaffolding
+    </h2>
+    <p class="subtitle animate-in delay-3" style="text-align:center; margin: 0 auto; margin-top: 12px;">
+      Shift governance left and establish opinionated,<br>
+      AI-guided project bootstrapping for SAP applications.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 14: UC3 — PROBLEM -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC3 — Compliance">
+    <span class="slide-tag tag-day2 animate-in delay-1">Use Case 3</span>
+    <h2 class="animate-in delay-2">Security / Privacy / Compliance PreReview</h2>
+    <p class="subtitle animate-in delay-3">Shift-Left Governance — finding violations early, not at the gate.</p>
+
+    <div class="two-col animate-in delay-4">
+      <div>
+        <h3 style="margin-bottom: 14px; color: var(--accent-red);">
+          <i class="fas fa-lock"></i> Non-Negotiable Constraints
+        </h3>
+        <div class="cards-grid" style="grid-template-columns:1fr; gap: 10px;">
+          <div class="card" style="padding: 14px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-shield-halved" style="color:var(--accent-red)"></i>
+              <div>
+                <h3 style="font-size:14px;margin:0;">Secure Coding Standards</h3>
+                <p style="font-size:12px;margin:0;">Injection, crypto, input validation</p>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding: 14px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-user-shield" style="color:var(--accent-purple)"></i>
+              <div>
+                <h3 style="font-size:14px;margin:0;">GDPR &amp; Tenant Isolation</h3>
+                <p style="font-size:12px;margin:0;">Data privacy, PII handling, consent</p>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding: 14px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-scale-balanced" style="color:var(--accent-orange)"></i>
+              <div>
+                <h3 style="font-size:14px;margin:0;">OSS License &amp; Export Controls</h3>
+                <p style="font-size:12px;margin:0;">License hygiene, dependency risks</p>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding: 14px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-sitemap" style="color:var(--accent-cyan)"></i>
+              <div>
+                <h3 style="font-size:14px;margin:0;">Architecture Guardrails</h3>
+                <p style="font-size:12px;margin:0;">Per-LoB constraints &amp; patterns</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-divider">
+        <h3 style="margin-bottom: 14px; color: var(--accent-purple);">
+          <i class="fas fa-arrow-left"></i> Shift Left — Before Human Review
+        </h3>
+        <div class="highlight-box purple" style="margin-top: 0;">
+          <p><strong>Problem timing:</strong> Violations are found late — during formal reviews — creating friction and rework.</p>
+        </div>
+        <div class="highlight-box green" style="margin-top: 12px;">
+          <p><strong>Solution:</strong> AI prepares artifacts and routes to experts <em>only when needed</em>. Compliance becomes part of the inner loop, not a gate.</p>
+        </div>
+        <p style="font-size: 14px; margin-top: 16px; color: var(--text-muted);">
+          <i class="fas fa-quote-left" style="margin-right: 6px;"></i>
+          Policy knowledge codified in agents, not tribal memory.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 15: UC3 — SOLUTION -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC3 — Compliance">
+    <span class="slide-tag tag-usecase animate-in delay-1">Use Case 3 — Solution</span>
+    <h2 class="animate-in delay-2">Two-Pass Scanning Approach</h2>
+
+    <div class="cards-grid cards-2 animate-in delay-3">
+      <div class="card accent-blue" style="padding: 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div class="card-icon blue" style="margin:0;"><i class="fas fa-microscope"></i></div>
+          <div>
+            <h3 style="margin:0;">Pass 1 — Deterministic Analysis</h3>
+            <span class="pill blue" style="margin-top:4px;">High Confidence • Low Noise</span>
+          </div>
+        </div>
+        <ul class="bullet-list" style="margin-top: 8px;">
+          <li>Static analysis &amp; linting on code diff</li>
+          <li>Banned functions, missing license headers</li>
+          <li>Known vulnerable dependency versions</li>
+          <li>Rule-based — zero ambiguity</li>
+        </ul>
+      </div>
+      <div class="card accent-purple" style="padding: 28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div class="card-icon purple" style="margin:0;"><i class="fas fa-brain"></i></div>
+          <div>
+            <h3 style="margin:0;">Pass 2 — AI Contextual Analysis</h3>
+            <span class="pill purple" style="margin-top:4px;">Nuanced • Pattern-Based</span>
+          </div>
+        </div>
+        <ul class="bullet-list purple" style="margin-top: 8px;">
+          <li>Data flow patterns — PII exposed across functions</li>
+          <li>Logic bypassing authorization checks</li>
+          <li>Guided prompts: <em>"Check against SAP's security &amp; privacy best practices"</em></li>
+          <li>Catches what rule-based tools miss</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box animate-in delay-4" style="margin-top: 16px;">
+      <p><strong>Output:</strong> Machine-readable compliance summary (JSON / structured Markdown) categorized by severity — Security, Privacy, Licensing, Architecture — with specific guidance for each finding.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 16: UC3 — RULE CHECKS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC3 — Compliance">
+    <span class="slide-tag tag-impl animate-in delay-1">Use Case 3 — Rule Categories</span>
+    <h2 class="animate-in delay-2">Compliance Rule Checks</h2>
+
+    <div class="cards-grid cards-4 animate-in delay-3">
+      <div class="card accent-blue">
+        <div class="card-icon red"><i class="fas fa-shield-halved"></i></div>
+        <h3>Security</h3>
+        <p>No hard-coded credentials, proper input validation, no weak crypto, no dangerous function calls on untrusted input.</p>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-icon purple"><i class="fas fa-user-lock"></i></div>
+        <h3>Privacy</h3>
+        <p>No logging PII without masking. Data flows respect tenant isolation. External data transfers flagged.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="card-icon green"><i class="fas fa-file-contract"></i></div>
+        <h3>OSS Licensing</h3>
+        <p>Maintain allow-list (MIT, Apache-2.0, BSD) and deny-list. Flag any new dependency not on the allow-list.</p>
+      </div>
+      <div class="card accent-orange">
+        <div class="card-icon orange"><i class="fas fa-layer-group"></i></div>
+        <h3>Architecture</h3>
+        <p>Layered architecture in CAP (no UI→DB calls), required security headers, approved container registries.</p>
+      </div>
+    </div>
+
+    <div class="two-col animate-in delay-4" style="margin-top: 20px;">
+      <div class="highlight-box" style="margin: 0;">
+        <p><i class="fas fa-database" style="color:var(--accent-blue);margin-right:8px;"></i>
+        <strong>MCP Knowledge Base:</strong> Queryable rules via MCP server. Agent checks crypto calls against approved algorithm list retrieved dynamically.</p>
+      </div>
+      <div class="highlight-box orange" style="margin: 0;">
+        <p><i class="fas fa-sliders" style="color:var(--accent-orange);margin-right:8px;"></i>
+        <strong>False Positive Mgmt:</strong> Start with high-value rules (secrets, critical vulns). Developers can suppress findings with justification. Track accept vs. dismiss for calibration.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 17: UC4 SECTION DIVIDER -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide section-slide" data-label="UC4 — Golden Path">
+    <div class="section-number" style="color: var(--accent-orange);">04</div>
+    <span class="slide-tag tag-day2 animate-in delay-1">Day 2 &middot; Afternoon</span>
+    <h2 class="animate-in delay-2" style="margin-top: 8px;">
+      CAP + Fiori/UI5<br>Golden Path
+    </h2>
+    <p class="subtitle animate-in delay-3" style="text-align:center; margin: 0 auto; margin-top: 12px;">
+      The Crown Jewel — AI-guided project bootstrapping<br>
+      <span style="color: var(--accent-orange);">from idea to running service in minutes</span>
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 18: UC4 — PROBLEM & SAP CONTEXT -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-day2 animate-in delay-1">Use Case 4</span>
+    <h2 class="animate-in delay-2">The Full-Stack SAP Application Challenge</h2>
+
+    <div class="two-col animate-in delay-3">
+      <div>
+        <h3 style="margin-bottom: 14px;"><i class="fas fa-puzzle-piece" style="color:var(--accent-orange);margin-right:8px;"></i>Components to Stitch Together</h3>
+        <ul class="bullet-list orange" style="margin-top:0;">
+          <li><strong>CAP service</strong> — Backend with CDS data models</li>
+          <li><strong>CDS / OData</strong> — Data model and API layer</li>
+          <li><strong>UI5 / Fiori Elements</strong> — Front-end UI</li>
+          <li><strong>CI/CD pipeline</strong> — Automated build &amp; deploy</li>
+          <li><strong>Security &amp; Observability</strong> — XSUAA, logging, monitoring</li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3 style="margin-bottom: 14px;"><i class="fas fa-star" style="color:var(--accent-orange);margin-right:8px;"></i>Golden Path Advantages</h3>
+        <div class="cards-grid" style="grid-template-columns:1fr; gap: 8px;">
+          <div class="card" style="padding:12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-bolt" style="color:var(--accent-orange);margin-right:8px;"></i><strong>Increased development efficiency</strong></p></div>
+          <div class="card" style="padding:12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-cube" style="color:var(--accent-cyan);margin-right:8px;"></i><strong>Out-of-the-box features &amp; integration</strong></p></div>
+          <div class="card" style="padding:12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-check-double" style="color:var(--accent-green);margin-right:8px;"></i><strong>Fulfilled cloud qualities &amp; standards</strong></p></div>
+          <div class="card" style="padding:12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-arrows-rotate" style="color:var(--accent-blue);margin-right:8px;"></i><strong>Smoother application lifecycle</strong></p></div>
+          <div class="card" style="padding:12px 16px;"><p style="margin:0;font-size:13px;"><i class="fas fa-wrench" style="color:var(--accent-purple);margin-right:8px;"></i><strong>Efficient operations &amp; maintenance</strong></p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 19: UC4 — 5-PHASE WORKFLOW -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-arch animate-in delay-1">Use Case 4 — Workflow</span>
+    <h2 class="animate-in delay-2">The 5-Phase Agent Workflow</h2>
+
+    <div class="flow-row animate-in delay-3">
+      <div class="flow-step" style="border-color:rgba(6,182,212,0.3);">
+        <div class="step-label" style="color:var(--accent-cyan);">Phase 1</div>
+        <div class="step-text">Input</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color:rgba(59,130,246,0.3);">
+        <div class="step-label" style="color:var(--accent-blue);">Phase 2</div>
+        <div class="step-text">Planning</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color:rgba(16,185,129,0.3);">
+        <div class="step-label" style="color:var(--accent-green);">Phase 3</div>
+        <div class="step-text">Scaffold</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color:rgba(139,92,246,0.3);">
+        <div class="step-label" style="color:var(--accent-purple);">Phase 4</div>
+        <div class="step-text">MCP Ground</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step" style="border-color:rgba(245,158,11,0.3);">
+        <div class="step-label" style="color:var(--accent-orange);">Phase 5</div>
+        <div class="step-text">Explain</div>
+      </div>
+    </div>
+
+    <div class="cards-grid cards-3 animate-in delay-4" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-icon cyan"><i class="fas fa-keyboard"></i></div>
+        <h3>Phase 1-2: Input &amp; Plan</h3>
+        <p>Developer provides high-level requirements. Agent drafts a <strong>reviewable project plan</strong> before any code — Spec-Driven Development pattern.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green"><i class="fas fa-hammer"></i></div>
+        <h3>Phase 3: Scaffold</h3>
+        <p>Multi-file generation: CDS models, service definitions, Fiori UI, XSUAA config, CI/CD pipeline, tests — all SAP-approved structure.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon purple"><i class="fas fa-book-open"></i></div>
+        <h3>Phase 4-5: Ground &amp; Explain</h3>
+        <p>MCP validates every file against actual CAP model &amp; docs. README explains <strong>why</strong> each choice was made — code + learning resource.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 20: UC4 — GENERATED ARTIFACTS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-usecase animate-in delay-1">Use Case 4 — Output</span>
+    <h2 class="animate-in delay-2">Generated Project Artifacts</h2>
+
+    <table class="slide-table animate-in delay-3">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Content</th>
+          <th>SAP Pattern</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>db/schema.cds</code></td><td>Entity definitions with keys, types, associations</td><td>CDS data modeling best practices</td></tr>
+        <tr><td><code>srv/cat-service.cds</code></td><td>Service definition + Fiori annotations</td><td>OData service exposure per CAP standards</td></tr>
+        <tr><td><code>srv/cat-service.js</code></td><td>Event handler stubs (on READ/WRITE)</td><td>CAP Node.js handler pattern</td></tr>
+        <tr><td><code>app/.../manifest.json</code></td><td>Fiori Elements app config</td><td>SAP Fiori tools project structure</td></tr>
+        <tr><td><code>xs-security.json</code></td><td>OAuth2 scopes &amp; role templates</td><td>BTP XSUAA configuration</td></tr>
+        <tr><td><code>.github/workflows/ci.yml</code></td><td>Build → test → deploy pipeline</td><td>CI/CD automation for CAP on BTP</td></tr>
+        <tr><td><code>README.md</code></td><td>Architecture rationale &amp; guides</td><td>Self-documenting Golden Path</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 21: UC4 — MCP INTEGRATION -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-arch animate-in delay-1">Use Case 4 — MCP</span>
+    <h2 class="animate-in delay-2">MCP-Grounded Context</h2>
+    <p class="subtitle animate-in delay-3">The <code>@cap-js/mcp-server</code> ensures Copilot writes SAP-correct code from day one.</p>
+
+    <div class="cards-grid cards-2 animate-in delay-4">
+      <div class="card accent-blue">
+        <div class="card-icon blue"><i class="fas fa-magnifying-glass"></i></div>
+        <h3>search_model</h3>
+        <p>Queries the compiled CDS/CSN model for entities, services, fields, and HTTP endpoints. Understands the actual data model before generating code.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="card-icon green"><i class="fas fa-book"></i></div>
+        <h3>search_docs</h3>
+        <p>Searches local CAP documentation embeddings for syntax and best-practice guidance. Validates patterns against official docs.</p>
+      </div>
+    </div>
+
+    <div class="code-block animate-in delay-5" style="margin-top: 20px;">
+      <span class="comment"># AGENTS.md rules for MCP integration</span><br>
+      <span class="keyword">-</span> You <span class="func">MUST</span> search for CDS definitions with <span class="string">cds-mcp</span>,<br>
+      &nbsp;&nbsp;only if it fails you MAY read *.cds files directly.<br>
+      <span class="keyword">-</span> You <span class="func">MUST</span> search for CAP docs with <span class="string">cds-mcp</span> EVERY TIME<br>
+      &nbsp;&nbsp;you create or modify CDS models. Do NOT propose changes<br>
+      &nbsp;&nbsp;without first checking it.
+    </div>
+
+    <p class="animate-in delay-6" style="font-size: 13px; color: var(--text-muted); margin-top: 12px;">
+      <i class="fas fa-lightbulb" style="color: var(--accent-orange); margin-right: 6px;"></i>
+      <strong>Methodology:</strong> "Discover first, then change" — ensures SAP-correct output rather than generic guesses.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 22: UC4 — MCP INTERACTION PATTERNS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-impl animate-in delay-1">Use Case 4 — MCP Patterns</span>
+    <h2 class="animate-in delay-2">Practical MCP Interaction Patterns</h2>
+
+    <div class="cards-grid cards-2 animate-in delay-3">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="card-icon cyan" style="margin:0;"><i class="fas fa-compass"></i></div>
+          <h3 style="margin:0;">Discover Model &amp; Endpoints</h3>
+        </div>
+        <div class="code-block" style="margin:0;">
+          <span class="string">"Use cds-mcp search_model to<br>list all services and their<br>HTTP endpoints."</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="card-icon blue" style="margin:0;"><i class="fas fa-pen-to-square"></i></div>
+          <h3 style="margin:0;">Write Correct Queries</h3>
+        </div>
+        <div class="code-block" style="margin:0;">
+          <span class="string">"Call search_model for Books<br>and associations. Then check<br>CAP Node.js SELECT syntax."</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="card-icon green" style="margin:0;"><i class="fas fa-link"></i></div>
+          <h3 style="margin:0;">Generate OData URLs</h3>
+        </div>
+        <div class="code-block" style="margin:0;">
+          <span class="string">"Find the service and endpoint<br>for Books, then give me an<br>OData V4 URL with $expand."</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="card-icon orange" style="margin:0;"><i class="fas fa-arrows-rotate"></i></div>
+          <h3 style="margin:0;">Plan Refactors Safely</h3>
+        </div>
+        <div class="code-block" style="margin:0;">
+          <span class="string">"Renaming Author to Writer.<br>search_model: list affected<br>entities, services, endpoints."</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box orange animate-in delay-4" style="margin-top: 16px;">
+      <p><i class="fas fa-scale-balanced" style="color:var(--accent-orange);margin-right:8px;"></i>
+      <strong>Tradeoff:</strong> Opinionated Golden Path accelerates setup but constrains flexibility. Agent offers configuration options (Fiori Elements vs. freestyle UI5) and documents safe modification points in README.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 23: UC4 — CAP TECHNICAL CAPABILITIES -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-usecase animate-in delay-1">Use Case 4 — CAP Features</span>
+    <h2 class="animate-in delay-2">CAP Built-In Capabilities to Leverage</h2>
+    <p class="subtitle animate-in delay-3">The Golden Path agent generates code exercising these capabilities by default.</p>
+
+    <div class="cards-grid cards-3 animate-in delay-4">
+      <div class="card">
+        <div class="card-icon blue"><i class="fas fa-plug"></i></div>
+        <h3>OData Services</h3>
+        <p>Service creation &amp; consumption via express framework. Auto-exposed REST and OData endpoints.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green"><i class="fas fa-bolt"></i></div>
+        <h3>Event-Driven Architecture</h3>
+        <p>SAP Event Mesh for async communication. Decoupled microservice patterns.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon purple"><i class="fas fa-lock"></i></div>
+        <h3>Annotation-Based Auth</h3>
+        <p>Restrict service capabilities &amp; define required roles via CDS annotations.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon orange"><i class="fas fa-user-shield"></i></div>
+        <h3>Data Privacy Mgmt</h3>
+        <p>Integration with SAP Personal Data Manager. Privacy annotations for sensitive fields.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon cyan"><i class="fas fa-globe"></i></div>
+        <h3>Internationalization</h3>
+        <p>i18n support in domain modeling. Resource bundles generated automatically.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon pink"><i class="fas fa-database"></i></div>
+        <h3>Runtime Abstraction</h3>
+        <p>SQLite for dev, HANA Cloud for production. Transparent database switching.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 24: GOLDEN PATH VARIANTS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="UC4 — Golden Path">
+    <span class="slide-tag tag-overview animate-in delay-1">Beyond the Workshop</span>
+    <h2 class="animate-in delay-2">Golden Path Variants</h2>
+    <p class="subtitle animate-in delay-3">The agent framework extends beyond CAP + Fiori/UI5.</p>
+
+    <div class="cards-grid cards-3 animate-in delay-4">
+      <div class="card accent-blue" style="padding: 28px;">
+        <div class="card-icon blue"><i class="fas fa-road"></i></div>
+        <h3>CAP + Fiori/UI5</h3>
+        <p>Full-stack cloud app with data model, services, UI, auth, CI/CD, and observability. <strong>Workshop focus.</strong></p>
+        <div style="margin-top:10px;"><span class="pill blue">Primary</span></div>
+      </div>
+      <div class="card accent-purple" style="padding: 28px;">
+        <div class="card-icon purple"><i class="fas fa-terminal"></i></div>
+        <h3>ABAP DevOps</h3>
+        <p>Bring ABAP teams into the same inner-loop automation &amp; governance without forcing disruptive skill transitions.</p>
+        <div style="margin-top:10px;"><span class="pill purple">Extension</span></div>
+      </div>
+      <div class="card accent-orange" style="padding: 28px;">
+        <div class="card-icon orange"><i class="fas fa-robot"></i></div>
+        <h3>Enterprise Agent</h3>
+        <p>Standardized route for pro-code agents with tool contracts, safety controls, logging, eval harness, and release gates.</p>
+        <div style="margin-top:10px;"><span class="pill orange">Extension</span></div>
+      </div>
+    </div>
+
+    <div class="highlight-box animate-in delay-5" style="margin-top: 20px;">
+      <p><i class="fas fa-graduation-cap" style="color:var(--accent-blue);margin-right:8px;"></i>
+      <strong>Copilot becomes the entry point to SAP engineering.</strong> New hires onboard via Golden Paths, not docs — they study a well-structured AI-generated project and learn best practices experientially.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 25: KEY INTEGRATION THEMES -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="Summary">
+    <span class="slide-tag tag-overview animate-in delay-1">Cross-Cutting Themes</span>
+    <h2 class="animate-in delay-2">Common Architectural Patterns</h2>
+
+    <div class="cards-grid cards-3 animate-in delay-3">
+      <div class="card accent-blue" style="padding:24px;">
+        <div class="card-icon blue"><i class="fab fa-github"></i></div>
+        <h3>GitHub as System of Record</h3>
+        <p>All four agents operate within GitHub — PRs, Issues, Actions, checks. Insights live where developers already work.</p>
+      </div>
+      <div class="card accent-purple" style="padding:24px;">
+        <div class="card-icon purple"><i class="fas fa-brain"></i></div>
+        <h3>On-Prem Copilot</h3>
+        <p>All analysis stays internal. Proprietary code and production logs never transmitted externally. Security by design.</p>
+      </div>
+      <div class="card accent-green" style="padding:24px;">
+        <div class="card-icon green"><i class="fas fa-database"></i></div>
+        <h3>MCP for Domain Grounding</h3>
+        <p>Model Context Protocol provides SAP-specific knowledge. Agents reason about CAP, CDS, OData — not generic patterns.</p>
+      </div>
+    </div>
+
+    <div class="cards-grid cards-3 animate-in delay-4" style="margin-top: 16px;">
+      <div class="card" style="padding:24px;">
+        <div class="card-icon orange"><i class="fas fa-puzzle-piece"></i></div>
+        <h3>Modular Adoption</h3>
+        <p>Each capability is a separate module. Teams adopt incrementally — start with one, expand over time.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <div class="card-icon cyan"><i class="fas fa-user-check"></i></div>
+        <h3>Human-in-the-Loop</h3>
+        <p>Agents suggest, humans approve. Clear AI labeling on all outputs. Gradual autonomy for low-risk actions.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <div class="card-icon pink"><i class="fas fa-sliders"></i></div>
+        <h3>Calibrated Sensitivity</h3>
+        <p>Start strict for high-severity, lenient for low. Track accept vs. dismiss. Evolve based on feedback.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 26: HANDS-ON APPROACH -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="Summary">
+    <span class="slide-tag tag-impl animate-in delay-1">Workshop Approach</span>
+    <h2 class="animate-in delay-2">How We'll Build — Hackathon Strategy</h2>
+
+    <div class="two-col animate-in delay-3">
+      <div>
+        <h3 style="margin-bottom: 14px;"><i class="fas fa-crosshairs" style="color:var(--accent-green);margin-right:8px;"></i>MVP-First Thinking</h3>
+        <ul class="bullet-list green" style="margin-top:0;">
+          <li><strong>Start narrow</strong> — One incident type, one PR function, one rule category</li>
+          <li><strong>Prove the core concept</strong> — Working demo &gt; complete solution</li>
+          <li><strong>Real outputs</strong> — Actual PRs, Issues, comments created in GitHub</li>
+          <li><strong>Expand if time allows</strong> — Layer additional capabilities iteratively</li>
+        </ul>
+      </div>
+      <div class="col-divider">
+        <h3 style="margin-bottom: 14px;"><i class="fas fa-tools" style="color:var(--accent-blue);margin-right:8px;"></i>Technical Stack</h3>
+        <div class="cards-grid" style="grid-template-columns:1fr; gap: 8px;">
+          <div class="card" style="padding:12px 16px;">
+            <p style="margin:0;font-size:13px;"><span class="pill blue" style="margin-right:8px;">Runtime</span> GitHub Actions + Node.js / Python</p>
+          </div>
+          <div class="card" style="padding:12px 16px;">
+            <p style="margin:0;font-size:13px;"><span class="pill green" style="margin-right:8px;">AI</span> On-Prem Copilot API</p>
+          </div>
+          <div class="card" style="padding:12px 16px;">
+            <p style="margin:0;font-size:13px;"><span class="pill purple" style="margin-right:8px;">Context</span> MCP Servers (@cap-js/mcp-server)</p>
+          </div>
+          <div class="card" style="padding:12px 16px;">
+            <p style="margin:0;font-size:13px;"><span class="pill orange" style="margin-right:8px;">APIs</span> GitHub REST / GraphQL</p>
+          </div>
+          <div class="card" style="padding:12px 16px;">
+            <p style="margin:0;font-size:13px;"><span class="pill cyan" style="margin-right:8px;">Analysis</span> Static tools + LLM scanning</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 27: KEY TAKEAWAYS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide" data-label="Wrap-Up">
+    <span class="slide-tag tag-wrap animate-in delay-1">Key Takeaways</span>
+    <h2 class="animate-in delay-2">What You'll Walk Away With</h2>
+
+    <div class="cards-grid cards-2 animate-in delay-3">
+      <div class="card accent-blue" style="padding: 28px;">
+        <div style="font-size:36px;margin-bottom:12px;">🚀</div>
+        <h3>Working Agent Prototypes</h3>
+        <p>Four functional agentic workflows that you can demonstrate, extend, and adapt for your own SAP LoB's needs.</p>
+      </div>
+      <div class="card accent-green" style="padding: 28px;">
+        <div style="font-size:36px;margin-bottom:12px;">🧠</div>
+        <h3>SAP-Specific AI Patterns</h3>
+        <p>Prompt engineering with domain context, MCP integration for grounded outputs, and two-pass analysis techniques.</p>
+      </div>
+      <div class="card accent-purple" style="padding: 28px;">
+        <div style="font-size:36px;margin-bottom:12px;">🏗️</div>
+        <h3>Agentic SDLC Blueprint</h3>
+        <p>An end-to-end understanding of how AI agents transform every stage — from Planning through Release and Operations.</p>
+      </div>
+      <div class="card accent-orange" style="padding: 28px;">
+        <div style="font-size:36px;margin-bottom:12px;">📐</div>
+        <h3>Design Tradeoff Awareness</h3>
+        <p>When to automate vs. suggest, how to calibrate sensitivity, and how to evolve agent autonomy over time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SLIDE 28: CLOSING -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="slide title-slide" data-label="">
+    <div class="event-badge animate-in delay-1">
+      <i class="fas fa-hands-clapping"></i> Let's Build
+    </div>
+    <h1 class="animate-in delay-2" style="font-size: 56px;">
+      Ready to <span class="gradient-text">Ship Faster?</span>
+    </h1>
+    <p class="subtitle animate-in delay-3" style="margin-top: 12px;">
+      From 3–7 day PR latency to AI-assisted inner-loop development.<br>
+      The agentic SDLC starts now.
+    </p>
+    <div style="margin-top: 36px; display: flex; gap: 16px; justify-content: center;" class="animate-in delay-4">
+      <div class="flow-step" style="min-width: auto; padding: 12px 20px;">
+        <div class="step-text" style="font-size: 13px;"><i class="fas fa-code-pull-request" style="color:var(--accent-blue);margin-right:6px;"></i>PR Automation</div>
+      </div>
+      <div class="flow-step" style="min-width: auto; padding: 12px 20px;">
+        <div class="step-text" style="font-size: 13px;"><i class="fas fa-heartbeat" style="color:var(--accent-green);margin-right:6px;"></i>SRE / AIOps</div>
+      </div>
+      <div class="flow-step" style="min-width: auto; padding: 12px 20px;">
+        <div class="step-text" style="font-size: 13px;"><i class="fas fa-shield-halved" style="color:var(--accent-purple);margin-right:6px;"></i>Compliance</div>
+      </div>
+      <div class="flow-step" style="min-width: auto; padding: 12px 20px;">
+        <div class="step-text" style="font-size: 13px;"><i class="fas fa-road" style="color:var(--accent-orange);margin-right:6px;"></i>Golden Path</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Navigation Bar ─── -->
+<nav class="nav-bar">
+  <div class="nav-left">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">
+      <i class="fas fa-chevron-left"></i> Previous
+    </button>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span> / </span>
+    <span id="totalSlides">28</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+      Next <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let current = 0;
+
+  document.getElementById('totalSlides').textContent = totalSlides;
+
+  function updateSlide(newIndex, direction) {
+    if (newIndex < 0 || newIndex >= totalSlides) return;
+
+    const oldSlide = slides[current];
+    const newSlide = slides[newIndex];
+
+    // Remove all state classes
+    oldSlide.classList.remove('active');
+    if (direction > 0) {
+      oldSlide.classList.add('exit-left');
+    }
+
+    // Clear exit class after transition
+    setTimeout(() => oldSlide.classList.remove('exit-left'), 500);
+
+    // Activate new slide
+    newSlide.classList.add('active');
+
+    current = newIndex;
+
+    // Update counter
+    document.getElementById('currentSlide').textContent = current + 1;
+
+    // Update progress bar
+    const progress = ((current) / (totalSlides - 1)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+
+    // Update top label
+    const label = newSlide.getAttribute('data-label') || '';
+    document.getElementById('slideTopLabel').textContent = label;
+
+    // Update button states
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === totalSlides - 1;
+  }
+
+  function navigate(dir) {
+    updateSlide(current + dir, dir);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      navigate(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      navigate(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      updateSlide(0, -1);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      updateSlide(totalSlides - 1, 1);
+    }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 60) {
+      navigate(diff > 0 ? 1 : -1);
+    }
+  });
+
+  // Initialize
+  updateSlide(0, 1);
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="app.title">Token-optimizer · Understand &amp; cost token optimization for AI workloads</title>
+  <meta name="description" content="A static, interactive showcase for understanding, visualizing, and costing token optimization across AI coding workloads — scenarios, an interactive framework, a pricing calculator, and a model-selection playbook." />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="app" class="app-shell"></div>
+
+  <noscript>
+    <div style="max-width:640px;margin:4rem auto;padding:0 1.5rem;font-family:system-ui,sans-serif;color:#1a1a2e;">
+      <h1>Token-optimizer</h1>
+      <p>This interactive showcase requires JavaScript. It is a fully static application — no
+      data leaves your browser. Enable JavaScript and reload to explore token-optimization
+      scenarios, the framework diagram, the cost calculator, and the model-selection playbook.</p>
+    </div>
+  </noscript>
+
+  <!-- i18n layer — shim + locale catalogs. Must load before views render. -->
+  <script src="js/core/i18n.js"></script>
+  <script src="locales/en.js"></script>
+  <script src="locales/es.js"></script>
+  <script src="locales/fr.js"></script>
+  <script src="locales/de.js"></script>
+  <script src="locales/ja.js"></script>
+  <script src="locales/zh-CN.js"></script>
+  <script src="locales/pt-BR.js"></script>
+  <script src="locales/ar.js"></script>
+  <script src="locales/calculator.js"></script>
+
+  <!-- Data layer — declarative content & configuration -->
+  <script src="data/pricing.js"></script>
+  <script src="data/scenarios.js"></script>
+  <script src="data/playbook.js"></script>
+  <script src="data/playbook-levers.js"></script>
+  <script src="data/ui-config.js"></script>
+
+  <!-- Core layer — plumbing -->
+  <script src="js/core/utils.js"></script>
+  <script src="js/core/store.js"></script>
+  <script src="js/core/router.js"></script>
+  <script src="https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js" crossorigin="anonymous"></script>
+  <script src="../assets/env.js"></script>
+  <script src="../assets/analytics.js"></script>
+
+  <!-- View layer — one module per section -->
+  <script src="js/views/hero.js"></script>
+  <script src="js/views/scenarios.js"></script>
+  <script src="js/views/diagram.js"></script>
+  <script src="js/views/calculator.js"></script>
+  <script src="js/views/playbook.js"></script>
+  <script src="js/views/extensibility.js"></script>
+
+  <!-- Bootstrap -->
+  <script src="js/app.js"></script>
+</body>
+</html>

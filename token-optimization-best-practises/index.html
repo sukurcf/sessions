@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-i18n="quick.docTitle">Token Optimization Best Practises - Visual Guide</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="assets/styles.css"/>
+<style>
+  .lang-switcher-floating {
+    position: fixed; top: 12px; right: 12px; z-index: 50;
+    appearance: none; -webkit-appearance: none;
+    background: var(--bg-2, #eef2f7); color: var(--text, #0f172a);
+    border: 1px solid var(--border, #c8d3e1); border-radius: 8px;
+    padding: 7px 26px 7px 10px; font: inherit; font-size: .8rem; line-height: 1;
+    cursor: pointer; backdrop-filter: blur(6px);
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 13px) calc(50% - 2px), calc(100% - 8px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  .lang-switcher-floating:focus-visible {
+    outline: none; border-color: var(--accent, #58a6ff);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, .25);
+  }
+  [dir="rtl"] .lang-switcher-floating {
+    left: 12px; right: auto;
+    padding: 7px 10px 7px 26px;
+    background-position: 13px calc(50% - 2px), 8px calc(50% - 2px);
+  }
+  [dir="rtl"] body { direction: rtl; }
+  [dir="rtl"] .anatomy-bar { flex-direction: row-reverse; }
+  [dir="rtl"] .scene-inner { text-align: right; }
+</style>
+</head>
+<body>
+
+<a class="site-brand" href="index.html#" aria-label="GitHub copilot token optimizer">
+  <svg class="site-brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+    <defs>
+      <linearGradient id="siteBrandGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#22d3ee"/>
+        <stop offset="1" stop-color="#818cf8"/>
+      </linearGradient>
+    </defs>
+    <rect width="32" height="32" rx="8" fill="#0d1226"/>
+    <circle cx="16" cy="16" r="11" fill="none" stroke="url(#siteBrandGrad)" stroke-width="2"/>
+    <path d="M10 12 H22 M10 16 H18 M10 20 H14" stroke="url(#siteBrandGrad)" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  </svg>
+  <span class="site-brand__name">Token Optimization Best Practises - Visual Guide</span>
+</a>
+
+<a class="inspired-badge" href="https://ashy-dune-0b4215a0f.7.azurestaticapps.net/" target="_blank" rel="noopener noreferrer"
+   style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:51;font-size:.72rem;font-weight:600;color:var(--text-muted,#9aa4c6);text-decoration:none;opacity:.7;transition:opacity .2s;white-space:nowrap;"
+   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'"
+>Inspired by <span style="text-decoration:underline;color:var(--accent,#58a6ff);">ashy-dune-0b4215a0f</span></a>
+
+<select class="lang-switcher-floating" id="lang-switcher" data-i18n="[aria-label]quick.languageLabel" aria-label="Language"></select>
+
+<div class="progress"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO  —  one sentence, one promise
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene hero">
+  <div class="scene-inner hero-inner">
+    <div class="hero-pill">Level 1 · Quick guide</div>
+    <h1 data-i18n-html="quick.hero.titleHtml">Token Optimization Best Practises - Visual Guide</h1>
+    <p class="sub" data-i18n="quick.hero.sub">Six scenes, sixty seconds. The full playbook — calculator, real workflows, pricing — is one click away.</p>
+    <div class="hero-actions">
+      <a href="detailed/index.html#/home" class="cta secondary">
+        <span data-i18n="quick.hero.ctaDetailed">Get the detailed playbook</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+    <a class="hero-scroll-link" href="index.html#scene-1">Or scroll through the six scenes <span aria-hidden="true">⌄</span></a>
+
+    <div class="scene-nav-label">Jump to any scene</div>
+    <nav class="scene-nav" aria-label="Jump to a scene">
+      <a class="scene-card" href="index.html#scene-1">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 1</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V7a2 2 0 0 1 2-2h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="scene-card-title">What rides every prompt</span>
+      </a>
+      <a class="scene-card" href="index.html#scene-2">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 2</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m4 6 1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="scene-card-title">Six habits and practices</span>
+      </a>
+      <a class="scene-card" href="index.html#scene-3">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 3</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </span>
+        <span class="scene-card-title">Zoom out on customization</span>
+      </a>
+      <a class="scene-card" href="index.html#scene-4">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 4</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M7 4v16M17 4v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="scene-card-title">The right framing</span>
+      </a>
+      <a class="scene-card" href="index.html#scene-5">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 5</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 16-4-4 4-4M16 8l4 4-4 4M14 4l-4 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="scene-card-title">Two snippets: drop into any repo</span>
+      </a>
+      <a class="scene-card" href="index.html#scene-6">
+        <span class="scene-card-head">
+          <span class="scene-card-pill">Scene 6</span>
+          <svg class="scene-card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M3 12h2M19 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </span>
+        <span class="scene-card-title">Key takeaways</span>
+      </a>
+    </nav>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 1  —  Anatomy of a prompt (animated stacked bar)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-1">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n="quick.scene1.tag">Scene 1 · What rides every prompt</div>
+    <h2 class="fade" data-i18n="quick.scene1.title">Your question is the smallest piece.</h2>
+    <p class="lede fade" data-i18n-html="quick.scene1.ledeHtml">
+      Each turn, Copilot quietly assembles a packet and sends it to the model. The thing you typed is the
+      thin slice on the right. Everything else is automatic &mdash; but you pay for all of it.
+    </p>
+
+    <div class="anatomy fade">
+      <div class="anatomy-bar">
+        <div class="anatomy-seg s1" data-i18n="[title]quick.scene1.bar.systemTitle;quick.scene1.bar.systemLabel" title="System prompt">SYSTEM</div>
+        <div class="anatomy-seg s2" data-i18n="[title]quick.scene1.bar.instructionsTitle;quick.scene1.bar.instructionsLabel" title="copilot-instructions.md">INSTRUCTIONS</div>
+        <div class="anatomy-seg s3" data-i18n="[title]quick.scene1.bar.toolsTitle;quick.scene1.bar.toolsLabel" title="MCP & tool schemas">TOOLS · MCP</div>
+        <div class="anatomy-seg s4" data-i18n="[title]quick.scene1.bar.historyTitle;quick.scene1.bar.historyLabel" title="Past turns in this chat">HISTORY</div>
+        <div class="anatomy-seg s5" data-i18n="[title]quick.scene1.bar.retrievedTitle;quick.scene1.bar.retrievedLabel" title="Files, #codebase results, search hits">RETRIEVED CONTEXT</div>
+        <div class="anatomy-seg s6" data-i18n="[title]quick.scene1.bar.youTitle;quick.scene1.bar.youLabel" title="What you actually typed">YOU</div>
+      </div>
+      <div class="anatomy-legend">
+        <div data-i18n-html="quick.scene1.legend.systemHtml"><span class="sw" style="background:var(--p2)"></span>System prompt (fixed)</div>
+        <div data-i18n-html="quick.scene1.legend.instructionsHtml"><span class="sw" style="background:var(--p3)"></span><code>copilot-instructions.md</code></div>
+        <div data-i18n-html="quick.scene1.legend.toolsHtml"><span class="sw" style="background:var(--p5)"></span>Tool &amp; MCP schemas</div>
+        <div data-i18n-html="quick.scene1.legend.historyHtml"><span class="sw" style="background:var(--p6)"></span>Chat history</div>
+        <div data-i18n-html="quick.scene1.legend.retrievedHtml"><span class="sw" style="background:var(--p1)"></span>Retrieved files</div>
+        <div data-i18n-html="quick.scene1.legend.youHtml"><span class="sw" style="background:var(--p4)"></span>Your message</div>
+      </div>
+    </div>
+
+    <div class="punch fade" data-i18n-html="quick.scene1.punchHtml">
+      <strong>Implication:</strong> shrinking your own message saves almost nothing.
+      The leverage is in the other five segments.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 2  —  Six habits (interactive)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-2">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n="quick.scene2.tag">Scene 2 · Try the toggles</div>
+    <h2 class="fade" data-i18n="quick.scene2.title">Six habits. Turn them on, see where the leverage is.</h2>
+    <p class="lede fade" data-i18n-html="quick.scene2.ledeHtml">
+      Each switch is one habit. Flip it on and its <strong style="color:var(--text)">impact</strong> rolls up into your
+      <strong style="color:var(--text)">ESTIMATED BENEFITS</strong> on the right.
+      <strong style="color:var(--text)">Try the first switch</strong> &mdash; benefits climb as you stack habits.
+    </p>
+
+    <div class="note fade" role="note" data-i18n-html="quick.scene2.noteHtml">
+      <strong>Heads up — these are estimates, not guarantees.</strong> The <em>High / Medium / Low</em> labels are
+      <strong>directional only</strong>: a qualitative ranking of each habit's <em>relative</em> leverage, based on
+      patterns commonly seen across engineering teams. They are <strong>not benchmarks, not measurements, and not a
+      promised cost reduction</strong> for your project. Actual impact depends on your model, workload, codebase
+      size, caching behaviour, and team workflow &mdash; and may be higher, lower, or negligible. Always measure on
+      your own usage.
+      <br/><br/>
+      <strong>Further reading:</strong>
+      <a href="https://wellarchitected.github.com/library/governance/recommendations/managing-ai-credits/" target="_blank" rel="noopener">GitHub Well-Architected &mdash; Managing AI credits</a> ·
+      <a href="https://github.blog/ai-and-ml/github-copilot/improving-token-efficiency-in-github-agentic-workflows/" target="_blank" rel="noopener">Improving token efficiency in agentic workflows</a> ·
+      <a href="https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/manage-and-track-spending/prepare-for-usage-based-billing#take-action-before-the-transition" target="_blank" rel="noopener">Prepare for usage-based billing &mdash; take action before the transition</a>.
+    </div>
+
+    <div class="levers-wrap fade">
+      <div class="levers" role="group" data-i18n="[aria-label]quick.scene2.groupAria" aria-label="Six habits you can adopt">
+
+        <div class="lever" data-p="1" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.1.name">Point at the file you're working on</div>
+            <div class="lever-sub" data-i18n="quick.scene2.levers.1.sub">Send one file or your selection instead of the whole repo.</div>
+          </div>
+          <div class="lever-save impact-high" data-i18n="quick.scene2.impact.high">High impact</div>
+        </div>
+
+        <div class="lever" data-p="2" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.2.name">Use Auto Mode (recommended)</div>
+            <div class="lever-sub" data-i18n-html="quick.scene2.levers.2.subHtml">Let Copilot route each turn to the best-fit model &mdash; Auto Mode is becoming the default policy across orgs and applies a documented ~10% token-multiplier discount. <a href="https://docs.github.com/en/copilot/using-github-copilot/ai-models/changing-the-ai-model-for-copilot-chat" target="_blank" rel="noopener">Learn more</a>.</div>
+          </div>
+          <div class="lever-save impact-high" data-i18n="quick.scene2.impact.high">High impact</div>
+        </div>
+
+        <div class="lever" data-p="3" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.3.name">Keep your custom instructions short and steady</div>
+            <div class="lever-sub" data-i18n="quick.scene2.levers.3.sub">If they don't change between turns, they get cached — input cost drops a lot.</div>
+          </div>
+          <div class="lever-save impact-med" data-i18n="quick.scene2.impact.medium">Medium impact</div>
+        </div>
+
+        <div class="lever" data-p="4" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.4.name">Don't crank reasoning effort to max</div>
+            <div class="lever-sub" data-i18n="quick.scene2.levers.4.sub">Low or medium is fine for most work. Save high for genuinely ambiguous tasks.</div>
+          </div>
+          <div class="lever-save impact-low" data-i18n="quick.scene2.impact.low">Low impact</div>
+        </div>
+
+        <div class="lever" data-p="5" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.5.name">Turn off tools you're not using on this project</div>
+            <div class="lever-sub" data-i18n="quick.scene2.levers.5.sub">Every enabled tool's description gets sent on every message — even when unused.</div>
+          </div>
+          <div class="lever-save impact-high" data-i18n="quick.scene2.impact.high">High impact</div>
+        </div>
+
+        <div class="lever" data-p="6" role="switch" tabindex="0" aria-checked="false">
+          <div class="switch" aria-hidden="true"></div>
+          <div class="lever-text">
+            <div class="lever-name" data-i18n="quick.scene2.levers.6.name">Start a new chat when you switch tasks</div>
+            <div class="lever-sub" data-i18n="quick.scene2.levers.6.sub">Old turns ride along on every new message until you reset.</div>
+          </div>
+          <div class="lever-save impact-med" data-i18n="quick.scene2.impact.medium">Medium impact</div>
+        </div>
+
+      </div>
+
+      <div class="meter-big">
+        <div class="label" data-i18n="quick.scene2.meter.label">ESTIMATED BENEFITS</div>
+        <div class="save-big"><span id="save-pct" data-i18n="quick.scene2.impact.none">None</span>&nbsp;<span class="save-suffix" data-i18n="quick.scene2.meter.saveSuffix">relative leverage</span></div>
+        <div class="save-bar"><div class="save-fill" id="save-fill"></div></div>
+        <div class="count-row">
+          <span data-i18n-html="quick.scene2.meter.countHtml">Habits on: <strong id="save-count">0</strong> of 6</span>
+          <span id="save-tier">No habits yet</span>
+        </div>
+        <div class="verdict" id="verdict">
+          Flip a switch to see which habits typically carry the most leverage.
+        </div>
+        <div class="lever-controls">
+          <button class="btn primary" id="flip-all" data-i18n="quick.scene2.meter.tryAll">Try all 6</button>
+          <button class="btn" id="reset-all" data-i18n="quick.scene2.meter.reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="punch fade" data-i18n-html="quick.scene2.punchHtml">
+      <strong>The takeaway:</strong> you don't need all six. Adopt two or three that fit your workflow
+      and the numbers move fast — because each habit cuts a <em>different</em> factor.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 4  —  Loading tiers (customization primitives ladder)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-3">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n-html="quick.scene4.tagHtml">Scene 4 &middot; The wider map</div>
+    <h2 class="fade" data-i18n="quick.scene4.title">Zoom out: every customization has a price.</h2>
+    <p class="lede fade" data-i18n-html="quick.scene4.ledeHtml">
+      The chat habits in Scene 2 are the half you control by hand. The other half is the customization system itself &mdash;
+      <code>instructions</code>, <code>prompts</code>, <code>skills</code>, <code>agents</code>, <code>hooks</code>.
+      They sort into <strong style="color:var(--text)">six tiers</strong> by <em>when</em> they load &mdash; i.e. <em>how often</em> they get sent to the model. Top tier rides along on <strong style="color:var(--text)">every request</strong>; bottom tier may never be sent at all.
+    </p>
+
+    <details class="primer fade">
+      <summary data-i18n-html="quick.scene4.primer.summaryHtml">New to these? &nbsp;<span class="primer-hint">show a 1-line primer for each</span></summary>
+      <div class="primer-grid">
+        <div class="primer-card">
+          <div class="primer-name"><code>instructions</code></div>
+          <p data-i18n-html="quick.scene4.primer.instructions.bodyHtml">Markdown files Copilot reads as <em>standing rules</em>. <code>copilot-instructions.md</code> loads every turn; <code>*.instructions.md</code> with <code>applyTo:</code> loads only when matching files are in context.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.instructions.exampleHtml">e.g. "Always use TypeScript strict mode. Prefer functional components."</div>
+        </div>
+        <div class="primer-card">
+          <div class="primer-name"><code>prompts</code></div>
+          <p data-i18n-html="quick.scene4.primer.prompts.bodyHtml">Reusable prompt templates you trigger with <code>/name</code> in chat. Think saved macros for recurring tasks &mdash; loaded only when <em>you</em> call them.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.prompts.exampleHtml">e.g. <code>/review-pr</code>, <code>/write-test</code>, <code>/refactor-to-hooks</code></div>
+        </div>
+        <div class="primer-card">
+          <div class="primer-name"><code>skills</code></div>
+          <p data-i18n-html="quick.scene4.primer.skills.bodyHtml">Bundled know-how (a short description + a longer body). The model reads the description on every turn and pulls in the body only when it decides the skill is relevant.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.skills.exampleHtml">e.g. a "deploy-to-azure" skill that knows your stack's exact CLI sequence.</div>
+        </div>
+        <div class="primer-card">
+          <div class="primer-name"><code>agents</code></div>
+          <p data-i18n-html="quick.scene4.primer.agents.bodyHtml">Custom chat personas with their own system prompt + tool set, invoked via <code>@name</code>. Subagents are spawned by the model; only their summary returns &mdash; cheap context-wise.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.agents.exampleHtml">e.g. <code>@security-reviewer</code>, <code>@db-migration-expert</code></div>
+        </div>
+        <div class="primer-card">
+          <div class="primer-name"><code>hooks</code></div>
+          <p data-i18n-html="quick.scene4.primer.hooks.bodyHtml">Scripts that run on editor <em>events</em> (save, commit, edit) &mdash; <strong>outside</strong> the model. Never sent to the model; great for lint, format, or auto-running tests.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.hooks.exampleHtml">e.g. run <code>prettier</code> on save, <code>pytest</code> on commit.</div>
+        </div>
+        <div class="primer-card">
+          <div class="primer-name"><code>MCP tools</code></div>
+          <p data-i18n-html="quick.scene4.primer.mcp.bodyHtml">External tools (servers) the model can call mid-conversation &mdash; databases, GitHub, browsers, your own APIs. Like skills but they <em>do</em> things instead of just adding context.</p>
+          <div class="primer-eg" data-i18n-html="quick.scene4.primer.mcp.exampleHtml">e.g. query your prod DB, open a PR, fetch a Jira ticket.</div>
+        </div>
+      </div>
+    </details>
+
+    <div class="tier-ladder fade">
+      <div class="tier tier-head" aria-hidden="true">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.headLabelHtml"><strong>When it loads</strong></div>
+        <div class="tier-ex" data-i18n="quick.scene4.ladder.headExample">What lives here</div>
+        <div class="tier-bar-head" data-i18n-html="quick.scene4.ladder.headCostHtml">Likelihood of being sent to the model &rarr;</div>
+      </div>
+      <div class="tier" data-cost="hi">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.everyRequest.labelHtml"><span class="tier-dot hi"></span><strong>Every request</strong></div>
+        <div class="tier-ex" data-i18n-html="quick.scene4.ladder.rows.everyRequest.exampleHtml"><code>copilot-instructions.md</code>, skill descriptions</div>
+        <div class="tier-bar" style="--w:100%"></div>
+      </div>
+      <div class="tier" data-cost="hi">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.glob.labelHtml"><span class="tier-dot med"></span><strong>On glob match</strong></div>
+        <div class="tier-ex" data-i18n-html="quick.scene4.ladder.rows.glob.exampleHtml"><code>*.instructions.md</code> with <code>applyTo:</code></div>
+        <div class="tier-bar" style="--w:78%"></div>
+      </div>
+      <div class="tier" data-cost="med">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.invoke.labelHtml"><span class="tier-dot low"></span><strong>You invoke</strong></div>
+        <div class="tier-ex" data-i18n-html="quick.scene4.ladder.rows.invoke.exampleHtml">Prompts (<code>/name</code>), custom agents (<code>@name</code>)</div>
+        <div class="tier-bar" style="--w:48%"></div>
+      </div>
+      <div class="tier" data-cost="low">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.model.labelHtml"><span class="tier-dot low"></span><strong>Model decides</strong></div>
+        <div class="tier-ex" data-i18n="quick.scene4.ladder.rows.model.example">Skill bodies, MCP tool calls</div>
+        <div class="tier-bar" style="--w:30%"></div>
+      </div>
+      <div class="tier" data-cost="low">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.event.labelHtml"><span class="tier-dot zero"></span><strong>On event</strong></div>
+        <div class="tier-ex" data-i18n="quick.scene4.ladder.rows.event.example">Hooks (run outside the model)</div>
+        <div class="tier-bar" style="--w:14%"></div>
+      </div>
+      <div class="tier" data-cost="low">
+        <div class="tier-label" data-i18n-html="quick.scene4.ladder.rows.spawns.labelHtml"><span class="tier-dot low"></span><strong>Agent spawns</strong></div>
+        <div class="tier-ex" data-i18n="quick.scene4.ladder.rows.spawns.example">Subagents (only a summary returns)</div>
+        <div class="tier-bar" style="--w:14%"></div>
+      </div>
+    </div>
+
+    <div class="note fade" role="note" data-i18n-html="quick.scene4.ladderNoteHtml">
+      <strong>Read the bar as <em>frequency</em>, not size.</strong> It shows how <em>often</em> each kind of customization
+      is sent to the model &mdash; not how many tokens it adds. Actual token usage depends on the <em>content size</em> of the
+      file or tool description too. A short <code>copilot-instructions.md</code> sent every turn can easily cost less than
+      a giant skill body the model pulls in occasionally. Use this ladder to decide <em>where</em> to put something; measure
+      your own usage to know <em>what it costs</em>.
+    </div>
+
+    <div class="punch fade" data-i18n-html="quick.scene4.punchHtml">
+      <strong>Not sure which one to use?</strong> Ask <em>who turns it on</em>:
+      <ul class="who-list">
+        <li><strong>Always on</strong> &rarr; <code>copilot-instructions.md</code> (or <code>*.instructions.md</code> for specific files)</li>
+        <li><strong>You turn it on</strong> &rarr; prompt (<code>/name</code>) or custom agent (<code>@name</code>)</li>
+        <li><strong>The model turns it on</strong> &rarr; skill or MCP tool</li>
+        <li><strong>An event turns it on</strong> (save, commit, edit) &rarr; hook</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 3.5  —  Before / after (concrete demo, reinforces takeaways)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-4">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n="quick.scene3.tag">Scene 4 · One habit, two outcomes</div>
+    <h2 class="fade" data-i18n="quick.scene3.title">Same task. Different framing.</h2>
+    <p class="lede fade" data-i18n="quick.scene3.lede">
+      The single highest-leverage habit is also the easiest: attach the narrowest scope that lets the model answer.
+    </p>
+
+    <div class="demo-prompts">
+      <div class="demo bad fade">
+        <div class="demo-label" data-i18n="quick.scene3.badLabel">✗ WASTEFUL</div>
+        <div class="demo-prompt" data-i18n-html="quick.scene3.badPromptHtml">"Why is the checkout broken?<br/>Look at <span class="scope">#codebase</span>"</div>
+        <div class="demo-counter">
+          <span data-i18n="quick.scene3.tokensSent">Tokens sent</span>
+          <span class="count" data-target="48000">0</span>
+        </div>
+        <div class="bar"><div></div></div>
+      </div>
+
+      <div class="demo good fade">
+        <div class="demo-label" data-i18n="quick.scene3.goodLabel">✓ TIGHT</div>
+        <div class="demo-prompt" data-i18n-html="quick.scene3.goodPromptHtml">"Why is this assertion failing?<br/><span class="scope">#file:cart.test.ts</span> <span class="scope">#selection</span>"</div>
+        <div class="demo-counter">
+          <span data-i18n="quick.scene3.tokensSent">Tokens sent</span>
+          <span class="count" data-target="6800">0</span>
+        </div>
+        <div class="bar"><div></div></div>
+      </div>
+    </div>
+
+    <div class="punch fade" data-i18n-html="quick.scene3.punchHtml">
+      <strong>Same answer quality, ~7× smaller bill, faster turn.</strong>
+      Reach for <code>#codebase</code> only when narrower scopes have actually failed.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 5  —  Copy &amp; paste starter templates (moved before takeaways)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-5">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n-html="quick.scene6.tagHtml">Scene 6 · Copy &amp; paste</div>
+    <h2 class="fade" data-i18n="quick.scene6.title">Two snippets. Drop into any repo.</h2>
+    <p class="lede fade" data-i18n-html="quick.scene6.ledeHtml">
+      Both snippets do the same job: <strong style="color:var(--text)">give the model less to read, and keep it the same each turn</strong>.
+      <strong style="color:var(--text)">Save one as a file</strong> so it gets cached and reused.
+      <strong style="color:var(--text)">Paste the other into chat</strong> to point the model at just this task. Steal them.
+    </p>
+
+    <div class="templates fade">
+      <div class="tmpl">
+        <div class="tmpl-head">
+          <div class="name" data-i18n-html="quick.scene6.templates.instructions.nameHtml">.github/copilot-instructions.md<small>Stable, sub-200 lines — the prefix that gets cached on every turn.</small></div>
+          <button class="copy-btn" data-i18n="quick.scene6.copy">COPY</button>
+        </div>
+<pre><span class="c"># Project: payments-service</span>
+
+<span class="k">Stack:</span> TypeScript · Node 20 · Fastify · Postgres · Vitest
+<span class="k">Style:</span> Functional core, async/await, no classes unless modelling
+        an entity. Prefer `Result&lt;T,E&gt;` over throwing.
+
+<span class="k">Tests:</span> Vitest, co-located `*.test.ts`. Aim for behavioural
+        tests, not implementation. Use builders, not fixtures.
+
+<span class="k">Don't:</span>
+- Don't add new dependencies without flagging it.
+- Don't generate migrations — I write those by hand.
+- Don't touch `src/legacy/*` unless explicitly asked.
+
+<span class="k">Do:</span>
+- <span class="v">When fixing a bug, write the failing test first.</span>
+- <span class="v">When unsure, ask one clarifying question.</span></pre>
+      </div>
+
+      <div class="tmpl">
+        <div class="tmpl-head">
+          <div class="name" data-i18n-html="quick.scene6.templates.kickoff.nameHtml">Task kickoff &mdash; paste into chat<small>Scopes context to just the files and constraints this task needs.</small></div>
+          <button class="copy-btn" data-i18n="quick.scene6.copy">COPY</button>
+        </div>
+<pre><span class="c"># Task</span>
+&lt;one sentence: what should be true when you're done&gt;
+
+<span class="c"># Scope</span>
+- <span class="v">Files I think are relevant:</span> #file:... #file:...
+- <span class="v">Don't touch:</span> ...
+
+<span class="c"># Constraints</span>
+- &lt;any non-obvious behaviour, perf budget, API surface&gt;
+
+<span class="c"># Plan first</span>
+Outline your approach in 3–5 bullets before writing code.
+If anything is ambiguous, ask one question and stop.</pre>
+        <details class="tmpl-example-wrap">
+          <summary data-i18n="quick.scene6.templates.kickoff.exampleSummary">Show a filled-in example</summary>
+<pre class="tmpl-example"><span class="c"># Task</span>
+Webhook retries should give up after 5 attempts instead of looping forever.
+
+<span class="c"># Scope</span>
+- <span class="v">Files I think are relevant:</span> #file:src/webhooks/retry.ts #file:src/webhooks/retry.test.ts
+- <span class="v">Don't touch:</span> src/legacy/*, the queue config.
+
+<span class="c"># Constraints</span>
+- Must keep the existing exponential backoff.
+- No new dependencies.
+
+<span class="c"># Plan first</span>
+Outline your approach in 3–5 bullets before writing code.
+If anything is ambiguous, ask one question and stop.</pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="punch fade" data-i18n-html="quick.scene6.punchHtml">
+      <strong>How this saves tokens:</strong> the instructions file is identical on every turn, so the provider serves it from cache &mdash; you stop paying full price for the same prefix over and over. The kickoff snippet replaces “here&rsquo;s the whole repo, figure it out” with a narrow, named slice &mdash; fewer input tokens, less reasoning effort, tighter answers. Together they hit the two biggest levers: <em>cache the stable stuff, scope the changing stuff</em>.
+    </div>
+
+    <details class="primer appendix fade">
+      <summary data-i18n-html="quick.scene6.appendix.summaryHtml">Want more? &nbsp;<span class="primer-hint">scoped instructions, reusable prompts, and where to read more</span></summary>
+      <div class="appendix-body">
+
+        <div class="appendix-block">
+          <h4 data-i18n-html="quick.scene6.appendix.rules.titleHtml">Scoped per-language rules &mdash; <code>.github/instructions/typescript.instructions.md</code></h4>
+          <p class="appendix-sub" data-i18n-html="quick.scene6.appendix.rules.subHtml">Frontmatter-scoped via <code>applyTo</code>. Only loaded when matching files are in context, so it doesn&rsquo;t ride every turn.</p>
+<pre><span class="c">---
+applyTo: "**/*.ts"
+---</span>
+
+<span class="k"># TypeScript rules</span>
+
+- Always include explicit return types on exported functions.
+- Prefer `readonly` arrays and `Readonly&lt;T&gt;` for function parameters.
+- Use discriminated unions over enums.
+- Errors at module boundaries return `Result&lt;T, E&gt;`. Throw only in
+  top-level HTTP handlers and test setup.
+- No `console.log` in committed code &mdash; use the shared `logger`.</pre>
+          <p class="appendix-note" data-i18n-html="quick.scene6.appendix.rules.noteHtml">You can have several: <code>python.instructions.md</code> (<code>applyTo: "**/*.py"</code>), <code>sql.instructions.md</code> (<code>applyTo: "**/migrations/**/*.sql"</code>). Narrow globs &gt; broad ones.</p>
+        </div>
+
+        <div class="appendix-block">
+          <h4 data-i18n-html="quick.scene6.appendix.recipe.titleHtml">On-demand recipe &mdash; <code>.github/prompts/review-pr.prompt.md</code></h4>
+          <p class="appendix-sub" data-i18n-html="quick.scene6.appendix.recipe.subHtml">For bulky reusable how-tos. You invoke it deliberately with <code>/review-pr</code>, so it doesn&rsquo;t ride every turn.</p>
+<pre><span class="c">---
+mode: agent
+description: Review the current diff against project conventions.
+---</span>
+
+You are reviewing the working copy of this repository.
+
+Focus on:
+1. Conformance to TypeScript rules in `.github/instructions/typescript.instructions.md`.
+2. Test coverage for new behaviors.
+3. Error handling &mdash; anything thrown that should be a `Result` instead.
+
+Procedure:
+- Read `#changes`.
+- For each modified file, list issues as `- file:line — issue — suggested fix`.
+- End with a 1&ndash;2 sentence summary verdict.
+
+Do not propose edits outside the scope of the diff.</pre>
+        </div>
+
+        <div class="appendix-block">
+          <h4 data-i18n="quick.scene6.appendix.snippets.title">Four prompt snippets worth memorizing</h4>
+          <div class="snip-grid">
+            <div class="snip">
+              <div class="snip-name" data-i18n="quick.scene6.appendix.snippets.targeted">Targeted bug fix</div>
+<pre>Fix the bug in #selection.
+
+Expected: &lt;one sentence&gt;
+Actual:   &lt;one sentence&gt;
+
+Don't change unrelated code.
+Don't add error handling for cases that can't happen.</pre>
+            </div>
+            <div class="snip">
+              <div class="snip-name" data-i18n="quick.scene6.appendix.snippets.refactor">Bounded refactor</div>
+<pre>Refactor #file to extract the validation logic
+into a separate function. Keep the public API unchanged.
+Run nothing &mdash; just propose the diff.</pre>
+            </div>
+            <div class="snip">
+              <div class="snip-name" data-i18n="quick.scene6.appendix.snippets.review">Diff review (cheap mode)</div>
+<pre>Review #changes.
+Flag: bugs, accidental scope creep, missing tests.
+Skip: style nits the linter already catches.</pre>
+            </div>
+            <div class="snip">
+              <div class="snip-name" data-i18n="quick.scene6.appendix.snippets.restart">Summarize-and-restart</div>
+<pre>Summarize what we've decided so far in this chat
+in &lt;=10 bullet points. I'm going to paste that into
+a fresh chat. Don't propose further changes.</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="appendix-block">
+          <h4 data-i18n="quick.scene6.appendix.docs.title">Where to read more</h4>
+          <p class="appendix-sub" data-i18n="quick.scene6.appendix.docs.sub">Official docs. Behavior changes; these stay current.</p>
+          <ul class="docs-list">
+            <li data-i18n-html="quick.scene6.appendix.docs.items.1"><a href="https://docs.github.com/en/copilot/customizing-copilot/about-customizing-github-copilot-chat-responses" target="_blank" rel="noopener">Customizing Copilot Chat responses</a> &mdash; overview of all customization surfaces.</li>
+            <li data-i18n-html="quick.scene6.appendix.docs.items.2"><a href="https://code.visualstudio.com/docs/copilot/copilot-customization" target="_blank" rel="noopener">VS Code &middot; Copilot customization</a> &mdash; <code>copilot-instructions.md</code>, <code>*.instructions.md</code>, <code>.prompt.md</code>.</li>
+            <li data-i18n-html="quick.scene6.appendix.docs.items.3"><a href="https://code.visualstudio.com/docs/copilot/chat/chat-modes" target="_blank" rel="noopener">VS Code &middot; Custom chat modes</a> &mdash; defining custom agents.</li>
+            <li data-i18n-html="quick.scene6.appendix.docs.items.4"><a href="https://code.visualstudio.com/docs/copilot/customization/mcp-servers" target="_blank" rel="noopener">VS Code &middot; MCP servers</a> &mdash; enabling and scoping MCP.</li>
+          </ul>
+        </div>
+
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCENE 6  —  Takeaways (moved after templates)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene" id="scene-6">
+  <div class="scene-inner">
+    <div class="scene-tag fade" data-i18n="quick.scene5.tag">Scene 6 · Monday morning</div>
+    <h2 class="fade" data-i18n="quick.scene5.title">If you take four things away, take these.</h2>
+    <p class="lede fade" data-i18n="quick.scene5.lede">
+      Don't memorise rules — internalise principles. These four cover the bulk of token waste; everything else is a refinement.
+    </p>
+
+    <div class="habits">
+      <div class="habit fade" data-p="2">
+        <div class="num">01</div>
+        <h3 data-i18n="quick.scene5.habits.1.title">Turn on Auto Mode.</h3>
+        <p data-i18n="quick.scene5.habits.1.body">One toggle, set once. Copilot routes each turn to the best-fit model and applies a documented ~10% token-multiplier discount &mdash; the single highest-leverage thing you can do.</p>
+        <span class="tag" data-i18n="quick.scene5.habits.1.tag">MODEL</span>
+      </div>
+
+      <div class="habit fade" data-p="1">
+        <div class="num">02</div>
+        <h3 data-i18n="quick.scene5.habits.2.title">Send the smallest slice.</h3>
+        <p data-i18n="quick.scene5.habits.2.body">Attach the file or selection that matters, not the whole repo. Less for the model to read = fewer input tokens, less reasoning effort, tighter answers.</p>
+        <span class="tag" data-i18n="quick.scene5.habits.2.tag">CONTEXT</span>
+      </div>
+
+      <div class="habit fade" data-p="3">
+        <div class="num">03</div>
+        <h3 data-i18n="quick.scene5.habits.3.title">Keep instructions short &amp; stable.</h3>
+        <p data-i18n="quick.scene5.habits.3.body">A sub-200-line <code>copilot-instructions.md</code> that doesn't change between turns gets cached &mdash; you stop paying full price for the same prefix every message.</p>
+        <span class="tag" data-i18n="quick.scene5.habits.3.tag">CACHE</span>
+      </div>
+
+      <div class="habit fade" data-p="6">
+        <div class="num">04</div>
+        <h3 data-i18n="quick.scene5.habits.4.title">Reset chats on task switch.</h3>
+        <p data-i18n-html="quick.scene5.habits.4.bodyHtml">History compounds &mdash; every old turn rides along on the new one. Start a new chat when the task changes, or run <code>/compact</code> to summarise and shed tokens without losing the thread.</p>
+        <span class="tag" data-i18n="quick.scene5.habits.4.tag">SESSION</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Keep Learning  —  prominent CTA
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene learn-cta" id="learn-cta">
+  <div class="scene-inner">
+    <div class="learn-card fade">
+      <div class="learn-body">
+        <div class="learn-kicker" data-i18n="quick.learn.kicker">KEEP LEARNING</div>
+        <h2 data-i18n="quick.learn.title">Go from habits to mastery.</h2>
+        <p data-i18n="quick.learn.lede">
+          You've seen the levers. Now build the muscle. Start with the official GitHub course
+          &mdash; it walks you through the same patterns hands-on, in a real repo, in about an hour.
+        </p>
+
+        <div class="learn-actions">
+          <a class="btn-cta primary" href="https://github.com/skills/getting-started-with-github-copilot" target="_blank" rel="noopener">
+            <span class="cta-text" data-i18n="quick.learn.primaryCta">Start the GitHub Skills course</span>
+            <span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+          <span class="learn-meta" data-i18n="quick.learn.meta">Free · ~1 hour · self-paced</span>
+        </div>
+      </div>
+
+      <div class="learn-aside">
+        <div class="learn-aside-label" data-i18n="quick.learn.deeperLabel">Deeper resources</div>
+        <ul class="learn-list">
+          <li>
+            <a href="https://docs.github.com/en/copilot" target="_blank" rel="noopener">
+              <strong data-i18n="quick.learn.links.docs.title">GitHub Copilot docs hub</strong>
+              <span data-i18n="quick.learn.links.docs.sub">Reference for every customization surface.</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://code.visualstudio.com/docs/copilot/copilot-customization" target="_blank" rel="noopener">
+              <strong data-i18n="quick.learn.links.vscode.title">VS Code · Copilot customization</strong>
+              <span data-i18n="quick.learn.links.vscode.sub">Hands-on guide to instructions, prompts, and chat modes.</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Level 2  —  primary CTA to the detailed scenarios (core content)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="scene level2-cta" id="level-2">
+  <div class="scene-inner">
+    <div class="level2-card fade">
+      <div class="level2-kicker" data-i18n="quick.level2.kicker">LEVEL 2 · CORE CONTENT</div>
+      <h2 class="level2-title" data-i18n="quick.level2.title">Go deeper: the full playbook awaits.</h2>
+      <p class="level2-lede" data-i18n-html="quick.level2.ledeHtml">
+        This page is the <strong>quick guide</strong>. The advanced scenarios walk through real workflows, an interactive token calculator, the full lever playbook, pricing comparisons, and a live diagram of how context flows. <strong>This is not optional reading.</strong>
+      </p>
+      <a class="btn-cta level2-btn" href="detailed/index.html#/home">
+        <span class="cta-text" data-i18n="quick.level2.cta">Open advanced scenarios</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+      <div class="level2-meta" data-i18n="quick.level2.meta">Interactive · calculator · playbook · pricing · diagram</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Footer
+     ═══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div data-i18n-html="quick.footer.done">You're done. <strong style="color:var(--text)">Now go save some tokens.</strong></div>
+  <p class="footer-inspired" style="margin-top:.75rem;font-size:.82rem;opacity:.7;">Inspired by <a href="https://ashy-dune-0b4215a0f.7.azurestaticapps.net/" target="_blank" rel="noopener noreferrer" style="color:var(--accent,#58a6ff);text-decoration:underline;">ashy-dune-0b4215a0f.7.azurestaticapps.net</a></p>
+  <p class="footer-disclaimer-text" data-i18n="quick.footer.disclaimer"><em>This content has been authored by Microsoft Asia Developer GBB and is based on publicly available GitHub Copilot documentation. It has not been validated across all supported configurations. While the team makes continuous efforts to stay aligned with the latest documentation, users are advised to verify details against official GitHub documentation before making any decisions.</em></p>
+</footer>
+
+<a class="floating-playbook" href="detailed/index.html#/home" aria-label="Open full playbook">
+  <span aria-hidden="true">▣</span>
+  <span>Full playbook</span>
+  <span class="cta-arrow" aria-hidden="true">→</span>
+</a>
+
+<script src="detailed/js/core/i18n.js"></script>
+<script src="assets/root-locales.js"></script>
+<script src="https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js" crossorigin="anonymous"></script>
+<script src="assets/env.js"></script>
+<script src="assets/analytics.js"></script>
+<script>
+  // Wire the floating language switcher for the quick-guide page.
+  (function () {
+    if (!window.TO || !TO.i18n) return;
+    var labels = {
+      en: "English", es: "Espa\u00f1ol", fr: "Fran\u00e7ais", de: "Deutsch",
+      ja: "\u65e5\u672c\u8a9e", "zh-CN": "\u4e2d\u6587 (Chinese \u00b7 Mandarin)",
+      "pt-BR": "Portugu\u00eas (BR)", ar: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629"
+    };
+    TO.i18n.init();
+    var sel = document.getElementById("lang-switcher");
+    (TO.i18n.supported || ["en"]).forEach(function (lng) {
+      var opt = document.createElement("option");
+      opt.value = lng;
+      opt.textContent = labels[lng] || lng;
+      if (lng === TO.i18n.currentLng()) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", function () { TO.i18n.changeLanguage(sel.value); });
+    function refresh() {
+      TO.i18n.applyTo(document);
+      // Update <title> manually since it's not inside body
+      var titleEl = document.querySelector("title[data-i18n]");
+      if (titleEl) titleEl.textContent = TO.i18n.t(titleEl.getAttribute("data-i18n"));
+      sel.value = TO.i18n.currentLng();
+    }
+    refresh();
+    window.addEventListener("langchange", refresh);
+  })();
+</script>
+<script>
+  window.TO && TO.analytics && TO.analytics.trackPageView("Quick guide", { view: "quick-guide" });
+</script>
+<script src="assets/app.js"></script>
+</body>
+</html>

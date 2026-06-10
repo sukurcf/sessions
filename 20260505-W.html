@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub DevSecOps — Session 2: Area Paths, Iterations, Work Items &amp; Migration</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== ROOT VARIABLES — WIPRO THEME ========== */
+:root {
+  --bg-primary: #1B0056;
+  --bg-secondary: #2F2452;
+  --bg-card: #362358;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D6D0E5;
+  --accent-blue: #3498B3; /* WCAG AA Pass (4.55:1) - Formerly #297F94 (Fail) */
+  --accent-purple: #8D96FF;
+  --accent-green: #7EC45F;
+  --accent-orange: #FBCD2E;
+  --accent-pink: #85144B;
+  --accent-cyan: #3498B3;
+  --accent-red: #E04040;
+  --accent-teal: #00A796;
+  --accent-lavender: #8D96FF;
+  --border: #4A3D6B;
+  --font-display: 'Figtree', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ========== BASE ========== */
+.reveal { font-family: var(--font-display); font-size: 22px; color: var(--text-primary); }
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 { text-transform: none; font-family: var(--font-display); }
+.reveal h1 { font-size: 1.8em; font-weight: 800; margin-bottom: 0.3em; }
+.reveal h2 { font-size: 1.35em; font-weight: 800; margin-bottom: 0.4em; }
+.reveal h3 { font-size: 0.95em; font-weight: 700; margin-bottom: 0.3em; }
+.reveal h4 { font-size: 0.78em; font-weight: 700; margin-bottom: 0.2em; }
+.reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; }
+.reveal ul, .reveal ol { margin: 0.3em 0; }
+.reveal a { color: var(--accent-cyan); }
+a:focus-visible, .card:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+
+/* ========== SLIDE SECTIONS ========== */
+.reveal .slides section {
+  padding: 20px 20px 44px 20px;
+  text-align: center;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+.reveal .slides section::-webkit-scrollbar { width: 4px; }
+.reveal .slides section::-webkit-scrollbar-track { background: transparent; }
+.reveal .slides section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.reveal .slides section { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.reveal .slides section > * { max-width: 100%; box-sizing: border-box; }
+.reveal .slides section pre { max-width: 100%; overflow-x: auto; }
+
+/* Block components stretch to full width */
+.card-grid, .flow, .comparison, .cap-grid, table,
+.tip-box, .note-box, .warn-box, .presenter-card,
+.hierarchy, .card { width: 100%; }
+
+/* ========== CARD GRID ========== */
+.card-grid { display: grid; gap: 14px; width: 100%; }
+.card-grid-2 { grid-template-columns: 1fr 1fr; }
+.card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: left;
+  transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s cubic-bezier(.22,1,.36,1);
+  box-sizing: border-box;
+  min-width: 0;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+.card h4 { margin: 0 0 6px 0; }
+.card p { font-size: 0.65em; color: var(--text-secondary); margin: 0; }
+.card ul { font-size: 0.62em; color: var(--text-secondary); margin: 4px 0 0 0; padding-left: 16px; }
+.card li { margin-bottom: 3px; }
+
+/* ========== FLOW ========== */
+.flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+.flow-step {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-blue);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.68em;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+.flow-arrow { font-size: 1.2em; color: var(--accent-purple); font-weight: 700; }
+
+/* ========== COMPARISON ========== */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.col {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: left;
+}
+.col ul { font-size: 0.62em; color: var(--text-secondary); padding-left: 16px; }
+.col li { margin-bottom: 4px; }
+
+/* ========== CAP GRID ========== */
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.cap-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+.cap-icon {
+  font-size: 0.95em;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  overflow: hidden;
+}
+.cap-text { text-align: left; font-size: 0.62em; color: var(--text-secondary); }
+.cap-text strong { color: var(--text-primary); }
+
+/* ========== TABLE ========== */
+.reveal table { width: 100%; border-collapse: collapse; font-size: 0.62em; margin-top: 10px; }
+.reveal th { background: var(--bg-card); color: var(--accent-lavender); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+.reveal td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); text-align: left; }
+.reveal tr:hover td { background: rgba(141,150,255,0.06); }
+
+/* ========== TIP / NOTE / WARN ========== */
+.tip-box, .note-box, .warn-box { border-radius: 8px; padding: 10px 14px; font-size: 0.62em; text-align: left; margin-top: 10px; width: 100%; box-sizing: border-box; }
+.tip-box { background: rgba(126,196,95,0.1); border-left: 4px solid var(--accent-green); }
+.note-box { background: rgba(41,127,148,0.1); border-left: 4px solid var(--accent-blue); }
+.warn-box { background: rgba(251,205,46,0.1); border-left: 4px solid var(--accent-orange); }
+
+/* ========== BADGES ========== */
+.badge { display: inline-block; font-size: 0.52em; font-weight: 700; padding: 2px 8px; border-radius: 100px; vertical-align: middle; margin-left: 4px; }
+.badge-ga { background: var(--accent-green); color: #1a1a1a; }
+.badge-new { background: var(--accent-purple); color: #fff; }
+.badge-preview { background: var(--accent-orange); color: #1a1a1a; }
+
+/* ========== TAGS ========== */
+.tag { display: inline-block; font-size: 0.55em; padding: 2px 10px; border-radius: 100px; border: 1px solid var(--border); color: var(--text-secondary); margin: 2px; }
+
+/* ========== TEXT COLORS ========== */
+.text-blue { color: var(--accent-blue); }
+.text-purple { color: var(--accent-purple); }
+.text-green { color: var(--accent-green); }
+.text-orange { color: var(--accent-orange); }
+.text-pink { color: var(--accent-pink); }
+.text-cyan { color: var(--accent-cyan); }
+.text-teal { color: var(--accent-teal); }
+.text-red { color: var(--accent-red); }
+
+/* ========== COPILOT ICON ========== */
+.copilot-icon { width: 1em; height: 1em; fill: currentColor; vertical-align: middle; }
+.copilot-icon-lg { width: 38px; height: 38px; fill: var(--accent-purple); filter: drop-shadow(0 0 12px rgba(141,150,255,0.5)); }
+
+/* ========== GRADIENT TEXT ========== */
+.gradient-title {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan), var(--accent-teal), var(--accent-green));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+/* ========== SECTION ICON ========== */
+.section-icon {
+  font-size: 1.1em;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  line-height: 40px;
+  text-align: center;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(141,150,255,0.12);
+  margin-bottom: 8px;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+@keyframes iconPulse { 0%,100% { filter: drop-shadow(0 0 4px rgba(141,150,255,0.3)); } 50% { filter: drop-shadow(0 0 12px rgba(141,150,255,0.6)); } }
+
+/* ========== PRESENTER ========== */
+.presenter-card { display: flex; gap: 24px; align-items: center; background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); width: 100%; }
+.presenter-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-purple); }
+.presenter-info { text-align: left; flex: 1; }
+.presenter-info h3 { margin: 0 0 4px 0; font-size: 1em; }
+.presenter-info .title { font-size: 0.65em; color: var(--accent-purple); margin-bottom: 6px; }
+.presenter-info .bio { font-size: 0.6em; color: var(--text-secondary); line-height: 1.5; }
+.presenter-social { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.presenter-social a { color: var(--text-secondary); text-decoration: none; font-size: 0.62em; display: flex; align-items: center; gap: 6px; transition: color 0.25s ease; }
+.presenter-social a:hover { color: var(--accent-cyan); }
+
+/* ========== PERSISTENT FOOTER ========== */
+.persistent-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 6px 24px;
+  background: linear-gradient(180deg, transparent, rgba(27,0,86,0.95));
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+.persistent-footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+.persistent-footer a:hover { color: var(--accent-cyan); }
+.persistent-footer .sep { width: 1px; height: 14px; background: var(--border); }
+.persistent-footer .handle { color: var(--accent-purple); font-weight: 600; }
+.persistent-footer .follow-text { font-size: 12px; color: var(--text-secondary); }
+.reveal .slide-number { bottom: 36px; right: 12px; font-size: 14px; color: var(--text-secondary); }
+.reveal .progress { bottom: 34px; }
+
+/* ========== HIERARCHY DIAGRAM ========== */
+.hierarchy { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.h-level {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 0.82em;
+  font-weight: 600;
+  position: relative;
+  min-width: 200px;
+  text-align: center;
+}
+.h-connector { width: 2px; height: 16px; background: var(--border); }
+
+/* ========== STEP CIRCLE ========== */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 0.65em; font-weight: 800;
+  background: var(--accent-purple); color: #fff;
+  margin-right: 8px; flex-shrink: 0;
+}
+
+/* ========== REVEAL.JS GRID LOCK ========== */
+.reveal .slides .card-grid-2 { grid-template-columns: 1fr 1fr !important; }
+.reveal .slides .card-grid-3 { grid-template-columns: 1fr 1fr 1fr !important; }
+.reveal .slides .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+.reveal .slides .comparison { grid-template-columns: 1fr 1fr !important; }
+.reveal .slides .cap-grid { grid-template-columns: 1fr 1fr !important; }
+
+/* ========== RESPONSIVE (non-Reveal contexts only) ========== */
+@media (max-width: 640px) {
+  .persistent-footer { font-size: 12px; padding: 6px 14px; gap: 8px; }
+}
+
+/* ========== PREFERS REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .gradient-title { animation: none; }
+  .section-icon { animation: none; }
+  .card { transition: none; }
+  .presenter-social a,
+  .persistent-footer a { transition: none; }
+  .help-tip,
+  .help-tip .tip-popup { transition: none; }
+}
+
+/* ========== VERTICAL CENTER UTILITY ========== */
+.v-center { justify-content: center !important; height: 100%; }
+
+/* ========== CODE INLINE ========== */
+.reveal code { background: rgba(141,150,255,0.12); padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.9em; }
+
+/* ========== HELP TOOLTIP ========== */
+.help-tip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; min-width: 18px;
+  border-radius: 50%; background: rgba(141,150,255,0.25);
+  color: var(--accent-purple); font-size: 12px; font-weight: 700;
+  cursor: help; margin-left: 5px; position: relative;
+  vertical-align: middle; transition: background 0.2s ease; flex-shrink: 0;
+}
+.help-tip:hover { background: rgba(141,150,255,0.5); }
+.help-tip .tip-popup {
+  visibility: hidden; opacity: 0;
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%); width: 260px;
+  background: var(--bg-secondary); border: 1px solid var(--accent-purple);
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 13px; font-weight: 400; color: var(--text-primary);
+  line-height: 1.45; text-align: left;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 200;
+  pointer-events: none; transition: opacity 0.25s cubic-bezier(.22,1,.36,1), visibility 0.25s;
+}
+.help-tip .tip-popup code { font-size: 11px; }
+.help-tip .tip-popup::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 6px solid transparent;
+  border-top-color: var(--accent-purple);
+}
+.help-tip:hover .tip-popup { visibility: visible; opacity: 1; }
+.help-tip.tip-right .tip-popup { left: 0; transform: translateX(0); }
+.help-tip.tip-right .tip-popup::after { left: 12px; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- SVG Sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="copilot-logo" viewBox="0 0 24 24">
+    <path d="M23.922 16.992c-.861 1.495-5.859 5.023-11.922 5.023-6.063 0-11.061-3.528-11.922-5.023A.641.641 0 0 1 0 16.736v-2.869a.841.841 0 0 1 .053-.22c.372-.935 1.347-2.292 2.605-2.656.167-.429.414-1.055.644-1.517a10.195 10.195 0 0 1-.052-1.086c0-1.331.282-2.499 1.132-3.368.397-.406.89-.717 1.474-.952 1.399-1.136 3.392-2.093 6.122-2.093 2.731 0 4.767.957 6.166 2.093.584.235 1.077.546 1.474.952.85.869 1.132 2.037 1.132 3.368 0 .368-.014.733-.052 1.086.23.462.477 1.088.644 1.517 1.258.364 2.233 1.721 2.605 2.656a.832.832 0 0 1 .053.22v2.869a.641.641 0 0 1-.078.256ZM12.172 11h-.344a4.323 4.323 0 0 1-.355.508C10.703 12.455 9.555 13 7.965 13c-1.725 0-2.989-.359-3.782-1.259a2.005 2.005 0 0 1-.085-.104L4 11.741v6.585c1.435.779 4.514 2.179 8 2.179 3.486 0 6.565-1.4 8-2.179v-6.585l-.098-.104s-.033.045-.085.104c-.793.9-2.057 1.259-3.782 1.259-1.59 0-2.738-.545-3.508-1.492a4.323 4.323 0 0 1-.355-.508h-.016.016Zm.641-2.935c.136 1.057.403 1.913.878 2.497.442.544 1.134.938 2.344.938 1.573 0 2.292-.337 2.657-.751.384-.435.558-1.15.558-2.361 0-1.14-.243-1.847-.705-2.319-.477-.488-1.319-.862-2.824-1.025-1.487-.161-2.192.138-2.533.529-.269.307-.437.808-.438 1.578v.021c0 .265.021.562.063.893Zm-1.626 0c.042-.331.063-.628.063-.894v-.02c-.001-.77-.169-1.271-.438-1.578-.341-.391-1.046-.69-2.533-.529-1.505.163-2.347.537-2.824 1.025-.462.472-.705 1.179-.705 2.319 0 1.211.175 1.926.558 2.361.365.414 1.084.751 2.657.751 1.21 0 1.902-.394 2.344-.938.475-.584.742-1.44.878-2.497Z"/>
+    <path d="M14.5 14.25a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1Zm-5 0a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1Z"/>
+  </symbol>
+</svg>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ==================== SLIDE 1: TITLE ==================== -->
+<section data-background-color="#1B0056">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; gap:8px;">
+    <div style="margin-bottom:6px;">
+      <svg class="copilot-icon-lg" style="fill:var(--accent-purple);"><use href="#copilot-logo"/></svg>
+    </div>
+    <h1 class="gradient-title" style="font-size:1.7em; margin:0;">GitHub DevSecOps</h1>
+    <h2 style="font-size:0.85em; font-weight:500; color:var(--text-secondary); margin:0;">Session 2 — Area Paths, Iterations, Work Items &amp; Migration</h2>
+    <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag">Area Paths</span>
+      <span class="tag">Teams</span>
+      <span class="tag">Iterations</span>
+      <span class="tag">Work Items</span>
+      <span class="tag">ADO Migration</span>
+    </div>
+    <p style="font-size:0.55em; color:var(--text-secondary); margin-top:18px;">
+      <i class="fas fa-calendar-alt"></i> May 2026 &nbsp;·&nbsp; <i class="fas fa-building"></i> Wipro
+    </p>
+    <p style="font-size:0.5em; color:var(--text-secondary); margin:4px 0 0 0;">Use <kbd style="background:var(--bg-card); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">→</kbd> arrow keys to navigate</p>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 2: PRESENTER ==================== -->
+<section data-background-color="#1B0056">
+  <h2 class="text-purple">Your Presenter</h2>
+  <div class="presenter-card">
+    <img class="presenter-photo" src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P" onerror="this.src='https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png'; this.onerror=null;">
+    <div class="presenter-info">
+      <h3>Sukumar P</h3>
+      <div class="title">Developer · Building the Future, One Commit at a Time</div>
+      <div class="bio">Passionate about developer productivity, AI-powered coding, and building tools that make developers' lives easier. Creating educational content about GitHub Copilot and modern development workflows.</div>
+      <div class="presenter-social">
+        <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> YouTube</a>
+        <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 3: AGENDA ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📋</div>
+  <h2>Session Agenda</h2>
+  <div class="cap-grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="cap-item">
+      <div class="step-num">1</div>
+      <div class="cap-text"><strong>Area Paths &amp; Teams</strong><br>ADO area paths → GitHub equivalents (Labels, Custom Fields, Teams, CODEOWNERS)</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">2</div>
+      <div class="cap-text"><strong>Access Control</strong><br>Provide users access to specific areas via Teams &amp; repository permissions</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">3</div>
+      <div class="cap-text"><strong>Iterations</strong><br>Create iteration fields in GitHub Projects &amp; migrate existing iterations from ADO</div>
+    </div>
+    <div class="cap-item">
+      <div class="step-num">4</div>
+      <div class="cap-text"><strong>Work Items &amp; Migration</strong><br>Create issues, configure issue types, and migrate work items from ADO</div>
+    </div>
+  </div>
+  <div class="note-box" style="margin-top:12px; font-size:0.68em;">
+    <strong>📌 Prerequisite:</strong> This session builds on Session 1 (Org setup, Projects, Permissions, RBAC). Ensure your GitHub Organization and Project are already configured.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 4: ADO AREA PATHS — WHAT ARE THEY? ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🗂️</div>
+  <h2><span class="step-num">1</span> What Are ADO Area Paths?</h2>
+  <p style="font-size:0.72em; color:var(--text-secondary); margin-bottom:10px;">Area Paths in Azure DevOps organize work items into a hierarchical tree structure</p>
+  <div class="hierarchy">
+    <div class="h-level" style="border-color:var(--accent-purple); background:rgba(141,150,255,0.08); width:85%;">
+      <div style="font-size:0.95em; color:var(--accent-purple); font-weight:700;">📁 Project (Root)</div>
+      <div style="font-size:0.72em; color:var(--text-secondary);">MyProject</div>
+    </div>
+    <div class="h-connector"></div>
+    <div style="display:flex; gap:12px; width:85%; justify-content:center;">
+      <div class="h-level" style="border-color:var(--accent-blue); background:rgba(41,127,148,0.08); flex:1;">
+        <div style="font-size:0.88em; color:var(--accent-blue); font-weight:700;">🖥️ Frontend</div>
+        <div style="font-size:0.68em; color:var(--text-secondary);">React · Angular · Mobile</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-teal); background:rgba(0,167,150,0.08); flex:1;">
+        <div style="font-size:0.88em; color:var(--accent-teal); font-weight:700;">⚙️ Backend</div>
+        <div style="font-size:0.68em; color:var(--text-secondary);">API · Services · DB</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-green); background:rgba(126,196,95,0.08); flex:1;">
+        <div style="font-size:0.88em; color:var(--accent-green); font-weight:700;">🔧 DevOps</div>
+        <div style="font-size:0.68em; color:var(--text-secondary);">CI/CD · Infra · Monitoring</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top:14px;">
+    <div class="card">
+      <h4><span class="text-purple">🎯</span> Team Routing</h4>
+      <p>Assign work items to teams via area paths automatically</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-blue">🔍</span> Filtered Views</h4>
+      <p>Boards and queries scoped to specific areas</p>
+    </div>
+    <div class="card">
+      <h4><span class="text-teal">🔐</span> Access Control</h4>
+      <p>Restrict who can view/edit items per area path</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 5: GITHUB EQUIVALENTS FOR AREA PATHS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔄</div>
+  <h2>ADO Area Paths → GitHub Equivalents</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:10px;">GitHub doesn't have "Area Paths" — use these 4 strategies together</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:25%;">ADO Concept</th>
+        <th style="width:30%; color:var(--accent-purple);">GitHub Equivalent</th>
+        <th>How It Works</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Area Path hierarchy</td><td style="color:var(--accent-blue);">Labels (<code>area/*</code>)</td><td>Prefix-based labels: <code>area/frontend</code>, <code>area/backend</code>, <code>area/api</code></td></tr>
+      <tr><td>Area Path on boards</td><td style="color:var(--accent-purple);">Custom Field (Single-select)</td><td>Project field "Area" with dropdown options, filterable in board/table views</td></tr>
+      <tr><td>Area → Team routing</td><td style="color:var(--accent-teal);">GitHub Teams</td><td>Create teams per area, assign repos, use <code>@team</code> mentions</td></tr>
+      <tr><td>Area-based reviews</td><td style="color:var(--accent-green);">CODEOWNERS</td><td>Auto-assign reviewers based on file paths in the repo</td></tr>
+      <tr><td>Filtered board views</td><td style="color:var(--accent-orange);">Project Saved Views</td><td>Create saved views filtered by label or custom field per area</td></tr>
+      <tr><td>Hierarchical nesting</td><td style="color:var(--accent-lavender);">Nested Teams + Sub-issues</td><td>Teams with sub-teams, issues with up to 8 levels of sub-issues</td></tr>
+    </tbody>
+  </table>
+  <div class="tip-box" style="font-size:0.68em;">
+    <strong>💡 Recommendation:</strong> Use <strong>Labels</strong> for cross-repo categorization + <strong>Custom Fields</strong> for project-level tracking + <strong>Teams</strong> for access control + <strong>CODEOWNERS</strong> for code review routing.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 6: TUTORIAL — CREATING TEAMS (UI) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">👥</div>
+  <h2>Tutorial: Create Teams in GitHub (UI)</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:10px;">Step-by-step walkthrough in the GitHub web interface</p>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%;">
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Navigate to Teams</strong><br>Go to <code>github.com/orgs/YOUR_ORG</code> → click <strong>Teams</strong> tab in the top navigation bar</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Create New Team</strong><br>Click the green <strong>"New team"</strong> button on the right side</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Configure Team Details</strong><br><strong>Team name:</strong> e.g., <code>frontend-devs</code> · <strong>Description:</strong> "Frontend engineering team" · <strong>Visibility:</strong> Visible (recommended) or Secret · <strong>Parent team:</strong> Select a parent for nesting (optional)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add Members</strong><br>On the team page → <strong>Members</strong> tab → <strong>"Add a member"</strong> → search by username → set role: <strong>Member</strong> or <strong>Maintainer</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">5</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Assign Repositories</strong><br>Team page → <strong>Repositories</strong> tab → <strong>"Add repository"</strong> → search repo → set permission: <strong>Read</strong>, <strong>Write</strong>, or <strong>Admin</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top:12px;">
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-blue">👁️</span> Visible Teams</h4>
+      <p style="font-size:0.58em;">All org members can see and <code>@mention</code> the team. Can be nested.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-purple">🔒</span> Secret Teams</h4>
+      <p style="font-size:0.58em;">Only team members and org owners can see it. Cannot be nested.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-teal">🏗️</span> Nested Teams</h4>
+      <p style="font-size:0.58em;">Child teams inherit parent repo permissions. Great for area hierarchies.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 7: TUTORIAL — LABELS AS AREA PATHS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🏷️</div>
+  <h2>Tutorial: Create Area Labels</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:10px;">Create <code>area/*</code> prefixed labels to replicate ADO area path categorization</p>
+
+  <h3 style="color:var(--accent-purple); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Via GitHub UI</h3>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open Labels page</strong><br>Go to <strong>Repo → Issues tab</strong> → click <strong>"Labels"</strong> button (next to Milestones)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Create New Label</strong><br>Click <strong>"New label"</strong> → Name: <code>area/frontend</code> → Description: "Frontend UI components" → Pick a color (e.g., blue)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Repeat for each area</strong><br>Create: <code>area/backend</code> (green), <code>area/api</code> (purple), <code>area/devops</code> (orange), <code>area/docs</code> (cyan)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Set Org Defaults</strong><br><strong>Org Settings → Repository defaults → Labels</strong> → add your area labels so every new repo inherits them</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--accent-teal); margin:6px 0; font-size:0.82em; text-align:left;">⌨️ Via gh CLI</h3>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.82em;"><span class="text-teal">🏷️</span> Create Labels</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.58em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;">gh label create "area/frontend" \
+  --color "1D76DB" \
+  --description "Frontend UI" \
+  -R ORG/REPO
+
+gh label create "area/backend" \
+  --color "0E8A16" \
+  --description "Backend services" \
+  -R ORG/REPO</code></pre>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4 style="font-size:0.82em;"><span class="text-blue">🔁</span> Bulk Create Across Repos</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.58em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;">REPOS=("org/repo1" "org/repo2")
+LABELS=(
+  "area/frontend:1D76DB:Frontend"
+  "area/backend:0E8A16:Backend"
+)
+for repo in "${REPOS[@]}"; do
+  for info in "${LABELS[@]}"; do
+    IFS=':' read -r n c d <<< "$info"
+    gh label create "$n" --color "$c" \
+      --description "$d" --force \
+      -R "$repo"
+  done
+done</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 8: TUTORIAL — CUSTOM FIELDS IN PROJECTS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">⚙️</div>
+  <h2>Tutorial: Create "Area" Custom Field</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:8px;">Add a Single-select "Area" field to your GitHub Project for board filtering</p>
+
+  <h3 style="color:var(--accent-purple); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Via GitHub UI</h3>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open your Project</strong><br>Go to <strong>Org → Projects tab</strong> → click your project → switch to <strong>Table view</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add a new field</strong><br>Click the <strong>+</strong> column header (rightmost) → select <strong>"New field"</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Configure the field</strong><br>Name: <code>Area</code> → Field type: <strong>Single select</strong> → Add options: <code>Frontend</code>, <code>Backend</code>, <code>API</code>, <code>Infrastructure</code>, <code>DevOps</code></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Set option colors</strong><br><strong>Project Settings</strong> (⚙️ gear icon) → click "Area" field → click each option → assign a distinct color</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">5</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Create filtered views</strong><br>Click <strong>"New view"</strong> → name it "Frontend Board" → add filter: <code>Area:Frontend</code> → <strong>Save</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--accent-teal); margin:6px 0; font-size:0.82em; text-align:left;">⌨️ Via gh CLI</h3>
+  <div class="card" style="border-top:3px solid var(--accent-teal); width:100%;">
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.58em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Create "Area" single-select field on project #1
+gh project field-create 1 --owner "ORG" --name "Area" \
+  --data-type "SINGLE_SELECT" \
+  --single-select-options "Frontend,Backend,API,Infra,DevOps"
+
+# Create other useful fields
+gh project field-create 1 --owner "ORG" --name "Story Points" --data-type "NUMBER"
+gh project field-create 1 --owner "ORG" --name "Component" --data-type "TEXT"</code></pre>
+  </div>
+  <div class="tip-box" style="font-size:0.64em; margin-top:8px;">
+    <strong>💡 Pro Tip:</strong> Group the Board view by "Area" to see columns per area (like ADO area-scoped boards). Up to <strong>50 options</strong> per single-select field. Filter with <code>Area:Frontend,Backend</code> for multi-select views.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 9: CODEOWNERS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📝</div>
+  <h2>CODEOWNERS — Area-Based Code Review Routing</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:10px;">Automatically assign reviewers based on file paths — replicates ADO area-based assignment</p>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.88em;"><span class="text-purple">📄</span> .github/CODEOWNERS File</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.62em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># .github/CODEOWNERS
+
+# Frontend team owns all UI code
+/src/frontend/     @myorg/frontend-devs
+/src/components/   @myorg/frontend-devs
+*.tsx              @myorg/frontend-devs
+
+# Backend team owns server code
+/src/backend/      @myorg/backend-devs
+/src/api/          @myorg/api-team
+
+# DevOps team owns infra
+/.github/          @myorg/devops-team
+/terraform/        @myorg/devops-team
+Dockerfile         @myorg/devops-team
+
+# Docs team
+/docs/             @myorg/docs-team
+
+# Security team reviews all deps
+package-lock.json  @myorg/security-team</code></pre>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.88em;"><span class="text-teal">⚡</span> How It Works</h4>
+      <ul style="font-size:0.72em;">
+        <li>PR modifies <code>/src/frontend/</code> → <strong>frontend-devs</strong> auto-requested</li>
+        <li>PR modifies <code>Dockerfile</code> → <strong>devops-team</strong> auto-requested</li>
+        <li>Last matching pattern wins (order matters)</li>
+        <li>Enable <strong>branch protection</strong> → require CODEOWNERS review</li>
+      </ul>
+      <div class="note-box" style="font-size:0.68em; margin-top:8px;">
+        <strong>📌 Setup:</strong> Place the file in <code>.github/CODEOWNERS</code>, <code>docs/CODEOWNERS</code>, or repo root. Enable "Require review from Code Owners" in branch protection rules.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 10: TUTORIAL — PROVIDING ACCESS VIA TEAMS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔐</div>
+  <h2><span class="step-num">2</span> Tutorial: Provide User Access to Areas</h2>
+
+  <h3 style="color:var(--accent-purple); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Repository Access (UI)</h3>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open Repo Settings</strong><br>Go to <strong>Repo → Settings</strong> tab → <strong>"Collaborators and teams"</strong> in the left sidebar (under Access)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add a Team</strong><br>Click <strong>"Add teams"</strong> → search for your team (e.g., <code>frontend-devs</code>) → select it</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Set Role</strong><br>Choose: <strong>Read</strong> (view only) · <strong>Triage</strong> (manage issues) · <strong>Write</strong> (push code) · <strong>Maintain</strong> (manage repo) · <strong>Admin</strong> (full control)</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--accent-teal); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Project Access (UI)</h3>
+  <div class="card" style="border-top:3px solid var(--accent-teal); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open Project Settings</strong><br>Open your Project → click <strong>⚙️</strong> (Settings) → <strong>"Manage access"</strong> in the sidebar</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Invite Team</strong><br>Click <strong>"Invite collaborators"</strong> → search team name → set role: <strong>Read</strong>, <strong>Write</strong>, or <strong>Admin</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--accent-blue); margin:6px 0; font-size:0.82em; text-align:left;">⌨️ Via CLI</h3>
+  <div class="card" style="border-top:3px solid var(--accent-blue); width:100%;">
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.58em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Grant team Write access to a repo (push = Write)
+gh api orgs/ORG/teams/frontend-devs/repos/ORG/my-app -X PUT -f permission="push"
+
+# Grant team Read access (pull = Read)
+gh api orgs/ORG/teams/readonly-team/repos/ORG/my-app -X PUT -f permission="pull"
+
+# Set org base permission to "none" (most restrictive)
+gh api orgs/ORG -X PATCH -f default_repository_permission="none"</code></pre>
+  </div>
+  <div class="warn-box" style="font-size:0.64em; margin-top:8px;">
+    <strong>⚠️ Key Difference from ADO:</strong> ADO restricts access <em>per area path</em>. GitHub restricts access <em>per repository</em> via teams. To isolate areas, use <strong>separate repos per area</strong> or <strong>CODEOWNERS</strong> for review gates.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 11: ADO vs GITHUB ACCESS COMPARISON ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">⚖️</div>
+  <h2>Access Model Comparison — ADO vs GitHub</h2>
+  <div class="comparison">
+    <div class="col">
+      <h4 class="text-orange" style="font-size:0.88em;">🔶 Azure DevOps</h4>
+      <ul style="font-size:0.72em;">
+        <li>Area Path security per node</li>
+        <li>Users see only their area's work items</li>
+        <li>Inherited permissions down the tree</li>
+        <li>Security set at project + area level</li>
+        <li>Fine-grained per work item type</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="text-purple" style="font-size:0.88em;">🟣 GitHub</h4>
+      <ul style="font-size:0.72em;">
+        <li>Team-based access at <strong>repo level</strong></li>
+        <li>Users see all issues in repos they access</li>
+        <li>Nested teams inherit parent permissions</li>
+        <li>CODEOWNERS for review routing</li>
+        <li>Project views filter what users focus on</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3" style="margin-top:12px;">
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-blue">🛡️</span> Strategy 1: Multi-Repo</h4>
+      <p style="font-size:0.6em;">Split code by area into separate repos. Each team gets access only to their repos. Strongest isolation.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-teal">👥</span> Strategy 2: Mono-Repo + Teams</h4>
+      <p style="font-size:0.6em;">Single repo with CODEOWNERS. Everyone reads code, but only area owners can approve PRs.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-green">📊</span> Strategy 3: Project Views</h4>
+      <p style="font-size:0.6em;">Create per-team saved views filtered by Area field or labels. Focused view without restricting access.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 12: TUTORIAL — CREATING ITERATIONS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🔄</div>
+  <h2><span class="step-num">3</span> Tutorial: Create Iterations (UI)</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:8px;">Iterations are <strong>project-scoped</strong> sprint fields — currently <strong>UI-only</strong> (no CLI/API to create them)</p>
+
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open Project in Table view</strong><br>Go to <strong>Org → Projects</strong> → open your project → switch to <strong>Table</strong> view (top tabs)</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add Iteration field</strong><br>Click the <strong>+</strong> column header → <strong>"New field"</strong> → Name: <code>Sprint</code> → Type: <strong>Iteration</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Set start date and duration</strong><br>Pick a <strong>start date</strong> → set <strong>duration</strong> (e.g., 2 weeks). GitHub auto-creates <strong>3 iterations</strong> initially.</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add more iterations</strong><br>Go to <strong>Project Settings ⚙️</strong> → click <strong>"Sprint"</strong> field → <strong>"Add iteration"</strong> button → set dates for each sprint</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">5</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Add breaks (optional)</strong><br>In Settings → Sprint field → click <strong>"Insert break"</strong> between iterations for holidays or code freezes</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">6</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Create filtered views</strong><br>Click <strong>"New view"</strong> → name it "Current Sprint" → add filter: <code>Sprint:@current</code> → save. Also try <code>@next</code>, <code>@previous</code></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-blue">📅</span> <code>@current</code></h4>
+      <p style="font-size:0.58em;">Filter for the active sprint based on today's date</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-teal">⏭️</span> <code>@next</code></h4>
+      <p style="font-size:0.58em;">Filter for the upcoming sprint for backlog grooming</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-purple">⏮️</span> <code>@previous</code></h4>
+      <p style="font-size:0.58em;">Filter for the last sprint for retrospective reviews</p>
+    </div>
+  </div>
+  <div class="note-box" style="font-size:0.64em; margin-top:8px;">
+    <strong>📌 No CLI for creation:</strong> Iteration fields can only be created via UI. However, you can <strong>assign items to iterations</strong> via GraphQL: <code>updateProjectV2ItemFieldValue</code> mutation with the iteration option ID.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 14: TUTORIAL — CREATING ISSUES (UI) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📝</div>
+  <h2><span class="step-num">4</span> Tutorial: Create Work Items (UI)</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:8px;">In GitHub, <strong>Issues</strong> are the equivalent of ADO Work Items</p>
+
+  <h3 style="color:var(--accent-purple); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Create an Issue via GitHub UI</h3>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Open Issues</strong><br>Go to <strong>Repo → Issues tab</strong> → click the green <strong>"New issue"</strong> button</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Choose template (if configured)</strong><br>Select a template (Bug Report, Feature Request) or click <strong>"Open a blank issue"</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Fill in details</strong><br><strong>Title:</strong> descriptive name · <strong>Body:</strong> description in Markdown · <strong>Issue type:</strong> select Bug/Task/Feature from the type dropdown</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Set metadata (right sidebar)</strong><br><strong>Assignees:</strong> assign team members · <strong>Labels:</strong> add <code>area/frontend</code>, <code>P1</code> · <strong>Projects:</strong> add to your project board · <strong>Milestone:</strong> select release</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">5</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Submit</strong><br>Click <strong>"Submit new issue"</strong>. The issue auto-appears on your project board if auto-add is configured.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--accent-teal); margin:6px 0; font-size:0.82em; text-align:left;">🖥️ Add Sub-Issues &amp; Link PRs</h3>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.82em;"><span class="text-teal">🔗</span> Add Sub-Issues (UI)</h4>
+      <ul style="font-size:0.68em;">
+        <li>Open a parent issue (e.g., an Epic)</li>
+        <li>Click <strong>"Add sub-issue"</strong> button</li>
+        <li>Create a new sub-issue or link existing</li>
+        <li>Up to <strong>100 sub-issues</strong> per parent</li>
+        <li>Up to <strong>8 levels</strong> of nesting</li>
+        <li>Parent shows a <strong>progress bar</strong></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4 style="font-size:0.82em;"><span class="text-blue">⌨️</span> Create Issue via CLI</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.58em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Create an issue
+gh issue create \
+  --title "Fix login timeout" \
+  --body "Steps to reproduce..." \
+  --label "bug,area/frontend,P1" \
+  --assignee "@me" \
+  -R ORG/REPO
+
+# Add to project
+gh project item-add 1 \
+  --owner ORG \
+  --url "ISSUE_URL"
+
+# Close an issue
+gh issue close 42 -R ORG/REPO</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 14b: TUTORIAL — ISSUE TYPES (UI) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🏷️</div>
+  <h2>Tutorial: Configure Issue Types (UI)</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:8px;">Issue types are configured at the <strong>organization level</strong> — up to 25 custom types</p>
+
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">1</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Navigate to Org Settings</strong><br>Go to <code>github.com/organizations/YOUR_ORG/settings</code> → scroll to <strong>"Planning"</strong> section → click <strong>"Issue types"</strong></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">2</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">View default types</strong><br>GitHub provides 3 defaults: <span class="badge badge-ga">Bug</span> <span class="badge badge-new">Feature</span> <span class="badge badge-preview">Task</span></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">3</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Create custom types</strong><br>Click <strong>"Create type"</strong> → Name: <code>Epic</code> → pick an icon and color → <strong>Save</strong>. Repeat for: <code>Spike</code>, <code>Research</code>, <code>Debt</code>, etc.</div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div class="step-num" style="margin-top:2px;">4</div>
+        <div style="font-size:0.72em; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Enable on repos</strong><br>Issue types apply to <strong>all repos</strong> in the org. When creating an issue, the type dropdown appears automatically.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-purple">🎯</span> Epic</h4>
+      <p style="font-size:0.58em;">Large initiative. Create as parent issue with sub-issues for Features/Stories.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-teal">✨</span> Feature</h4>
+      <p style="font-size:0.58em;">New capability. Sub-issue of Epic, parent of Tasks.</p>
+    </div>
+    <div class="card">
+      <h4 style="font-size:0.76em;"><span class="text-green">✅</span> Task</h4>
+      <p style="font-size:0.58em;">Individual work item. Leaf-level, assigned to one person.</p>
+    </div>
+  </div>
+  <div class="tip-box" style="font-size:0.64em; margin-top:8px;">
+    <strong>💡 Filter by type in Projects:</strong> Use <code>type:Bug</code> or <code>type:Epic</code> in project view filters. Group your board by issue type to see columns per type.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 15: ISSUE TEMPLATES ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📄</div>
+  <h2>Issue Templates &amp; Forms</h2>
+  <p style="font-size:0.68em; color:var(--text-secondary); margin-bottom:10px;">Standardize work item creation with YAML-based issue forms</p>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4 style="font-size:0.88em;"><span class="text-purple">📝</span> Issue Form (YAML)</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># .github/ISSUE_TEMPLATE/bug-report.yml
+name: Bug Report
+description: Report a bug
+labels: ["bug", "triage"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Bug Summary
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Infrastructure
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low</code></pre>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4 style="font-size:0.88em;"><span class="text-teal">📂</span> Template Config</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># .github/ISSUE_TEMPLATE/config.yml
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: "https://github.com/ORG/REPO/discussions/new?category=ideas"
+    about: Suggest a feature</code></pre>
+      <ul style="font-size:0.68em; margin-top:10px;">
+        <li>Place templates in <code>.github/ISSUE_TEMPLATE/</code></li>
+        <li><strong>Issue Forms</strong> (YAML) render as structured forms</li>
+        <li><strong>Issue Templates</strong> (Markdown) provide pre-filled text</li>
+        <li>Disable blank issues to enforce templates</li>
+        <li>Add contact links for external resources</li>
+      </ul>
+      <div class="tip-box" style="font-size:0.62em; margin-top:8px;">
+        <strong>💡 Tip:</strong> Add an "Area" dropdown in your issue form to replicate ADO's area path picker on the work item form.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 16: WORK ITEM TYPE MAPPING ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🗺️</div>
+  <h2>ADO → GitHub Work Item Type Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="color:var(--accent-blue);">ADO Work Item</th>
+        <th style="color:var(--accent-purple);">GitHub Equivalent</th>
+        <th>Implementation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Epic</td><td>Issue (type: Epic)</td><td>Parent issue with sub-issues (Feature-level)</td></tr>
+      <tr><td>Feature</td><td>Issue (type: Feature)</td><td>Sub-issue of Epic, parent of User Stories</td></tr>
+      <tr><td>User Story</td><td>Issue (default)</td><td>Sub-issue of Feature, parent of Tasks</td></tr>
+      <tr><td>Task</td><td>Issue (type: Task)</td><td>Sub-issue of User Story, or task list item</td></tr>
+      <tr><td>Bug</td><td>Issue (type: Bug)</td><td>Label + issue type, can be sub-issue</td></tr>
+      <tr><td>Test Case</td><td>Issue + label <code>test-case</code></td><td>No built-in test management — use labels or integrations</td></tr>
+    </tbody>
+  </table>
+  <div class="hierarchy" style="margin-top:14px;">
+    <div class="h-level" style="border-color:var(--accent-purple); background:rgba(141,150,255,0.08); width:70%;">
+      <div style="font-size:0.88em; color:var(--accent-purple); font-weight:700;">🎯 Epic (Parent Issue)</div>
+    </div>
+    <div class="h-connector"></div>
+    <div style="display:flex; gap:10px; width:70%; justify-content:center;">
+      <div class="h-level" style="border-color:var(--accent-blue); background:rgba(41,127,148,0.08); flex:1;">
+        <div style="font-size:0.82em; color:var(--accent-blue); font-weight:700;">✨ Feature (Sub-issue)</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-blue); background:rgba(41,127,148,0.08); flex:1;">
+        <div style="font-size:0.82em; color:var(--accent-blue); font-weight:700;">✨ Feature (Sub-issue)</div>
+      </div>
+    </div>
+    <div class="h-connector"></div>
+    <div style="display:flex; gap:10px; width:70%; justify-content:center;">
+      <div class="h-level" style="border-color:var(--accent-teal); background:rgba(0,167,150,0.08); flex:1; padding:8px 14px;">
+        <div style="font-size:0.78em; color:var(--accent-teal);">📋 Story</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-green); background:rgba(126,196,95,0.08); flex:1; padding:8px 14px;">
+        <div style="font-size:0.78em; color:var(--accent-green);">✅ Task</div>
+      </div>
+      <div class="h-level" style="border-color:var(--accent-red); background:rgba(224,64,64,0.08); flex:1; padding:8px 14px;">
+        <div style="font-size:0.78em; color:var(--accent-red);">🐛 Bug</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 17: MIGRATING WORK ITEMS (SCROLLABLE) ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">📦</div>
+  <h2>Work Item Migration Using Josh Johanning's Script</h2>
+  <p style="font-size:0.6em; color:var(--text-secondary); margin-bottom:6px;">⬇️ Practical flow from <code>ado_workitems_to_github_issues</code>: prerequisites → run script → verify output</p>
+
+  <!-- WHAT GEI DOES / DOESN'T -->
+  <div class="comparison" style="margin-bottom:12px;">
+    <div class="col">
+      <h4 class="text-green" style="font-size:0.82em;">✅ Script Migrates</h4>
+      <ul style="font-size:0.68em;">
+        <li>Title and description</li>
+        <li>Bug repro steps and system info (for Bug type)</li>
+        <li>Acceptance criteria in issue body</li>
+        <li>Closed states mapped to closed GitHub issues</li>
+        <li>Original ADO URL + details table + raw JSON in comments</li>
+        <li>Optional ADO comments section</li>
+        <li>Optional assignee mapping from ADO email to GitHub username</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="text-red" style="font-size:0.82em;">⚠️ Known Limits / Notes</h4>
+      <ul style="font-size:0.68em;">
+        <li>Created/updated timestamps are not preserved</li>
+        <li>Create lower-case labels per work item type first</li>
+        <li>Scope migration with an Area Path (WIQL uses <code>UNDER</code>)</li>
+        <li><code>-ado_production_run</code> updates ADO items with <code>copied-to-github</code> tag</li>
+        <li><code>-gh_update_assigned_to</code> may trigger assignment emails</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn-box" style="font-size:0.66em; margin-bottom:12px;">
+    <strong>⚠️ Repository approach:</strong> Run <code>ado_workitems_to_github_issues.ps1</code> with PATs for ADO + GitHub, scoped to an area path, and optionally mark source items with <code>copied-to-github</code> to avoid duplicates.
+  </div>
+
+  <!-- PHASE 1: EXPORT -->
+  <h3 style="color:var(--accent-blue); margin:10px 0 6px; font-size:0.88em; text-align:left;">Run Locally (PowerShell)</h3>
+  <div class="card" style="border-top:3px solid var(--accent-blue); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-blue">📤</span> Script Invocation Pattern</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;">./ado_workitems_to_github_issues.ps1 `
+  -ado_pat "abc" `
+  -ado_org "my-ado-org" `
+  -ado_project "PartsUnlimited" `
+  -ado_area_path "PartsUnlimited\migrate" `
+  -ado_migrate_closed_workitems `
+  -ado_production_run `
+  -gh_pat "ghp_xxx" `
+  -gh_org "my-github-org" `
+  -gh_repo "migrate-ado-workitems" `
+  -gh_update_assigned_to `
+  -gh_assigned_to_user_suffix "" `
+  -gh_add_ado_comments</code></pre>
+  </div>
+
+  <!-- PHASE 2: PREREQUISITES -->
+  <h3 style="color:var(--accent-purple); margin:10px 0 6px; font-size:0.88em; text-align:left;">Prerequisites from Repository</h3>
+  <div class="card" style="border-top:3px solid var(--accent-purple); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-purple">🔄</span> Required Setup Checklist</h4>
+    <table style="font-size:0.56em; margin-top:4px;">
+      <thead>
+        <tr><th>Item</th><th>Requirement</th><th>Why It Matters</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>az devops</code> + <code>gh</code> CLI</td><td>Installed and authenticated</td><td>Script uses both toolchains</td></tr>
+        <tr><td>ADO PAT + GH PAT</td><td>Token scopes for read/write operations</td><td>Reads ADO items and creates GitHub issues</td></tr>
+        <tr><td>Work item type labels</td><td>Create lower-case labels in GitHub</td><td>Script assigns labels from type</td></tr>
+        <tr><td>Area path scope</td><td>Set <code>-ado_area_path</code></td><td>WIQL query filters items with <code>UNDER</code></td></tr>
+        <tr><td>User mapping option</td><td>Use <code>-gh_update_assigned_to</code> and suffix if needed</td><td>Maps ADO email usernames to GitHub assignees</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PHASE 3: OPTIONS -->
+  <h3 style="color:var(--accent-teal); margin:10px 0 6px; font-size:0.88em; text-align:left;">Important Script Options</h3>
+  <div class="card" style="border-top:3px solid var(--accent-teal); width:100%; margin-bottom:10px;">
+    <h4 style="font-size:0.82em;"><span class="text-teal">📥</span> Behavior Controls</h4>
+<pre style="background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:0.55em; text-align:left; overflow-x:auto; margin:4px 0;"><code style="background:none; padding:0; font-size:1em;"># Include already closed ADO items
+-ado_migrate_closed_workitems
+
+# Write back tag/comment in ADO after migration
+-ado_production_run
+
+# Try assigning GitHub issue based on ADO email prefix
+-gh_update_assigned_to
+-gh_assigned_to_user_suffix "_corp"
+
+# Add ADO comments into migrated issue details
+-gh_add_ado_comments</code></pre>
+  </div>
+
+  <!-- PHASE 4: VALIDATE -->
+  <h3 style="color:var(--accent-green); margin:10px 0 6px; font-size:0.88em; text-align:left;">Phase 4 — Validate &amp; Verify</h3>
+  <div class="card-grid card-grid-2" style="margin-bottom:10px;">
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4 style="font-size:0.82em;"><span class="text-green">✅</span> Validation Checklist</h4>
+      <ul style="font-size:0.66em;">
+        <li>Review migrated issue body includes ADO source URL</li>
+        <li>Confirm closed ADO states closed matching GitHub issues</li>
+        <li>Verify assignee mapping and labels per work item type</li>
+        <li>Check ADO item has <code>copied-to-github</code> tag (production mode)</li>
+        <li>Re-run safely using tag-based duplicate protection</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-orange);">
+      <h4 style="font-size:0.82em;"><span class="text-orange">📊</span> Post-Migration Steps</h4>
+      <ul style="font-size:0.66em;">
+        <li>Use PATs/secrets rotation before and after migration runs</li>
+        <li>Run smaller area-path batches to reduce retry complexity</li>
+        <li>Communicate assignee-email notifications before running with assignment mapping</li>
+        <li>Keep script config and run logs for audit evidence</li>
+        <li>Do a dry run before enabling <code>-ado_production_run</code></li>
+      </ul>
+    </div>
+  </div>
+  <div class="note-box" style="font-size:0.66em; margin-bottom:8px;">
+    <strong>📌 Source:</strong> <code>https://github.com/joshjohanning/ado_workitems_to_github_issues</code> (README + <code>ado_workitems_to_github_issues.ps1</code>)
+  </div>
+  <div class="note-box" style="font-size:0.68em;">
+    <strong>📌 Traceability:</strong> Keep original ADO URL/ID in issue body or migration comment for audit back-reference.
+  </div>
+</section>
+
+<!-- ==================== SLIDE 21: KEY TAKEAWAYS ==================== -->
+<section data-background-color="#1B0056">
+  <div class="section-icon">🎯</div>
+  <h2>Key Takeaways</h2>
+  <div class="card-grid card-grid-2">
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h4><span class="text-purple">🗂️</span> Area Paths &amp; Teams</h4>
+      <p>ADO area paths → GitHub Labels (<code>area/*</code>) + Custom Fields + Teams + CODEOWNERS. Use all 4 together for full coverage.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-blue);">
+      <h4><span class="text-blue">🔄</span> Iterations</h4>
+      <p>Create iteration fields in GitHub Projects. Export ADO iterations via API and recreate manually. Use <code>@current</code>/<code>@next</code> filters.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-teal);">
+      <h4><span class="text-teal">🔐</span> Access Control</h4>
+      <p>GitHub uses repo-level + team-based access (not area-level). Use multi-repo strategy or CODEOWNERS for area isolation.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-green);">
+      <h4><span class="text-green">📝</span> Work Items</h4>
+      <p>Issues = work items. Use issue types, sub-issues (8 levels), and issue forms. GEI doesn't migrate work items — use custom scripts.</p>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:10px; font-size:0.68em;">
+    <strong>💡 Next Session:</strong> We'll cover <strong>GitHub Actions CI/CD</strong>, <strong>pipeline migration from ADO Pipelines</strong>, and <strong>security scanning</strong> (CodeQL, Dependabot, Secret Scanning).
+  </div>
+</section>
+
+<!-- ==================== SLIDE 22: THANK YOU ==================== -->
+<section data-background-color="#1B0056">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; gap:12px;">
+    <svg class="copilot-icon-lg" style="fill:var(--accent-purple); width:48px; height:48px;"><use href="#copilot-logo"/></svg>
+    <h1 class="gradient-title" style="font-size:1.8em; margin:0;">Thank You!</h1>
+    <h3 style="font-weight:400; color:var(--text-secondary); margin:0;">Questions &amp; Discussion</h3>
+    <p style="font-size:0.65em; color:var(--text-secondary); margin:10px 0 0 0;">Session 2 — GitHub DevSecOps for Wipro</p>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:20px; flex-wrap:wrap;">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-blue); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-linkedin" style="font-size:1.4em;"></i> Sukumar P</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-red); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-youtube" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-pink); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-instagram" style="font-size:1.4em;"></i> tec_in_sec</a>
+      <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:var(--accent-green); font-size:0.72em; display:flex; align-items:center; gap:8px;"><i class="fab fa-whatsapp" style="font-size:1.4em;"></i> tec_in_sec</a>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- Persistent Footer -->
+<div class="persistent-footer">
+  <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+  <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+  <a href="https://wa.me/message/tec_in_sec" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
+  <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+  <div class="sep"></div>
+  <span class="handle">tec_in_sec</span>
+  <div class="sep"></div>
+  <span class="follow-text">Follow for more updates</span>
+</div>
+
+<!-- Reveal.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.1/plugin/highlight/highlight.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  history: true,
+  center: false,
+  width: 960,
+  height: 540,
+  margin: 0,
+  minScale: 0.2,
+  maxScale: 2.0,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  backgroundTransition: 'fade',
+  slideNumber: 'c/t',
+  showSlideNumber: 'all',
+  controls: true,
+  controlsTutorial: true,
+  progress: true,
+  loop: false,
+  autoPlayMedia: true,
+  plugins: [RevealHighlight]
+});
+</script>
+</body>
+</html>

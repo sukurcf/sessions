@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot Deep Dive - VS Code &amp; The Agentic Experience</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            /* Semantic aliases */
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        /* Paper noise texture */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.08;
+            padding-bottom: 0.12em;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.16;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.2;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(80px, 10vh, 110px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+
+        /* Cover variant */
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-bottom: clamp(80px, 10vh, 110px);
+            position: relative; z-index: 1;
+        }
+
+        /* Dark slide variant */
+        .slide-dark { background: var(--ink); color: var(--paper); }
+        .slide-dark .lead { color: var(--paper-dark); }
+        .slide-dark .meta { color: var(--ink-faint); }
+        .slide-dark .pt {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .eyebrow { color: var(--coral); }
+
+        /* Coral slide variant */
+        .slide-coral { background: var(--coral); color: var(--ink); }
+        .slide-coral .lead { color: rgba(21,20,15,0.7); }
+        .slide-coral .pt {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 28px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+        .slide-dark .sec-rule { border-top-color: rgba(239,231,210,0.12); }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 20px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card .card-icon {
+            width: 36px; height: 36px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img {
+            width: 36px; height: 36px; object-fit: contain;
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .slide-dark .feature-card {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .feature-card p { color: var(--paper-dark); }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(42px, 5vw, 66px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Plan pill ── */
+        .plan-pill {
+            display: inline-block;
+            padding: 4px 12px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .pill-free { background: var(--olive); color: var(--paper); }
+        .pill-pro { background: var(--coral); color: #fff; }
+        .pill-biz { background: var(--ink); color: var(--paper); }
+        .pill-ent { background: var(--mustard); color: var(--ink); }
+
+        /* ── Keyboard shortcut ── */
+        kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--ink-soft);
+        }
+        .slide-dark kbd {
+            background: rgba(239,231,210,0.1);
+            border-color: rgba(239,231,210,0.15);
+            color: var(--paper-dark);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 40px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 10px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 22px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a {
+            display: grid; place-items: center;
+            transition: transform 0.15s ease;
+        }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img {
+            width: 130px; height: 130px; border-radius: 14px;
+            display: block;
+        }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Decorative elements ── */
+        .corner-bracket {
+            position: absolute; width: 22px; height: 22px;
+            border-color: var(--ink-faint); border-style: solid;
+            border-width: 0; opacity: 0.3;
+        }
+        .corner-bracket.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+        .corner-bracket.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+        .corner-bracket.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+        .corner-bracket.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════════════════════════════════════
+         01  TITLE
+         ════════════════════════════════════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:24px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="220" height="220" style="display:block;" />
+            <h1 class="h-hero" style="margin-top:8px;">GitHub Copilot <span class="serif-em">Deep Dive</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:760px;">VS Code &amp; the agentic experience for modern software delivery.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         02  COVER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:16px;">Viasat session · June 2026</p>
+            <h1 class="h-hero" style="max-width:800px;">
+                GitHub Copilot Deep Dive - VS Code &amp; The Agentic <span class="serif-em">Experience</span><span class="dot">.</span>
+            </h1>
+            <p class="lead" style="margin-top:20px;max-width:600px;">
+                Learn directly from GitHub how to master the next generation of Copilot in VS Code:
+                Agent Sessions, Autopilot mode, Custom Agents, and Agent Skills to delegate coding,
+                automate workflows, and accelerate delivery end to end.
+            </p>
+            <p class="mono" style="margin-top:32px;">Sources verified: docs.github.com · code.visualstudio.com · github.blog/changelog</p>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            03  PRESENTER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="03 Presenter" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Presenter</span>
+                <span class="page-num">02</span>
+            </div>
+            <div style="display:flex;gap:48px;align-items:center;">
+                <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png"
+                     alt="Sukumar P" width="160" height="160"
+                     style="border-radius:50%;object-fit:cover;border:3px solid var(--accent-fg);flex-shrink:0;" />
+                <div>
+                    <h2 class="h-xl" style="margin-bottom:8px;">Sukumar P</h2>
+                    <p class="meta" style="margin:0 0 20px;">GitHub Customer Success Architect</p>
+                    <div class="grid-4">
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=s6BMuiR0tvY2&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />GitHub Copilot &amp; AI agents
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=2969&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />DevOps &amp; DevSecOps
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=11214&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />Enterprise enablement
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=AZOZNnY73haj&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />InnerSource &amp; OSS
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            04  AGENDA
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="04 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Agenda</span>
+                <span class="page-num">03</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:28px;">Session <span class="serif-em">agenda</span><span class="dot">.</span></h2>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card">
+                    <h3>01 · Copilot Agents, Skills, Hooks</h3>
+                    <p>Building and deploying custom task-specific agents and skills</p>
+                </div>
+                <div class="feature-card">
+                    <h3>02 · VS Code Agent UX</h3>
+                    <p>Customizations editor, cross-client consistency, debugging, marketplaces, permissions</p>
+                </div>
+                <div class="feature-card">
+                    <h3>03 · Code Review Agent</h3>
+                    <p>New capabilities to accelerate PR reviews and enforce team standards</p>
+                </div>
+                <div class="feature-card">
+                    <h3>04 · Debugging and rollout</h3>
+                    <p>Agent debug logs, triage workflow, and practical team adoption patterns</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            05  CUSTOM AGENTS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="05 Custom agents" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Build custom agents</span>
+                <span class="page-num">04</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">How to create custom <span class="serif-em">agents</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:620px;">
+                Use agent files for specialized personas like Security Reviewer, Release Manager, or Documentation Engineer.
+            </p>
+            <div class="grid-2" style="gap:16px;align-items:start;">
+                <div style="display:grid;gap:12px;">
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Step 1 · Create file</h3>
+                        <p>Add <code>.github/agents/&lt;name&gt;.agent.md</code> in the repo. Use a clear name and narrow scope.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Step 2 · Define frontmatter</h3>
+                        <p>Set name, description, target, model list, and allowed tools so behavior is predictable.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Step 3 · Add workflow rules</h3>
+                        <p>Specify entry checks, output format, quality gates, and failure handling in plain language.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Step 4 · Invoke in chat</h3>
+                        <p>Call with <code>@Security reviewer</code> or your configured alias, then run against staged changes or file scopes.</p>
+                    </div>
+                </div>
+                <div class="code-block" style="font-size:12px;max-width:560px;">
+                    <span class="code-cmt"># .github/agents/security-reviewer.agent.md</span><br>
+                    ---<br>
+                    name: Security reviewer<br>
+                    description: "Find exploitable risks in changed code"<br>
+                    target: vscode<br>
+                    tools: [read, search, edit, execute]<br>
+                    ---<br><br>
+                    Focus areas:<br>
+                    - Secrets, tokens, credentials<br>
+                    - Injection and unsafe command execution<br>
+                    - AuthN/AuthZ regressions<br>
+                    - Dependency and supply-chain risks<br><br>
+                    Output format:<br>
+                    1) severity 2) impacted file 3) exploit path 4) patch guidance
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            06  CUSTOM SKILLS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="06 Custom skills" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Build custom skills</span>
+                <span class="page-num">05</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">How to create custom <span class="serif-em">skills</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:620px;">
+                Skills package reusable domain workflows so teams do not repeat prompt engineering in every session.
+            </p>
+            <div class="grid-2" style="gap:16px;align-items:start;">
+                <div class="code-block" style="font-size:12px;max-width:560px;">
+                    <span class="code-cmt"># folder structure</span><br>
+                    .github/skills/security-review/<br>
+                    ├── SKILL.md<br>
+                    ├── checklists/high-risk-paths.md<br>
+                    └── examples/false-positive-triage.md<br><br>
+                    <span class="code-cmt"># SKILL.md (core)</span><br>
+                    name: security-review<br>
+                    description: review changed code for exploitable issues<br>
+                    triggers: ["review", "security", "threat model"]<br>
+                    rules:<br>
+                    - prioritize exploitable findings<br>
+                    - include patch snippet and test advice
+                </div>
+                <div style="display:grid;gap:12px;">
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Design for triggerability</h3>
+                        <p>Add concise trigger phrases so the skill activates reliably when users ask in natural language.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Keep skills atomic</h3>
+                        <p>One skill = one operational outcome (review, migration, test triage) to avoid mixed behavior.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Version safely</h3>
+                        <p>Update examples/checklists as stack or policy evolves. Treat skills like code: review, test, iterate.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            07  HOOKS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="07 Hooks" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Lifecycle automation</span>
+                <span class="page-num">06</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">How to use agent <span class="serif-em">hooks</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:620px;">
+                Hooks run automation at key lifecycle points to enforce guardrails and reduce manual review noise.
+            </p>
+            <div class="pt" style="padding:14px;">
+                <table class="plan-table">
+                    <thead>
+                        <tr><th>Hook event</th><th>Typical automation</th><th>Outcome</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Session start</td><td>Load repo conventions and required files</td><td>Consistent agent context</td></tr>
+                        <tr><td>Before tool use</td><td>Policy check on command/path</td><td>Prevents risky operations</td></tr>
+                        <tr><td>After tool use</td><td>Parse output, redact sensitive data</td><td>Cleaner and safer traces</td></tr>
+                        <tr><td>Subagent end</td><td>Validate result schema</td><td>Stable downstream handoff</td></tr>
+                        <tr><td>Session stop</td><td>Emit summary and unresolved risks</td><td>Audit-ready closure</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid-2" style="gap:12px;margin-top:12px;">
+                <div class="feature-card" style="padding:14px;">
+                    <h3>Best practice</h3>
+                    <p>Keep hooks deterministic and fast. If a hook fails, log the reason and fail closed for high-risk actions.</p>
+                </div>
+                <div class="feature-card" style="padding:14px;">
+                    <h3>Where to manage</h3>
+                    <p>Use the Agent Customizations UI in VS Code to inspect enabled hooks and debug execution order.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            08  PERMISSIONS + AUTOPILOT
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="08 Permissions & Autopilot" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Agent autonomy controls</span>
+                <span class="page-num">07</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Permission levels &amp; <span class="serif-em">Autopilot</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:580px;">
+                Tune execution autonomy per session to balance speed and governance.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card" style="text-align:center;padding:20px 14px;">
+                    <div class="card-icon" style="margin:0 auto 10px;">
+                        <img src="https://img.icons8.com/?size=48&id=98061&format=png&color=ed6f5c" alt="" width="32" height="32" />
+                    </div>
+                    <h3>Default approvals</h3>
+                    <p>Low-risk reads can proceed; risky writes/exec still ask for explicit approval.</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:20px 14px;">
+                    <div class="card-icon" style="margin:0 auto 10px;">
+                        <img src="https://img.icons8.com/?size=48&id=3685&format=png&color=ed6f5c" alt="" width="32" height="32" />
+                    </div>
+                    <h3>Bypass approvals</h3>
+                    <p>Higher automation for trusted tasks and temporary execution windows.</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:20px 14px;">
+                    <div class="card-icon" style="margin:0 auto 10px;">
+                        <img src="https://img.icons8.com/?size=48&id=82789&format=png&color=ed6f5c" alt="" width="32" height="32" />
+                    </div>
+                    <h3>Autopilot (Preview)</h3>
+                    <p>Auto-approves tools and clarifying prompts so the task can run to completion autonomously.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            09  DEBUG LOGS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="09 Agent debug logs" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VII.</span>
+                <span class="rule-meta">Diagnostics in VS Code</span>
+                <span class="page-num">08</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Agent debug <span class="serif-em">logs</span> in VS Code<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:620px;">
+                Essential for understanding why an agent took an action, skipped a tool, or produced an unexpected answer.
+            </p>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card">
+                    <h3>What logs contain</h3>
+                    <p>Session IDs, prompts, tool invocations, model selection, hook events, MCP requests/responses, and structured error traces.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Where to view</h3>
+                    <p>Click the three-dot menu (⋯) in the top-right corner of Copilot Chat, then select "Open Agent Logs" to see the full session trace.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>How it helps debugging</h3>
+                    <p>Pinpoints permission denials, malformed tool parameters, context truncation, and timing/race issues across subagents.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Operational pattern</h3>
+                    <p>Capture failing session ID, inspect tool timeline, reproduce minimal case, then fix instruction/skill/hook and re-run.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Tip: increase log verbosity temporarily during triage, then return to default to reduce noise.</p>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            10  CODE REVIEW CUSTOMIZATION
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="10 Code review customization" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">IX.</span>
+                <span class="rule-meta">Code review governance</span>
+                <span class="page-num">09</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Customize code review with <span class="serif-em">instructions</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:680px;">
+                Use repository instructions and skills to make review comments consistent with your architecture, security posture, and testing standards.
+            </p>
+            <div class="grid-2" style="gap:16px;align-items:start;">
+                <div class="code-block" style="font-size:12px;max-width:560px;">
+                    <span class="code-cmt"># .github/copilot-instructions.md (review excerpt)</span><br>
+                    When reviewing pull requests:<br>
+                    - prioritize exploitable security issues over style<br>
+                    - flag behavioral regressions with file-level evidence<br>
+                    - require tests for new branches and failure paths<br>
+                    - do not suggest broad refactors unrelated to change scope<br><br>
+                    Report format:<br>
+                    1. severity (high/medium/low)<br>
+                    2. file and impact<br>
+                    3. concrete fix suggestion
+                </div>
+                <div style="display:grid;gap:12px;">
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Layered customization</h3>
+                        <p>Use <code>copilot-instructions.md</code> for global behavior and skills for domain-specific checks.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>MCP-backed context</h3>
+                        <p>Enrich reviews with internal policy docs, service ownership data, and ticket metadata where allowed.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Outcome</h3>
+                        <p>Higher signal review comments, fewer false positives, and better alignment with team standards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            11  AWESOME COPILOT
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="11 Awesome Copilot" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">X.</span>
+                <span class="rule-meta">Community resources</span>
+                <span class="page-num">10</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">github/awesome-copilot<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:680px;">
+                Official community collection of agents, instructions, skills, hooks, workflows, and plugins — 34k+ stars, 400+ contributors.
+            </p>
+            <div class="grid-2" style="gap:16px;align-items:start;">
+                <div style="display:grid;gap:12px;">
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>What's inside</h3>
+                        <p>Ready-to-use <code>.agent.md</code>, <code>.instructions.md</code>, skills folders, hooks, agentic GitHub Actions workflows, and a cookbook with copy-paste recipes.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Install a plugin</h3>
+                        <p><code>copilot plugin install &lt;name&gt;@awesome-copilot</code> — the marketplace is pre-registered in Copilot CLI and VS Code.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Learning hub</h3>
+                        <p>Curated guides for agents, skills, hooks, MCP servers, and the coding agent — from beginner to advanced.</p>
+                    </div>
+                </div>
+                <div style="display:grid;gap:12px;">
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Website</h3>
+                        <p><code>awesome-copilot.github.com</code> — full-text search, filtering, plus a Tools section for MCP servers and editor integrations.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Machine-readable index</h3>
+                        <p>An <code>llms.txt</code> file provides structured listings of all resources — useful for building agents that consume the collection.</p>
+                    </div>
+                    <div class="feature-card" style="padding:14px;">
+                        <h3>Contributing</h3>
+                        <p>Open to all via PR. Follow <code>CONTRIBUTING.md</code> for agents, instructions, and skills. The repo uses <code>AGENTS.md</code> for AI-guided contributions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            12  REFERENCES
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="12 References" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">XI.</span>
+                <span class="rule-meta">Presenter references</span>
+                <span class="page-num">11</span>
+            </div>
+            <h2 class="h-lg" style="margin-bottom:16px;">Official docs &amp; <span class="serif-em">changelogs</span><span class="dot">.</span></h2>
+            <div class="grid-2" style="gap:12px;">
+                <div class="feature-card" style="padding:14px;">
+                    <h3 style="font-size:13px;">VS Code agents overview</h3>
+                    <p style="font-size:12px;">code.visualstudio.com/docs/agents/overview</p>
+                </div>
+                <div class="feature-card" style="padding:14px;">
+                    <h3 style="font-size:13px;">Customization editor + plugins</h3>
+                    <p style="font-size:12px;">code.visualstudio.com/docs/agent-customization/overview and /agent-plugins</p>
+                </div>
+                <div class="feature-card" style="padding:14px;">
+                    <h3 style="font-size:13px;">Skills, hooks, logs</h3>
+                    <p style="font-size:12px;">code.visualstudio.com/docs/agent-customization/agent-skills, /hooks and debug logging guidance</p>
+                </div>
+                <div class="feature-card" style="padding:14px;">
+                    <h3 style="font-size:13px;">GitHub Copilot review updates</h3>
+                    <p style="font-size:12px;">GitHub changelog entries (June 2026) for review effort tiers, skills/MCP integrations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ════════════════════════════════════════════════
+            13  THANK YOU
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="13 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
+                         alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 13</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>

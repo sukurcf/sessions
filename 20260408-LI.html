@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Copilot Agents & Extensibility — Slide Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-dark: #0a0e1a;
+      --bg-slide: #0f1628;
+      --bg-card: rgba(30, 41, 75, 0.6);
+      --bg-card-solid: #1e294b;
+      --bg-code: #080c18;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-red: #ef4444;
+      --accent-orange: #f97316;
+      --accent-indigo: #6366f1;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --grad-main: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      --grad-blue: linear-gradient(135deg, #3b82f6, #60a5fa);
+      --grad-purple: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      --grad-green: linear-gradient(135deg, #10b981, #34d399);
+      --grad-pink: linear-gradient(135deg, #ec4899, #f472b6);
+      --grad-amber: linear-gradient(135deg, #f59e0b, #fbbf24);
+      --grad-cyan: linear-gradient(135deg, #06b6d4, #22d3ee);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+    }
+
+    /* ── Presentation Container ── */
+    .deck {
+      width: 100vw; height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Slide ── */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 80px 100px;
+      opacity: 0;
+      pointer-events: none;
+      transition: none;
+      background: var(--bg-slide);
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    /* ── Slide Transitions ── */
+    .slide.enter-right {
+      animation: slideInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .slide.exit-left {
+      animation: slideOutLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      pointer-events: none;
+    }
+    .slide.enter-left {
+      animation: slideInLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .slide.exit-right {
+      animation: slideOutRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(100px) scale(0.97); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes slideOutLeft {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to { opacity: 0; transform: translateX(-100px) scale(0.97); }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-100px) scale(0.97); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes slideOutRight {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to { opacity: 0; transform: translateX(100px) scale(0.97); }
+    }
+
+    /* ── Element Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleUp {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.5); }
+      60% { transform: scale(1.05); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes typeIn {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeRight {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.3)); }
+      50% { filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.6)); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .slide.active .anim {
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .slide.active .anim-fade { animation-name: fadeIn; }
+    .slide.active .anim-scale { animation-name: scaleUp; }
+    .slide.active .anim-pop { animation-name: popIn; }
+    .slide.active .anim-right { animation-name: fadeRight; }
+
+    .slide.active .d0 { animation-delay: 0s; }
+    .slide.active .d1 { animation-delay: 0.1s; }
+    .slide.active .d2 { animation-delay: 0.2s; }
+    .slide.active .d3 { animation-delay: 0.3s; }
+    .slide.active .d4 { animation-delay: 0.4s; }
+    .slide.active .d5 { animation-delay: 0.5s; }
+    .slide.active .d6 { animation-delay: 0.6s; }
+    .slide.active .d7 { animation-delay: 0.7s; }
+    .slide.active .d8 { animation-delay: 0.8s; }
+    .slide.active .d9 { animation-delay: 0.9s; }
+    .slide.active .d10 { animation-delay: 1.0s; }
+    .slide.active .d11 { animation-delay: 1.1s; }
+    .slide.active .d12 { animation-delay: 1.2s; }
+
+    /* ── Typography ── */
+    .slide-title {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-title.gradient {
+      background: var(--grad-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% 200%;
+      animation: gradShift 6s ease infinite;
+    }
+
+    @keyframes gradShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .slide-subtitle {
+      font-size: 23px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent-blue);
+      margin-bottom: 16px;
+    }
+
+    .section-tag::after {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 2px;
+      background: var(--accent-blue);
+      border-radius: 1px;
+    }
+
+    /* ── Cards & Boxes ── */
+    .card-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+    .s-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .s-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .s-card.accent-blue { border-left: 4px solid var(--accent-blue); }
+    .s-card.accent-purple { border-left: 4px solid var(--accent-purple); }
+    .s-card.accent-green { border-left: 4px solid var(--accent-green); }
+    .s-card.accent-pink { border-left: 4px solid var(--accent-pink); }
+    .s-card.accent-amber { border-left: 4px solid var(--accent-amber); }
+    .s-card.accent-cyan { border-left: 4px solid var(--accent-cyan); }
+    .s-card.accent-red { border-left: 4px solid var(--accent-red); }
+    .s-card.accent-orange { border-left: 4px solid var(--accent-orange); }
+    .s-card.accent-indigo { border-left: 4px solid var(--accent-indigo); }
+
+    .s-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .s-card p, .s-card li {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .s-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .s-card li {
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .s-card li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    .icon-circle {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .ic-blue { background: rgba(59,130,246,0.15); }
+    .ic-purple { background: rgba(139,92,246,0.15); }
+    .ic-green { background: rgba(16,185,129,0.15); }
+    .ic-pink { background: rgba(236,72,153,0.15); }
+    .ic-amber { background: rgba(245,158,11,0.15); }
+    .ic-cyan { background: rgba(6,182,212,0.15); }
+    .ic-red { background: rgba(239,68,68,0.15); }
+    .ic-orange { background: rgba(249,115,22,0.15); }
+
+    /* ── Code Blocks ── */
+    .code-box {
+      background: var(--bg-code);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #e2e8f0;
+      overflow-x: auto;
+      position: relative;
+      white-space: pre-wrap;
+    }
+
+    .code-box .label {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-family: "Inter", sans-serif;
+    }
+
+    .kw { color: #c084fc; }
+    .str { color: #34d399; }
+    .cmt { color: #64748b; }
+    .fn { color: #60a5fa; }
+    .num { color: #fb923c; }
+    .type { color: #f472b6; }
+
+    /* ── Flow Diagrams ── */
+    .flow-h {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .flow-node {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.2s;
+    }
+
+    .flow-node:hover { transform: scale(1.05); }
+
+    .flow-node .fi { font-size: 20px; }
+
+    .fn-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); }
+    .fn-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); }
+    .fn-green { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); }
+    .fn-pink { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); }
+    .fn-amber { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); }
+    .fn-cyan { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); }
+    .fn-center { background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); border: 2px solid rgba(99,102,241,0.4); font-size: 17px; padding: 18px 28px; }
+
+    .flow-arrow {
+      font-size: 22px;
+      color: var(--text-muted);
+    }
+
+    /* ── Comparison ── */
+    .compare-box {
+      display: grid;
+      grid-template-columns: 1fr 60px 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+
+    .compare-side {
+      padding: 28px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .compare-side h3 {
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .compare-item {
+      font-size: 17px;
+      color: var(--text-secondary);
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .compare-left {
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.03));
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+
+    .compare-right {
+      background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.03));
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+
+    .compare-vs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+    }
+
+    /* ── Table ── */
+    .s-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      font-size: 14px;
+    }
+
+    .s-table th {
+      background: rgba(99,102,241,0.12);
+      font-weight: 700;
+      text-align: left;
+      padding: 14px 18px;
+      color: var(--text-primary);
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .s-table td {
+      padding: 12px 18px;
+      color: var(--text-secondary);
+      border-top: 1px solid rgba(148, 163, 184, 0.06);
+      font-size: 15px;
+    }
+
+    .s-table tr:nth-child(even) td {
+      background: rgba(148, 163, 184, 0.03);
+    }
+
+    .s-table code {
+      font-family: "JetBrains Mono", monospace;
+      background: rgba(99,102,241,0.12);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .badge-ga { background: rgba(16,185,129,0.2); color: #10b981; }
+    .badge-preview { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .badge-new { background: rgba(236,72,153,0.2); color: #ec4899; }
+
+    /* ── Pill Tags ── */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .pill-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+    .pill-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd; }
+    .pill-pink { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); color: #f9a8d4; }
+    .pill-green { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+    .pill-cyan { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: #67e8f9; }
+    .pill-amber { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+    .pill-orange { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #fdba74; }
+
+    /* ── Navigation ── */
+    .nav-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: linear-gradient(to top, rgba(10,14,26,0.95), rgba(10,14,26,0.7));
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(30, 41, 75, 0.5);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: var(--text-primary);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .slide-counter {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(148, 163, 184, 0.1);
+      border-radius: 2px;
+      margin: 0 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--grad-main);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .nav-brand {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-brand i { font-size: 14px; }
+
+    /* ── Footer Branding ── */
+    .slide-footer {
+      position: absolute;
+      bottom: 80px;
+      left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      font-size: 15px;
+      color: var(--text-muted);
+      z-index: 5;
+    }
+
+    .slide-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .slide-footer a:hover { color: var(--text-primary); }
+
+    .slide-footer i { font-size: 20px; }
+
+    .slide-footer .handle {
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Title Slide Specific ── */
+    .title-slide {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .title-slide .github-logo {
+      width: 80px; height: 80px;
+      margin-bottom: 24px;
+    }
+
+    .title-slide .github-logo svg {
+      fill: var(--text-primary);
+      width: 100%; height: 100%;
+    }
+
+    .title-slide h1 {
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .title-slide .tagline {
+      font-size: 22px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-bottom: 40px;
+    }
+
+    .title-slide .meta-line {
+      font-size: 14px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .title-slide .meta-line span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Agenda Slide ── */
+    .agenda-items {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 900px;
+    }
+
+    .agenda-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 24px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .agenda-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+
+    .agenda-num {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .agenda-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .agenda-card p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── Two Column Layout ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .two-col.wide-left { grid-template-columns: 1.2fr 0.8fr; }
+    .two-col.wide-right { grid-template-columns: 0.8fr 1.2fr; }
+
+    /* ── Capability Grid ── */
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .cap-item {
+      text-align: center;
+      padding: 18px 10px;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.06);
+      transition: transform 0.3s;
+    }
+
+    .cap-item:hover { transform: translateY(-4px); }
+
+    .cap-item .cap-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .cap-item .cap-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* ── Slide Number ── */
+    .slide-num {
+      position: absolute;
+      top: 24px;
+      right: 32px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      z-index: 5;
+    }
+
+    /* ── Keyboard hint ── */
+    .key-hint {
+      position: fixed;
+      bottom: 70px;
+      right: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      z-index: 1000;
+      display: flex;
+      gap: 12px;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    .key-hint:hover { opacity: 1; }
+
+    .key-hint kbd {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 4px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      background: rgba(30,41,75,0.5);
+    }
+
+    /* ── Stack diagram ── */
+    .stack-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stack-layer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .stack-layer .sl-icon {
+      font-size: 20px;
+      width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .stack-layer .sl-label {
+      font-weight: 700;
+      min-width: 140px;
+    }
+
+    .stack-layer .sl-desc {
+      color: var(--text-secondary);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    /* ── Hook Events ── */
+    .hook-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .hook-timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 12px;
+      bottom: 12px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent-amber), var(--accent-purple));
+      border-radius: 1px;
+    }
+
+    .hook-event {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      position: relative;
+    }
+
+    .hook-event::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-indigo);
+      border: 2px solid var(--bg-slide);
+    }
+
+    .hook-event .he-name {
+      font-weight: 700;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      min-width: 150px;
+      color: var(--accent-amber);
+    }
+
+    .hook-event .he-desc {
+      color: var(--text-secondary);
+    }
+
+    /* ── Thank You Slide ── */
+    .thank-you {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .thank-you h1 {
+      font-size: 64px;
+      font-weight: 900;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .social-link:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .social-link i { font-size: 20px; }
+
+    .sl-linkedin { background: rgba(10,102,194,0.2); border: 1px solid rgba(10,102,194,0.4); }
+    .sl-instagram { background: rgba(225,48,108,0.2); border: 1px solid rgba(225,48,108,0.4); }
+    .sl-youtube { background: rgba(255,0,0,0.15); border: 1px solid rgba(255,0,0,0.3); }
+
+    /* ── Slide overview panel ── */
+    .overview-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(10,14,26,0.95);
+      backdrop-filter: blur(20px);
+      display: none;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    .overview-panel.visible { display: block; }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .overview-thumb {
+      aspect-ratio: 16/9;
+      background: var(--bg-slide);
+      border-radius: 12px;
+      border: 2px solid rgba(148,163,184,0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 16px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .overview-thumb:hover {
+      border-color: var(--accent-blue);
+      transform: scale(1.03);
+    }
+
+    .overview-thumb.current {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 20px rgba(59,130,246,0.3);
+    }
+
+    .overview-close {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 2001;
+      background: rgba(239,68,68,0.2);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .slide { padding: 40px 40px 100px; }
+      .title-slide h1 { font-size: 40px; }
+      .slide-title { font-size: 32px; }
+      .two-col, .card-grid.cols-3, .card-grid.cols-4 { grid-template-columns: 1fr; }
+      .compare-box { grid-template-columns: 1fr; }
+      .compare-vs { padding: 10px 0; writing-mode: horizontal-tb; }
+      .cap-grid { grid-template-columns: repeat(3, 1fr); }
+      .agenda-items { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════ SLIDE 1: TITLE ═══════════ -->
+  <div class="slide title-slide active" data-title="Title">
+    <div class="github-logo anim anim-scale d0">
+      <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+      </svg>
+    </div>
+    <h1 class="gradient anim d1">GitHub Copilot</h1>
+    <h1 class="gradient anim d2" style="font-size: 48px;">Agents &amp; Extensibility</h1>
+    <p class="tagline anim d3">Building custom agents, autonomous workflows &amp; extensibility</p>
+    <div class="meta-line anim d4">
+      <span><i class="fas fa-user"></i> Sukumar P</span>
+      <span><i class="fas fa-calendar"></i> March 31, 2026</span>
+      <span><i class="fas fa-code-branch"></i> Version 2026.03</span>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 2: AGENDA ═══════════ -->
+  <div class="slide" data-title="Agenda">
+    <span class="slide-num">2 / 10</span>
+    <div class="section-tag anim d0">Overview</div>
+    <h2 class="slide-title anim d1">Session Agenda</h2>
+    <p class="slide-subtitle anim d2">What we'll cover today</p>
+    <div class="agenda-items">
+      <div class="agenda-card anim anim-pop d3">
+        <div class="agenda-num" style="background: var(--grad-blue);">1</div>
+        <div>
+          <h3>🤖 Agents &amp; Skills</h3>
+          <p>Custom agents, skills, instructions, prompts, MCP servers &amp; hooks</p>
+        </div>
+      </div>
+      <div class="agenda-card anim anim-pop d4">
+        <div class="agenda-num" style="background: var(--grad-green);">2</div>
+        <div>
+          <h3>🎨 VS Code Agent UX</h3>
+          <p>Chat customizations editor, plugins, permissions &amp; debugging</p>
+        </div>
+      </div>
+      <div class="agenda-card anim anim-pop d5">
+        <div class="agenda-num" style="background: var(--grad-pink);">3</div>
+        <div>
+          <h3>📋 Quick Reference</h3>
+          <p>Full cheat sheet link &amp; resources</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 3: CUSTOM AGENTS ═══════════ -->
+  <div class="slide" data-title="Custom Agents">
+    <span class="slide-num">3 / 10</span>
+    <div class="section-tag anim d0">Section 1 · Agents &amp; Skills</div>
+    <h2 class="slide-title anim d1">Custom Agents <span class="badge badge-ga">GA</span></h2>
+    <p class="slide-subtitle anim d2">Specialized AI personas with defined behavior, tools, and model preferences</p>
+    <div class="two-col">
+      <div>
+        <div class="flow-h anim d3" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div class="flow-node fn-purple"><span class="fi">📄</span> Define persona in <code style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px;">.agent.md</code></div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-blue"><span class="fi">🧠</span> Copilot loads agent profile</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-green"><span class="fi">💬</span> @invoke in Chat, CLI, or GitHub.com</div>
+        </div>
+        <ul style="margin-top:20px;" class="anim d4">
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Set tools the agent can use</li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Model preference per agent</li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Works in VS Code &amp; GitHub.com</li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Handoff to other agents</li>
+        </ul>
+      </div>
+      <div class="code-box anim d5" style="font-size:13px;">
+        <span class="label">.github/agents/security-reviewer.agent.md</span>
+<span class="cmt">---</span>
+<span class="kw">name</span>: <span class="str">security-reviewer</span>
+<span class="kw">description</span>: Security-focused reviewer
+<span class="kw">tools</span>: [<span class="str">'grep_search'</span>, <span class="str">'read_file'</span>]
+<span class="kw">handoffs</span>:
+  - <span class="kw">label</span>: <span class="str">Fix Issues</span>
+    <span class="kw">agent</span>: <span class="str">implementation</span>
+<span class="kw">model</span>: <span class="str">gpt-5.4</span>
+<span class="cmt">---</span>
+
+You are a security expert.
+Review for OWASP Top 10 vulnerabilities.
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 4: SKILLS & INSTRUCTIONS ═══════════ -->
+  <div class="slide" data-title="Skills & Instructions">
+    <span class="slide-num">4 / 10</span>
+    <div class="section-tag anim d0">Section 1 · Agents &amp; Skills</div>
+    <h2 class="slide-title anim d1">Skills &amp; Custom Instructions</h2>
+    <p class="slide-subtitle anim d2">Reusable workflows + project conventions</p>
+    <div class="two-col">
+      <div class="s-card accent-pink anim d3">
+        <h3><div class="icon-circle ic-pink">⚡</div> Agent Skills <span class="badge badge-ga">GA</span></h3>
+        <p style="margin-bottom:14px;">Bundle instructions + scripts + assets into reusable packages.</p>
+        <div class="stack-layers" style="gap:6px;">
+          <div class="stack-layer fn-pink" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">📦</span> <strong>SKILL.md</strong> — instructions &amp; metadata</div>
+          <div class="stack-layer fn-amber" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">📜</span> <strong>Scripts</strong> — automation &amp; setup</div>
+          <div class="stack-layer fn-cyan" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">📁</span> <strong>Resources</strong> — templates &amp; assets</div>
+        </div>
+        <ul style="margin-top:12px;">
+          <li>Generate with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">/create-skill</code></li>
+          <li>Share across agents</li>
+        </ul>
+      </div>
+      <div class="s-card accent-green anim d4">
+        <h3><div class="icon-circle ic-green">📋</div> Custom Instructions</h3>
+        <p style="margin-bottom:14px;">Teach Copilot your project conventions.</p>
+        <div class="stack-layers" style="gap:6px;">
+          <div class="stack-layer fn-blue" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">🌐</span> <strong>Always-on</strong> — copilot-instructions.md</div>
+          <div class="stack-layer fn-purple" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">🎯</span> <strong>File-scoped</strong> — *.instructions.md</div>
+          <div class="stack-layer fn-green" style="padding:10px 14px;font-size:13px;"><span class="sl-icon">🏢</span> <strong>Org-level</strong> — .github-private repo</div>
+        </div>
+        <p style="margin-top:12px;font-size:13px;font-style:italic;color:var(--text-muted);">Layered: org → repo → file-scoped (all combine)</p>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 5: PROMPTS & MCP ═══════════ -->
+  <div class="slide" data-title="Prompts & MCP Servers">
+    <span class="slide-num">5 / 10</span>
+    <div class="section-tag anim d0">Section 1 · Agents &amp; Skills</div>
+    <h2 class="slide-title anim d1">Prompt Files &amp; MCP Servers</h2>
+    <p class="slide-subtitle anim d2">Repeatable tasks + external tool connections</p>
+    <div class="two-col">
+      <div class="s-card accent-orange anim d3">
+        <h3><div class="icon-circle ic-orange">📝</div> Prompt Files</h3>
+        <p style="margin-bottom:14px;">Reusable task templates invoked from Chat.</p>
+        <div class="code-box" style="font-size:12px;padding:14px 18px;">
+          <span class="label" style="font-size:9px;">.github/prompts/review.prompt.md</span>
+<span class="cmt">---</span>
+<span class="kw">description</span>: <span class="str">Prepare PR for review</span>
+<span class="kw">mode</span>: <span class="str">agent</span>
+<span class="cmt">---</span>
+
+Review all changed files. Check for:
+- Missing error handling
+- Untested edge cases
+- Security vulnerabilities
+        </div>
+        <ul style="margin-top:12px;">
+          <li>Generate with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">/create-prompt</code></li>
+          <li>Modes: <strong>agent | ask | edit</strong></li>
+          <li>Reference files with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">#file</code></li>
+        </ul>
+      </div>
+      <div class="s-card accent-cyan anim d4">
+        <h3><div class="icon-circle ic-cyan">🔌</div> MCP Servers</h3>
+        <p style="margin-bottom:14px;">Connect external tools &amp; data via Model Context Protocol.</p>
+        <div class="flow-h anim d5" style="flex-direction: column; align-items: stretch; gap: 6px; margin-bottom:14px;">
+          <div class="flow-node fn-cyan" style="justify-content:center;padding:10px;font-size:13px;"><span class="fi">🗄️</span> External APIs / DBs</div>
+          <div class="flow-arrow" style="text-align:center;font-size:16px;">↕</div>
+          <div class="flow-node fn-amber" style="justify-content:center;padding:10px;font-size:13px;"><span class="fi">🔌</span> MCP Server (stdio / remote)</div>
+          <div class="flow-arrow" style="text-align:center;font-size:16px;">↕</div>
+          <div class="flow-node fn-purple" style="justify-content:center;padding:10px;font-size:13px;"><span class="fi">🧠</span> Copilot Agent</div>
+        </div>
+        <ul>
+          <li>Tools auto-invoked in agent mode</li>
+          <li>Same server works in VS Code, CLI, JetBrains</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 6: HOOKS ═══════════ -->
+  <div class="slide" data-title="Hooks">
+    <span class="slide-num">6 / 10</span>
+    <div class="section-tag anim d0">Section 1 · Agents &amp; Skills</div>
+    <h2 class="slide-title anim d1">Hooks <span class="badge badge-preview">Preview</span></h2>
+    <p class="slide-subtitle anim d2">Execute shell commands at key agent lifecycle points</p>
+    <div class="two-col wide-right">
+      <div>
+        <div class="flow-h anim d3" style="flex-direction: column; align-items: stretch; gap: 6px; margin-bottom:20px;">
+          <div class="flow-node fn-amber" style="justify-content:center;font-size:14px;"><span class="fi">✏️</span> Agent edits a file</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-green" style="justify-content:center;font-size:14px;"><span class="fi">🪝</span> PostToolUse hook fires</div>
+          <div class="flow-arrow" style="text-align:center;">↓</div>
+          <div class="flow-node fn-blue" style="justify-content:center;font-size:14px;"><span class="fi">✨</span> prettier · lint · scan</div>
+        </div>
+        <ul class="anim d4" style="list-style:none;padding:0;">
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Generate with <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">/create-hook</code></li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Store in <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;">.github/hooks/*.json</code></li>
+          <li style="padding:4px 0 4px 20px;position:relative;color:var(--text-secondary);font-size:14px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Works across local agents, CLI, cloud</li>
+        </ul>
+      </div>
+      <div class="anim d5">
+        <div class="hook-timeline">
+          <div class="hook-event"><span class="he-name">SessionStart</span> <span class="he-desc">New agent session begins</span></div>
+          <div class="hook-event"><span class="he-name">UserPromptSubmit</span> <span class="he-desc">User submits a prompt</span></div>
+          <div class="hook-event"><span class="he-name">PreToolUse</span> <span class="he-desc">Before agent invokes tool</span></div>
+          <div class="hook-event"><span class="he-name">PostToolUse</span> <span class="he-desc">After tool completes</span></div>
+          <div class="hook-event"><span class="he-name">PreCompact</span> <span class="he-desc">Before context compaction</span></div>
+          <div class="hook-event"><span class="he-name">SubagentStart</span> <span class="he-desc">Subagent is spawned</span></div>
+          <div class="hook-event"><span class="he-name">SubagentStop</span> <span class="he-desc">Subagent completes</span></div>
+          <div class="hook-event"><span class="he-name">Stop</span> <span class="he-desc">Agent session ends</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 7: CHAT CUSTOMIZATIONS ═══════════ -->
+  <div class="slide" data-title="Chat Customizations Editor">
+    <span class="slide-num">7 / 10</span>
+    <div class="section-tag anim d0" style="color:var(--accent-green);">Section 2 · VS Code Agent UX</div>
+    <h2 class="slide-title anim d1">Chat Customizations Editor <span class="badge badge-preview">Preview</span></h2>
+    <p class="slide-subtitle anim d2">Centralized UI for managing all chat customizations in one place</p>
+    <div class="two-col">
+      <div>
+        <div class="pills anim d3" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;">
+          <div class="pill pill-blue" style="padding:8px 16px;font-size:13px;"><span>📋</span> Instructions</div>
+          <div class="pill pill-purple" style="padding:8px 16px;font-size:13px;"><span>🤖</span> Agents</div>
+          <div class="pill pill-pink" style="padding:8px 16px;font-size:13px;"><span>⚡</span> Skills</div>
+          <div class="pill pill-orange" style="padding:8px 16px;font-size:13px;"><span>📝</span> Prompts</div>
+          <div class="pill pill-cyan" style="padding:8px 16px;font-size:13px;"><span>🔌</span> MCP</div>
+          <div class="pill pill-amber" style="padding:8px 16px;font-size:13px;"><span>🪝</span> Hooks</div>
+          <div class="pill pill-green" style="padding:8px 16px;font-size:13px;"><span>🔖</span> Plugins</div>
+        </div>
+        <ul class="anim d4" style="margin-top:24px;list-style:none;">
+          <li style="padding:6px 0 6px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Open via <strong>Configure Chat ⚙️</strong> icon</li>
+          <li style="padding:6px 0 6px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Tabs for each customization type</li>
+          <li style="padding:6px 0 6px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Embedded code editor with syntax highlighting</li>
+          <li style="padding:6px 0 6px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Browse &amp; install MCP servers</li>
+          <li style="padding:6px 0 6px 20px;position:relative;color:var(--text-secondary);font-size:15px;"><span style="position:absolute;left:0;color:var(--text-muted);">▸</span> Configure for local, CLI, and Claude</li>
+        </ul>
+      </div>
+      <div class="s-card accent-indigo anim d5">
+        <h3><div class="icon-circle" style="background:rgba(249,115,22,0.15);">🔖</div> Agent Plugins <span class="badge badge-preview">Preview</span></h3>
+        <p style="margin-bottom:14px;">Pre-packaged bundles from plugin marketplaces.</p>
+        <p style="font-size:14px;margin-bottom:12px;"><strong>One install provides:</strong></p>
+        <div class="stack-layers" style="gap:5px;">
+          <div class="stack-layer" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);padding:8px 14px;border-radius:8px;font-size:13px;">⌨️ Slash commands</div>
+          <div class="stack-layer" style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:8px 14px;border-radius:8px;font-size:13px;">⚡ Skills</div>
+          <div class="stack-layer" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.15);padding:8px 14px;border-radius:8px;font-size:13px;">🤖 Custom agents</div>
+          <div class="stack-layer" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:8px 14px;border-radius:8px;font-size:13px;">🪝 Hooks</div>
+          <div class="stack-layer" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.15);padding:8px 14px;border-radius:8px;font-size:13px;">🔌 MCP servers</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d6">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 8: PERMISSIONS & DEBUGGING ═══════════ -->
+  <div class="slide" data-title="Permissions & Debugging">
+    <span class="slide-num">8 / 10</span>
+    <div class="section-tag anim d0" style="color:var(--accent-green);">Section 2 · VS Code Agent UX</div>
+    <h2 class="slide-title anim d1">Permissions &amp; Debugging</h2>
+    <p class="slide-subtitle anim d2">Control what agents can do and troubleshoot issues</p>
+    <div class="two-col">
+      <div class="s-card accent-amber anim d3">
+        <h3><div class="icon-circle ic-amber">🔐</div> Permissions</h3>
+        <p style="margin-bottom:16px;">Control what agents can do in VS Code.</p>
+        <div class="stack-layers" style="gap:8px;">
+          <div class="stack-layer fn-amber" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">🛡️</span> <strong>Permission modes</strong> — approve or restrict tools</div>
+          <div class="stack-layer fn-blue" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">🌐</span> <strong>Cross-client</strong> — consistent behavior everywhere</div>
+          <div class="stack-layer fn-green" style="padding:12px 16px;font-size:14px;border-radius:10px;"><span class="sl-icon">📁</span> <strong>Monorepo support</strong> — parent repo customizations</div>
+        </div>
+      </div>
+      <div class="s-card accent-blue anim d4">
+        <h3><div class="icon-circle ic-blue">🔍</div> Debugging</h3>
+        <p style="margin-bottom:16px;">When customizations aren't working:</p>
+        <div class="flow-h" style="flex-direction: column; align-items: stretch; gap: 6px;">
+          <div class="flow-node fn-amber" style="justify-content:center;font-size:14px;padding:10px;"><span class="fi">❓</span> Something not working?</div>
+          <div class="flow-arrow" style="text-align:center;font-size:16px;">↓</div>
+          <div class="flow-node fn-blue" style="justify-content:center;font-size:14px;padding:10px;"><span class="fi">📝</span> Chat menu → Debug Logs</div>
+          <div class="flow-arrow" style="text-align:center;font-size:16px;">↓</div>
+          <div class="flow-node fn-green" style="justify-content:center;font-size:14px;padding:10px;"><span class="fi">🔍</span> Check rules &amp; file paths</div>
+          <div class="flow-arrow" style="text-align:center;font-size:16px;">↓</div>
+          <div class="flow-node fn-purple" style="justify-content:center;font-size:14px;padding:10px;"><span class="fi">✅</span> Fix &amp; verify</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 9: QUICK REFERENCE ═══════════ -->
+  <div class="slide" data-title="Quick Reference">
+    <span class="slide-num">9 / 10</span>
+    <div class="section-tag anim d0" style="color:var(--accent-indigo);">Section 3 · Quick Reference</div>
+    <h2 class="slide-title anim d1">Full Extensibility Stack</h2>
+    <p class="slide-subtitle anim d2">Everything in one view</p>
+    <div class="card-grid cols-3 anim d3">
+      <div class="s-card accent-purple" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🤖</span> Agents</h3>
+        <p style="font-size:13px;">.agent.md files with persona, tools, model, handoffs</p>
+      </div>
+      <div class="s-card accent-pink" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">⚡</span> Skills</h3>
+        <p style="font-size:13px;">SKILL.md + scripts + resources bundled together</p>
+      </div>
+      <div class="s-card accent-green" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">📋</span> Instructions</h3>
+        <p style="font-size:13px;">Always-on + file-scoped + org-level</p>
+      </div>
+      <div class="s-card accent-orange" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">📝</span> Prompts</h3>
+        <p style="font-size:13px;">Repeatable templates with mode: agent | ask | edit</p>
+      </div>
+      <div class="s-card accent-cyan" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🔌</span> MCP Servers</h3>
+        <p style="font-size:13px;">External tools via Model Context Protocol</p>
+      </div>
+      <div class="s-card accent-amber" style="padding:20px;">
+        <h3 style="font-size:15px;"><span style="font-size:20px;">🪝</span> Hooks</h3>
+        <p style="font-size:13px;">Shell commands at agent lifecycle events</p>
+      </div>
+    </div>
+
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 10: THANK YOU ═══════════ -->
+  <div class="slide thank-you" data-title="Thank You">
+    <span class="slide-num">10 / 10</span>
+    <div class="github-logo anim anim-scale d0" style="width:60px;height:60px;margin:0 auto 20px;">
+      <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" style="fill:var(--text-primary);width:100%;height:100%;">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+      </svg>
+    </div>
+    <h1 class="gradient anim d1">Thank You!</h1>
+    <p class="anim d2" style="font-size:20px;color:var(--text-secondary);margin-top:8px;">GitHub Copilot Agents &amp; Extensibility</p>
+    <p class="anim d3" style="font-size:16px;color:var(--text-muted);margin-top:8px;">By <strong style="color:var(--text-secondary);">Sukumar P</strong> · March 31, 2026</p>
+    <div class="social-links anim d4">
+      <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" class="social-link sl-linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="social-link sl-instagram"><i class="fab fa-instagram"></i> Instagram</a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank" class="social-link sl-youtube"><i class="fab fa-youtube"></i> YouTube</a>
+    </div>
+    <div class="slide-footer anim d5">
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.youtube.com/@tec_in_sec" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/?text=Follow%20tec_in_sec" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/tec_in_sec/" target="_blank" class="handle">tec_in_sec</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-controls">
+  <div class="nav-left">
+    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" title="Previous (←)"><i class="fas fa-chevron-left"></i></button>
+    <span class="slide-counter" id="slideCounter">1 / 10</span>
+    <button class="nav-btn" id="nextBtn" onclick="nextSlide()" title="Next (→)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="toggleOverview()" title="Overview (O)"><i class="fas fa-th-large"></i></button>
+    <button class="nav-btn" onclick="toggleFullscreen()" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+    <div class="nav-brand"><i class="fab fa-github"></i> tec_in_sec</div>
+  </div>
+</div>
+
+<div class="key-hint">
+  <span><kbd>←</kbd> <kbd>→</kbd> Navigate</span>
+  <span><kbd>F</kbd> Fullscreen</span>
+  <span><kbd>O</kbd> Overview</span>
+</div>
+
+<!-- Overview Panel -->
+<div class="overview-panel" id="overviewPanel">
+  <button class="overview-close" onclick="toggleOverview()"><i class="fas fa-times"></i></button>
+  <div class="overview-grid" id="overviewGrid"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let transitioning = false;
+
+  function updateUI() {
+    document.getElementById('slideCounter').textContent = `${current + 1} / ${total}`;
+    document.getElementById('progressFill').style.width = `${((current + 1) / total) * 100}%`;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function goToSlide(index, direction) {
+    if (index < 0 || index >= total || index === current || transitioning) return;
+    transitioning = true;
+
+    const oldSlide = slides[current];
+    const newSlide = slides[index];
+    const forward = direction || (index > current ? 'forward' : 'backward');
+
+    // Remove all animation classes
+    slides.forEach(s => {
+      s.classList.remove('active', 'enter-right', 'exit-left', 'enter-left', 'exit-right');
+      s.style.zIndex = '1';
+    });
+
+    // Reset animations on new slide
+    newSlide.querySelectorAll('.anim').forEach(el => {
+      el.style.opacity = '0';
+      el.style.animation = 'none';
+    });
+
+    if (forward === 'forward') {
+      oldSlide.classList.add('exit-left');
+      oldSlide.style.zIndex = '9';
+      newSlide.classList.add('active', 'enter-right');
+      newSlide.style.zIndex = '10';
+    } else {
+      oldSlide.classList.add('exit-right');
+      oldSlide.style.zIndex = '9';
+      newSlide.classList.add('active', 'enter-left');
+      newSlide.style.zIndex = '10';
+    }
+
+    // Re-trigger element animations
+    requestAnimationFrame(() => {
+      newSlide.querySelectorAll('.anim').forEach(el => {
+        el.style.animation = '';
+      });
+    });
+
+    current = index;
+    updateUI();
+
+    setTimeout(() => {
+      slides.forEach(s => {
+        if (!s.classList.contains('active')) {
+          s.classList.remove('exit-left', 'exit-right', 'enter-right', 'enter-left');
+          s.style.opacity = '0';
+          s.style.zIndex = '1';
+        }
+      });
+      transitioning = false;
+    }, 650);
+  }
+
+  function nextSlide() { goToSlide(current + 1, 'forward'); }
+  function prevSlide() { goToSlide(current - 1, 'backward'); }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function toggleOverview() {
+    const panel = document.getElementById('overviewPanel');
+    const grid = document.getElementById('overviewGrid');
+    if (panel.classList.contains('visible')) {
+      panel.classList.remove('visible');
+      return;
+    }
+    grid.innerHTML = '';
+    slides.forEach((slide, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'overview-thumb' + (i === current ? ' current' : '');
+      thumb.textContent = `${i + 1}. ${slide.dataset.title || 'Slide ' + (i + 1)}`;
+      thumb.onclick = () => {
+        panel.classList.remove('visible');
+        goToSlide(i, i > current ? 'forward' : 'backward');
+      };
+      grid.appendChild(thumb);
+    });
+    panel.classList.add('visible');
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('overviewPanel').classList.contains('visible')) {
+      if (e.key === 'Escape' || e.key === 'o' || e.key === 'O') toggleOverview();
+      return;
+    }
+    switch(e.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+      case ' ':
+      case 'PageDown':
+        e.preventDefault();
+        nextSlide();
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+      case 'PageUp':
+        e.preventDefault();
+        prevSlide();
+        break;
+      case 'Home':
+        e.preventDefault();
+        goToSlide(0, 'backward');
+        break;
+      case 'End':
+        e.preventDefault();
+        goToSlide(total - 1, 'forward');
+        break;
+      case 'f':
+      case 'F':
+        toggleFullscreen();
+        break;
+      case 'o':
+      case 'O':
+        toggleOverview();
+        break;
+      case 'Escape':
+        if (document.fullscreenElement) document.exitFullscreen();
+        break;
+    }
+  });
+
+  // Touch / swipe support
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) nextSlide();
+      else prevSlide();
+    }
+  }, { passive: true });
+
+  // Initialize
+  updateUI();
+</script>
+
+</body>
+</html>

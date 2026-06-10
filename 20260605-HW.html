@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot - Token Optimization & Better Model Output</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            --sky: #487d8b;
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.16em;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(90px, 12vh, 125px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-bottom: clamp(90px, 12vh, 125px);
+            position: relative; z-index: 1;
+        }
+
+        .pt, .feature-card, .usecase-card, .tool-card {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 24px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .stack { display: flex; flex-direction: column; gap: 14px; }
+
+        .feature-card, .tool-card { padding: 18px; }
+        .feature-card h3, .tool-card h3, .usecase-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 7px;
+        }
+        .feature-card p, .tool-card p, .usecase-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .feature-card .card-icon, .tool-card .card-icon {
+            width: 34px; height: 34px; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img, .tool-card .card-icon img {
+            width: 34px; height: 34px; object-fit: contain;
+        }
+
+        .usecase-card {
+            padding: 16px 18px;
+            border-left: 4px solid var(--coral);
+        }
+        .usecase-card h3 { font-size: 14px; }
+        .usecase-card p { font-size: 13.5px; }
+
+        .metric-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+        .metric {
+            min-width: 150px;
+            padding: 16px 18px;
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .metric .num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(30px, 3.5vw, 48px);
+            color: var(--coral); line-height: 1;
+        }
+        .metric .label { margin-top: 6px; color: var(--ink-mute); font-size: 12px; line-height: 1.4; }
+
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; line-height: 1.55;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow: hidden;
+        }
+
+        .setting-pill {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: #1f1b14;
+            color: #f7f1de;
+            border: 1px solid rgba(247,241,222,0.24);
+            font-size: 0.9em;
+            line-height: 1.35;
+            box-shadow: 0 2px 8px rgba(21,20,15,0.18);
+            vertical-align: middle;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+        code, kbd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.92em;
+        }
+        a.repo-link {
+            color: var(--coral);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(237,111,92,0.35);
+            overflow-wrap: anywhere;
+        }
+        a.repo-link:hover { border-bottom-color: var(--coral); }
+        kbd {
+            display: inline-block;
+            padding: 2px 7px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            color: var(--ink-soft);
+        }
+
+        .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 24px; }
+        .step {
+            background: var(--bone); border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            padding: 16px 14px; min-height: 142px;
+        }
+        .step .step-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--coral);
+            margin-bottom: 10px;
+        }
+        .step h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 14px; margin-bottom: 6px;
+        }
+        .step p { font-size: 12px; color: var(--ink-mute); line-height: 1.45; }
+
+        .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .mini-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .mini-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+            line-height: 1.45;
+        }
+        .mini-table tr:last-child td { border-bottom: none; }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--paper-dark);
+            color: var(--ink-soft);
+            margin: 0 4px 6px 0;
+        }
+        .tag.hot { background: var(--coral); color: #fff; }
+        .tag.cool { background: var(--sky); color: #fff; }
+        .tag.earth { background: var(--olive); color: var(--paper); }
+
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        #nav {
+            position: fixed; left: 50%; bottom: 18px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 8px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active { background: var(--coral); width: 22px; border-radius: 999px; }
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.16em;
+            color: var(--ink-faint); opacity: 0.75;
+        }
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 260px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a { display: grid; place-items: center; transition: transform 0.15s ease; }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .qr-corner img { width: 130px; height: 130px; border-radius: 14px; display: block; }
+        .qr-label { font-size: 12px; font-weight: 500; color: var(--ink-mute); margin-top: 8px; letter-spacing: 0.02em; }
+    </style>
+</head>
+<body>
+
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<div class="presentation">
+
+    <!-- 01 Title -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:24px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="220" height="220" style="display:block;" />
+            <p class="eyebrow">GitHub Copilot · Token optimization</p>
+            <h1 class="h-hero" style="max-width:900px;">Better output with <span class="serif-em">less context</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:680px;">A practical playbook for reducing token waste, routing work to the right model, and teaching agents your project once.</p>
+        </div>
+    </section>
+
+    <!-- 02 Cover -->
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:16px;">Focused workshop · May 2026</p>
+            <h1 class="h-hero" style="max-width:880px;">Token optimization is <span class="serif-em">engineering</span>, not prompt magic<span class="dot">.</span></h1>
+            <p class="lead" style="margin-top:20px;max-width:660px;">The best model output usually comes from smaller, sharper context: clear intent, trusted repo knowledge, compressed tool output, reusable instructions, and validation loops.</p>
+            <p class="mono" style="margin-top:32px;">Theme: spend tokens on signal, not ceremony</p>
+        </div>
+    </section>
+
+    <!-- 03 Presenter -->
+    <section class="slide" data-screen-label="03 Presenter" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Presenter</span><span class="page-num">03</span></div>
+            <div style="display:flex;gap:48px;align-items:center;">
+                <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png" alt="Sukumar P" width="160" height="160" style="border-radius:50%;object-fit:cover;border:3px solid var(--accent-fg);flex-shrink:0;" />
+                <div>
+                    <h2 class="h-xl" style="margin-bottom:8px;">Sukumar P</h2>
+                    <p class="meta" style="margin:0 0 20px;">GitHub Customer Success Architect</p>
+                    <div class="grid-4">
+                        <div class="pt" style="padding:14px 16px;"><h3 class="h-md" style="font-size:14px;">Copilot adoption &amp; agentic workflows</h3></div>
+                        <div class="pt" style="padding:14px 16px;"><h3 class="h-md" style="font-size:14px;">DevOps and DevSecOps enablement</h3></div>
+                        <div class="pt" style="padding:14px 16px;"><h3 class="h-md" style="font-size:14px;">Enterprise governance patterns</h3></div>
+                        <div class="pt" style="padding:14px 16px;"><h3 class="h-md" style="font-size:14px;">Developer productivity coaching</h3></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04 Agenda -->
+    <section class="slide" data-screen-label="04 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Agenda</span><span class="page-num">04</span></div>
+            <h2 class="h-xl" style="margin-bottom:28px;">What we'll <span class="serif-em">cover</span><span class="dot">.</span></h2>
+            <div class="grid-2">
+                <div class="feature-card"><h3>01 · AI credits</h3><p>Why June 2026 usage-based billing makes token hygiene visible.</p></div>
+                <div class="feature-card"><h3>02 · The token budget</h3><p>What consumes context and why smaller prompts often outperform larger ones.</p></div>
+                <div class="feature-card"><h3>03 · Better prompts</h3><p>Intent, constraints, acceptance criteria, and examples that guide model behavior.</p></div>
+                <div class="feature-card"><h3>04 · Persistent customization</h3><p><code>AGENTS.md</code>, <code>.instructions.md</code>, <code>.prompt.md</code>, skills, hooks, and MCP.</p></div>
+                <div class="feature-card"><h3>05 · Token-saving tools</h3><p>Graphify, RTK, Caveman, VS Code output compression, and Copilot Auto model.</p></div>
+                <div class="feature-card"><h3>06 · Real-world use cases</h3><p>How teams apply the techniques in onboarding, migration, CI failures, and reviews.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 05 AI Credits -->
+    <section class="slide" data-screen-label="05 AI Credits" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Billing shift</span><span class="page-num">05</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">From requests to <span class="serif-em">GitHub AI Credits</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:720px;margin-bottom:22px;">Starting June 1, 2026, GitHub is moving Copilot from request-based billing to usage-based billing. Copilot usage is measured in GitHub AI Credits, where 1 AI credit equals $0.01 USD.</p>
+            <div class="grid-2">
+                <div class="feature-card"><h3>Base credits</h3><p>Individual paid plans include monthly base credits. These match the subscription price and do not change month to month.</p></div>
+                <div class="feature-card"><h3>Flex allotment</h3><p>Plans currently include extra monthly flex credits on top of base credits. Flex is variable and adapts as model pricing, new models, and efficiency change.</p></div>
+                <div class="feature-card"><h3>How they apply</h3><p>Base credits are used first. If usage goes beyond base credits, flex is applied automatically at the same rates across IDE, GitHub.com, and Copilot CLI.</p></div>
+                <div class="feature-card"><h3>Team pooling and budgets</h3><p>Business and Enterprise credits are pooled at the billing entity level. Budgets can track or limit additional usage by enterprise, org, cost center, or user.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:780px;"><h3>Why it matters</h3><p>Token hygiene becomes a cost and reliability practice. A long agent session over many files may be worth it for a production incident, but a quick question should not carry an entire repository worth of context.</p></div>
+            <p class="mono" style="margin-top:14px;">Source: GitHub Docs · Usage-based billing for individuals, organizations, and enterprises</p>
+        </div>
+    </section>
+
+    <!-- 06 What counts as tokens -->
+    <section class="slide" data-screen-label="06 What counts as tokens" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">IV.</span><span class="rule-meta">Token accounting</span><span class="page-num">06</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">What counts as <span class="serif-em">tokens</span><span class="dot">?</span></h2>
+            <p class="lead" style="max-width:720px;margin-bottom:22px;">In usage-based billing, an interaction consumes input tokens, output tokens, and cached tokens. Those tokens are priced by the model used and converted into AI credits.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag hot">Input</span><h3>What is sent</h3><p>Your prompt, chat history, selected code, attached files, instructions, tool schemas, retrieved context, terminal output, and tool results.</p></div>
+                <div class="feature-card"><span class="tag cool">Output</span><h3>What is generated</h3><p>The model's answer, explanations, code edits, plans, summaries, commands, and intermediate response text.</p></div>
+                <div class="feature-card"><span class="tag earth">Cached</span><h3>What is reused</h3><p>Context the model reuses or stores across the interaction so repeated context can be handled more efficiently.</p></div>
+            </div>
+            <div class="grid-2" style="margin-top:18px;">
+                <div class="feature-card"><h3>Billed in AI credits</h3><p>Copilot Chat, Copilot CLI, Copilot cloud agent, Copilot Spaces, Spark, and third-party coding agents.</p></div>
+                <div class="feature-card"><h3>Not billed in AI credits</h3><p>Code completions and Next Edit Suggestions remain unlimited for paid plans according to GitHub's usage-based billing docs.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 07 Cost calculation -->
+    <section class="slide" data-screen-label="07 Cost calculation" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">V.</span><span class="rule-meta">Billing math</span><span class="page-num">07</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">How the <span class="serif-em">calculation</span> works<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:740px;margin-bottom:20px;">Example using GPT-5 mini rates from GitHub's usage-based pricing table: $0.25 input, $0.025 cached input, and $2.00 output per 1M tokens. 1 AI credit equals $0.01 USD.</p>
+            <div class="grid-2">
+                <table class="mini-table">
+                    <thead><tr><th>Token type</th><th>Example</th><th>Cost</th></tr></thead>
+                    <tbody>
+                        <tr><td>Input tokens</td><td>20,000 × $0.25 / 1M</td><td>$0.0050</td></tr>
+                        <tr><td>Cached tokens</td><td>10,000 × $0.025 / 1M</td><td>$0.00025</td></tr>
+                        <tr><td>Output tokens</td><td>3,000 × $2.00 / 1M</td><td>$0.0060</td></tr>
+                        <tr><td><strong>Total</strong></td><td>$0.01125 / $0.01</td><td><strong>1.125 credits</strong></td></tr>
+                    </tbody>
+                </table>
+                <div class="stack">
+                    <div class="feature-card"><h3>Formula</h3><p>For each token type: tokens used × model rate per 1M tokens. Add the parts, then divide by $0.01 to convert USD into AI credits.</p></div>
+                    <div class="usecase-card"><h3>Optimization lesson</h3><p>If the same prompt includes a huge log, open files, and repeated chat history, input tokens rise before the model writes a single line. Shrinking context directly lowers the credit draw.</p></div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Illustrative estimate only · Actual usage depends on selected model, context, caching, and product behavior.</p>
+        </div>
+    </section>
+
+    <!-- 08 Token Budget -->
+    <section class="slide" data-screen-label="08 Token budget" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">VI.</span><span class="rule-meta">Foundation</span><span class="page-num">08</span></div>
+            <h2 class="h-xl" style="margin-bottom:12px;">Know where tokens <span class="serif-em">go</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:680px;margin-bottom:22px;">Every request carries more than your typed prompt: system instructions, repo customizations, active files, selected code, tool definitions, terminal output, search results, diffs, and chat history all compete for context.</p>
+            <div class="timeline">
+                <div class="step"><div class="step-num">01</div><h3>Intent</h3><p>What you typed, including task scope and desired output.</p></div>
+                <div class="step"><div class="step-num">02</div><h3>Instructions</h3><p>Persistent rules from repo, user, organization, and agent files.</p></div>
+                <div class="step"><div class="step-num">03</div><h3>Context</h3><p>Files, symbols, search hits, screenshots, terminals, and attachments.</p></div>
+                <div class="step"><div class="step-num">04</div><h3>Tools</h3><p>Available tool schemas and previous tool results.</p></div>
+                <div class="step"><div class="step-num">05</div><h3>Response</h3><p>Generated answer, code edits, explanations, and validation summary.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 09 Token Strategy -->
+    <section class="slide" data-screen-label="09 Token strategy" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">VII.</span><span class="rule-meta">Strategy</span><span class="page-num">09</span></div>
+            <h2 class="h-xl" style="margin-bottom:14px;">The best context is <span class="serif-em">selected</span>, not piled on<span class="dot">.</span></h2>
+            <table class="mini-table">
+                <thead><tr><th>Instead of</th><th>Do this</th><th>Why it improves output</th></tr></thead>
+                <tbody>
+                    <tr><td>Paste long logs</td><td>Share failing test name, stack top, and command run</td><td>Model sees the failure signal without drowning in repeated frames</td></tr>
+                    <tr><td>Ask broad repo questions</td><td>Reference likely files, symbols, or a Graphify query</td><td>Search becomes targeted and cheaper</td></tr>
+                    <tr><td>Repeat standards manually</td><td>Move stable rules into instructions</td><td>Every future task starts with the same baseline</td></tr>
+                    <tr><td>Use one giant prompt</td><td>Plan, edit, validate, then iterate</td><td>Short feedback loops keep the model grounded in actual results</td></tr>
+                </tbody>
+            </table>
+            <div class="usecase-card" style="margin-top:22px;max-width:760px;">
+                <h3>Real-world use case</h3>
+                <p>A team debugging flaky CI can paste a 3,000-line log, but the useful signal is usually one command, one failing test, and one stack trace. With compressed output, the agent spends its reasoning budget on the fix path instead of sorting through noise.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10 Prompt Shape -->
+    <section class="slide" data-screen-label="10 Prompt shape" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">VIII.</span><span class="rule-meta">Prompt design</span><span class="page-num">10</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Prompt for <span class="serif-em">decisions</span>, not just output<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:640px;margin-bottom:22px;">A strong prompt gives the model the shape of success: role, target, constraints, examples, boundaries, and validation.</p>
+            <div class="grid-2">
+                <div class="code-block">
+                    <span class="code-cmt"># High-signal prompt skeleton</span><br>
+                    <span class="code-kw">Goal:</span> fix checkout tax rounding<br>
+                    <span class="code-kw">Scope:</span> billing service only<br>
+                    <span class="code-kw">Context:</span> failing test + changed config<br>
+                    <span class="code-kw">Constraints:</span> no DB migration<br>
+                    <span class="code-kw">Done when:</span> tests pass + edge cases listed
+                </div>
+                <div class="stack">
+                    <div class="feature-card"><h3>Make success observable</h3><p>Ask for code plus the exact validation path. Models produce better work when the finish line is concrete.</p></div>
+                    <div class="feature-card"><h3>Give one good example</h3><p>A small example of style, API shape, or expected output can replace paragraphs of abstract instruction.</p></div>
+                </div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:760px;"><h3>Real-world use case</h3><p>For a legacy migration, ask Copilot to convert one endpoint first, preserve behavior, run the existing contract tests, and summarize differences. That creates a reusable pattern for the next endpoints.</p></div>
+        </div>
+    </section>
+
+    <!-- 11 AGENTS.md -->
+    <section class="slide" data-screen-label="11 AGENTS.md" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">IX.</span><span class="rule-meta">Persistent context</span><span class="page-num">11</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;"><code>AGENTS.md</code> tells agents <span class="serif-em">how to work here</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:670px;margin-bottom:22px;">Copilot can use one or more <code>AGENTS.md</code> files in a repository. The nearest file in the directory tree can guide local behavior for monorepos, apps, packages, or special workflows.</p>
+            <div class="grid-2">
+                <div class="feature-card"><h3>What to include</h3><p>Repo purpose, common commands, validation order, ownership boundaries, generated files, safety rules, and known flaky steps.</p></div>
+                <div class="feature-card"><h3>Token optimization value</h3><p>The agent does not rediscover setup and structure on every task. One concise file replaces repeated search, failed commands, and back-and-forth.</p></div>
+            </div>
+            <div class="code-block" style="margin-top:18px;max-width:760px;">
+                <span class="code-cmt"># AGENTS.md</span><br>
+                Always run <span class="code-str">npm test -- --runInBand</span> before finalizing billing changes.<br>
+                Generated API clients live in <span class="code-str">src/generated/</span>; do not edit them directly.<br>
+                Prefer service tests over snapshot updates for behavior changes.
+            </div>
+        </div>
+    </section>
+
+    <!-- 12 Instructions -->
+    <section class="slide" data-screen-label="12 Instructions" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">X.</span><span class="rule-meta">Custom instructions</span><span class="page-num">12</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Use <code>.instructions.md</code> for <span class="serif-em">path-specific rules</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:680px;margin-bottom:22px;">Repository-wide instructions set the baseline. Files under <code>.github/instructions/</code> can target specific paths with <code>applyTo</code> frontmatter.</p>
+            <div class="grid-2">
+                <div class="code-block">
+                    <span class="code-cmt">--- </span><br>
+                    applyTo: <span class="code-str">"**/*.tsx"</span><br>
+                    <span class="code-cmt">--- </span><br><br>
+                    Use existing design tokens.<br>
+                    Prefer accessible native controls.<br>
+                    Add tests for user-visible states.
+                </div>
+                <div class="stack">
+                    <div class="feature-card"><h3>Best fit</h3><p>Framework conventions, language style, migration rules, security standards, and review preferences that apply only to certain files.</p></div>
+                    <div class="usecase-card"><h3>Real-world use case</h3><p>A platform team can enforce Terraform naming, Python lint rules, and React accessibility separately. Copilot receives only the relevant rule set for the file being edited.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 13 Prompt files -->
+    <section class="slide" data-screen-label="13 Prompt files" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">XI.</span><span class="rule-meta">Reusable workflows</span><span class="page-num">13</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;"><code>.prompt.md</code> files turn good prompts into <span class="serif-em">team assets</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:660px;margin-bottom:22px;">Prompt files are reusable workflows for tasks that happen often: reviewing a PR, preparing a release, scaffolding a component, writing tests, or summarizing migration impact.</p>
+            <div class="grid-3">
+                <div class="feature-card"><h3>Repeatable</h3><p>Every developer invokes the same workflow instead of retyping a long prompt.</p></div>
+                <div class="feature-card"><h3>Auditable</h3><p>The prompt lives in the repo, so it can be reviewed and improved like code.</p></div>
+                <div class="feature-card"><h3>Compact</h3><p>Only task-specific variables need to be supplied at runtime.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:760px;"><h3>Real-world use case</h3><p>For release notes, a <code>release-notes.prompt.md</code> can tell Copilot exactly how to read commits, group changes, flag breaking changes, and produce the expected format. The model spends tokens on the actual release delta.</p></div>
+        </div>
+    </section>
+
+    <!-- 14 Skills Hooks MCP -->
+    <section class="slide" data-screen-label="14 Skills hooks MCP" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XII.</span><span class="rule-meta">Tools and automation</span><span class="page-num">14</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Skills, hooks, and MCP reduce <span class="serif-em">manual prompting</span><span class="dot">.</span></h2>
+            <div class="grid-3" style="margin-top:20px;">
+                <div class="tool-card"><span class="tag hot">Skills</span><h3>Specialized playbooks</h3><p>Package instructions, examples, and resources for domain tasks like PDF extraction, slide creation, test triage, or security review.</p></div>
+                <div class="tool-card"><span class="tag cool">Hooks</span><h3>Lifecycle automation</h3><p>Run commands at key agent events: format after edits, block unsafe paths, or compress terminal output before it enters context.</p></div>
+                <div class="tool-card"><span class="tag earth">MCP</span><h3>Structured external access</h3><p>Expose databases, APIs, issue trackers, search indexes, or internal tools through typed model-callable interfaces.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:22px;max-width:780px;"><h3>Real-world use case</h3><p>A security team can create a review skill, attach an MCP server for vulnerability data, and use a hook to run secret scanning after edits. The agent gets the right workflow and tools without a long ad hoc prompt.</p></div>
+        </div>
+    </section>
+
+    <!-- 15 Graphify -->
+    <section class="slide" data-screen-label="15 Graphify" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XIII.</span><span class="rule-meta">Tool · Graphify</span><span class="page-num">15</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Graphify: query the <span class="serif-em">map</span>, not the whole repo<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:700px;margin-bottom:22px;">Graphify turns code, docs, PDFs, images, SQL, and media into a queryable knowledge graph. It produces <code>graph.html</code>, <code>GRAPH_REPORT.md</code>, and <code>graph.json</code>, then agents can ask graph queries instead of repeatedly grepping raw files.</p>
+            <div class="grid-2">
+                <div class="code-block">
+                    <span class="code-cmt"># Common workflow</span><br>
+                    graphify .<br>
+                    graphify query <span class="code-str">"what connects auth to billing?"</span><br>
+                    graphify path <span class="code-str">"UserService"</span> <span class="code-str">"DatabasePool"</span><br>
+                    graphify hook install
+                </div>
+                <div class="stack">
+                    <div class="feature-card"><h3>Why it saves tokens</h3><p>It replaces broad repo exploration with graph questions, god nodes, communities, confidence tags, and shortest paths.</p></div>
+                    <div class="usecase-card"><h3>Real-world use case</h3><p>During a monolith decomposition, ask Graphify which modules touch payments, invoices, and notifications. Copilot can plan changes from relationships instead of reading hundreds of files.</p></div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Repo: <a class="repo-link" href="https://github.com/safishamsi/graphify" target="_blank" rel="noopener">github.com/safishamsi/graphify</a> · Research note: code extraction is local via tree-sitter; docs and PDFs may use model-backed semantic extraction depending on mode.</p>
+        </div>
+    </section>
+
+    <!-- 16 RTK -->
+    <section class="slide" data-screen-label="16 RTK" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XIV.</span><span class="rule-meta">Tool · RTK</span><span class="page-num">16</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">RTK: compact command output before it reaches the model<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:720px;margin-bottom:20px;">RTK is a Rust CLI proxy that filters common developer commands. It uses smart filtering, grouping, truncation, and deduplication to reduce shell output by roughly 60-90% on many workflows.</p>
+            <div class="grid-2">
+                <div class="code-block">
+                    rtk git status<br>
+                    rtk git diff<br>
+                    rtk test npm test<br>
+                    rtk err npm run build<br>
+                    rtk gain<br>
+                    rtk discover
+                </div>
+                <div class="stack">
+                    <div class="feature-card"><h3>Good targets</h3><p>Git status, diffs, test runners, linting, TypeScript errors, Docker/Kubernetes output, logs, dependency lists, and cloud CLI responses.</p></div>
+                    <div class="usecase-card"><h3>Real-world use case</h3><p>When an agent runs a failing build, RTK can return grouped errors instead of a long raw transcript. The agent sees the exact files and error classes it needs to fix.</p></div>
+                </div>
+            </div>
+            <div class="metric-row"><div class="metric"><div class="num">60-90%</div><div class="label">reported reduction on common dev command output</div></div><div class="metric"><div class="num">100+</div><div class="label">supported command/filter categories</div></div></div>
+            <p class="mono" style="margin-top:14px;">Repo: <a class="repo-link" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a></p>
+        </div>
+    </section>
+
+    <!-- 17 Caveman -->
+    <section class="slide" data-screen-label="17 Caveman" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XV.</span><span class="rule-meta">Tool · Caveman</span><span class="page-num">17</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Caveman: reduce <span class="serif-em">output tokens</span> and memory weight<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:720px;margin-bottom:20px;">Caveman is a skill/plugin that asks agents to respond with compressed, direct language. Its repo reports an average output reduction around 65%, with extra utilities for compressing memory files and short review comments.</p>
+            <div class="grid-2">
+                <div class="feature-card"><h3>Where it helps</h3><p>Status updates, reviews, summaries, commit messages, memory files, and repetitive agent chatter where verbosity adds little value.</p></div>
+                <div class="feature-card"><h3>Where to be careful</h3><p>Do not compress away nuance for architecture tradeoffs, stakeholder explanations, training material, or safety-sensitive decisions.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:760px;"><h3>Real-world use case</h3><p>A team using agents all day can keep final summaries short and structured. The chat stays readable, and recurring memory files become smaller without losing commands, paths, or URLs.</p></div>
+            <p class="mono" style="margin-top:16px;">Repo: <a class="repo-link" href="https://github.com/JuliusBrussee/caveman" target="_blank" rel="noopener">github.com/JuliusBrussee/caveman</a> · Caveat: output compression does not reduce hidden reasoning tokens; it mainly saves visible response/context growth.</p>
+        </div>
+    </section>
+
+    <!-- 18 VS Code Compress Output -->
+    <section class="slide" data-screen-label="18 Compress output" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">XVI.</span><span class="rule-meta">Built-in workflow</span><span class="page-num">18</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Use VS Code's compress output option for noisy terminals<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:690px;margin-bottom:22px;">In VS Code 1.121, terminal tool output compression now covers more command types. Enable <code class="setting-pill">chat.tools.compressOutput.enabled</code> to trim repetitive progress output before it is sent to the model.</p>
+            <div class="grid-2">
+                <div class="feature-card"><h3>Best inputs</h3><p>Build logs, test reports, package install failures, server traces, CLI diagnostics, and long command transcripts.</p></div>
+                <div class="feature-card"><h3>What is now covered</h3><p>Expanded compression includes common test runners, build tools, linters, Docker commands, and package managers, so the model sees the useful failure signal faster.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:760px;"><h3>Real-world use case</h3><p>A frontend build might print 800 lines but fail because one CSS import is missing. Compressing the output gives Copilot the failing module, stack top, and package context without flooding the conversation.</p></div>
+            <p class="mono" style="margin-top:14px;">Source: VS Code 1.121 release notes · Broader compression for terminal tool output</p>
+        </div>
+    </section>
+
+    <!-- 19 Auto model -->
+    <section class="slide" data-screen-label="19 Auto model" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XVII.</span><span class="rule-meta">Model routing</span><span class="page-num">19</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Copilot Auto model: route by <span class="serif-em">task complexity</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:720px;margin-bottom:22px;">Auto model selection lets Copilot choose an appropriate model for the work instead of forcing every task through the same model. Use it when you want a balanced default across speed, cost, and reasoning depth.</p>
+            <div class="grid-3">
+                <div class="feature-card"><h3>Use Auto for</h3><p>Mixed agent tasks, exploratory fixes, routine refactors, and work where the required reasoning depth is unclear.</p></div>
+                <div class="feature-card"><h3>Choose manually for</h3><p>Strict latency needs, known heavy reasoning, specific model strengths, demos, or policy-controlled environments.</p></div>
+                <div class="feature-card"><h3>Token angle</h3><p>The cheapest token is the one you do not need; the second cheapest is one sent to the right model for the job.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:18px;max-width:760px;"><h3>Real-world use case</h3><p>Use Auto for a cloud-agent issue that may require reading, editing, and fixing CI. Pin a stronger reasoning model only when the task is clearly architectural or the first pass shows the problem is subtle.</p></div>
+        </div>
+    </section>
+
+    <!-- 20 Context Budget Pattern -->
+    <section class="slide" data-screen-label="20 Context budget pattern" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">XVIII.</span><span class="rule-meta">Operating pattern</span><span class="page-num">20</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">A repeatable <span class="serif-em">context budget</span> workflow<span class="dot">.</span></h2>
+            <div class="timeline" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="step"><div class="step-num">01</div><h3>Orient</h3><p>Read instructions, Graphify report, or narrow docs before searching broadly.</p></div>
+                <div class="step"><div class="step-num">02</div><h3>Select</h3><p>Attach only files, symbols, logs, screenshots, or terminal output needed for the next decision.</p></div>
+                <div class="step"><div class="step-num">03</div><h3>Act</h3><p>Edit or answer from the smallest plausible hypothesis. Avoid collecting context for comfort.</p></div>
+                <div class="step"><div class="step-num">04</div><h3>Verify</h3><p>Run focused tests and feed compressed failures back into the loop.</p></div>
+            </div>
+            <div class="usecase-card" style="margin-top:26px;max-width:780px;"><h3>Real-world use case</h3><p>For a bug in checkout, start with the nearest failing test and service file. Only expand to Graphify paths, logs, or database schema if the local hypothesis fails.</p></div>
+        </div>
+    </section>
+
+    <!-- 21 Enterprise Use Cases -->
+    <section class="slide" data-screen-label="21 Enterprise use cases" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XIX.</span><span class="rule-meta">Examples</span><span class="page-num">21</span></div>
+            <h2 class="h-xl" style="margin-bottom:18px;">Real-world examples across the SDLC<span class="dot">.</span></h2>
+            <div class="grid-2">
+                <div class="usecase-card"><h3>New repo onboarding</h3><p>Generate <code>copilot-instructions.md</code>, add <code>AGENTS.md</code>, and build a Graphify map. New agents stop rediscovering project shape every session.</p></div>
+                <div class="usecase-card"><h3>Large migration</h3><p>Use Graphify to identify connected modules, prompt files for migration steps, and path instructions for language-specific conventions.</p></div>
+                <div class="usecase-card"><h3>CI failure repair</h3><p>Use RTK or compressed output for logs, then ask Copilot to fix only the failing area and rerun the exact command.</p></div>
+                <div class="usecase-card"><h3>Security review</h3><p>Create a review skill with org standards, attach security scan output, and use hooks to run policy checks after edits.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 22 Tool selection -->
+    <section class="slide" data-screen-label="22 Tool selection" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XX.</span><span class="rule-meta">Decision guide</span><span class="page-num">22</span></div>
+            <h2 class="h-lg" style="margin-bottom:16px;">Which lever should you pull?<span class="dot">.</span></h2>
+            <table class="mini-table">
+                <thead><tr><th>Problem</th><th>Best lever</th><th>Why</th></tr></thead>
+                <tbody>
+                    <tr><td>Agent keeps searching the same repo facts</td><td><code>AGENTS.md</code>, instructions, Graphify</td><td>Persist repo knowledge and query relationships</td></tr>
+                    <tr><td>Terminal output overwhelms chat</td><td>RTK, VS Code compress output</td><td>Keep failures and remove repetitive noise</td></tr>
+                    <tr><td>Team repeats long prompts</td><td><code>.prompt.md</code>, skills</td><td>Turn workflows into reusable assets</td></tr>
+                    <tr><td>Agent needs external systems</td><td>MCP server, hooks</td><td>Expose typed tools and automate validation</td></tr>
+                    <tr><td>Not sure which model to use</td><td>Copilot Auto model</td><td>Balance capability, speed, and cost by task</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 23 Sources -->
+    <section class="slide" data-screen-label="23 Sources" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XXI.</span><span class="rule-meta">Sources</span><span class="page-num">23</span></div>
+            <h2 class="h-xl" style="margin-bottom:18px;">Research sources<span class="dot">.</span></h2>
+            <div class="grid-2">
+                <div class="feature-card"><h3>Graphify</h3><p><a class="repo-link" href="https://github.com/safishamsi/graphify" target="_blank" rel="noopener">github.com/safishamsi/graphify</a> for knowledge graph creation, query commands, graph reports, supported file types, and assistant integrations.</p></div>
+                <div class="feature-card"><h3>RTK</h3><p><a class="repo-link" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a> for command filtering, output reduction claims, supported commands, hooks, analytics, and configuration.</p></div>
+                <div class="feature-card"><h3>Caveman</h3><p><a class="repo-link" href="https://github.com/JuliusBrussee/caveman" target="_blank" rel="noopener">github.com/JuliusBrussee/caveman</a> for output compression, memory compression, supported agents, and benchmark claims.</p></div>
+                <div class="feature-card"><h3>AI Engineering Fluency</h3><p><a class="repo-link" href="https://marketplace.visualstudio.com/items?itemName=RobBos.ai-engineering-fluency" target="_blank" rel="noopener">VS Code extension by Rob Bos</a> — daily and monthly token usage, cost estimates, Copilot Fluency Score (6 categories × 4 stages), usage analysis dashboard, and optional cross-device cloud sync via Azure Storage.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 24 Thank you -->
+    <section class="slide" data-screen-label="24 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin:14px 0 32px;max-width:640px;">Spend tokens where they buy reasoning: intent, selected context, trusted instructions, compact tool output, and validation.</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 24</div>
+<div id="hint">Left / right · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    deck.style.width = (total * 100) + 'vw';
+
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
