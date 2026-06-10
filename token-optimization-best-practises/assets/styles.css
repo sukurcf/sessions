@@ -1446,6 +1446,7 @@ footer .deeper:hover { border-color: var(--accent); color: var(--p1); text-decor
   .site-brand__name { display: inline; font-size: .88rem; white-space: normal; }
   .site-brand { max-width: calc(100vw - 150px); align-items: flex-start; }
   .hero { padding-top: 118px; }
+  .inspired-badge { display: none !important; }
 }
 
 @media (max-width: 440px) {

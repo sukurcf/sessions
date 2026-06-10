@@ -146,10 +146,9 @@ code, pre { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Conso
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
-.header-inner { display: flex; align-items: center; gap: 24px; height: 66px; flex-wrap: nowrap; }
+.header-inner { display: flex; align-items: center; gap: 16px; height: 66px; flex-wrap: nowrap; }
 .site-header .brand {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  z-index: 2;
+  flex: none;
 }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; flex: none; white-space: nowrap; }
 .brand:hover { text-decoration: none; }
@@ -157,7 +156,7 @@ code, pre { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Conso
 .brand-name { font-size: 1.02rem; letter-spacing: -.02em; }
 .brand-name strong { font-weight: 800; }
 .brand-name span { color: var(--text-muted); font-weight: 600; }
-[dir="rtl"] .site-header .brand { left: auto; right: 12px; }
+[dir="rtl"] .site-header .brand { /* flex: none inherited */ }
 @media (max-width: 900px) {
   .brand-name { display: none; }
 }

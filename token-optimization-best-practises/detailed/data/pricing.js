@@ -63,6 +63,7 @@ window.TO.data.pricing = {
     { id: "claude-opus-4-6",   name: "Claude Opus 4.6",   vendor: "Anthropic", tier: "powerful", included: false, input: 5.00, cached: 0.50, output: 25.00, cacheWrite: 6.25, note: "Strong planning and architectural reasoning." },
     { id: "claude-opus-4-7",   name: "Claude Opus 4.7",   vendor: "Anthropic", tier: "powerful", included: false, input: 5.00, cached: 0.50, output: 25.00, cacheWrite: 6.25, note: "Reserve for planning and review steps." },
     { id: "claude-opus-4-8",   name: "Claude Opus 4.8",   vendor: "Anthropic", tier: "powerful", included: false, input: 5.00, cached: 0.50, output: 25.00, cacheWrite: 6.25, note: "Latest Opus — frontier reasoning." },
+    { id: "claude-fable-5",    name: "Claude Fable 5",    vendor: "Anthropic", tier: "powerful", included: false, input: 10.00, cached: 1.00, output: 50.00, cacheWrite: 12.50, note: "Top-tier reasoning with 1M context window." },
 
     // ── Google — Lightweight ─────────────────────────────────────────────
     { id: "gemini-3-flash",    name: "Gemini 3 Flash",    vendor: "Google", tier: "lightweight", included: false, input: 0.50, cached: 0.05,  output: 3.00,  cacheWrite: null, note: "Preview. Strong quality at a light-tier price." },

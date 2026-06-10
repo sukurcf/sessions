@@ -131,8 +131,8 @@
     actions.push(themeBtn, navToggle);
 
     return el("header", { class: "site-header" }, [
-      brand,
       el("div", { class: "header-inner container" }, [
+        brand,
         nav,
         el("div", { class: "header-actions" }, actions)
       ])
