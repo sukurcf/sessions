@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Token Optimisation Guide — GitHub Copilot</title>
+  <meta name="description" content="A practical guide to reducing GitHub Copilot token consumption: best practices, surface-specific tools, and observability for AI credit usage-based billing." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%234f46e5' d='M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Zm3.5 11.5-3 1.5-3-1.5v-7l3-1.5 3 1.5v7Z'/%3E%3C/svg%3E" />
+  <style>
+    /* ===== Design Tokens ===== */
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+
+      --color-bg: #fafbfc;
+      --color-surface: #ffffff;
+      --color-surface-elevated: #ffffff;
+      --color-border: #e2e8f0;
+      --color-border-subtle: #f1f5f9;
+
+      --color-text: #1e293b;
+      --color-text-secondary: #64748b;
+      --color-text-tertiary: #94a3b8;
+
+      --color-primary: #4f46e5;
+      --color-primary-light: #eef2ff;
+      --color-primary-border: #c7d2fe;
+
+      --color-success: #059669;
+      --color-success-light: #ecfdf5;
+      --color-success-border: #a7f3d0;
+
+      --color-warning: #d97706;
+      --color-warning-light: #fffbeb;
+      --color-warning-border: #fde68a;
+
+      --color-danger: #dc2626;
+      --color-danger-light: #fef2f2;
+      --color-danger-border: #fecaca;
+
+      --color-info: #0891b2;
+      --color-info-light: #ecfeff;
+      --color-info-border: #a5f3fc;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+
+      --max-width: 1200px;
+    }
+
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: var(--color-primary); text-decoration: none; transition: color 150ms; }
+    a:hover { color: #3730a3; text-decoration: underline; }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #475569;
+    }
+    strong { font-weight: 650; }
+
+    /* ===== Header ===== */
+    .site-header {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.92);
+    }
+    .site-header__inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .site-header__icon {
+      width: 32px;
+      height: 32px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+    .site-header__title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+    .site-header__badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      border: 1px solid var(--color-primary-border);
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-left: auto;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 64px 32px 48px;
+    }
+    .hero__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      border: 1px solid var(--color-primary-border);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    .hero__eyebrow svg { flex-shrink: 0; }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--color-text);
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--color-text-secondary);
+      max-width: 720px;
+    }
+    .hero__source {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      padding: 12px 16px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      display: inline-block;
+    }
+
+    /* ===== Table of Contents ===== */
+    .toc {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 32px 48px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text);
+      transition: all 150ms;
+      text-decoration: none;
+    }
+    .toc a:hover {
+      border-color: var(--color-primary-border);
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      text-decoration: none;
+      box-shadow: var(--shadow-sm);
+    }
+    .toc__num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ===== Section ===== */
+    .section {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 32px 64px;
+    }
+    .section__head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--color-border);
+    }
+    .section__num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section__title {
+      font-size: 24px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+    }
+    .section__lead {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      margin-bottom: 32px;
+      max-width: 640px;
+    }
+
+    /* ===== Card Grid ===== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 720px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===== Card ===== */
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 200ms;
+      box-shadow: var(--shadow-card);
+    }
+    .card:hover {
+      border-color: var(--color-primary-border);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .card h3 {
+      font-size: 16px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      color: var(--color-text);
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      flex: 1;
+    }
+
+    /* ===== Tags ===== */
+    .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: #f1f5f9;
+      color: #475569;
+      letter-spacing: 0.01em;
+    }
+    .tag--primary { background: var(--color-primary-light); color: var(--color-primary); border: 1px solid var(--color-primary-border); }
+    .tag--success { background: var(--color-success-light); color: var(--color-success); border: 1px solid var(--color-success-border); }
+    .tag--warning { background: var(--color-warning-light); color: var(--color-warning); border: 1px solid var(--color-warning-border); }
+    .tag--danger { background: var(--color-danger-light); color: var(--color-danger); border: 1px solid var(--color-danger-border); }
+    .tag--info { background: var(--color-info-light); color: var(--color-info); border: 1px solid var(--color-info-border); }
+
+    /* ===== Footer ===== */
+    .site-footer {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 32px;
+      border-top: 1px solid var(--color-border);
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      text-align: center;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .site-header__inner { padding: 14px 16px; }
+      .hero { padding: 40px 16px 32px; }
+      .toc { padding: 0 16px 32px; }
+      .section { padding: 0 16px 48px; }
+      .site-footer { padding: 24px 16px; }
+      .site-header__badge { display: none; }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <svg class="site-header__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Zm-1 14L7 12l1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6Z"/>
+      </svg>
+      <span class="site-header__title">Token Optimisation Guide</span>
+      <span class="site-header__badge">GitHub Copilot</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <span class="hero__eyebrow">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0Zm.75 4a.75.75 0 0 0-1.5 0v4c0 .2.08.39.22.53l2.5 2.5a.75.75 0 1 0 1.06-1.06L8.75 7.69V4Z"/></svg>
+        Field guide · Usage-based billing
+      </span>
+      <h1>Token optimisation for Copilot</h1>
+      <p>
+        Output tokens cost <strong>3–5×</strong> more than input. Agent mode costs
+        <strong>5–25×</strong> more than Ask mode. Small habit changes — terser
+        prompts, scoped context, the right surface, the right model — compound into
+        large savings once AI Credits are your billing unit. This guide collects the
+        highest-leverage techniques across <em>practices</em>, <em>tools</em>, and
+        <em>observability</em>.
+      </p>
+      <div class="hero__source">
+        Based on GitHub's official guide:
+        <a href="https://support.github.com/product-guides/github-copilot/accelerate-usage/improve-agent-quality-and-token-optimization" target="_blank" rel="noopener">Improve agent quality and token optimization</a>
+      </div>
+    </section>
+
+    <!-- TOC -->
+    <nav class="toc" aria-label="Sections">
+      <a href="#foundation"><span class="toc__num">1</span> Foundation · Best practices</a>
+      <a href="#tools"><span class="toc__num">2</span> Surface-specific tools</a>
+      <a href="#observability"><span class="toc__num">3</span> Observability</a>
+    </nav>
+
+    <!-- Section 1: Foundation -->
+    <section id="foundation" class="section">
+      <div class="section__head">
+        <span class="section__num">1</span>
+        <h2 class="section__title">Foundation · Best practices</h2>
+      </div>
+      <p class="section__lead">General strategies to reduce token consumption while maintaining output quality.</p>
+
+      <div class="card-grid">
+        <article class="card">
+          <h3>Be specific in prompts</h3>
+          <p>Vague prompts cause back-and-forth cycles, and every revision costs tokens. Front-load context: language, framework, constraints, and expected output format.</p>
+          <div class="tags"><span class="tag tag--primary">Prompting</span><span class="tag">All surfaces</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Use completions over chat</h3>
+          <p>Inline tab completions and comment-driven suggestions consume far fewer tokens than a chat round-trip. For a small function or loop, a descriptive comment + tab beats opening chat.</p>
+          <div class="tags"><span class="tag tag--success">Completions</span><span class="tag">Low cost</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Scope context surgically</h3>
+          <p>Never ask the AI to "read the codebase". Most tasks touch 2–3 files — point at them with <code>#file</code> references. If you need to read a file yourself, do it yourself; don't load it into context.</p>
+          <div class="tags"><span class="tag tag--primary">Context window</span><span class="tag">Precision</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Break down large tasks</h3>
+          <p>Decompose features into smaller, focused steps. Smaller requests produce better results with fewer retry tokens and less wasted output on wrong approaches.</p>
+          <div class="tags"><span class="tag">Decomposition</span><span class="tag tag--success">Quality</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Accept &amp; edit, don't regenerate</h3>
+          <p>If a suggestion is 80% right, accept it and edit the rest manually. Regeneration re-reads the full context and produces a full new response — doubling cost for marginal gain.</p>
+          <div class="tags"><span class="tag">Workflow</span><span class="tag tag--success">Savings</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Understand context accumulation</h3>
+          <p>Every message re-reads the entire conversation. Message 40 costs far more than message 5 — tool outputs, file reads, and command results stack permanently. New topic = new conversation.</p>
+          <div class="tags"><span class="tag tag--warning">Core mechanic</span><span class="tag">Session hygiene</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Use <code>/compact</code> proactively</h3>
+          <p>Don't wait until context is bloated. Run <code>/compact</code> after each sub-task — it summarises and compresses history, keeping the thread alive but dropping the raw weight. Highest-leverage habit for long sessions.</p>
+          <div class="tags"><span class="tag tag--primary">CLI &amp; chat</span><span class="tag tag--success">High leverage</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Keep session notes</h3>
+          <p>End each session by asking Copilot to summarise key decisions and next steps to a notes file. Start the next session by loading that file — carrying forward only what matters, not 200 messages of accumulated context.</p>
+          <div class="tags"><span class="tag">Workflow</span><span class="tag">Carry-forward</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Don't use AI for your own reads</h3>
+          <p>Reading a log, an API response, or a data file? Do it in your terminal or editor. Every file the AI reads gets appended to context permanently. Keep AI context for tasks that actually need AI.</p>
+          <div class="tags"><span class="tag tag--warning">Discipline</span><span class="tag">Hygiene</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Reduce reasoning effort</h3>
+          <p>Extended thinking can burn tens of thousands of output tokens per request. For renames, simple edits, and quick lookups, lower the effort level. Don't under-invest on architecture, don't overspend on mechanical work.</p>
+          <div class="tags"><span class="tag tag--danger">Output cost</span><span class="tag">Thinking</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Write caveman prompts</h3>
+          <p>Drop articles, filler, pleasantries, hedging. Pattern: <code>[thing] [action] [reason]</code>. "Refactor function. Fix auth. Make efficient." conveys the same intent as a 40-token polite version at 10 tokens. Real-world: <strong>30–50% savings on input.</strong></p>
+          <div class="tags"><span class="tag tag--primary">Prompt compression</span><span class="tag tag--success">30–50%</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Constrain output format</h3>
+          <p>Output tokens cost <strong>5×</strong> input. One line — "Code only, no explanation" — in <code>copilot-instructions.md</code> cuts output cost <strong>40–70%</strong> on every code task. Other wins: "one sentence", "3 bullets max", "Yes/no, then one line why".</p>
+          <div class="tags"><span class="tag tag--danger">5× multiplier</span><span class="tag tag--success">40–70%</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Compress your instructions file</h3>
+          <p>Your <code>.github/copilot-instructions.md</code> is loaded on <em>every</em> interaction. A 200-line file burns ~1,500 tokens per call before you type anything. A 6-line, ~50-token version saves <strong>~72,500 tokens over 50 interactions</strong>.</p>
+          <div class="tags"><span class="tag tag--warning">Always-on</span><span class="tag tag--success">High leverage</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Use declarative guardrails</h3>
+          <p>Imperative instructions ("First read X, then Y, then Z…") are long and fragile. Declarative invariants ("All exported functions: JSDoc required.") are short, stable, and compose. Five invariants stack; five procedures interfere.</p>
+          <div class="tags"><span class="tag">Instruction design</span><span class="tag tag--primary">Composability</span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section 2: Tools -->
+    <section id="tools" class="section">
+      <div class="section__head">
+        <span class="section__num">2</span>
+        <h2 class="section__title">Surface-specific · Tools</h2>
+      </div>
+      <p class="section__lead">Token-efficient features and tools across each Copilot surface.</p>
+
+      <div class="card-grid">
+        <article class="card">
+          <h3>VS Code — Inline completions</h3>
+          <p>Tab completions use far fewer tokens than chat. For small snippets, let inline suggestions do the work. Use <em>Next Edit Suggestions</em> and <em>Copilot Edits</em> for multi-file changes instead of chat-based iteration.</p>
+          <div class="tags"><span class="tag tag--primary">VS Code</span><span class="tag tag--success">Completions</span></div>
+        </article>
+
+        <article class="card">
+          <h3>VS Code — Vision &amp; references</h3>
+          <p>Drag images into chat for UI work instead of describing layouts in text. Use <code>#file</code>, <code>#selection</code>, <code>#codebase</code> to provide precise context without pasting code into the prompt.</p>
+          <div class="tags"><span class="tag tag--primary">VS Code</span><span class="tag">Context</span></div>
+        </article>
+
+        <article class="card">
+          <h3>VS Code — Agent mode</h3>
+          <p>Agent mode iterates autonomously, but every tool output stacks into context permanently — each loop compounds the cost of every subsequent message. Set approval to <code>Auto</code> thoughtfully and watch for runaway loops. Reserve agent mode for tasks that genuinely need autonomy.</p>
+          <div class="tags"><span class="tag tag--primary">VS Code</span><span class="tag tag--warning">Agentic</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Copilot CLI</h3>
+          <p>Use sub-agents (<code>explore</code>, <code>task</code>) for parallel work — smaller, cheaper models with isolated context. Use <code>grep</code> / <code>glob</code> / <code>view</code> for simple lookups. Know the difference: <code>/compact</code> summarises; <code>/clear</code> wipes.</p>
+          <div class="tags"><span class="tag tag--primary">Terminal</span><span class="tag">Sub-agents</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Copilot Cloud Agent</h3>
+          <p>Write detailed issues with clear acceptance criteria — vague issues cause more exploration loops. Use <code>copilot-setup-steps.yml</code> to pre-install dependencies so the agent doesn't burn tokens figuring out the environment.</p>
+          <div class="tags"><span class="tag tag--info">Cloud</span><span class="tag">Autonomous</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Model selection</h3>
+          <p><strong>Default to Auto.</strong> Auto chooses from the supported pool and applies a discount on paid plans. Override only when needed: <em>fast</em> (Haiku) for renames, <em>standard</em> (GPT-4.1, Sonnet) for daily work, <em>premium</em> (Opus) for architecture. Teams switching from "always Sonnet" to "Auto, override when needed" generally reduce spend.</p>
+          <div class="tags"><span class="tag tag--success">Cost control</span><span class="tag">All surfaces</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Delegate to sub-agents</h3>
+          <p>Tasks needing many file reads or long analysis belong in a sub-agent — separate session, isolated context. You get the result without the session weight landing in your main conversation. Anything touching more than 3–4 large files is a candidate.</p>
+          <div class="tags"><span class="tag tag--primary">CLI</span><span class="tag">Isolation</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Exclude files from context</h3>
+          <p>Use <code>.copilotignore</code> (or equivalent) for build artefacts, lock files, logs, <code>node_modules</code>. Anything Copilot doesn't need shouldn't be visible — but don't over-prune; excluding files Copilot actually needs causes worse suggestions and more retries.</p>
+          <div class="tags"><span class="tag">Configuration</span><span class="tag">One-time</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Prefer CLI tools over MCP</h3>
+          <p>Where a CLI equivalent exists, use it. A shell command returning 10 lines costs 10 tokens of context. The same request through an MCP server might return a JSON blob 100× larger — and the full output lands in context permanently.</p>
+          <div class="tags"><span class="tag tag--warning">MCP</span><span class="tag tag--success">Reduction</span></div>
+        </article>
+
+        <article class="card">
+          <h3>VS Code — Copilot Edits</h3>
+          <p>For multi-file refactors, use <em>Copilot Edits</em> instead of asking chat to generate code you copy-paste. Edits applies changes directly across files in one operation — fewer round trips, less context, no manual transfer overhead.</p>
+          <div class="tags"><span class="tag tag--primary">VS Code</span><span class="tag">Multi-file</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Choose Ask, Edit, or Agent</h3>
+          <p>Agent mode costs <strong>5–25×</strong> more than Ask for the same prompt — it triggers many internal LLM calls, file reads, and tool evaluations. "What does this function do?" → Ask. Single-file change → Edit. Multi-file refactor with clear scope → Agent. <em>Never</em> use Agent for a vague prompt.</p>
+          <div class="tags"><span class="tag tag--danger">5–25×</span><span class="tag tag--success">60–90% savings</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Scope instructions with <code>applyTo</code></h3>
+          <p>Split a big <code>copilot-instructions.md</code> into a small always-on core plus scoped files in <code>.github/instructions/</code>. Each takes an <code>applyTo</code> glob — Copilot only loads it when editing matching files. Flipping the always-on/scoped ratio cuts per-interaction context <strong>50–80%</strong>.</p>
+          <div class="tags"><span class="tag">Configuration</span><span class="tag tag--success">50–80%</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Audit your MCP servers</h3>
+          <p>Each MCP tool definition costs 100–500 tokens — loaded <em>every agent step</em>. 10 servers × 5 tools × 200 tokens × 15 steps = <strong>150K tokens</strong> just describing tools. Disable what you don't need; use workspace <code>.vscode/mcp.json</code> instead of enabling everything globally.</p>
+          <div class="tags"><span class="tag tag--danger">Hidden tax</span><span class="tag tag--warning">MCP</span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section 3: Observability -->
+    <section id="observability" class="section">
+      <div class="section__head">
+        <span class="section__num">3</span>
+        <h2 class="section__title">Observability · Monitor your usage</h2>
+      </div>
+      <p class="section__lead">Track and understand your Copilot consumption to stay in control.</p>
+
+      <div class="card-grid">
+        <article class="card">
+          <h3>AI Credit tracking</h3>
+          <p>Monitor usage at <a href="https://github.com/settings/copilot" target="_blank" rel="noopener">github.com/settings/copilot</a>. From June 2026, Copilot uses <strong>usage-based billing</strong> — every interaction consumes AI Credits at <a href="https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing" target="_blank" rel="noopener">published per-model rates</a>. 1 AI Credit = $0.01 USD. Code completions and Next Edit suggestions remain unlimited.</p>
+          <div class="tags"><span class="tag tag--primary">Settings</span><span class="tag">Dashboard</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Know your per-token costs</h3>
+          <p>Models have vastly different per-token rates. Output costs <strong>3–5×</strong> input. Agent mode and Cloud Agent sessions consume far more tokens per task than chat or completions because they run multiple internal LLM calls. Match model and surface to the value of the task.</p>
+          <div class="tags"><span class="tag">Awareness</span><span class="tag tag--primary">AI Credits</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Model pricing tiers</h3>
+          <p><strong>Lightweight</strong> (GPT-5 mini, Gemini 3 Flash) cheapest. <strong>Versatile</strong> (GPT-4.1, Sonnet, Haiku) mid-range. <strong>Powerful</strong> (Opus, GPT-5.5, Gemini 2.5 Pro) most expensive. All draw from the same AI Credit pool — choosing the right tier per task is the primary cost lever.</p>
+          <div class="tags"><span class="tag">Billing</span><span class="tag tag--primary">Tiers</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Build personal habits</h3>
+          <p>Periodically review your AI Credit consumption and reflect on which workflows cost the most. Long chat threads on expensive models? Could inline completions have done it? Small habit changes compound into big savings.</p>
+          <div class="tags"><span class="tag">Habits</span><span class="tag">Self-audit</span></div>
+        </article>
+
+        <article class="card">
+          <h3>CLI session awareness</h3>
+          <p>In Copilot CLI, use <code>/usage</code> to see current-session usage. Use <code>/compact</code> regularly to compress history and free up context. Watch for long-running agent loops that may burn through tokens.</p>
+          <div class="tags"><span class="tag tag--primary">CLI</span><span class="tag tag--success">Real-time</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Billing &amp; plan management</h3>
+          <p>Review included AI Credits at <a href="https://github.com/settings/billing" target="_blank" rel="noopener">github.com/settings/billing</a>. Each plan includes credits matching its price ($10 Pro, $39 Pro+, $19/user Business, $39/user Enterprise). Business and Enterprise pool unused credits across the org. Admins can set budgets at enterprise, cost-centre, and user levels.</p>
+          <div class="tags"><span class="tag">Billing</span><span class="tag">Plans</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Set a baseline first</h3>
+          <p>Before optimising, measure. Pick a representative task, note AI Credits consumed, then apply optimisations and re-run. Without a baseline you're guessing — the comparison is your signal, not generic percentage claims.</p>
+          <div class="tags"><span class="tag tag--primary">Measurement</span><span class="tag">Before/after</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Recognise context overload</h3>
+          <p>Context overload doesn't always show up as a bill — sometimes as errors. Frequent internal errors, dropped connections, or "chat has reached its limit" messages mean context is too large. Don't retry — <code>/compact</code> or start fresh.</p>
+          <div class="tags"><span class="tag tag--danger">Error signals</span><span class="tag">Debug</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Watch for runaway loops</h3>
+          <p>Agent mode and sub-agents can loop — retrying failed commands, re-reading files, exploring dead ends. Each iteration adds context and cost. If the AI is repeating itself or spinning on an error, intervene. A 30-second human fix beats 10 rounds of AI retries.</p>
+          <div class="tags"><span class="tag tag--warning">Agentic</span><span class="tag">Intervention</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Prune context files ruthlessly</h3>
+          <p>Research shows LLM-generated context files (from <code>/init</code> or similar) <strong>hurt</strong> agent performance while increasing cost <strong>20–23%</strong>. Agents already know how to <code>ls</code> and <code>grep</code>. Delete anything discoverable. Keep only landmines: things that look normal but cause mistakes ("Use uv not pip", "Don't refactor the auth module").</p>
+          <div class="tags"><span class="tag tag--info">Research-backed</span><span class="tag tag--success">20–23%</span></div>
+        </article>
+
+        <article class="card">
+          <h3>Keep commits &amp; reviews terse</h3>
+          <p>The Coding Agent reads git history and PR comments — every verbose commit or review costs tokens when ingested. Use Conventional Commits, subject ≤50 chars. For reviews, one-line format with severity prefix: "L42: 🔴 bug: user can be null. Add null guard." (~12 tokens vs ~40 for a paragraph). Compounds across a repo's history.</p>
+          <div class="tags"><span class="tag">Git hygiene</span><span class="tag tag--success">Compound</span></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Source: GitHub's
+    <a href="https://support.github.com/product-guides/github-copilot/accelerate-usage/improve-agent-quality-and-token-optimization" target="_blank" rel="noopener">Improve agent quality and token optimization</a> product guide.
+  </footer>
+
+</body>
+</html>
