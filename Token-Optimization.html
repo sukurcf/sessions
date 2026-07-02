@@ -971,7 +971,40 @@
         <div class="slide-inner wide">
             <div class="sec-rule"><span class="roman">VII.</span><span class="rule-meta">Cache invalidation</span><span class="page-num">09</span></div>
             <h2 class="h-lg" style="margin-bottom:6px;">Why prompt caches <span class="serif-em">expire</span> &mdash; and what to do<span class="dot">.</span></h2>
-            <p class="lead" style="max-width:780px;margin-bottom:14px;font-size:13.5px;line-height:1.4;">A cache hit needs the <em>same prefix</em> and a <em>live TTL</em>. Most misses trace back to one of these triggers &mdash; each has a small habit that avoids it.</p>
+            <p class="lead" style="max-width:860px;margin-bottom:8px;font-size:13px;line-height:1.4;">Every request is stacked in a <em>fixed order</em>. The cache reuses this stack only if the top layers are byte-for-byte identical and the TTL is still live &mdash; change anything early and everything below it turns into fresh input.</p>
+            <!-- prefix stack infographic -->
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:2px 0 3px;">
+                <div style="background:var(--bone);border:1px solid rgba(21,20,15,0.08);border-top:3px solid #487d8b;border-radius:10px;padding:7px 10px;">
+                    <div class="mono" style="font-size:9px;color:#487d8b;margin-bottom:2px;">01 &middot; TOP</div>
+                    <div style="font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;line-height:1.2;">System prompt</div>
+                    <div style="font-size:10px;color:var(--ink-mute);line-height:1.3;margin-top:1px;">agent rules, mode config</div>
+                </div>
+                <div style="background:var(--bone);border:1px solid rgba(21,20,15,0.08);border-top:3px solid #487d8b;border-radius:10px;padding:7px 10px;">
+                    <div class="mono" style="font-size:9px;color:#487d8b;margin-bottom:2px;">02</div>
+                    <div style="font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;line-height:1.2;">Tool defs &amp; MCP</div>
+                    <div style="font-size:10px;color:var(--ink-mute);line-height:1.3;margin-top:1px;">schemas, descriptions</div>
+                </div>
+                <div style="background:var(--bone);border:1px solid rgba(21,20,15,0.08);border-top:3px solid #487d8b;border-radius:10px;padding:7px 10px;">
+                    <div class="mono" style="font-size:9px;color:#487d8b;margin-bottom:2px;">03</div>
+                    <div style="font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;line-height:1.2;">Workspace context</div>
+                    <div style="font-size:10px;color:var(--ink-mute);line-height:1.3;margin-top:1px;">AGENTS.md, instructions</div>
+                </div>
+                <div style="background:var(--bone);border:1px solid rgba(21,20,15,0.08);border-top:3px solid #6e7448;border-radius:10px;padding:7px 10px;">
+                    <div class="mono" style="font-size:9px;color:#6e7448;margin-bottom:2px;">04</div>
+                    <div style="font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;line-height:1.2;">Prior turns</div>
+                    <div style="font-size:10px;color:var(--ink-mute);line-height:1.3;margin-top:1px;">cached after 1st pass</div>
+                </div>
+                <div style="background:var(--bone);border:1px solid rgba(21,20,15,0.08);border-top:3px solid var(--coral);border-radius:10px;padding:7px 10px;">
+                    <div class="mono" style="font-size:9px;color:var(--coral);margin-bottom:2px;">05 &middot; TAIL</div>
+                    <div style="font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;line-height:1.2;">Latest user message</div>
+                    <div style="font-size:10px;color:var(--ink-mute);line-height:1.3;margin-top:1px;">new every turn</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.04em;text-align:center;">
+                <div style="grid-column:1/4;color:#487d8b;border-top:1px dashed rgba(72,125,139,0.55);padding-top:3px;">&#9668;&mdash;&mdash; stable prefix &middot; cache hit reuses this &mdash;&mdash;&#9658;</div>
+                <div style="grid-column:4/5;color:#6e7448;border-top:1px dashed rgba(110,116,72,0.55);padding-top:3px;">grows with session</div>
+                <div style="grid-column:5/6;color:var(--coral);border-top:1px dashed rgba(237,111,92,0.55);padding-top:3px;">variable &#9658;</div>
+            </div>
             <table class="mini-table">
                 <thead><tr><th style="width:40%;">Why the cache misses</th><th>Fix / suggested action</th></tr></thead>
                 <tbody>
@@ -1081,29 +1114,10 @@
         </div>
     </section>
 
-    <!-- 14 Prompt files -->
-    <section class="slide" data-screen-label="14 Prompt files" data-nav-theme="light">
-        <div class="slide-inner">
-            <div class="sec-rule"><span class="roman">XII.</span><span class="rule-meta">Reusable workflows</span><span class="page-num">14</span></div>
-            <h2 class="h-xl" style="margin-bottom:8px;"><code>.prompt.md</code> files turn good prompts into <span class="serif-em">team assets</span><span class="dot">.</span></h2>
-            <p class="lead" style="max-width:660px;margin-bottom:22px;">Prompt files are reusable workflows for tasks that happen often: reviewing a PR, preparing a release, scaffolding a component, writing tests, or summarizing migration impact.</p>
-            <div class="grid-3">
-                <div class="feature-card"><h3>Repeatable</h3><p>Every developer invokes the same workflow instead of retyping a long prompt.</p></div>
-                <div class="feature-card"><h3>Auditable</h3><p>The prompt lives in the repo, so it can be reviewed and improved like code.</p></div>
-                <div class="feature-card"><h3>Compact</h3><p>Only task-specific variables need to be supplied at runtime.</p></div>
-            </div>
-            <div class="scenario-card" style="margin-top:auto;">
-                <div class="swap-row"><span class="swap-tag dont">Instead of</span><p>Re-typing a 30-line review or release-notes prompt every time, slightly differently.</p></div>
-                <div class="swap-row"><span class="swap-tag do">Do this</span><p>Save it once as <code>release-notes.prompt.md</code> and invoke it, passing only the version or diff.</p></div>
-                <div class="why">The workflow is described <strong>once and reused</strong>; only the runtime variable changes, so you stop paying to re-explain the task.</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 15 Skills Hooks MCP -->
-    <section class="slide" data-screen-label="15 Skills hooks MCP" data-nav-theme="light">
+    <!-- 14 Skills Hooks MCP -->
+    <section class="slide" data-screen-label="14 Skills hooks MCP" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XIII.</span><span class="rule-meta">Tools and automation</span><span class="page-num">15</span></div>
+            <div class="sec-rule"><span class="roman">XII.</span><span class="rule-meta">Tools and automation</span><span class="page-num">14</span></div>
             <h2 class="h-xl" style="margin-bottom:8px;">Skills, hooks, and MCP reduce <span class="serif-em">manual prompting</span><span class="dot">.</span></h2>
             <div class="grid-3" style="margin-top:20px;">
                 <div class="tool-card"><span class="tag hot">Skills</span><h3>Specialized playbooks</h3><p>Package instructions, examples, and resources for domain tasks like PDF extraction, slide creation, test triage, or security review.</p></div>
@@ -1119,10 +1133,10 @@
         </div>
     </section>
 
-    <!-- 16 Graphify -->
-    <section class="slide" data-screen-label="16 Graphify" data-nav-theme="light">
+    <!-- 15 Graphify -->
+    <section class="slide" data-screen-label="15 Graphify" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XIV.</span><span class="rule-meta">Tool &middot; Graphify</span><span class="page-num">16</span></div>
+            <div class="sec-rule"><span class="roman">XIII.</span><span class="rule-meta">Tool &middot; Graphify</span><span class="page-num">15</span></div>
             <h2 class="h-xl" style="margin-bottom:8px;">Graphify: query the <span class="serif-em">map</span>, not the whole repo<span class="dot">.</span></h2>
             <p class="lead" style="max-width:700px;margin-bottom:22px;">Graphify turns code, docs, PDFs, images, SQL, and media into a queryable knowledge graph. It produces <code>graph.html</code>, <code>GRAPH_REPORT.md</code>, and <code>graph.json</code>, then agents can ask graph queries instead of repeatedly grepping raw files.</p>
             <div class="grid-2">
@@ -1144,10 +1158,10 @@
         </div>
     </section>
 
-    <!-- 17 RTK -->
-    <section class="slide" data-screen-label="17 RTK" data-nav-theme="light">
+    <!-- 16 RTK -->
+    <section class="slide" data-screen-label="16 RTK" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XV.</span><span class="rule-meta">Tool &middot; RTK</span><span class="page-num">17</span></div>
+            <div class="sec-rule"><span class="roman">XIV.</span><span class="rule-meta">Tool &middot; RTK</span><span class="page-num">16</span></div>
             <h2 class="h-lg" style="margin-bottom:6px;">RTK: compact command output before it reaches the model<span class="dot">.</span></h2>
             <p class="lead" style="max-width:760px;margin-bottom:14px;font-size:14px;line-height:1.4;">RTK is a Rust CLI proxy that filters common developer commands. It uses smart filtering, grouping, truncation, and deduplication to reduce shell output by roughly 60-90% on many workflows.</p>
             <div class="grid-2">
@@ -1176,10 +1190,10 @@
         </div>
     </section>
 
-    <!-- 18 Caveman -->
-    <section class="slide" data-screen-label="18 Caveman" data-nav-theme="light">
+    <!-- 17 Caveman -->
+    <section class="slide" data-screen-label="17 Caveman" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XVI.</span><span class="rule-meta">Tool &middot; Caveman</span><span class="page-num">18</span></div>
+            <div class="sec-rule"><span class="roman">XV.</span><span class="rule-meta">Tool &middot; Caveman</span><span class="page-num">17</span></div>
             <h2 class="h-xl" style="margin-bottom:8px;">Caveman: reduce <span class="serif-em">output tokens</span> and memory weight<span class="dot">.</span></h2>
             <p class="lead" style="max-width:720px;margin-bottom:20px;">Caveman is a skill/plugin that asks agents to respond with compressed, direct language. Its repo reports an average output reduction around 65%, with extra utilities for compressing memory files and short review comments.</p>
             <div class="grid-2">
@@ -1195,10 +1209,10 @@
         </div>
     </section>
 
-    <!-- 19 VS Code Compress Output -->
-    <section class="slide" data-screen-label="19 Compress output" data-nav-theme="light">
+    <!-- 18 VS Code Compress Output -->
+    <section class="slide" data-screen-label="18 Compress output" data-nav-theme="light">
         <div class="slide-inner">
-            <div class="sec-rule"><span class="roman">XVII.</span><span class="rule-meta">Built-in workflow</span><span class="page-num">19</span></div>
+            <div class="sec-rule"><span class="roman">XVI.</span><span class="rule-meta">Built-in workflow</span><span class="page-num">18</span></div>
             <h2 class="h-xl" style="margin-bottom:8px;">Use VS Code's compress output option for noisy terminals<span class="dot">.</span></h2>
             <p class="lead" style="max-width:690px;margin-bottom:22px;">In VS Code 1.121, terminal tool output compression now covers more command types. Enable <code class="setting-pill">chat.tools.compressOutput.enabled</code> to trim repetitive progress output before it is sent to the model.</p>
             <div class="grid-2">
@@ -1214,10 +1228,10 @@
         </div>
     </section>
 
-    <!-- 20 Agent Debug Logs -->
-    <section class="slide" data-screen-label="20 Agent Debug Logs" data-nav-theme="light">
+    <!-- 19 Agent Debug Logs -->
+    <section class="slide" data-screen-label="19 Agent Debug Logs" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XVIII.</span><span class="rule-meta">Debugging</span><span class="page-num">20</span></div>
+            <div class="sec-rule"><span class="roman">XVII.</span><span class="rule-meta">Debugging</span><span class="page-num">19</span></div>
             <h2 class="h-lg" style="margin-bottom:6px;">The Agent Debug Log panel shows <span class="serif-em">what really happened</span> in a session<span class="dot">.</span></h2>
             <p class="lead" style="max-width:820px;margin-bottom:12px;font-size:13.5px;line-height:1.4;">The fastest way to trace an agent run end to end: prompt-file discovery, tool calls, LLM requests, token usage, and failure points &mdash; especially for custom agents and orchestrated sub-agent workflows.</p>
             <div class="grid-2" style="gap:12px;">
@@ -1234,10 +1248,10 @@
         </div>
     </section>
 
-    <!-- 21 Auto model -->
-    <section class="slide" data-screen-label="21 Auto model" data-nav-theme="light">
+    <!-- 20 Auto model -->
+    <section class="slide" data-screen-label="20 Auto model" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XIX.</span><span class="rule-meta">Model routing</span><span class="page-num">21</span></div>
+            <div class="sec-rule"><span class="roman">XVIII.</span><span class="rule-meta">Model routing</span><span class="page-num">20</span></div>
             <h2 class="h-xl" style="margin-bottom:8px;">Copilot Auto model: route by <span class="serif-em">task complexity</span><span class="dot">.</span></h2>
             <p class="lead" style="max-width:720px;margin-bottom:22px;">Auto model selection lets Copilot choose an appropriate model for the work instead of forcing every task through the same model. Use it when you want a balanced default across speed, cost, and reasoning depth.</p>
             <div class="grid-3">
@@ -1253,10 +1267,10 @@
         </div>
     </section>
 
-    <!-- 22 More ways to save -->
-    <section class="slide" data-screen-label="22 More ways to save" data-nav-theme="light">
+    <!-- 21 More ways to save -->
+    <section class="slide" data-screen-label="21 More ways to save" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XX.</span><span class="rule-meta">More levers</span><span class="page-num">22</span></div>
+            <div class="sec-rule"><span class="roman">XIX.</span><span class="rule-meta">More levers</span><span class="page-num">21</span></div>
             <h2 class="h-lg" style="margin-bottom:6px;">More ways to spend <span class="serif-em">fewer credits</span><span class="dot">.</span></h2>
             <p class="lead" style="max-width:820px;margin-bottom:14px;font-size:14px;line-height:1.4;">Beyond the big levers, everyday habits keep each request lean &mdash; smaller context in, the right engine for the job, and no idle tools riding along.</p>
             <div class="grid-2">
@@ -1288,10 +1302,10 @@
         </div>
     </section>
 
-    <!-- 23 Sources -->
-    <section class="slide" data-screen-label="23 Sources" data-nav-theme="light">
+    <!-- 22 Sources -->
+    <section class="slide" data-screen-label="22 Sources" data-nav-theme="light">
         <div class="slide-inner wide">
-            <div class="sec-rule"><span class="roman">XXI.</span><span class="rule-meta">Sources</span><span class="page-num">23</span></div>
+            <div class="sec-rule"><span class="roman">XX.</span><span class="rule-meta">Sources</span><span class="page-num">22</span></div>
             <h2 class="h-xl" style="margin-bottom:18px;">Research sources<span class="dot">.</span></h2>
             <div class="grid-2">
                 <div class="feature-card"><h3>Graphify</h3><p><a class="repo-link" href="https://github.com/safishamsi/graphify" target="_blank" rel="noopener">github.com/safishamsi/graphify</a> for knowledge graph creation, query commands, graph reports, supported file types, and assistant integrations.</p></div>
@@ -1313,8 +1327,8 @@
         </div>
     </section>
 
-    <!-- 24 Thank you -->
-    <section class="slide" data-screen-label="24 Thank you" data-nav-theme="light">
+    <!-- 23 Thank you -->
+    <section class="slide" data-screen-label="23 Thank you" data-nav-theme="light">
         <div class="slide-inner center">
             <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
             <p class="lead" style="margin:14px 0 32px;max-width:640px;">Spend tokens where they buy reasoning: intent, selected context, trusted instructions, compact tool output, and validation.</p>
@@ -1335,7 +1349,7 @@
 </div>
 
 <div id="nav"></div>
-<div class="slide-counter" id="slideCounter">01 / 24</div>
+<div class="slide-counter" id="slideCounter">01 / 23</div>
 <div id="hint">Left / right · esc · swipe</div>
 <div class="deck-progress"><div class="bar"></div></div>
 
