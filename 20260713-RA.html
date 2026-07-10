@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot — Developer Workshop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            --accent-fg: var(--coral);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero { font-family: 'Inter Tight', sans-serif; font-weight: 900; letter-spacing: -0.03em; font-size: clamp(48px, 7vw, 90px); line-height: 1.0; }
+        .h-xl { font-family: 'Inter Tight', sans-serif; font-weight: 800; letter-spacing: -0.025em; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; }
+        .h-lg { font-family: 'Inter Tight', sans-serif; font-weight: 700; letter-spacing: -0.02em; font-size: clamp(24px, 2.9vw, 40px); line-height: 1.12; }
+        .lead { font-family: 'Inter', sans-serif; font-size: clamp(15px, 1.4vw, 20px); line-height: 1.6; color: var(--ink-soft); }
+        .meta { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--ink-mute); line-height: 1.5; }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: var(--ink-faint); }
+        .eyebrow { font-family: 'Inter Tight', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--coral); }
+        .dot { color: var(--coral); }
+        .serif-em { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500; }
+
+        .pt { background: var(--bone); border-radius: 14px; border: 1px solid rgba(21,20,15,0.06); box-shadow: 0 2px 12px rgba(21,20,15,0.04); }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(92px, 11vh, 122px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center { align-items: center; text-align: center; padding-right: clamp(80px, 10vw, 140px); }
+
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-bottom: clamp(92px, 11vh, 122px);
+            position: relative; z-index: 1;
+        }
+
+        /* ── Section rule ── */
+        .sec-rule { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; border-top: 1px solid rgba(21,20,15,0.12); padding-top: 12px; }
+        .sec-rule .roman { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 500; font-size: 14px; color: var(--coral); }
+        .sec-rule .rule-meta { flex: 1; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--ink-faint); letter-spacing: 0.04em; }
+        .sec-rule .page-num { font-family: 'Inter Tight', sans-serif; font-size: 11px; color: var(--ink-faint); }
+
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+        /* ── Agenda cards ── */
+        .feature-card { padding: 20px; border-radius: 14px; background: var(--bone); border: 1px solid rgba(21,20,15,0.06); }
+        .feature-card h3 { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+        .agenda-card h3 { font-size: 16px; margin-bottom: 2px; }
+        .agenda-card .dur { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--coral); margin-bottom: 12px; display: block; }
+        .agenda-card ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+        .agenda-card li { font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); padding-left: 14px; position: relative; }
+        .agenda-card li::before { content: ''; position: absolute; left: 0; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--coral); }
+
+        /* ══════════════════════════════════════════════
+           TOPIC SLIDE SYSTEM
+           ══════════════════════════════════════════════ */
+        .topic-inner {
+            justify-content: center;
+            padding-top: clamp(60px, 7.5vh, 86px);
+            padding-right: clamp(184px, 16vw, 224px);
+            padding-bottom: clamp(92px, 11vh, 122px);
+        }
+        .topic-inner .sec-rule { margin-bottom: 14px; }
+        .topic-title { margin-bottom: 10px; }
+        .topic-lead {
+            font-size: clamp(15px, 1.5vw, 19px);
+            line-height: 1.5; color: var(--ink-soft);
+            max-width: 860px; margin-bottom: 20px;
+        }
+        .topic-lead b { color: var(--ink); font-weight: 700; }
+
+        /* Playbook layout (practice topics) */
+        .play-grid { display: grid; gap: 14px; width: 100%; }
+        .play-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .play-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .play-grid > * { min-width: 0; }
+        .play-card {
+            padding: 17px 19px; border-radius: 13px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+            border-left: 3px solid var(--coral);
+        }
+        .play-card h4 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; font-size: 16.5px; letter-spacing: -0.01em;
+            margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .play-card p { font-size: 13.5px; line-height: 1.5; color: var(--ink-mute); margin: 0; }
+        .play-card code, .topic-lead code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper-dark); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+        .play-card h4 code { font-size: 12.5px; font-weight: 500; }
+
+        /* Context chips */
+        .chips { display: flex; flex-wrap: wrap; gap: 9px; width: 100%; margin-bottom: 18px; }
+        .chip { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--bone); border: 1px solid rgba(21,20,15,0.1); border-radius: 9px; padding: 8px 12px; color: var(--ink); }
+        .chip em { font-style: normal; color: var(--ink-mute); margin-left: 7px; font-family: 'Inter', sans-serif; font-size: 12px; }
+
+        /* Build layout (config topics): code left, detail right */
+        .build { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 22px; align-items: stretch; width: 100%; }
+        .build > * { min-width: 0; }
+        .code-panel {
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.1);
+            border-radius: 13px; padding: 15px 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px; line-height: 1.62; color: var(--ink-soft);
+            overflow: hidden; white-space: pre;
+        }
+        .code-panel .cap {
+            display: block; font-family: 'Inter Tight', sans-serif;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
+            color: var(--coral); margin-bottom: 11px; white-space: normal;
+        }
+        .code-panel .c-cmt { color: var(--ink-faint); }
+        .code-panel .c-kw { color: var(--coral); }
+        .code-panel .c-str { color: var(--olive); }
+
+        .build-side { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+        .side-block .field-label,
+        .play-lead .field-label {
+            display: block; font-family: 'Inter Tight', sans-serif;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+            color: var(--coral); margin-bottom: 8px;
+        }
+        .side-block p { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+        .setup { display: flex; flex-direction: column; gap: 11px; }
+        .setup-line { display: block; line-height: 1.55; word-break: break-word; }
+        .setup-line .k { display: block; font-family: 'Inter Tight', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px; }
+        .setup-line code, .side-block code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper-dark); padding: 2px 7px; border-radius: 5px; color: var(--ink); }
+
+        /* Demo callout */
+        .demo {
+            margin-top: 16px; width: 100%;
+            display: flex; gap: 12px; align-items: flex-start;
+            padding: 13px 17px; border-radius: 12px;
+            background: rgba(237,111,92,0.08);
+            border: 1px solid rgba(237,111,92,0.18);
+        }
+        .demo .tag { font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--coral); flex-shrink: 0; padding-top: 3px; }
+        .demo p { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+        .demo code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.5); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+
+        /* ── Navigation ── */
+        .deck-progress { position: fixed; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(21,20,15,0.08); z-index: 30; }
+        .deck-progress .bar { height: 100%; background: var(--coral); width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1); }
+
+        #nav { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 30; display: flex; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(239,231,210,0.78); border: 1px solid rgba(21,20,15,0.08); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); max-width: 82vw; flex-wrap: wrap; justify-content: center; }
+        #nav .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(21,20,15,0.22); cursor: pointer; transition: all 0.3s ease; border: 0; padding: 0; }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active { background: var(--coral); width: 22px; border-radius: 999px; }
+
+        #hint { position: fixed; bottom: 36px; right: 28px; z-index: 30; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-faint); opacity: 0.75; }
+        .slide-counter { position: fixed; bottom: 36px; left: 28px; z-index: 30; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-faint); }
+
+        /* ── Fixed overlays ── */
+        .gh-logo { position: fixed; top: 18px; left: 18px; width: 40px; height: 40px; display: grid; place-items: center; z-index: 20; pointer-events: none; }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+        .social-bar { position: fixed; bottom: 16px; left: 18px; display: flex; align-items: center; gap: 12px; z-index: 20; pointer-events: auto; }
+        .social-bar a { display: grid; place-items: center; transition: transform 0.15s ease; }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner { position: fixed; top: 14px; right: 14px; display: flex; flex-direction: column; align-items: center; z-index: 20; text-decoration: none; transition: opacity 0.2s ease, transform 0.2s ease; }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass { position: relative; padding: 10px; border-radius: 22px; background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%); backdrop-filter: blur(16px) saturate(1.6); -webkit-backdrop-filter: blur(16px) saturate(1.6); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(255,255,255,0.15); }
+        .qr-glass::before { content: ''; position: absolute; inset: 0; border-radius: 22px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+        .qr-corner img { width: 130px; height: 130px; border-radius: 14px; display: block; }
+        .qr-label { font-size: 12px; font-weight: 500; color: var(--ink-mute); margin-top: 8px; letter-spacing: 0.02em; }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<div class="presentation">
+
+    <!-- 01 TITLE -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:22px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="200" height="200" style="display:block;" />
+            <p class="eyebrow">Developer Workshop · 2026</p>
+            <h1 class="h-hero" style="margin-top:2px;">GitHub <span class="serif-em">Copilot</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:560px;text-align:center;">A hands-on tour — from everyday chat to autonomous agents.</p>
+        </div>
+    </section>
+
+    <!-- 02 COVER -->
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:16px;">GitHub Copilot · Developer Workshop</p>
+            <h1 class="h-hero" style="max-width:840px;">Write less. <span class="serif-em">Ship more</span><span class="dot">.</span></h1>
+            <p class="lead" style="margin-top:20px;max-width:640px;">
+                Everything a developer actually uses day to day — chat and context, custom agents
+                and skills, cloud agents, MCP, and the habits that make agents reliable.
+            </p>
+            <p class="mono" style="margin-top:32px;">Module 1 · Foundations&nbsp;&nbsp;—&nbsp;&nbsp;Module 2 · Agentic Patterns&nbsp;&nbsp;—&nbsp;&nbsp;Module 3 · Advanced Topics</p>
+        </div>
+    </section>
+
+    <!-- 03 AGENDA -->
+    <section class="slide" data-screen-label="03 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <p class="eyebrow" style="margin-bottom:14px;">Workshop agenda</p>
+            <h2 class="h-xl" style="margin-bottom:24px;">Three <span class="serif-em">modules</span><span class="dot">.</span></h2>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card agenda-card">
+                    <h3>Module 1 · Foundations</h3>
+                    <span class="dur">90 min · 8 topics</span>
+                    <ul>
+                        <li>Chat modes</li>
+                        <li>Interaction patterns</li>
+                        <li>Context</li>
+                        <li>Custom instructions</li>
+                        <li>Prompt discipline</li>
+                        <li>Models</li>
+                        <li>Custom agents</li>
+                        <li>Agent skills</li>
+                    </ul>
+                </div>
+                <div class="feature-card agenda-card">
+                    <h3>Module 2 · Agentic Patterns</h3>
+                    <span class="dur">115 min · 8 topics</span>
+                    <ul>
+                        <li>Agents vs. skills</li>
+                        <li>Background agents</li>
+                        <li>Cloud agents</li>
+                        <li>Instruction layering</li>
+                        <li>Multi-agent patterns</li>
+                        <li>Agent quality</li>
+                        <li>Token optimization</li>
+                        <li>Iteration loops</li>
+                    </ul>
+                </div>
+                <div class="feature-card agenda-card">
+                    <h3>Module 3 · Advanced Topics</h3>
+                    <span class="dur">90 min · 9 topics</span>
+                    <ul>
+                        <li>MCP</li>
+                        <li>APIs</li>
+                        <li>Extensions</li>
+                        <li>Memory</li>
+                        <li>Debugging &amp; diagnostics</li>
+                        <li>Agent architecture patterns</li>
+                        <li>Off-ramp design</li>
+                        <li>Full-stack workflows</li>
+                        <li>Best practices</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04 MODULE 1 DIVIDER -->
+    <section class="slide" data-screen-label="04 Module 1" data-nav-theme="light">
+        <div class="slide-inner center" style="gap:14px;">
+            <p class="eyebrow">Module 01 · 90 min</p>
+            <h2 class="h-hero">Foundations<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:660px;text-align:center;">How you talk to Copilot, feed it context, and shape it to your codebase.</p>
+        </div>
+    </section>
+
+    <!-- 05 Chat modes -->
+    <section class="slide" data-screen-label="05 Chat modes" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">05</span></div>
+            <h2 class="h-lg topic-title">Chat <span class="serif-em">modes</span><span class="dot">.</span></h2>
+            <p class="topic-lead">One Chat view, <b>three built-in agents</b>. Pick how much autonomy you want.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card">
+                    <h4>Agent</h4>
+                    <p>The default. Edits code, runs terminal commands, and iterates until the task is done.</p>
+                </div>
+                <div class="play-card">
+                    <h4>Plan</h4>
+                    <p>Read-only. Researches and writes a reviewable plan, then hands off to Agent to build it.</p>
+                </div>
+                <div class="play-card">
+                    <h4>Ask</h4>
+                    <p>Answers questions and suggests code — without touching your files.</p>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Switch agents from the dropdown at the bottom of the Chat view (<code>⌃⌘I</code>). Start in Plan, review the plan, then hand it to Agent.</p></div>
+        </div>
+    </section>
+
+    <!-- 06 Interaction patterns -->
+    <section class="slide" data-screen-label="06 Interaction patterns" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">06</span></div>
+            <h2 class="h-lg topic-title">Interaction <span class="serif-em">patterns</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Reach Copilot from wherever you're working — pick the lightest surface for the job.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Inline chat <code>⌘I</code></h4><p>Edit or generate right in the file or terminal. Keep or Undo in place — no context switch.</p></div>
+                <div class="play-card"><h4>Chat view <code>⌃⌘I</code></h4><p>The main panel for multi-step agent work and longer conversations.</p></div>
+                <div class="play-card"><h4>Quick Chat <code>⇧⌥⌘L</code></h4><p>A throwaway question without opening the panel.</p></div>
+                <div class="play-card"><h4>Agents window</h4><p>Run and watch several agent sessions side by side.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Select a function, press <code>⌘I</code>, "wrap the fetch in try/catch and return a typed error" — it rewrites in place.</p></div>
+        </div>
+    </section>
+
+    <!-- 07 Context -->
+    <section class="slide" data-screen-label="07 Context" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">07</span></div>
+            <h2 class="h-lg topic-title">Providing <span class="serif-em">context</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Copilot already sees your <b>active file and selection</b>. Add anything else with <code>#</code>.</p>
+            <div class="chips">
+                <span class="chip">#codebase <em>search the repo</em></span>
+                <span class="chip">#file <em>a specific file</em></span>
+                <span class="chip">#selection <em>highlighted code</em></span>
+                <span class="chip">#changes <em>the current diff</em></span>
+                <span class="chip">#fetch <em>a URL</em></span>
+                <span class="chip">#problems <em>errors</em></span>
+                <span class="chip">#terminalSelection <em>terminal output</em></span>
+            </div>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Be specific</h4><p>Narrow context beats dumping the whole repo — sharper answers and fewer tokens.</p></div>
+                <div class="play-card"><h4>Drag it in</h4><p>Drop files, folders, images, or the Problems panel straight into chat.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p><code>#codebase where do we validate JWTs?</code> — it finds the code so you don't have to hunt.</p></div>
+        </div>
+    </section>
+
+    <!-- 08 Custom instructions -->
+    <section class="slide" data-screen-label="08 Custom instructions" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">08</span></div>
+            <h2 class="h-lg topic-title">Custom <span class="serif-em">instructions</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Standing rules Copilot applies to <b>every chat request</b> — so you stop repeating your conventions.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/copilot-instructions.md</span><span class="c-cmt"># Always</span>
+- TypeScript strict; never use <span class="c-str">any</span>.
+- Tests in Vitest, colocated as <span class="c-str">*.test.ts</span>.
+- Validate all API input with Zod.
+- Conventional Commits for messages.</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">When to use</span><p>Project-wide conventions — stack, style, testing, and security — that every answer should follow.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Always-on</span><code>.github/copilot-instructions.md</code></div>
+                            <div class="setup-line"><span class="k">Path-scoped</span><code>.github/instructions/*.instructions.md</code></div>
+                            <div class="setup-line"><span class="k">Generate</span><code>/init</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p><code>/init</code> scans the repo and drafts the instructions file for you to edit.</p></div>
+        </div>
+    </section>
+
+    <!-- 09 Prompt discipline -->
+    <section class="slide" data-screen-label="09 Prompt discipline" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">09</span></div>
+            <h2 class="h-lg topic-title">Prompt <span class="serif-em">discipline</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Specific prompts win. Say the constraints and expected output — then save the good ones as <code>/</code> commands.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/prompts/security-review.prompt.md</span><span class="c-cmt">---</span>
+description: REST API security review
+model: Claude Sonnet 4.6
+<span class="c-cmt">---</span>
+Review <span class="c-str">${file}</span> for authz gaps, injection,
+and hardcoded secrets. List findings by
+severity with a suggested fix.</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">Write it well</span><p>State language, constraints, and expected output. Add tests as success criteria. Never say "make it better".</p></div>
+                    <div class="side-block"><span class="field-label">Reuse it</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">File</span><code>.github/prompts/*.prompt.md</code></div>
+                            <div class="setup-line"><span class="k">Variables</span><code>${input:name}</code> · <code>${selection}</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Run <code>/security-review</code> on a route file — one command replays the whole checklist.</p></div>
+        </div>
+    </section>
+
+    <!-- 10 Models -->
+    <section class="slide" data-screen-label="10 Models" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">10</span></div>
+            <h2 class="h-lg topic-title">Choosing <span class="serif-em">models</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Switch models per task from the picker in the chat box (<code>⌥⌘.</code>). Different jobs want different models.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Reasoning</h4><p>Planning, debugging, tricky logic. Raise "thinking effort" for hard problems — it costs more credits.</p></div>
+                <div class="play-card"><h4>Fast</h4><p>Boilerplate, edits, quick questions. Cheap and low-latency.</p></div>
+                <div class="play-card"><h4>Auto</h4><p>Lets Copilot route each request to the best available model for the task.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Hover any response to see which model answered — and the credits it cost.</p></div>
+        </div>
+    </section>
+
+    <!-- 11 Custom agents -->
+    <section class="slide" data-screen-label="11 Custom agents" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">11</span></div>
+            <h2 class="h-lg topic-title">Custom <span class="serif-em">agents</span><span class="dot">.</span></h2>
+            <p class="topic-lead">A saved persona — instructions, the exact tools it may use, and a model — that you switch into.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/agents/security-reviewer.agent.md</span><span class="c-cmt">---</span>
+name: Security Reviewer
+tools: [<span class="c-str">'search'</span>, <span class="c-str">'read'</span>]   <span class="c-cmt"># read-only</span>
+model: Claude Sonnet 4.6
+<span class="c-cmt">---</span>
+Audit code against the OWASP Top 10.
+Report findings only — never edit files.</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">When to use</span><p>A role you reach for repeatedly and want to scope — e.g. a reviewer that can read but not write.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Any .md in</span><code>.github/agents/</code></div>
+                            <div class="setup-line"><span class="k">Setting</span><code>chat.agentFilesLocations</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Pick "Security Reviewer" from the agents dropdown — it can read the code but can't change it.</p></div>
+        </div>
+    </section>
+
+    <!-- 12 Agent skills -->
+    <section class="slide" data-screen-label="12 Agent skills" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Module 1 · Foundations</span><span class="page-num">12</span></div>
+            <h2 class="h-lg topic-title">Agent <span class="serif-em">skills</span><span class="dot">.</span></h2>
+            <p class="topic-lead">A folder Copilot loads on demand when a task matches — instructions plus the scripts and examples to do it.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/skills/webapp-testing/SKILL.md</span><span class="c-cmt">---</span>
+name: webapp-testing
+description: E2E-test a web page with
+  Playwright. Use when asked to test a
+  UI flow.
+<span class="c-cmt">---</span>
+Steps + bundled <span class="c-str">test-template.js</span> …</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">When to use</span><p>A reusable multi-step routine that ships with its own files — and should work across VS Code, the CLI, and the cloud agent.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Folder = name</span><code>.github/skills/&lt;name&gt;/SKILL.md</code></div>
+                            <div class="setup-line"><span class="k">Keep context clean</span><code>context: fork</code> (preview)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Ask "test the login page" → the skill runs its template and returns a pass/fail report.</p></div>
+        </div>
+    </section>
+
+    <!-- 13 MODULE 2 DIVIDER -->
+    <section class="slide" data-screen-label="13 Module 2" data-nav-theme="light">
+        <div class="slide-inner center" style="gap:14px;">
+            <p class="eyebrow">Module 02 · 115 min</p>
+            <h2 class="h-hero">Agentic <span class="serif-em">Patterns</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:700px;text-align:center;">Delegating work, orchestrating agents, and getting reliable results for less.</p>
+        </div>
+    </section>
+
+    <!-- 14 Agents vs skills -->
+    <section class="slide" data-screen-label="14 Agents vs skills" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">14</span></div>
+            <h2 class="h-lg topic-title">Agents vs. <span class="serif-em">skills</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Both customize Copilot — but they answer different questions.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Custom agent — the "who"</h4><p>A role with fixed tools and a model that you switch into. Persists for the session. Lives in <code>*.agent.md</code>.</p></div>
+                <div class="play-card"><h4>Agent skill — the "how"</h4><p>A procedure Copilot auto-loads when the task matches, bundling its own scripts. Lives in <code>SKILL.md</code>.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Rule of thumb</span><p>Need a persistent reviewer persona? <b>Agent.</b> Need a repeatable test routine any agent can call? <b>Skill.</b></p></div>
+        </div>
+    </section>
+
+    <!-- 15 Background agents -->
+    <section class="slide" data-screen-label="15 Background agents" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">15</span></div>
+            <h2 class="h-lg topic-title">Background <span class="serif-em">agents</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Delegate a task from VS Code, keep coding locally, and review the PR it opens — all tracked in the editor.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Delegate</h4><p>Describe the task in chat and send it off — it works on a branch and opens a PR.</p></div>
+                <div class="play-card"><h4>Keep working</h4><p>It runs remotely, so your editor stays free for local work.</p></div>
+                <div class="play-card"><h4>Track it</h4><p>Watch running sessions in the GitHub sidebar; open the PR or logs anytime.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Setup</span><p>Install <code>GitHub.vscode-pull-request-github</code>, then delegate from chat and get a PR link back.</p></div>
+        </div>
+    </section>
+
+    <!-- 16 Cloud agents -->
+    <section class="slide" data-screen-label="16 Cloud agents" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">16</span></div>
+            <h2 class="h-lg topic-title">Cloud <span class="serif-em">agents</span><span class="dot">.</span></h2>
+            <p class="topic-lead">An autonomous agent runs on GitHub Actions, works on a branch, and opens a pull request for review.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/workflows/copilot-setup-steps.yml</span>jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci   <span class="c-cmt"># deps ready first</span></div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">When to use</span><p>Well-scoped backlog work — bug fixes, test coverage, docs, dependency bumps, tech debt.</p></div>
+                    <div class="side-block"><span class="field-label">Trigger</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Kick off</span>Assign an issue to Copilot · <code>@copilot</code> on a PR</div>
+                            <div class="setup-line"><span class="k">Env prep</span><code>copilot-setup-steps.yml</code> on default branch</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Assign a "fix the flaky test" issue to Copilot → review its PR later.</p></div>
+        </div>
+    </section>
+
+    <!-- 17 Instruction layering -->
+    <section class="slide" data-screen-label="17 Instruction layering" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">17</span></div>
+            <h2 class="h-lg topic-title">Instruction <span class="serif-em">layering</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Stack rules by scope. The agent merges them all — <b>personal beats repository beats org</b> on conflicts.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/instructions/python.instructions.md</span><span class="c-cmt">---</span>
+applyTo: <span class="c-str">'**/*.py'</span>
+<span class="c-cmt">---</span>
+- Follow PEP 8; type-hint every signature.
+- Prefer dataclasses over raw dicts.</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">Precedence</span><p>Personal › Repository › Organization. All apply; the higher layer wins ties.</p></div>
+                    <div class="side-block"><span class="field-label">The layers</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Always-on</span><code>copilot-instructions.md</code> · <code>AGENTS.md</code></div>
+                            <div class="setup-line"><span class="k">Path-scoped</span><code>*.instructions.md</code> via <code>applyTo</code></div>
+                            <div class="setup-line"><span class="k">Per folder</span>nested <code>AGENTS.md</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Python files pick up the PEP 8 rules; your TypeScript files never see them.</p></div>
+        </div>
+    </section>
+
+    <!-- 18 Multi-agent patterns -->
+    <section class="slide" data-screen-label="18 Multi-agent patterns" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">18</span></div>
+            <h2 class="h-lg topic-title">Multi-agent <span class="serif-em">patterns</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Split big work across focused agents. Each returns only a summary — the coordinator stays clean.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.github/agents/feature-builder.agent.md</span><span class="c-cmt">---</span>
+name: Feature Builder
+tools: [<span class="c-str">'agent'</span>, <span class="c-str">'edit'</span>, <span class="c-str">'search'</span>]
+agents: [<span class="c-str">'Planner'</span>, <span class="c-str">'Implementer'</span>, <span class="c-str">'Reviewer'</span>]
+<span class="c-cmt">---</span>
+Planner → Implementer → Reviewer;
+loop back to Implementer on issues.</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">Patterns</span><p>Coordinator / worker · parallel reviewers (correctness, security, perf) · Plan → Implement → Review handoffs.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Route</span><code>agents:</code> lists allowed workers</div>
+                            <div class="setup-line"><span class="k">Nesting</span><code>chat.subagents.allowInvocationsFromSubagents</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>One reviewer fans out correctness / security / perf checks in parallel, then synthesizes.</p></div>
+        </div>
+    </section>
+
+    <!-- 19 Agent quality -->
+    <section class="slide" data-screen-label="19 Agent quality" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">19</span></div>
+            <h2 class="h-lg topic-title">Agent <span class="serif-em">quality</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Great results come from how you <b>set up the task</b> — not from a longer prompt.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Scope it tight</h4><p>One clear goal, acceptance criteria, and which files to touch. Treat an issue like a prompt.</p></div>
+                <div class="play-card"><h4>Give it a way to check</h4><p>Point at tests or expected output so it self-verifies — the highest-leverage move.</p></div>
+                <div class="play-card"><h4>Plan before code</h4><p>For anything non-trivial: get a plan, review it, then implement.</p></div>
+                <div class="play-card"><h4>Review the diff</h4><p>Read edge cases and secrets, run tests, rewind a checkpoint if it drifts.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>"Add a token-bucket rate limiter. Write tests: 10 req/s pass, reject the 11th, refill after 1s — then run them."</p></div>
+        </div>
+    </section>
+
+    <!-- 20 Token optimization -->
+    <section class="slide" data-screen-label="20 Token optimization" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">20</span></div>
+            <h2 class="h-lg topic-title">Token <span class="serif-em">optimization</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Keep the context window lean to cut cost, latency, and drift.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>New chat per task <code>⌘N</code></h4><p>Don't make the model re-read unrelated history every turn.</p></div>
+                <div class="play-card"><h4>Compact long sessions</h4><p><code>/compact focus on …</code> trims the transcript; auto-compaction kicks in near full.</p></div>
+                <div class="play-card"><h4>Exclude the noise</h4><p><code>search.exclude</code> build output — grep matches cost tokens even when a file is never opened.</p></div>
+                <div class="play-card"><h4>Right-size the model</h4><p>Cheap model for grunt work; plan first so you don't pay for thrown-away code.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Context bar at 80% → <code>/compact</code> → the window shrinks so the next turns stay fast and cheap.</p></div>
+        </div>
+    </section>
+
+    <!-- 21 Iteration loops -->
+    <section class="slide" data-screen-label="21 Iteration loops" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Module 2 · Agentic Patterns</span><span class="page-num">21</span></div>
+            <h2 class="h-lg topic-title">Iteration <span class="serif-em">loops</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Steer as it runs and rewind when it drifts — never start over.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Steer mid-run</h4><p>Send a follow-up while it's working to redirect — don't wait for a bad answer to finish.</p></div>
+                <div class="play-card"><h4>Rewind, don't repair</h4><p>Restore a checkpoint to a known-good state instead of chasing cascading errors.</p></div>
+                <div class="play-card"><h4>Edit &amp; re-run</h4><p>Editing a past request reverts everything after it, then resends.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>A 4-file change goes wrong on file 3 → <code>Restore Checkpoint</code> → add a constraint → resend. (Checkpoints undo file edits, not Git.)</p></div>
+        </div>
+    </section>
+
+    <!-- 22 MODULE 3 DIVIDER -->
+    <section class="slide" data-screen-label="22 Module 3" data-nav-theme="light">
+        <div class="slide-inner center" style="gap:14px;">
+            <p class="eyebrow">Module 03 · 90 min</p>
+            <h2 class="h-hero">Advanced <span class="serif-em">Topics</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:720px;text-align:center;">Extending Copilot, seeing inside it, and keeping autonomous work safe.</p>
+        </div>
+    </section>
+
+    <!-- 23 MCP -->
+    <section class="slide" data-screen-label="23 MCP" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">23</span></div>
+            <h2 class="h-lg topic-title">Model Context <span class="serif-em">Protocol</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Connect the agent to external tools and data — they show up as tools it can call in chat.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">.vscode/mcp.json</span>{
+  <span class="c-str">"servers"</span>: {
+    <span class="c-str">"github"</span>: { <span class="c-str">"type"</span>: <span class="c-str">"http"</span>,
+      <span class="c-str">"url"</span>: <span class="c-str">"https://api.githubcopilot.com/mcp"</span> },
+    <span class="c-str">"playwright"</span>: { <span class="c-str">"command"</span>: <span class="c-str">"npx"</span>,
+      <span class="c-str">"args"</span>: [<span class="c-str">"@playwright/mcp@latest"</span>] }
+  }
+}</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">When to use</span><p>Give the agent a database, a browser, or an internal API it can drive on your behalf.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Commit to share</span><code>.vscode/mcp.json</code> — key is <code>servers</code></div>
+                            <div class="setup-line"><span class="k">Add / trust</span><code>MCP: Add Server</code> · confirm on first run</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Add the Playwright server → "open the login page and screenshot it" works from chat.</p></div>
+        </div>
+    </section>
+
+    <!-- 24 APIs -->
+    <section class="slide" data-screen-label="24 APIs" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">24</span></div>
+            <h2 class="h-lg topic-title">Extension <span class="serif-em">APIs</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Build your own AI features into a VS Code extension when MCP can't reach deep enough.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">contributes a tool the agent can call</span><span class="c-cmt">// package.json</span>
+<span class="c-str">"languageModelTools"</span>: [
+  { <span class="c-str">"name"</span>: <span class="c-str">"query_database"</span>,
+    <span class="c-str">"canBeReferencedInPrompt"</span>: <span class="c-kw">true</span> }
+]
+
+<span class="c-cmt">// extension.ts</span>
+vscode.lm.<span class="c-kw">registerTool</span>(<span class="c-str">'query_database'</span>, impl)</div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">The three APIs</span><p>Language Model (<code>vscode.lm</code>) · Chat Participant (an <code>@</code> handler) · Language Model Tool (auto-invoked in agent mode).</p></div>
+                    <div class="side-block"><span class="field-label">When to use</span><p>You need deep editor integration and Marketplace distribution — not just a data connector.</p></div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>A tool that returns the live debug call stack — called automatically during agent mode.</p></div>
+        </div>
+    </section>
+
+    <!-- 25 Extensions -->
+    <section class="slide" data-screen-label="25 Extensions" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">25</span></div>
+            <h2 class="h-lg topic-title">Copilot <span class="serif-em">Extensions</span><span class="dot">.</span></h2>
+            <p class="topic-lead">GitHub Apps that add a chat participant across Copilot — now largely <b>superseded by MCP</b>.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>What they did</h4><p>Answer as a participant on github.com, VS Code, and Visual Studio, backed by your own service.</p></div>
+                <div class="play-card"><h4>The catch</h4><p>Built as a GitHub App — no in-repo config and no full VS Code API access.</p></div>
+                <div class="play-card"><h4>Reach for MCP</h4><p>For a new tool or data integration, an MCP server is simpler and portable across editors.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Rule of thumb</span><p>New integration? Build an <b>MCP server</b>, not a GitHub App extension.</p></div>
+        </div>
+    </section>
+
+    <!-- 26 Memory -->
+    <section class="slide" data-screen-label="26 Memory" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">26</span></div>
+            <h2 class="h-lg topic-title">Copilot <span class="serif-em">memory</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Copilot remembers your preferences and repo conventions so you stop re-explaining them.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Local memory</h4><p>Notes on your machine — <code>/memories/</code>, <code>/memories/repo/</code>, <code>/memories/session/</code>. On by default (preview); view with <code>Chat: Show Memory Files</code>.</p></div>
+                <div class="play-card"><h4>GitHub Memory</h4><p>Verified repo facts and your preferences, shared across the coding agent, code review, and CLI. Expire after 28 days unused.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>"Remember we use the repository pattern" → recalled in a fresh session next week.</p></div>
+        </div>
+    </section>
+
+    <!-- 27 Debugging & diagnostics -->
+    <section class="slide" data-screen-label="27 Debugging and diagnostics" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">27</span></div>
+            <h2 class="h-lg topic-title">Debugging &amp; <span class="serif-em">diagnostics</span><span class="dot">.</span></h2>
+            <p class="topic-lead">See exactly what the agent did — every prompt, tool call, and token.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Agent Debug Logs</h4><p>Every tool call, LLM request, and token count, in order. Enable <code>github.copilot.chat.agentDebugLog.enabled</code>.</p></div>
+                <div class="play-card"><h4><code>/troubleshoot</code></h4><p>Ask "how many tokens did I use?" or why a customization didn't load.</p></div>
+                <div class="play-card"><h4>Chat Debug View</h4><p>The raw system prompt, context, and tool payloads behind a response.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Instructions ignored? <code>/troubleshoot</code> lists every path it tried to load them from.</p></div>
+        </div>
+    </section>
+
+    <!-- 28 Agent architecture patterns -->
+    <section class="slide" data-screen-label="28 Agent architecture patterns" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">28</span></div>
+            <h2 class="h-lg topic-title">Agent architecture <span class="serif-em">patterns</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Structure complex work like a team: a coordinator delegating to focused workers.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Subagents isolate context</h4><p>A worker runs in a clean context and returns only its result — the coordinator stays focused.</p></div>
+                <div class="play-card"><h4>One role, one agent</h4><p>Read-only planner, edit-capable implementer, strict reviewer — each with its own tools and model.</p></div>
+                <div class="play-card"><h4>Keep chains shallow</h4><p>Deep agent chains multiply tokens and credits. Nesting is off by default.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Why</span><p>A research subagent can run 40 tool calls and hand back a 5-line summary — the coordinator never sees the noise. Nesting caps at depth 5.</p></div>
+        </div>
+    </section>
+
+    <!-- 29 Off-ramp design -->
+    <section class="slide" data-screen-label="29 Off-ramp design" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">29</span></div>
+            <h2 class="h-lg topic-title">Off-ramp <span class="serif-em">design</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Decide when the agent pauses for you versus runs on its own.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">settings.json</span><span class="c-str">"chat.tools.terminal.autoApprove"</span>: {
+  <span class="c-str">"/^git (status|diff|log)\\b/"</span>: <span class="c-kw">true</span>,
+  <span class="c-str">"rm"</span>: <span class="c-kw">false</span>, <span class="c-str">"del"</span>: <span class="c-kw">false</span>
+},
+<span class="c-str">"chat.permissions.default"</span>: <span class="c-str">"default"</span></div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">Three levels</span><p>Default (asks per your rules) · Bypass (auto-approve tools) · Autopilot (auto-approve + auto-answer). Bypass and Autopilot override your deny rules.</p></div>
+                    <div class="side-block"><span class="field-label">Guardrails</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Under Default</span>deny rules stop <code>rm</code> / <code>del</code></div>
+                            <div class="setup-line"><span class="k">Isolate FS + net</span><code>chat.agent.sandbox.enabled</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Under Default Approvals: <code>git status</code> auto-runs, but every <code>rm</code> stops for a click.</p></div>
+        </div>
+    </section>
+
+    <!-- 30 Full-stack workflows -->
+    <section class="slide" data-screen-label="30 Full-stack workflows" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">30</span></div>
+            <h2 class="h-lg topic-title">Full-stack <span class="serif-em">workflows</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Describe an app in plain language; GitHub Spark builds and deploys it — full stack.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Prompt → app</h4><p>Data store, auth, and AI are wired in and deployed with one click.</p></div>
+                <div class="play-card"><h4>Iterate visually or in code</h4><p>Refine by prompt, or in a synced Codespace with Copilot.</p></div>
+                <div class="play-card"><h4>Sync to a repo</h4><p>Assign follow-up issues to the cloud agent for PRs.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Drop in a screenshot of a dashboard at <code>github.com/spark</code> → get a working, deployed app to refine.</p></div>
+        </div>
+    </section>
+
+    <!-- 31 Best practices -->
+    <section class="slide" data-screen-label="31 Best practices" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">31</span></div>
+            <h2 class="h-lg topic-title">Best <span class="serif-em">practices</span><span class="dot">.</span></h2>
+            <p class="topic-lead">The habits that make agents dependable — not luck.</p>
+            <div class="play-grid cols-2">
+                <div class="play-card"><h4>Plan → implement → review</h4><p>Separate thinking from coding; hand the approved plan to a cheaper model to build.</p></div>
+                <div class="play-card"><h4>Pick the right tool</h4><p>Inline to stay in flow, Ask to learn, Agent for multi-file, Plan to design.</p></div>
+                <div class="play-card"><h4>Verify everything</h4><p>Read the diff, run tests, and watch for secrets before you accept.</p></div>
+                <div class="play-card"><h4>Keep humans on risk</h4><p>Ambiguous, security, or production-critical work stays with you.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Run the Plan agent, approve the plan, then let Agent implement it on a fast model.</p></div>
+        </div>
+    </section>
+
+    <!-- 32 THANK YOU -->
+    <section class="slide" data-screen-label="32 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 32</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    deck.style.width = (total * 100) + 'vw';
+
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
