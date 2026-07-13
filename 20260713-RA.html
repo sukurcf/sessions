@@ -305,7 +305,7 @@
                 </div>
                 <div class="feature-card agenda-card">
                     <h3>Module 3 · Advanced Topics</h3>
-                    <span class="dur">90 min · 9 topics</span>
+                    <span class="dur">90 min · 8 topics</span>
                     <ul>
                         <li>MCP</li>
                         <li>APIs</li>
@@ -314,7 +314,6 @@
                         <li>Debugging &amp; diagnostics</li>
                         <li>Agent architecture patterns</li>
                         <li>Off-ramp design</li>
-                        <li>Full-stack workflows</li>
                         <li>Best practices</li>
                     </ul>
                 </div>
@@ -725,148 +724,147 @@ loop back to Implementer on issues.</div>
         </div>
     </section>
 
-    <!-- 24 APIs -->
-    <section class="slide" data-screen-label="24 APIs" data-nav-theme="light">
+    <!-- 24 Custom MCP server -->
+    <section class="slide" data-screen-label="24 Custom MCP server" data-nav-theme="light">
         <div class="slide-inner topic-inner">
             <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">24</span></div>
-            <h2 class="h-lg topic-title">Extension <span class="serif-em">APIs</span><span class="dot">.</span></h2>
-            <p class="topic-lead">Build your own AI features into a VS Code extension when MCP can't reach deep enough.</p>
+            <h2 class="h-lg topic-title">Custom MCP <span class="serif-em">server</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Use the <b>Python MCP SDK</b> with FastMCP to expose safe actions, prompt templates, and readable data to Copilot.</p>
             <div class="build">
-                <div class="code-panel"><span class="cap">contributes a tool the agent can call</span><span class="c-cmt">// package.json</span>
-<span class="c-str">"languageModelTools"</span>: [
-  { <span class="c-str">"name"</span>: <span class="c-str">"query_database"</span>,
-    <span class="c-str">"canBeReferencedInPrompt"</span>: <span class="c-kw">true</span> }
-]
+                <div class="code-panel"><span class="cap">server.py · pip install "mcp[cli]"</span>from pathlib import Path
+from mcp.server.fastmcp import FastMCP
 
-<span class="c-cmt">// extension.ts</span>
-vscode.lm.<span class="c-kw">registerTool</span>(<span class="c-str">'query_database'</span>, impl)</div>
+mcp = FastMCP(<span class="c-str">"team-context"</span>)
+
+@mcp.tool()
+def repo_policy(topic: str) -> str:
+    return f<span class="c-str">"{topic}: write tests before merge."</span>
+
+@mcp.prompt()
+def review_prompt(file: str) -> str:
+    return f<span class="c-str">"Review {file} for risk and tests."</span>
+
+@mcp.resource(<span class="c-str">"repo://standards"</span>)
+def standards() -> str:
+    return Path(<span class="c-str">"STANDARDS.md"</span>).read_text()
+
+if __name__ == <span class="c-str">"__main__"</span>:
+    mcp.run()</div>
                 <div class="build-side">
-                    <div class="side-block"><span class="field-label">The three APIs</span><p>Language Model (<code>vscode.lm</code>) · Chat Participant (an <code>@</code> handler) · Language Model Tool (auto-invoked in agent mode).</p></div>
-                    <div class="side-block"><span class="field-label">When to use</span><p>You need deep editor integration and Marketplace distribution — not just a data connector.</p></div>
-                </div>
-            </div>
-            <div class="demo"><span class="tag">Demo</span><p>A tool that returns the live debug call stack — called automatically during agent mode.</p></div>
-        </div>
-    </section>
-
-    <!-- 25 Extensions -->
-    <section class="slide" data-screen-label="25 Extensions" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">25</span></div>
-            <h2 class="h-lg topic-title">Copilot <span class="serif-em">Extensions</span><span class="dot">.</span></h2>
-            <p class="topic-lead">GitHub Apps that add a chat participant across Copilot — now largely <b>superseded by MCP</b>.</p>
-            <div class="play-grid cols-3">
-                <div class="play-card"><h4>What they did</h4><p>Answer as a participant on github.com, VS Code, and Visual Studio, backed by your own service.</p></div>
-                <div class="play-card"><h4>The catch</h4><p>Built as a GitHub App — no in-repo config and no full VS Code API access.</p></div>
-                <div class="play-card"><h4>Reach for MCP</h4><p>For a new tool or data integration, an MCP server is simpler and portable across editors.</p></div>
-            </div>
-            <div class="demo"><span class="tag">Rule of thumb</span><p>New integration? Build an <b>MCP server</b>, not a GitHub App extension.</p></div>
-        </div>
-    </section>
-
-    <!-- 26 Memory -->
-    <section class="slide" data-screen-label="26 Memory" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">26</span></div>
-            <h2 class="h-lg topic-title">Copilot <span class="serif-em">memory</span><span class="dot">.</span></h2>
-            <p class="topic-lead">Copilot remembers your preferences and repo conventions so you stop re-explaining them.</p>
-            <div class="play-grid cols-2">
-                <div class="play-card"><h4>Local memory</h4><p>Notes on your machine — <code>/memories/</code>, <code>/memories/repo/</code>, <code>/memories/session/</code>. On by default (preview); view with <code>Chat: Show Memory Files</code>.</p></div>
-                <div class="play-card"><h4>GitHub Memory</h4><p>Verified repo facts and your preferences, shared across the coding agent, code review, and CLI. Expire after 28 days unused.</p></div>
-            </div>
-            <div class="demo"><span class="tag">Demo</span><p>"Remember we use the repository pattern" → recalled in a fresh session next week.</p></div>
-        </div>
-    </section>
-
-    <!-- 27 Debugging & diagnostics -->
-    <section class="slide" data-screen-label="27 Debugging and diagnostics" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">27</span></div>
-            <h2 class="h-lg topic-title">Debugging &amp; <span class="serif-em">diagnostics</span><span class="dot">.</span></h2>
-            <p class="topic-lead">See exactly what the agent did — every prompt, tool call, and token.</p>
-            <div class="play-grid cols-3">
-                <div class="play-card"><h4>Agent Debug Logs</h4><p>Every tool call, LLM request, and token count, in order. Enable <code>github.copilot.chat.agentDebugLog.enabled</code>.</p></div>
-                <div class="play-card"><h4><code>/troubleshoot</code></h4><p>Ask "how many tokens did I use?" or why a customization didn't load.</p></div>
-                <div class="play-card"><h4>Chat Debug View</h4><p>The raw system prompt, context, and tool payloads behind a response.</p></div>
-            </div>
-            <div class="demo"><span class="tag">Demo</span><p>Instructions ignored? <code>/troubleshoot</code> lists every path it tried to load them from.</p></div>
-        </div>
-    </section>
-
-    <!-- 28 Agent architecture patterns -->
-    <section class="slide" data-screen-label="28 Agent architecture patterns" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">28</span></div>
-            <h2 class="h-lg topic-title">Agent architecture <span class="serif-em">patterns</span><span class="dot">.</span></h2>
-            <p class="topic-lead">Structure complex work like a team: a coordinator delegating to focused workers.</p>
-            <div class="play-grid cols-3">
-                <div class="play-card"><h4>Subagents isolate context</h4><p>A worker runs in a clean context and returns only its result — the coordinator stays focused.</p></div>
-                <div class="play-card"><h4>One role, one agent</h4><p>Read-only planner, edit-capable implementer, strict reviewer — each with its own tools and model.</p></div>
-                <div class="play-card"><h4>Keep chains shallow</h4><p>Deep agent chains multiply tokens and credits. Nesting is off by default.</p></div>
-            </div>
-            <div class="demo"><span class="tag">Why</span><p>A research subagent can run 40 tool calls and hand back a 5-line summary — the coordinator never sees the noise. Nesting caps at depth 5.</p></div>
-        </div>
-    </section>
-
-    <!-- 29 Off-ramp design -->
-    <section class="slide" data-screen-label="29 Off-ramp design" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">29</span></div>
-            <h2 class="h-lg topic-title">Off-ramp <span class="serif-em">design</span><span class="dot">.</span></h2>
-            <p class="topic-lead">Decide when the agent pauses for you versus runs on its own.</p>
-            <div class="build">
-                <div class="code-panel"><span class="cap">settings.json</span><span class="c-str">"chat.tools.terminal.autoApprove"</span>: {
-  <span class="c-str">"/^git (status|diff|log)\\b/"</span>: <span class="c-kw">true</span>,
-  <span class="c-str">"rm"</span>: <span class="c-kw">false</span>, <span class="c-str">"del"</span>: <span class="c-kw">false</span>
-},
-<span class="c-str">"chat.permissions.default"</span>: <span class="c-str">"default"</span></div>
-                <div class="build-side">
-                    <div class="side-block"><span class="field-label">Three levels</span><p>Default (asks per your rules) · Bypass (auto-approve tools) · Autopilot (auto-approve + auto-answer). Bypass and Autopilot override your deny rules.</p></div>
-                    <div class="side-block"><span class="field-label">Guardrails</span>
+                    <div class="side-block"><span class="field-label">Primitives</span><p><b>Tools</b> are callable actions. <b>Prompts</b> are reusable templates. <b>Resources</b> are URI-addressable data the client can read into context.</p></div>
+                    <div class="side-block"><span class="field-label">Setup</span>
                         <div class="setup">
-                            <div class="setup-line"><span class="k">Under Default</span>deny rules stop <code>rm</code> / <code>del</code></div>
-                            <div class="setup-line"><span class="k">Isolate FS + net</span><code>chat.agent.sandbox.enabled</code></div>
+                            <div class="setup-line"><span class="k">Library</span><code>mcp.server.fastmcp.FastMCP</code></div>
+                            <div class="setup-line"><span class="k">Run locally</span><code>mcp dev server.py</code> or add to <code>.vscode/mcp.json</code></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="demo"><span class="tag">Demo</span><p>Under Default Approvals: <code>git status</code> auto-runs, but every <code>rm</code> stops for a click.</p></div>
+            <div class="demo"><span class="tag">Demo</span><p>Add the server, then ask Copilot to call <code>repo_policy</code> or read <code>repo://standards</code>.</p></div>
         </div>
     </section>
 
-    <!-- 30 Full-stack workflows -->
-    <section class="slide" data-screen-label="30 Full-stack workflows" data-nav-theme="light">
+    <!-- 25 Memory -->
+    <section class="slide" data-screen-label="25 Memory" data-nav-theme="light">
         <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">30</span></div>
-            <h2 class="h-lg topic-title">Full-stack <span class="serif-em">workflows</span><span class="dot">.</span></h2>
-            <p class="topic-lead">Describe an app in plain language; GitHub Spark builds and deploys it — full stack.</p>
-            <div class="play-grid cols-3">
-                <div class="play-card"><h4>Prompt → app</h4><p>Data store, auth, and AI are wired in and deployed with one click.</p></div>
-                <div class="play-card"><h4>Iterate visually or in code</h4><p>Refine by prompt, or in a synced Codespace with Copilot.</p></div>
-                <div class="play-card"><h4>Sync to a repo</h4><p>Assign follow-up issues to the cloud agent for PRs.</p></div>
-            </div>
-            <div class="demo"><span class="tag">Demo</span><p>Drop in a screenshot of a dashboard at <code>github.com/spark</code> → get a working, deployed app to refine.</p></div>
-        </div>
-    </section>
-
-    <!-- 31 Best practices -->
-    <section class="slide" data-screen-label="31 Best practices" data-nav-theme="light">
-        <div class="slide-inner topic-inner">
-            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">31</span></div>
-            <h2 class="h-lg topic-title">Best <span class="serif-em">practices</span><span class="dot">.</span></h2>
-            <p class="topic-lead">The habits that make agents dependable — not luck.</p>
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">25</span></div>
+            <h2 class="h-lg topic-title">Copilot <span class="serif-em">memory</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Instructions tell Copilot <b>how to behave</b>; memory recalls durable facts you would otherwise repeat.</p>
             <div class="play-grid cols-2">
-                <div class="play-card"><h4>Plan → implement → review</h4><p>Separate thinking from coding; hand the approved plan to a cheaper model to build.</p></div>
-                <div class="play-card"><h4>Pick the right tool</h4><p>Inline to stay in flow, Ask to learn, Agent for multi-file, Plan to design.</p></div>
-                <div class="play-card"><h4>Verify everything</h4><p>Read the diff, run tests, and watch for secrets before you accept.</p></div>
-                <div class="play-card"><h4>Keep humans on risk</h4><p>Ambiguous, security, or production-critical work stays with you.</p></div>
+                <div class="play-card"><h4>Instructions</h4><p>Authored policy: <code>.github/copilot-instructions.md</code>, <code>*.instructions.md</code>, and <code>AGENTS.md</code>. Use for rules, style, tests, and team conventions.</p></div>
+                <div class="play-card"><h4>Memory files</h4><p>Learned recall: <code>/memories/</code>, <code>/memories/repo/</code>, and <code>/memories/session/</code>. Use for preferences, repo discoveries, and current task state.</p></div>
+                <div class="play-card"><h4>The split</h4><p>Instructions are source-controlled guidance. Memory is personal or local context that can be updated as the agent learns.</p></div>
+                <div class="play-card"><h4>Keep it verifiable</h4><p>Store short facts, commands, and conventions. Remove memories that become wrong or stale.</p></div>
             </div>
-            <div class="demo"><span class="tag">Demo</span><p>Run the Plan agent, approve the plan, then let Agent implement it on a fast model.</p></div>
+            <div class="demo"><span class="tag">Example</span><p>"Always validate API input with Zod" belongs in instructions; "this repo calls services repositories" belongs in memory.</p></div>
         </div>
     </section>
 
-    <!-- 32 THANK YOU -->
-    <section class="slide" data-screen-label="32 Thank you" data-nav-theme="light">
+    <!-- 26 Debugging & diagnostics -->
+    <section class="slide" data-screen-label="26 Debugging and diagnostics" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">26</span></div>
+            <h2 class="h-lg topic-title">Debugging &amp; <span class="serif-em">diagnostics</span><span class="dot">.</span></h2>
+            <p class="topic-lead">When the agent behaves strangely, inspect the request path instead of guessing.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Logs</h4><p>Chronological LLM requests, tool calls, context discovery, errors, durations, and token usage. Enable <code>github.copilot.chat.agentDebugLog.enabled</code>.</p></div>
+                <div class="play-card"><h4>Flow Chart</h4><p>Visualize parent agents, subagents, tool calls, retries, failures, and handoffs so you can see where the chain changed direction.</p></div>
+                <div class="play-card"><h4>Cache Explorer</h4><p>Compare cache hit/miss percentages, prompt signatures, request paths, and the divergence point between similar turns.</p></div>
+                <div class="play-card"><h4>Context window</h4><p>Inspect selected files, prompt payloads, model choice, tokens in/out, and remaining context window budget.</p></div>
+                <div class="play-card"><h4>Chat Debug View</h4><p>Review raw prompts, tool payloads, response metadata, and feature-flagged diagnostic views when available.</p></div>
+                <div class="play-card"><h4><code>/troubleshoot</code></h4><p>Ask why instructions, skills, or tools did not load, and correlate the answer with the debug logs.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Cache miss spike? Check the prompt signature and volatile context before blaming the model.</p></div>
+        </div>
+    </section>
+
+    <!-- 27 Agent architecture patterns -->
+    <section class="slide" data-screen-label="27 Agent architecture patterns" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">27</span></div>
+            <h2 class="h-lg topic-title">Agent architecture <span class="serif-em">patterns</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Design agent work like a small system: execution order, focused roles, visibility, and clean handoffs.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>Sequential</h4><p>Use when each step depends on the last: investigate → implement → validate → review.</p></div>
+                <div class="play-card"><h4>Parallel</h4><p>Use for independent work: one agent researches APIs, one audits tests, one reviews security.</p></div>
+                <div class="play-card"><h4>Coordinator</h4><p>The main agent owns the goal and delegates narrow tasks to subagents with isolated context and limited tools.</p></div>
+                <div class="play-card"><h4>Multiagent</h4><p>Compose planner, builder, reviewer, and domain specialists. Keep nesting shallow to control tokens and latency.</p></div>
+                <div class="play-card"><h4>View execution</h4><p>Use Logs and Flow Chart to inspect starts, stops, retries, tool calls, failures, and subagent summaries.</p></div>
+                <div class="play-card"><h4>Handoffs</h4><p>Return objective, files touched, validation run, unresolved risks, and the next recommended action.</p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Run research and test-audit subagents in parallel, then hand both summaries to one implementer.</p></div>
+        </div>
+    </section>
+
+    <!-- 28 Off-ramp design -->
+    <section class="slide" data-screen-label="28 Off-ramp design" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">28</span></div>
+            <h2 class="h-lg topic-title">Off-ramp <span class="serif-em">design</span><span class="dot">.</span></h2>
+            <p class="topic-lead">Decide where autonomy stops: approvals control tool use, and Copilot / agent lifecycle hooks enforce policy at key moments.</p>
+            <div class="build">
+                <div class="code-panel"><span class="cap">copilot / agent lifecycle hooks</span>SessionStart      <span class="c-cmt"># load policy + memory</span>
+UserPromptSubmit <span class="c-cmt"># classify risk</span>
+PreToolUse        <span class="c-cmt"># allow / deny / ask</span>
+PostToolUse       <span class="c-cmt"># log + verify result</span>
+Notification      <span class="c-cmt"># CLI only: route attention</span>
+Stop              <span class="c-cmt"># write handoff notes</span>
+SubagentStop      <span class="c-cmt"># summarize worker run</span>
+PreCompact        <span class="c-cmt"># preserve state</span></div>
+                <div class="build-side">
+                    <div class="side-block"><span class="field-label">Approval levels</span><p>Default asks according to rules. Bypass auto-approves tools. Autopilot auto-approves, auto-answers, and keeps going when failure is cheap.</p></div>
+                    <div class="side-block"><span class="field-label">Guardrails</span>
+                        <div class="setup">
+                            <div class="setup-line"><span class="k">Danger zones</span>write/delete commands, secrets, prod paths, network calls</div>
+                            <div class="setup-line"><span class="k">Client note</span><code>Notification</code> is CLI-only; VS Code users rely on approvals and logs</div>
+                            <div class="setup-line"><span class="k">Policy point</span><code>PreToolUse</code> blocks or escalates before damage happens</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Default for shared repos. Bypass in disposable worktrees. Autopilot only when rollback is easy.</p></div>
+        </div>
+    </section>
+
+    <!-- 29 Best practices -->
+    <section class="slide" data-screen-label="29 Best practices" data-nav-theme="light">
+        <div class="slide-inner topic-inner">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Module 3 · Advanced Topics</span><span class="page-num">29</span></div>
+            <h2 class="h-lg topic-title">Best <span class="serif-em">practices</span><span class="dot">.</span></h2>
+            <p class="topic-lead">The strongest Copilot workflows combine clear context, lean tooling, and visible verification.</p>
+            <div class="play-grid cols-3">
+                <div class="play-card"><h4>graphify</h4><p>Turn code, docs, and architecture into a knowledge graph before large refactors, onboarding, or architecture review.<br><a href="https://github.com/safishamsi/graphify" target="_blank" rel="noopener"><code>github.com/safishamsi/graphify</code></a></p></div>
+                <div class="play-card"><h4>rtk</h4><p>Run noisy shell commands through <code>rtk</code> to compress output while preserving failures and important lines.<br><a href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener"><code>github.com/rtk-ai/rtk</code></a></p></div>
+                <div class="play-card"><h4>caveman</h4><p>Use compressed agent communication when context is tight or a long session needs fewer tokens.<br><a href="https://github.com/JuliusBrussee/caveman-code" target="_blank" rel="noopener"><code>github.com/JuliusBrussee/caveman-code</code></a></p></div>
+                <div class="play-card"><h4>AI Engineering Fluency</h4><p>A VS Code extension for token usage, cost estimates, diagnostics, and Copilot fluency insights.<br><a href="https://marketplace.visualstudio.com/items?itemName=RobBos.ai-engineering-fluency" target="_blank" rel="noopener"><code>marketplace.visualstudio.com/.../RobBos.ai-engineering-fluency</code></a></p></div>
+                <div class="play-card"><h4>Token resources</h4><p><a href="https://sukurcf.github.io/sessions/Token-Optimization-2.html" target="_blank" rel="noopener">Token Optimization 2</a><br><a href="https://sukurcf.github.io/sessions/token-optimization-best-practises/detailed/index.html#/playbook" target="_blank" rel="noopener">Optimization playbook</a><br><a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">Copilot cheatsheet</a></p></div>
+            </div>
+            <div class="demo"><span class="tag">Demo</span><p>Graph the system, run compressed commands, inspect diagnostics, and keep the cheatsheet open while practicing.</p></div>
+        </div>
+    </section>
+
+    <!-- 30 THANK YOU -->
+    <section class="slide" data-screen-label="30 Thank you" data-nav-theme="light">
         <div class="slide-inner center">
             <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
             <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
@@ -887,7 +885,7 @@ vscode.lm.<span class="c-kw">registerTool</span>(<span class="c-str">'query_data
 </div><!-- .presentation -->
 
 <div id="nav"></div>
-<div class="slide-counter" id="slideCounter">01 / 32</div>
+<div class="slide-counter" id="slideCounter">01 / 30</div>
 <div id="hint">← / → · esc · swipe</div>
 <div class="deck-progress"><div class="bar"></div></div>
 
