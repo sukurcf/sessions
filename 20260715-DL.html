@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Context Protocol — The USB-C for AI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            /* Semantic aliases */
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        /* Paper noise texture */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+
+        /* Cover variant */
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            position: relative; z-index: 1;
+        }
+
+        /* Dark slide variant */
+        .slide-dark { background: var(--ink); color: var(--paper); }
+        .slide-dark .lead { color: var(--paper-dark); }
+        .slide-dark .meta { color: var(--ink-faint); }
+        .slide-dark .pt {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .eyebrow { color: var(--coral); }
+
+        /* Coral slide variant */
+        .slide-coral { background: var(--coral); color: var(--ink); }
+        .slide-coral .lead { color: rgba(21,20,15,0.7); }
+        .slide-coral .pt {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 28px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+        .slide-dark .sec-rule { border-top-color: rgba(239,231,210,0.12); }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 20px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card .card-icon {
+            width: 36px; height: 36px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img {
+            width: 36px; height: 36px; object-fit: contain;
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .slide-dark .feature-card {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .feature-card p { color: var(--paper-dark); }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(42px, 5vw, 66px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Plan pill ── */
+        .plan-pill {
+            display: inline-block;
+            padding: 4px 12px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .pill-free { background: var(--olive); color: var(--paper); }
+        .pill-pro { background: var(--coral); color: #fff; }
+        .pill-biz { background: var(--ink); color: var(--paper); }
+        .pill-ent { background: var(--mustard); color: var(--ink); }
+
+        /* ── Keyboard shortcut ── */
+        kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--ink-soft);
+        }
+        .slide-dark kbd {
+            background: rgba(239,231,210,0.1);
+            border-color: rgba(239,231,210,0.15);
+            color: var(--paper-dark);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 40px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 10px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 22px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a {
+            display: grid; place-items: center;
+            transition: transform 0.15s ease;
+        }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img {
+            width: 130px; height: 130px; border-radius: 14px;
+            display: block;
+        }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Decorative elements ── */
+        .corner-bracket {
+            position: absolute; width: 22px; height: 22px;
+            border-color: var(--ink-faint); border-style: solid;
+            border-width: 0; opacity: 0.3;
+        }
+        .corner-bracket.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+        .corner-bracket.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+        .corner-bracket.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+        .corner-bracket.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+
+        /* ── MCP deck helpers ── */
+        .card-icon svg { width: 34px; height: 34px; display: block; }
+        .ctrl-pill {
+            display: inline-block; vertical-align: middle;
+            margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+            background: var(--paper-dark); color: var(--ink-mute);
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
+        }
+        code.chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--olive);
+            background: var(--paper-dark);
+            padding: 2px 6px; border-radius: 5px;
+        }
+        .node-pill {
+            display: inline-block; padding: 3px 10px; border-radius: 999px;
+            background: var(--paper-dark);
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600; color: var(--ink-soft);
+        }
+        .node-pill.on { background: var(--coral); color: #fff; }
+        .flow-arrow {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--coral); font-size: 24px; font-weight: 700;
+            flex: 0 0 auto; line-height: 1;
+        }
+        .flow-arrow span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 0.04em;
+            color: var(--ink-faint); margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════════════════════════════════════
+         01  TITLE
+         ════════════════════════════════════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:20px;">
+            <svg width="230" height="210" viewBox="0 0 260 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <g stroke="#ed6f5c" stroke-width="3" stroke-linecap="round">
+                    <line x1="130" y1="120" x2="48" y2="52"/>
+                    <line x1="130" y1="120" x2="212" y2="52"/>
+                    <line x1="130" y1="120" x2="48" y2="188"/>
+                    <line x1="130" y1="120" x2="212" y2="188"/>
+                </g>
+                <circle cx="48" cy="52" r="17" fill="#15140f"/>
+                <circle cx="212" cy="52" r="17" fill="#15140f"/>
+                <circle cx="48" cy="188" r="17" fill="#15140f"/>
+                <circle cx="212" cy="188" r="17" fill="#15140f"/>
+                <circle cx="130" cy="120" r="34" fill="#ed6f5c"/>
+                <text x="130" y="121" text-anchor="middle" dominant-baseline="central" font-family="'Inter Tight',sans-serif" font-weight="800" font-size="21" fill="#ffffff">MCP</text>
+            </svg>
+            <h1 class="h-hero" style="margin-top:4px;">Model Context <span class="serif-em">Protocol</span><span class="dot">.</span></h1>
+            <p class="mono" style="letter-spacing:0.22em;">AN OPEN STANDARD FOR CONNECTING AI TO THE WORLD</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         02  COVER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:16px;">Model Context Protocol · 2026</p>
+            <h1 class="h-hero" style="max-width:840px;">
+                One protocol to <span class="serif-em">connect</span> them all<span class="dot">.</span>
+            </h1>
+            <p class="lead" style="margin-top:20px;max-width:620px;">
+                MCP is an open standard that lets any AI application talk to any tool or
+                data source through a single, universal interface — no more one-off integrations.
+            </p>
+            <p class="mono" style="margin-top:32px;">modelcontextprotocol.io · spec.modelcontextprotocol.io</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         03  AGENDA
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="03 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Agenda</span>
+                <span class="page-num">03</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:28px;">What we'll <span class="serif-em">cover</span><span class="dot">.</span></h2>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card">
+                    <h3>01 · What is MCP</h3>
+                    <p>The open standard, in plain terms</p>
+                </div>
+                <div class="feature-card">
+                    <h3>02 · The problem</h3>
+                    <p>Why M×N integrations don't scale</p>
+                </div>
+                <div class="feature-card">
+                    <h3>03 · Architecture</h3>
+                    <p>Hosts, clients, servers &amp; transport</p>
+                </div>
+                <div class="feature-card">
+                    <h3>04 · Primitives</h3>
+                    <p>The building blocks, explained</p>
+                </div>
+                <div class="feature-card">
+                    <h3>05 · Build &amp; run</h3>
+                    <p>Python SDK · running local &amp; remote</p>
+                </div>
+                <div class="feature-card">
+                    <h3>06 · Marketplace</h3>
+                    <p>Registry &amp; the growing ecosystem</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         04  WHAT IS MCP
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="04 What is MCP" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Overview</span>
+                <span class="page-num">04</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">What is <span class="serif-em">MCP</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:28px;max-width:680px;">
+                An open protocol — introduced by Anthropic in late 2024 — that standardizes how
+                applications feed context to large language models. If REST is how apps talk to
+                servers, MCP is how AI apps talk to tools and data.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
+                    </div>
+                    <h3>Open standard</h3>
+                    <p>Vendor-neutral and open-source, built on JSON-RPC 2.0. Any model, any language, any app.</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v5M15 2v5"/><path d="M6.5 7h11v3.5a5.5 5.5 0 0 1-11 0z"/><path d="M12 16v6"/></svg>
+                    </div>
+                    <h3>"USB-C for AI"</h3>
+                    <p>One universal port. Plug a model into files, APIs, and databases without custom glue code.</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>
+                    </div>
+                    <h3>Client–server</h3>
+                    <p>Apps run clients that connect to servers exposing capabilities over stdio or HTTP.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         05  THE PROBLEM
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="05 The problem" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">The problem it solves</span>
+                <span class="page-num">05</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:14px;">The <span class="serif-em">M×N</span> problem<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:680px;">
+                Before MCP, every AI app needed a bespoke connector for every tool.
+                <strong>M</strong> apps × <strong>N</strong> tools meant M×N integrations to build,
+                test, and maintain — a combinatorial mess.
+            </p>
+            <div class="grid-2" style="gap:20px;align-items:stretch;margin-bottom:18px;">
+                <div class="pt" style="padding:22px;">
+                    <p class="eyebrow" style="margin-bottom:8px;">Before MCP</p>
+                    <div class="stat-num" style="color:var(--coral);">M × N</div>
+                    <p style="font-size:13px;color:var(--ink-mute);margin-top:8px;">Every app re-implements a connector for every source. Duplicated effort, brittle, doesn't scale.</p>
+                </div>
+                <div class="pt" style="padding:22px;">
+                    <p class="eyebrow" style="margin-bottom:8px;">With MCP</p>
+                    <div class="stat-num" style="color:var(--olive);">M + N</div>
+                    <p style="font-size:13px;color:var(--ink-mute);margin-top:8px;">Build a server once — any client uses it. Build a client once — it works with every server.</p>
+                </div>
+            </div>
+            <div class="grid-3" style="gap:14px;">
+                <div class="feature-card"><h3>Interoperable</h3><p>Swap models or apps freely — the integration layer stays put.</p></div>
+                <div class="feature-card"><h3>Reusable</h3><p>Write an integration once; the whole ecosystem benefits.</p></div>
+                <div class="feature-card"><h3>Breaks silos</h3><p>Give models secure, structured access to data behind your walls.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         06  ARCHITECTURE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="06 Architecture" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Architecture</span>
+                <span class="page-num">06</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:14px;">How it fits <span class="serif-em">together</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:680px;">
+                A host application runs one or more clients. Each client keeps a dedicated 1:1
+                connection to a server that exposes capabilities. Everything speaks JSON-RPC 2.0.
+            </p>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:nowrap;">
+                <div class="pt" style="flex:1.3;padding:18px;">
+                    <p class="eyebrow" style="margin-bottom:8px;">Host application</p>
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;">Claude Desktop · VS Code · Cursor</h3>
+                    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                        <span class="node-pill">LLM</span>
+                        <span class="node-pill on">MCP Client</span>
+                        <span class="node-pill on">MCP Client</span>
+                    </div>
+                    <p style="font-size:12px;margin-top:10px;color:var(--ink-mute);">One client per connection.</p>
+                </div>
+                <div class="flow-arrow">→<span>JSON-RPC</span></div>
+                <div class="pt" style="flex:1;padding:18px;">
+                    <p class="eyebrow" style="margin-bottom:8px;">MCP Server</p>
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;">Exposes capabilities</h3>
+                    <p style="font-size:12px;margin-top:10px;color:var(--ink-mute);">Tools · Resources · Prompts</p>
+                </div>
+                <div class="flow-arrow">→<span>access</span></div>
+                <div class="pt" style="flex:1;padding:18px;">
+                    <p class="eyebrow" style="margin-bottom:8px;">Data &amp; systems</p>
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;">Files · DBs · APIs</h3>
+                    <p style="font-size:12px;margin-top:10px;color:var(--ink-mute);">Local or remote, behind your controls.</p>
+                </div>
+            </div>
+            <div class="grid-3" style="gap:14px;">
+                <div class="feature-card"><h3>Transports</h3><p><strong>stdio</strong> for local servers · <strong>Streamable HTTP</strong> for remote ones.</p></div>
+                <div class="feature-card"><h3>Messages</h3><p>All calls are <strong>JSON-RPC 2.0</strong> — requests, responses &amp; notifications.</p></div>
+                <div class="feature-card"><h3>Lifecycle</h3><p><strong>initialize</strong> → negotiate capabilities → operate → shut down.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         07  PRIMITIVES OVERVIEW
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="07 Primitives" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Primitives</span>
+                <span class="page-num">07</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">The building <span class="serif-em">blocks</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:700px;">
+                MCP is deliberately small. Servers expose three primitives; clients offer three
+                back. Each has a natural "controller" — who decides when it's used.
+            </p>
+            <p class="mono" style="margin-bottom:10px;color:var(--coral);">SERVER → CLIENT · EXPOSED TO THE MODEL</p>
+            <div class="grid-3" style="gap:16px;margin-bottom:18px;">
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.2 5.2L4 17v3h3l5.5-5.5a4 4 0 0 0 5.2-5.2l-2.4 2.4-2.3-.6-.6-2.3z"/></svg></div>
+                    <h3>Tools</h3>
+                    <p>Executable actions the model can call. <span style="color:var(--coral);font-weight:600;">Model-controlled.</span></p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></div>
+                    <h3>Resources</h3>
+                    <p>Read-only data loaded for context. <span style="color:var(--coral);font-weight:600;">App-controlled.</span></p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 12.5h5"/></svg></div>
+                    <h3>Prompts</h3>
+                    <p>Reusable templates &amp; workflows. <span style="color:var(--coral);font-weight:600;">User-controlled.</span></p>
+                </div>
+            </div>
+            <p class="mono" style="margin-bottom:10px;color:var(--coral);">CLIENT → SERVER · OFFERED BACK</p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.7 4.8L18.5 9.5l-4.8 1.7L12 16l-1.7-4.8L5.5 9.5l4.8-1.7z"/><path d="M18.5 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div>
+                    <h3>Sampling</h3>
+                    <p>Server asks the client's LLM to generate a completion.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.2 2.3c-.6.3-1 .8-1 1.5"/><path d="M11.8 15.5h.01"/></svg></div>
+                    <h3>Elicitation</h3>
+                    <p>Server requests extra input from the user mid-task.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h3.5l2 2.5H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+                    <h3>Roots</h3>
+                    <p>Client shares which files/URIs the server may access.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         08  PRIMITIVES EXPLAINED
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="08 Primitives explained" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Primitives · deep dive</span>
+                <span class="page-num">08</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Tools, resources &amp; <span class="serif-em">prompts</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:700px;">
+                The three server primitives map to a simple idea: <em>who</em> decides when each is used.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.2 5.2L4 17v3h3l5.5-5.5a4 4 0 0 0 5.2-5.2l-2.4 2.4-2.3-.6-.6-2.3z"/></svg></div>
+                    <h3>Tools <span class="ctrl-pill">model-controlled</span></h3>
+                    <p>Functions the model invokes to <strong>act</strong> or fetch live data — create an issue, run a query, send an email. Inputs are described with a JSON schema.</p>
+                    <code class="chip" style="margin-top:8px;display:inline-block;">create_issue(title, body)</code>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></div>
+                    <h3>Resources <span class="ctrl-pill">app-controlled</span></h3>
+                    <p>Read-only <strong>data</strong> the app loads into context — files, DB rows, API responses. Addressed by URI. Like a GET: no side effects, just information.</p>
+                    <code class="chip" style="margin-top:8px;display:inline-block;">file:///README.md</code>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 12.5h5"/></svg></div>
+                    <h3>Prompts <span class="ctrl-pill">user-controlled</span></h3>
+                    <p>Parameterized <strong>templates</strong> and workflows a user triggers — often surfaced as slash commands. Package best-practice instructions for reuse.</p>
+                    <code class="chip" style="margin-top:8px;display:inline-block;">/summarize-pr 1423</code>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Client primitives — sampling, elicitation &amp; roots — let servers ask the client for completions, input, or file access.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         09  BUILD A SERVER (PYTHON SDK)
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="09 Build a server" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Hands-on · Python SDK</span>
+                <span class="page-num">09</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Build a server · <span class="serif-em">Python</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:660px;">
+                The official Python SDK ships <code class="chip">FastMCP</code> — decorate functions and
+                you have a working server exposing all three primitives.
+            </p>
+            <div class="code-block" style="font-size:12.5px;line-height:1.7;max-width:600px;margin-bottom:16px;"><span class="code-cmt"># server.py — a minimal MCP server</span><br>
+<span class="code-kw">from</span> mcp.server.fastmcp <span class="code-kw">import</span> FastMCP<br>
+<br>
+mcp = FastMCP(<span class="code-str">"Demo"</span>)<br>
+<br>
+<span class="code-kw">@mcp.tool()</span><br>
+<span class="code-kw">def</span> add(a: int, b: int) -&gt; int:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">return</span> a + b<br>
+<br>
+<span class="code-kw">@mcp.resource(</span><span class="code-str">"greeting://{name}"</span><span class="code-kw">)</span><br>
+<span class="code-kw">def</span> greet(name: str) -&gt; str:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">return</span> <span class="code-str">f"Hello, {name}!"</span><br>
+<br>
+<span class="code-kw">@mcp.prompt()</span><br>
+<span class="code-kw">def</span> review(code: str) -&gt; str:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">return</span> <span class="code-str">f"Review this:\n\n{code}"</span><br>
+<br>
+<span class="code-kw">if</span> __name__ == <span class="code-str">"__main__"</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mcp.run()</div>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card"><h3>Run &amp; inspect</h3><p><code class="chip">mcp dev server.py</code> opens the MCP Inspector to call your tools live.</p></div>
+                <div class="feature-card"><h3>Connect it</h3><p><code class="chip">mcp install server.py</code> for Claude Desktop, or add it to VS Code's <code class="chip">.vscode/mcp.json</code>.</p></div>
+            </div>
+            <p class="mono" style="margin-top:14px;">pip install "mcp[cli]" · github.com/modelcontextprotocol/python-sdk</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         10  RUN ANYWHERE — LOCAL & REMOTE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="10 Run anywhere" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Hands-on · Run &amp; deploy</span>
+                <span class="page-num">10</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Run it · local or <span class="serif-em">remote</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:700px;">
+                The same server can run right beside your editor or as a shared service on the
+                network — only the transport changes.
+            </p>
+            <div class="grid-2" style="gap:20px;align-items:stretch;">
+                <div class="pt" style="padding:22px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20"/></svg>
+                        <p class="eyebrow" style="margin:0;">Local · stdio</p>
+                    </div>
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;">On your machine</h3>
+                    <div style="display:flex;flex-direction:column;gap:7px;">
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Client launches the server as a subprocess</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Talks over stdin/stdout — no ports, no network</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Secrets &amp; files stay on your device</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Ideal for filesystem, git &amp; personal dev tools</span></div>
+                    </div>
+                    <div class="code-block" style="font-size:11.5px;line-height:1.6;margin-top:14px;padding:12px 14px;"><span class="code-cmt">// .vscode/mcp.json</span><br>
+<span class="code-kw">"files"</span>: {<br>
+&nbsp;&nbsp;<span class="code-kw">"command"</span>: <span class="code-str">"python"</span>,<br>
+&nbsp;&nbsp;<span class="code-kw">"args"</span>: [<span class="code-str">"server.py"</span>]<br>
+}</div>
+                </div>
+                <div class="pt" style="padding:22px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-7.97 5.5 5.5 0 0 1 10.6-1.06A3.75 3.75 0 0 1 17 18z"/></svg>
+                        <p class="eyebrow" style="margin:0;">Remote · HTTP</p>
+                    </div>
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;">Anywhere on the network</h3>
+                    <div style="display:flex;flex-direction:column;gap:7px;">
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Reached by URL over Streamable HTTP</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Shared by many users &amp; teams at once</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Secured with OAuth 2.1 / bearer tokens</span></div>
+                        <div style="display:flex;gap:8px;font-size:13px;line-height:1.45;color:var(--ink-mute);"><span style="color:var(--coral);font-weight:700;">▸</span><span>Deploy to containers, serverless or PaaS</span></div>
+                    </div>
+                    <div class="code-block" style="font-size:11.5px;line-height:1.6;margin-top:14px;padding:12px 14px;"><span class="code-cmt">// .vscode/mcp.json</span><br>
+<span class="code-kw">"github"</span>: {<br>
+&nbsp;&nbsp;<span class="code-kw">"url"</span>: <span class="code-str">"https://mcp.example.com/mcp"</span><br>
+}</div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Transport negotiated at initialize · stdio for local · Streamable HTTP for remote (supersedes the older HTTP+SSE transport)</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         11  MARKETPLACE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="11 Marketplace" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VII.</span>
+                <span class="rule-meta">Marketplace &amp; ecosystem</span>
+                <span class="page-num">11</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Discover &amp; share <span class="serif-em">servers</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:680px;">
+                You rarely start from scratch. A fast-growing ecosystem of ready-made servers —
+                and an official registry to find them.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.2-4h13.6L20 9"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M4 9a2.5 2.5 0 0 0 4 0 2.5 2.5 0 0 0 4 0 2.5 2.5 0 0 0 4 0 2.5 2.5 0 0 0 4 0"/></svg></div>
+                    <h3>Official MCP Registry</h3>
+                    <p>A community catalog at <code class="chip">registry.modelcontextprotocol.io</code> — discover, publish &amp; version servers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="8" r="2.5"/><path d="M6 8.5v7"/><path d="M18 10.5a6 6 0 0 1-6 6H8.5"/></svg></div>
+                    <h3>Reference servers</h3>
+                    <p>Maintained examples — Filesystem, Git, Fetch, Memory — at github.com/modelcontextprotocol/servers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.5l-9-5-9 5 9 5z"/><path d="M3 8.5v7l9 5 9-5v-7"/><path d="M12 13.5v7"/></svg></div>
+                    <h3>Docker MCP Catalog</h3>
+                    <p>Containerized, signed servers you can run with one command via the Docker MCP Toolkit.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M6.5 6.5h.01M9 6.5h.01"/></svg></div>
+                    <h3>In your editor</h3>
+                    <p>VS Code &amp; Copilot, Cursor, and Claude let you browse and add servers in a click.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><path d="M10 21v-3h4v3"/></svg></div>
+                    <h3>Vendor servers</h3>
+                    <p>First-party servers from GitHub, Stripe, Sentry, Notion, Figma, Atlassian &amp; more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ed6f5c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.3 4.7 5.2.8-3.7 3.7.9 5.1L12 15.6 7.3 17.9l.9-5.1L4.5 9.1l5.2-.8z"/></svg></div>
+                    <h3>Awesome MCP</h3>
+                    <p>Community-curated lists round up thousands of open-source servers by category.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Always review permissions &amp; source before connecting a third-party server.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         12  THANK YOU
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="12 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Go build a server · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
+                         alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 12</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
