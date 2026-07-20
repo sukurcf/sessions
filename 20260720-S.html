@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot — How It Works &amp; What It Costs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            /* Semantic aliases */
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        /* Paper noise texture */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+
+        /* Cover variant */
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            position: relative; z-index: 1;
+        }
+
+        /* Safe zone: keep slide content clear of the fixed bottom nav/counter/social bar */
+        .slide-inner, .cover-inner {
+            padding-bottom: clamp(92px, 11vh, 122px);
+        }
+
+        /* Dark slide variant */
+        .slide-dark { background: var(--ink); color: var(--paper); }
+        .slide-dark .lead { color: var(--paper-dark); }
+        .slide-dark .meta { color: var(--ink-faint); }
+        .slide-dark .pt {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .eyebrow { color: var(--coral); }
+
+        /* Coral slide variant */
+        .slide-coral { background: var(--coral); color: var(--ink); }
+        .slide-coral .lead { color: rgba(21,20,15,0.7); }
+        .slide-coral .pt {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 28px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+        .slide-dark .sec-rule { border-top-color: rgba(239,231,210,0.12); }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 20px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card .card-icon {
+            width: 36px; height: 36px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img {
+            width: 36px; height: 36px; object-fit: contain;
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .slide-dark .feature-card {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .feature-card p { color: var(--paper-dark); }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(42px, 5vw, 66px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Plan pill ── */
+        .plan-pill {
+            display: inline-block;
+            padding: 4px 12px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .pill-free { background: var(--olive); color: var(--paper); }
+        .pill-pro { background: var(--coral); color: #fff; }
+        .pill-biz { background: var(--ink); color: var(--paper); }
+        .pill-ent { background: var(--mustard); color: var(--ink); }
+
+        /* ── Keyboard shortcut ── */
+        kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--ink-soft);
+        }
+        .slide-dark kbd {
+            background: rgba(239,231,210,0.1);
+            border-color: rgba(239,231,210,0.15);
+            color: var(--paper-dark);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 40px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 10px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 22px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a {
+            display: grid; place-items: center;
+            transition: transform 0.15s ease;
+        }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img {
+            width: 130px; height: 130px; border-radius: 14px;
+            display: block;
+        }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Decorative elements ── */
+        .corner-bracket {
+            position: absolute; width: 22px; height: 22px;
+            border-color: var(--ink-faint); border-style: solid;
+            border-width: 0; opacity: 0.3;
+        }
+        .corner-bracket.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+        .corner-bracket.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+        .corner-bracket.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+        .corner-bracket.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════════════════════════════════════
+         01  TITLE
+         ════════════════════════════════════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:24px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="240" height="240" style="display:block;" />
+            <h1 class="h-hero" style="margin-top:8px;">GitHub <span class="serif-em">Copilot</span><span class="dot">.</span></h1>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         02  COVER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:16px;">GitHub Copilot · 2026</p>
+            <h1 class="h-hero" style="max-width:800px;">
+                Your AI <span class="serif-em">pair programmer</span><span class="dot">.</span>
+            </h1>
+            <p class="lead" style="margin-top:20px;max-width:640px;">
+                From inline suggestions to autonomous agents — how Copilot works under the hood,
+                where it runs, how you extend it, and what it costs.
+            </p>
+            <p class="mono" style="margin-top:32px;">docs.github.com/copilot · code.visualstudio.com/docs/copilot</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         03  AGENDA
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="03 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Agenda</span>
+                <span class="page-num">03</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:28px;">What we'll <span class="serif-em">cover</span><span class="dot">.</span></h2>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card">
+                    <h3>01 · What is Copilot</h3>
+                    <p>Overview &amp; core capabilities</p>
+                </div>
+                <div class="feature-card">
+                    <h3>02 · Where it lives</h3>
+                    <p>IDEs, browser, mobile, CLI</p>
+                </div>
+                <div class="feature-card">
+                    <h3>03 · How it works</h3>
+                    <p>The request-processing pipeline</p>
+                </div>
+                <div class="feature-card">
+                    <h3>04 · Core features</h3>
+                    <p>Inline suggestions &amp; Agent mode</p>
+                </div>
+                <div class="feature-card">
+                    <h3>05 · Extensibility</h3>
+                    <p>MCP servers, custom agents, skills</p>
+                </div>
+                <div class="feature-card">
+                    <h3>06 · Plans &amp; billing</h3>
+                    <p>Pricing and AI credits</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         04  WHAT IS COPILOT
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="04 What is Copilot" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Overview</span>
+                <span class="page-num">04</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">What is GitHub <span class="serif-em">Copilot</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:28px;max-width:640px;">
+                An AI coding assistant built into the tools you already use — from inline autocomplete
+                to autonomous agents that plan, edit, test, and open pull requests.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <img src="https://img.icons8.com/?size=48&id=kTuxVYRKeKEY&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Code suggestions</h3>
+                    <p>Real-time inline completions as you type in your IDE</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <img src="https://img.icons8.com/?size=48&id=pIPl8tqh3igN&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Chat &amp; explain</h3>
+                    <p>Ask coding questions in IDE, GitHub.com, Mobile, Terminal</p>
+                </div>
+                <div class="feature-card" style="text-align:center;padding:24px 16px;">
+                    <div class="card-icon" style="margin:0 auto 12px;">
+                        <img src="https://img.icons8.com/?size=48&id=82789&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Autonomous agents</h3>
+                    <p>Plan, build, test, and open PRs — locally, in background, or cloud</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         05  WHERE COPILOT LIVES
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="05 Where Copilot lives" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Availability</span>
+                <span class="page-num">05</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Where Copilot <span class="serif-em">lives</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:640px;">
+                One assistant, everywhere you already work — editors, the browser, your phone, and the terminal.
+            </p>
+            <div class="grid-3" style="gap:14px;">
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=kTuxVYRKeKEY&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Code editors</h3>
+                    <p>VS Code, Visual Studio, Xcode, Eclipse, and Neovim.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=hwKgsZN5Is2H&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>JetBrains IDEs</h3>
+                    <p>IntelliJ IDEA, PyCharm, WebStorm, Rider, Android Studio, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=11214&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Browser</h3>
+                    <p>Copilot Chat, PR summaries, and code review on github.com.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=98061&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Mobile</h3>
+                    <p>The GitHub Mobile app, for iOS and Android.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=2969&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Command line</h3>
+                    <p>Copilot CLI (<code>gh copilot</code>) for terminal-first agent workflows.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=60022&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Beyond the IDE</h3>
+                    <p>GitHub Desktop, Windows Terminal (Canary), and the Copilot app for managing sessions.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Feature availability varies by plan · docs.github.com/en/copilot/get-started/features</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         06  HOW IT PROCESSES A REQUEST
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="06 How it works" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Architecture</span>
+                <span class="page-num">06</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">How a request gets <span class="serif-em">processed</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:640px;">
+                Every completion, chat reply, or agent action follows the same pipeline — from gathering
+                context to a safety-checked response.
+            </p>
+            <div class="grid-2" style="gap:16px;">
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=11214&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />1 · Context gathering
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Pulls in open files, workspace search, custom instructions, memory, and connected MCP servers.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=kTuxVYRKeKEY&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />2 · Proxy &amp; pre-model filters
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">The prompt and context are sent to Copilot's proxy service, which applies pre-model filters — responsible-AI and content-exclusion checks — before forwarding the request to the selected model.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=82789&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />3 · Model &amp; agent loop
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">The model replies directly, or — in agent mode — proposes a tool call, reads the result, and iterates.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=98061&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />4 · Post-model filters &amp; delivery
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Back through the proxy, post-model filters — duplicate-code detection and safety checks — run before the reply lands as ghost text, chat, a diff, or a PR.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Your code is never stored or used to train models, on any plan · docs.github.com/en/copilot/about-github-copilot</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         07  INLINE SUGGESTIONS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="07 Inline suggestions" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Assistive · Inline</span>
+                <span class="page-num">07</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Inline <span class="serif-em">suggestions</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:580px;">
+                Ghost text completions as you type — from single lines to full function bodies. Accept with <kbd>Tab</kbd>, accept word-by-word with <kbd>⌘→</kbd>.
+            </p>
+            <div class="grid-3" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=kTuxVYRKeKEY&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Ghost text</h3>
+                    <p>Dimmed code suggestions that appear at your cursor position. Works across all major languages.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=60688&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Next Edit Suggestions (NES)</h3>
+                    <p>Predicts your next edit location and content. Arrow in the gutter guides you — press <kbd>Tab</kbd> to navigate and accept.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=11214&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Context-aware</h3>
+                    <p>Looks at current file, open files, and project context to tailor suggestions to your codebase style.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         08  AGENT MODE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="08 Agent mode" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Agentic · IDE</span>
+                <span class="page-num">08</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Agent <span class="serif-em">mode</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:620px;">
+                Copilot works autonomously in your IDE — determining which files to edit, proposing code changes and terminal commands, iterating until the task is complete.
+            </p>
+            <div class="grid-2" style="gap:16px;">
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=82789&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />Multi-file edits
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Agent plans the approach, edits files across your project, runs commands, and self-corrects on errors.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=2969&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />Run anywhere
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Run locally, in background, or in the cloud. Hand off between agent types — context carries over.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=60688&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />Plan agent
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Break tasks into structured implementation plans before writing code. Hand off to an implementation agent.</p>
+                </div>
+                <div class="pt" style="padding:18px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;">
+                        <img src="https://img.icons8.com/?size=48&id=98061&format=png" alt="" width="24" height="24" style="vertical-align:middle;margin-right:6px;" />Sessions view
+                    </h3>
+                    <p style="font-size:13px;color:rgba(21,20,15,0.7);">Run multiple agent sessions in parallel. Monitor from the Sessions view — see status, switch, review changes.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">All plans include agent mode · Available in VS Code, JetBrains IDEs</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         09  COPILOT CLI
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="09 Copilot CLI" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VII.</span>
+                <span class="rule-meta">Agentic · CLI</span>
+                <span class="page-num">09</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Copilot <span class="serif-em">CLI</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:600px;">
+                Use Copilot directly in your terminal — interactively or as a one-shot prompt. It ships with the GitHub MCP server by default, understands your issues and PRs, and can open pull requests on your behalf.
+            </p>
+            <div class="code-block" style="max-width:580px;margin-bottom:20px;overflow:visible;flex-shrink:0;">
+                <span class="code-cmt"># Launch an interactive session in your project folder</span><br>
+                <span class="code-kw">copilot</span><br><br>
+                <span class="code-cmt"># Run one prompt non-interactively — e.g. in CI</span><br>
+                <span class="code-kw">copilot</span> -p <span class="code-str">"Add input validation"</span> \<br>
+                &nbsp;&nbsp;--allow-tool=<span class="code-str">'shell(git)'</span>
+            </div>
+            <div class="grid-2" style="gap:16px;">
+                <div class="feature-card">
+                    <h3>Modes</h3>
+                    <p>Ask/execute by default; press <kbd>Shift</kbd>+<kbd>Tab</kbd> for Plan mode, which drafts a structured plan before writing any code.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Cloud &amp; local sandboxes</h3>
+                    <p><code>copilot --cloud</code> starts an isolated, resumable cloud session; <code>/sandbox enable</code> restricts local file and network access — both in public preview.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">All plans · Install: npm install -g @github/copilot · docs.github.com/en/copilot/concepts/agents/about-copilot-cli</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         10  MCP SERVERS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="10 MCP servers" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">VIII.</span>
+                <span class="rule-meta">Extensibility · MCP</span>
+                <span class="page-num">10</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">MCP <span class="serif-em">servers</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:640px;">
+                The Model Context Protocol is an open standard that connects Copilot to external tools, data, and services — the same way across every AI client.
+            </p>
+            <div class="grid-4" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=60022&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Local servers</h3>
+                    <p>Run on your machine over stdio; only add servers from sources you trust.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=2969&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Remote / hosted servers</h3>
+                    <p>Run externally, typically authenticated with one-click OAuth or a token.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=88090&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Configuration</h3>
+                    <p>Add servers in <code>.vscode/mcp.json</code>, or install with one click from the Extensions view.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=82789&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Example servers</h3>
+                    <p>GitHub, Playwright (browser automation), Fetch (web pages), and Memory.</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Servers can also expose resources, prompts, and interactive MCP apps · modelcontextprotocol.io</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         11  CUSTOM AGENTS & AGENT SKILLS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="11 Custom agents and skills" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IX.</span>
+                <span class="rule-meta">Extensibility · Agents</span>
+                <span class="page-num">11</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Custom agents &amp; agent <span class="serif-em">skills</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:640px;">
+                Two ways to specialize Copilot beyond the built-in experience.
+            </p>
+            <div class="grid-2" style="gap:20px;">
+                <div class="pt" style="padding:22px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;">
+                        <img src="https://img.icons8.com/?size=48&id=55494&format=png" alt="" width="26" height="26" style="vertical-align:middle;margin-right:8px;" />Custom agents
+                    </h3>
+                    <p style="font-size:14px;line-height:1.6;color:rgba(21,20,15,0.75);">
+                        Defined in <code>.agent.md</code> files. Frontmatter sets a description, an allowed toolset, a model, and handoffs — giving Copilot a restricted persona, like a security reviewer or a planner.
+                    </p>
+                </div>
+                <div class="pt" style="padding:22px;">
+                    <h3 style="font-family:'Inter Tight',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;">
+                        <img src="https://img.icons8.com/?size=48&id=88090&format=png" alt="" width="26" height="26" style="vertical-align:middle;margin-right:8px;" />Agent skills
+                    </h3>
+                    <p style="font-size:14px;line-height:1.6;color:rgba(21,20,15,0.75);">
+                        A <code>SKILL.md</code> folder bundles instructions, scripts, and resources for one task. Copilot reads the description first, and loads the full skill only when it's relevant.
+                    </p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Agents define who's working; skills add what they know how to do — either can call MCP servers too.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         12  CUSTOMIZATION
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="12 Customization" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">X.</span>
+                <span class="rule-meta">Customization</span>
+                <span class="page-num">12</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Customize for your <span class="serif-em">workflow</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:620px;">
+                Four more ways to tailor Copilot's everyday behavior to your codebase — beyond agents and skills.
+            </p>
+            <div class="grid-4" style="gap:16px;">
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=88090&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Custom instructions</h3>
+                    <p>Define project-wide coding conventions in <code>.github/copilot-instructions.md</code> so AI matches your style.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=kTuxVYRKeKEY&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Prompt files</h3>
+                    <p>Reusable <code>.prompt.md</code> files — share prompt instructions with context across your team.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=hwKgsZN5Is2H&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Copilot Memory</h3>
+                    <p>Copilot stores and uses repository-level context — cloud agent and code review reference it automatically.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <img src="https://img.icons8.com/?size=48&id=60022&format=png&color=ed6f5c" alt="" width="36" height="36" />
+                    </div>
+                    <h3>Hooks</h3>
+                    <p>Execute custom commands at specific agent events for automation and policy enforcement.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         13  PLANS & BILLING
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="13 Plans and billing" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">XI.</span>
+                <span class="rule-meta">Plans &amp; billing</span>
+                <span class="page-num">13</span>
+            </div>
+            <h2 class="h-lg" style="margin-bottom:16px;">Plans &amp; <span class="serif-em">billing</span><span class="dot">.</span></h2>
+            <table class="plan-table">
+                <thead>
+                    <tr>
+                        <th style="width:26%;">Feature</th>
+                        <th><span class="plan-pill pill-free">Free</span></th>
+                        <th><span class="plan-pill pill-pro">Pro · $10/mo</span></th>
+                        <th><span class="plan-pill pill-pro" style="background:var(--coral-soft);">Pro+  · $39/mo</span></th>
+                        <th><span class="plan-pill pill-biz">Business · $19/seat</span></th>
+                        <th><span class="plan-pill pill-ent">Enterprise · $39/seat</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Completions &amp; NES</td>
+                        <td>2,000/mo</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Chat &amp; agent mode</td>
+                        <td>Limited, auto model</td><td>Unlimited, model choice</td><td>Unlimited, model choice</td><td>Unlimited, model choice</td><td>Unlimited, model choice</td>
+                    </tr>
+                    <tr>
+                        <td>AI credits /mo</td>
+                        <td>Small included</td><td>1,500 (1K + 500 flex)</td><td>7,000 (3.9K + 3.1K flex)</td><td>Pooled per org</td><td>Pooled per enterprise</td>
+                    </tr>
+                    <tr>
+                        <td>Cloud / background agent</td>
+                        <td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td>
+                    </tr>
+                    <tr>
+                        <td>MCP servers</td>
+                        <td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td>
+                    </tr>
+                    <tr>
+                        <td>Premium models (e.g. Opus)</td>
+                        <td>—</td><td>Select models</td><td>Broad catalog</td><td>Broad catalog</td><td>Broad catalog + priority</td>
+                    </tr>
+                    <tr>
+                        <td>Admin, audit &amp; budget controls</td>
+                        <td>—</td><td>—</td><td>—</td><td>Org-level</td><td>Advanced + audit logs</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="mono" style="margin-top:12px;">1 AI credit = $0.01 · Completions &amp; NES are free/unlimited on paid plans · docs.github.com/en/copilot/get-started/plans · Jul 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         14  THANK YOU
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="14 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
+                         alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 14</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
