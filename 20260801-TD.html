@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot &amp; Claude — Workshop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            --rust: #b3543f;
+            /* Semantic aliases */
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        /* Paper noise texture */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-mute);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(92px, 11vh, 122px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(150px, 13vw, 190px);
+        }
+
+        /* Cover variant */
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-bottom: clamp(92px, 11vh, 122px);
+            position: relative; z-index: 1;
+        }
+
+        /* Dark slide variant */
+        .slide-dark { background: var(--ink); color: var(--paper); }
+        .slide-dark .lead { color: var(--paper-dark); }
+        .slide-dark .meta { color: var(--ink-faint); }
+        .slide-dark .pt {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .eyebrow { color: var(--coral); }
+
+        /* Coral slide variant */
+        .slide-coral { background: var(--coral); color: var(--ink); }
+        .slide-coral .lead { color: rgba(21,20,15,0.7); }
+        .slide-coral .pt {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 26px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+        .slide-dark .sec-rule { border-top-color: rgba(239,231,210,0.12); }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* ── Split layout: code/example on the LEFT, content on the RIGHT ── */
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; width: 100%; }
+        .split.narrow-left { grid-template-columns: 0.9fr 1.1fr; }
+        .split > * { min-width: 0; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 20px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card .card-icon {
+            width: 36px; height: 36px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img {
+            width: 36px; height: 36px; object-fit: contain;
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .slide-dark .feature-card {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .feature-card p { color: var(--paper-dark); }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(42px, 5vw, 66px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Keyboard shortcut ── */
+        kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--ink-soft);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 40px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 10px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 22px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a {
+            display: grid; place-items: center;
+            transition: transform 0.15s ease;
+        }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img {
+            width: 130px; height: 130px; border-radius: 14px;
+            display: block;
+        }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+        pre.code-block { margin: 0; white-space: pre; }
+        .code-block.tree { font-size: 10.5px; line-height: 1.5; white-space: pre; }
+        .code-block.ex { font-size: 11px; line-height: 1.55; padding: 11px 14px; }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            background: rgba(21,20,15,0.05);
+            padding: 1px 5px; border-radius: 4px;
+            color: var(--ink-soft);
+            overflow-wrap: anywhere;
+        }
+
+        /* ══════════════════════════════════════════════════
+           INFOGRAPHIC KIT — one set of boxes + arrows, reused
+           everywhere so every diagram stays visually consistent.
+           ══════════════════════════════════════════════════ */
+        /* Horizontal flow of stages */
+        .flow { display: flex; align-items: stretch; justify-content: center; width: 100%; }
+        .flow-node {
+            flex: 1 1 0; min-width: 0;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.10);
+            border-radius: 12px;
+            padding: 14px 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            text-align: center;
+            box-shadow: 0 1px 6px rgba(21,20,15,0.04);
+        }
+        .fn-badge {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--coral); color: #fff;
+            font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 13px;
+            display: grid; place-items: center; flex: 0 0 auto;
+        }
+        .fn-title { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 13.5px; line-height: 1.15; }
+        .fn-sub { font-size: 11px; color: var(--ink-mute); line-height: 1.4; }
+        /* Command tokens must stay on one line (never break per character) */
+        .flow-node code { white-space: nowrap; overflow-wrap: normal; font-size: 11px; }
+        .flow-node .fn-sub { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+        .plan-table.cmds code { white-space: nowrap; overflow-wrap: normal; }
+        .check-item code { white-space: nowrap; overflow-wrap: normal; }
+        /* Connector: coral right-chevron, identical everywhere */
+        .flow-arrow { flex: 0 0 30px; align-self: center; display: flex; align-items: center; justify-content: center; }
+        .flow-arrow::after {
+            content: ''; width: 9px; height: 9px;
+            border-top: 2px solid var(--coral); border-right: 2px solid var(--coral);
+            transform: rotate(45deg);
+        }
+        /* Vertical variant */
+        .flow.vert { flex-direction: column; }
+        .flow.vert .flow-node { flex-direction: row; text-align: left; align-items: center; gap: 12px; }
+        .flow.vert .fn-body { display: flex; flex-direction: column; gap: 2px; }
+        .flow.vert .flow-arrow { flex: 0 0 22px; }
+        .flow.vert .flow-arrow::after { transform: rotate(135deg); }
+
+        /* Loop-return bar (dashed) — reads as "go back to start" */
+        .loop-return {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 10px; padding: 9px;
+            border: 1px dashed rgba(21,20,15,0.28); border-radius: 10px;
+            font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 12.5px;
+            color: var(--ink-mute);
+        }
+        .loop-return::before {
+            content: ''; width: 9px; height: 9px;
+            border-bottom: 2px solid var(--coral); border-left: 2px solid var(--coral);
+            transform: rotate(45deg);
+        }
+
+        /* Chips */
+        .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 7px 13px; border-radius: 999px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 12.5px;
+            color: var(--ink-soft);
+        }
+        .chip.on { background: var(--coral); color: #fff; border-color: var(--coral); }
+        .chip .k { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--coral); }
+        .chip.on .k { color: #fff; }
+        .chip.dash { background: transparent; border-style: dashed; color: var(--ink-mute); }
+
+        /* Toolsets → representative tools (function calling) */
+        .toolset-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+        .toolset {
+            display: flex; flex-direction: column;
+            padding: 12px 14px 13px; border-radius: 12px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            border-top: 3px solid var(--coral);
+        }
+        .ts-head {
+            font-family: 'Inter Tight', sans-serif; font-weight: 800;
+            font-size: 13px; color: var(--ink);
+            padding-bottom: 9px; margin-bottom: 8px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+        }
+        .ts-tool {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            color: var(--ink-soft); line-height: 1.35;
+            padding: 3px 0 3px 13px; position: relative;
+        }
+        .ts-tool::before {
+            content: ''; position: absolute; left: 0; top: 9px;
+            width: 5px; height: 5px; border-radius: 50%; background: var(--coral-soft);
+        }
+
+        /* Prompt-engineering technique cards */
+        .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+        .tech {
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 12px 14px; border-radius: 12px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            border-top: 3px solid var(--coral);
+        }
+        .tech-name { font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 13.5px; color: var(--ink); }
+        .tech-desc { font-size: 11.5px; color: var(--ink-mute); line-height: 1.35; }
+        .tech-ex {
+            font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+            color: var(--ink-soft); line-height: 1.4;
+            background: var(--paper-dark); border-radius: 6px; padding: 6px 8px;
+            margin-top: auto; white-space: pre-line;
+        }
+        /* Aligned alternatives (NOT a sequence — no connecting arrows) */
+        .levels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; width: 100%; }
+
+        /* Layer stack (top item = first) */
+        .layer-stack { display: flex; flex-direction: column; gap: 8px; }
+        .layer {
+            display: flex; align-items: center; gap: 14px;
+            padding: 11px 16px; border-radius: 10px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            border-left: 3px solid var(--coral);
+        }
+        .layer .ly-n { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--coral); flex: 0 0 auto; }
+        .layer .ly-t { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 14px; }
+        .layer .ly-s { font-size: 12px; color: var(--ink-mute); margin-left: auto; text-align: right; }
+
+        /* Budget bar (context window) */
+        .budget-bar { display: flex; width: 100%; height: 54px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(21,20,15,0.12); }
+        .budget-seg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0 4px; text-align: center; border-right: 1px solid rgba(247,241,222,0.5); }
+        .budget-seg:last-child { border-right: 0; }
+        .budget-seg b { font-family: 'Inter Tight', sans-serif; font-size: 11px; font-weight: 700; color: var(--ink); }
+        .budget-seg span { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); }
+
+        /* Spectrum (permissions) */
+        .spectrum-track { height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--olive) 0%, var(--mustard) 52%, var(--coral) 100%); }
+        .spectrum-ends { display: flex; justify-content: space-between; margin-top: 7px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--ink-mute); text-transform: uppercase; }
+
+        /* Permission-mode cards (Copilot levels + Claude Code modes) */
+        .perm-grid { display: grid; gap: 10px; width: 100%; }
+        .perm {
+            display: flex; flex-direction: column; gap: 3px;
+            padding: 10px 12px; border-radius: 10px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            border-left: 3px solid var(--coral);
+        }
+        .perm-n { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.15; }
+        .perm-k { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--coral); }
+        .perm-s { font-size: 10.5px; color: var(--ink-mute); line-height: 1.35; margin-top: 2px; }
+
+        /* Tokenization chips */
+        .tok-line { line-height: 2.1; }
+        .tok { display: inline-block; padding: 3px 7px; margin: 2px 1px; border-radius: 6px; background: var(--paper-dark); border: 1px solid rgba(21,20,15,0.10); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .tok.alt { background: rgba(237,111,92,0.16); border-color: rgba(237,111,92,0.30); }
+
+        /* Good vs Bad comparison */
+        .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .vs-card { padding: 16px 18px; border-radius: 12px; border: 1px solid rgba(21,20,15,0.10); background: var(--bone); }
+        .vs-card.bad { border-left: 3px solid var(--rust); }
+        .vs-card.good { border-left: 3px solid var(--olive); }
+        .vs-tag { font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+        .vs-card.bad .vs-tag { color: var(--rust); }
+        .vs-card.good .vs-tag { color: var(--olive); }
+        .vs-quote { font-size: 14px; color: var(--ink-soft); line-height: 1.45; }
+        .vs-note { font-size: 11.5px; color: var(--ink-mute); margin-top: 8px; }
+
+        /* Fan-out (subagents) */
+        .fan { display: flex; align-items: center; width: 100%; }
+        .fan .flow-arrow { flex: 0 0 34px; }
+        .sub-stack { flex: 1.1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+        .sub-box { background: var(--bone); border: 1px solid rgba(21,20,15,0.10); border-left: 3px solid var(--mustard); border-radius: 10px; padding: 9px 13px; }
+        .sub-box .sb-t { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 13px; }
+        .sub-box .sb-s { font-size: 11px; color: var(--ink-mute); }
+
+        /* Cost bars */
+        .cost-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+        .cost-label { width: 150px; font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 13.5px; flex: 0 0 auto; }
+        .cost-track { flex: 1; height: 24px; background: var(--paper-dark); border-radius: 6px; overflow: hidden; }
+        .cost-fill { height: 100%; border-radius: 6px; background: var(--coral); }
+        .cost-val { width: 116px; flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-mute); }
+
+        /* Checklist */
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 26px; }
+        .check-item { display: flex; gap: 11px; align-items: flex-start; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+        .check-item::before {
+            content: ''; flex: 0 0 auto; width: 6px; height: 11px; margin-top: 3px;
+            border-right: 2px solid var(--olive); border-bottom: 2px solid var(--olive);
+            transform: rotate(45deg);
+        }
+
+        /* Two-box relation (system prompt) */
+        .rel { display: flex; align-items: stretch; width: 100%; }
+        .rel .flow-arrow { flex: 0 0 40px; }
+        .rel-box { flex: 1 1 0; min-width: 0; background: var(--bone); border: 1px solid rgba(21,20,15,0.10); border-radius: 12px; padding: 18px; }
+        .rel-box.fixed { border-top: 3px solid var(--ink-faint); }
+        .rel-box.yours { border-top: 3px solid var(--coral); }
+        .rel-box h4 { font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+        .rel-box p { font-size: 12.5px; color: var(--ink-mute); line-height: 1.5; }
+
+        /* Command reference — two labeled columns of "cmd — description" rows */
+        .cmd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 44px; width: 100%; }
+        .cmd-col { display: flex; flex-direction: column; gap: 8px; }
+        .cmd-cat {
+            font-family: 'Inter Tight', sans-serif; font-weight: 700;
+            font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--coral); margin-bottom: 2px;
+        }
+        .ci { display: flex; align-items: baseline; gap: 8px; font-size: 13px; line-height: 1.3; color: var(--ink-soft); }
+        .ci code { flex: 0 0 auto; white-space: nowrap; overflow-wrap: normal; }
+        .ci span { color: var(--ink-mute); }
+
+        /* Resources — clickable tool cards */
+        .res-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; width: 100%; }
+        .res-card {
+            grid-column: span 2;
+            display: flex; flex-direction: column; gap: 8px;
+            padding: 18px 20px; border-radius: 14px;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.08);
+            text-decoration: none; color: inherit;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .res-card.wide { grid-column: span 3; }
+        .res-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(21,20,15,0.08); border-color: rgba(237,111,92,0.5); }
+        .res-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+        .res-name { font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 18px; color: var(--ink); }
+        .res-kind { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+        .res-desc { font-size: 13px; line-height: 1.5; color: var(--ink-mute); flex: 1; }
+        .res-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--coral); overflow-wrap: anywhere; }
+        .res-link::after { content: ' \2197'; }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════ 01 TITLE ════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:20px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="190" height="190" style="display:block;" />
+            <p class="eyebrow" style="margin-top:4px;">Developer Workshop · 2026</p>
+            <h1 class="h-hero" style="max-width:900px;">GitHub <span class="serif-em">Copilot</span> &amp; <span class="serif-em">Claude</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:640px;">How these AI coding tools work — the concepts, the configuration files, and the workflows.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 02 PRESENTER ════════════════ -->
+    <section class="slide" data-screen-label="02 Presenter" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">—</span>
+                <span class="rule-meta">Presenter</span>
+                <span class="page-num">02</span>
+            </div>
+            <div style="display:flex;gap:48px;align-items:center;">
+                <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/presenter.png"
+                     alt="Sukumar P" width="160" height="160"
+                     style="border-radius:50%;object-fit:cover;border:3px solid var(--accent-fg);flex-shrink:0;" />
+                <div>
+                    <h2 class="h-xl" style="margin-bottom:8px;">Sukumar P</h2>
+                    <p class="meta" style="margin:0 0 20px;">GitHub Customer Success Architect</p>
+                    <div class="grid-4">
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=s6BMuiR0tvY2&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />GitHub Copilot &amp; AI agents
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=2969&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />DevOps &amp; DevSecOps
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=11214&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />Enterprise enablement
+                            </h3>
+                        </div>
+                        <div class="pt" style="padding:14px 16px;">
+                            <h3 style="font-family:'Inter Tight',sans-serif;font-size:14px;margin:0;font-weight:700;">
+                                <img src="https://img.icons8.com/?size=48&id=AZOZNnY73haj&format=png" alt="" width="20" height="20" style="vertical-align:middle;margin-right:6px;" />InnerSource &amp; OSS
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 03 AGENDA ════════════════ -->
+    <section class="slide" data-screen-label="03 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">—</span>
+                <span class="rule-meta">Agenda</span>
+                <span class="page-num">03</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:24px;">What we will <span class="serif-em">cover</span><span class="dot">.</span></h2>
+            <div class="grid-2" style="gap:14px;">
+                <div class="feature-card"><h3>I · Basics</h3><p>How LLMs work &amp; differ from software · providers · tokens · embeddings · context · tools · agents</p></div>
+                <div class="feature-card"><h3>II · Context &amp; prompting</h3><p>Context assembly, system prompt, instructions, prompt files, prompt engineering</p></div>
+                <div class="feature-card"><h3>III · Agent mode, permissions, MCP, skills</h3><p>Autonomous editing, approvals, external tools, packaged procedures</p></div>
+                <div class="feature-card"><h3>IV · Agent orchestration</h3><p>Subagents, custom agents, running work in parallel</p></div>
+                <div class="feature-card"><h3>V · Token economics &amp; optimization</h3><p>How usage becomes cost, and how to reduce it</p></div>
+                <div class="feature-card"><h3>VI · Claude Code &amp; Copilot CLI</h3><p>Commands, attachments, integrations</p></div>
+                <div class="feature-card"><h3>VII · Reference</h3><p>File cheatsheet, resources</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 04 LLMs ════════════════ -->
+    <section class="slide" data-screen-label="04 LLMs" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Large language models</span>
+                <span class="page-num">04</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Large Language <span class="serif-em">Models</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:720px;">
+                A model reads your text as tokens and predicts the next token, repeatedly. That single step is
+                how every response is produced.
+            </p>
+            <div class="flow">
+                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Your prompt</span><span class="fn-sub">Instructions, files, and your question — as tokens</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Predict next token</span><span class="fn-sub">The model scores the most likely next token</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Append &amp; repeat</span><span class="fn-sub">Add the token, feed it back, predict again</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Response</span><span class="fn-sub">Built one token at a time until it stops</span></div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Example: you type <code>// sort users by signup date</code> and the model predicts the function body one token at a time. It has no access to your code or the internet unless you put that in the prompt.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 05 LLMS VS SOFTWARE ════════════════ -->
+    <section class="slide" data-screen-label="05 LLMs vs software" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · How LLMs differ from normal software</span>
+                <span class="page-num">05</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Not like <span class="serif-em">normal software</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:780px;">
+                Traditional programs follow rules a developer wrote by hand. A language model was never told
+                the rules — it learned patterns from examples, so it behaves very differently.
+            </p>
+            <table class="plan-table">
+                <thead>
+                    <tr><th style="width:20%;">Aspect</th><th>Traditional program</th><th>Language model</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Built by</td><td>A developer writes explicit logic (<code>if / else</code>)</td><td>Trained on huge text &amp; code; learns patterns</td></tr>
+                    <tr><td>Same input</td><td>Always the same output (deterministic)</td><td>Can differ each run (probabilistic)</td></tr>
+                    <tr><td>Correctness</td><td>Exact and verifiable</td><td>Plausible — can be confidently wrong</td></tr>
+                    <tr><td>New situations</td><td>Only handles cases that were coded</td><td>Generalizes to inputs it never saw</td></tr>
+                    <tr><td>Fixing it</td><td>Edit the code and redeploy</td><td>Change the prompt, or retrain the model</td></tr>
+                </tbody>
+            </table>
+            <p class="mono" style="margin-top:16px;">Example: a tax function returns the same number every time; ask Copilot for that function twice and you may get two different but valid versions — which is why you always review AI output.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 06 HOW MODELS ARE MADE ════════════════ -->
+    <section class="slide" data-screen-label="06 How models are made" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · How a model is built and served</span>
+                <span class="page-num">06</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">How a model is <span class="serif-em">built &amp; served</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:760px;">
+                You usually don't run these models on your laptop. A provider trains one once, hosts it, and your tool
+                reaches it over the network.
+            </p>
+            <div class="flow">
+                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Pre-train</span><span class="fn-sub">Read huge amounts of public text &amp; code; learn to predict the next token</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Align</span><span class="fn-sub">Fine-tune with human feedback so it follows instructions &amp; stays safe</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Serve</span><span class="fn-sub">The provider hosts the model behind an API endpoint</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Use</span><span class="fn-sub">Copilot &amp; Claude Code send your prompt to that API and stream back tokens</span></div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Example: when you press Enter in Copilot Chat, your prompt travels to a provider's servers (such as Anthropic or OpenAI), the model runs there, and the reply streams back — you only ever use the finished model.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 07 PROVIDERS AND HARNESSES ════════════════ -->
+    <section class="slide" data-screen-label="07 Providers and harnesses" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Providers and harnesses</span>
+                <span class="page-num">07</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Providers &amp; <span class="serif-em">harnesses</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:16px;max-width:820px;">
+                A <b>provider</b> trains and hosts the model. A <b>harness</b> is the app you work in — it sends your
+                prompt to a provider. One harness can offer many models.
+            </p>
+            <div class="mono" style="margin-bottom:7px;">PROVIDERS · WHO TRAINS THE MODELS</div>
+            <div class="toolset-grid" style="margin-bottom:16px;">
+                <div class="toolset"><div class="ts-head">OpenAI</div><div class="ts-tool">GPT-5 family</div><div class="ts-tool">reasoning models</div></div>
+                <div class="toolset"><div class="ts-head">Anthropic</div><div class="ts-tool">Claude Opus</div><div class="ts-tool">Sonnet · Haiku</div></div>
+                <div class="toolset"><div class="ts-head">Google</div><div class="ts-tool">Gemini Pro</div><div class="ts-tool">Gemini Flash</div></div>
+                <div class="toolset"><div class="ts-head">Meta</div><div class="ts-tool">Llama</div><div class="ts-tool">open weights</div></div>
+                <div class="toolset"><div class="ts-head">Others</div><div class="ts-tool">Mistral · DeepSeek</div><div class="ts-tool">xAI Grok</div></div>
+            </div>
+            <div class="mono" style="margin-bottom:7px;">HARNESSES · WHERE YOU USE THEM</div>
+            <div class="chip-row">
+                <span class="chip">GitHub Copilot</span>
+                <span class="chip">Claude Code</span>
+                <span class="chip">Copilot CLI</span>
+                <span class="chip">Gemini CLI</span>
+                <span class="chip">Cursor</span>
+                <span class="chip">Windsurf</span>
+                <span class="chip">Cline</span>
+                <span class="chip">Zed</span>
+            </div>
+            <p class="mono" style="margin-top:16px;">Example: in GitHub Copilot's model picker you can switch between Claude, GPT, and Gemini for the same chat — same harness, different provider behind it.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 08 TOKENS ════════════════ -->
+    <section class="slide" data-screen-label="08 Tokens" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Tokens</span>
+                <span class="page-num">08</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;"><span class="serif-em">Tokens</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:720px;">
+                A token is a small piece of text — often part of a word. Models read and write in tokens, not
+                letters or whole words.
+            </p>
+            <div class="pt" style="padding:18px 22px;margin-bottom:18px;">
+                <div class="mono" style="margin-bottom:10px;">The sentence below splits into 9 tokens:</div>
+                <div class="tok-line">
+                    <span class="tok">Cop</span><span class="tok alt">ilot</span><span class="tok"> writes</span><span class="tok alt"> a</span><span class="tok"> Python</span><span class="tok alt"> function</span><span class="tok"> for</span><span class="tok alt"> me</span><span class="tok">.</span>
+                </div>
+            </div>
+            <div class="chip-row">
+                <span class="chip"><span class="k">≈4</span> characters per token</span>
+                <span class="chip"><span class="k">≈0.75</span> words per token</span>
+                <span class="chip"><span class="k">100</span> tokens ≈ 75 words</span>
+                <span class="chip">Code &amp; non-English use more tokens</span>
+            </div>
+            <p class="mono" style="margin-top:16px;">Cost is billed per token and every limit is measured in tokens. Example: a 200-line source file is roughly 2,000–3,000 tokens, so attaching whole folders fills the budget fast.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 10 CONTEXT WINDOWS ════════════════ -->
+    <section class="slide" data-screen-label="09 Context windows" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Context windows</span>
+                <span class="page-num">09</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Context <span class="serif-em">windows</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:720px;">
+                The context window is the maximum number of tokens a model can consider in one request.
+                Everything counts against this one limit — including the output.
+            </p>
+            <div class="budget-bar">
+                <div class="budget-seg" style="flex:0 0 12%;background:rgba(237,111,92,0.28);"><b>System</b><span>prompt</span></div>
+                <div class="budget-seg" style="flex:0 0 12%;background:rgba(233,185,74,0.34);"><b>Instructions</b><span>your rules</span></div>
+                <div class="budget-seg" style="flex:0 0 14%;background:rgba(110,116,72,0.26);"><b>Tools</b><span>schemas</span></div>
+                <div class="budget-seg" style="flex:0 0 26%;background:rgba(240,142,124,0.30);"><b>Files</b><span>attachments</span></div>
+                <div class="budget-seg" style="flex:0 0 18%;background:rgba(139,134,118,0.30);"><b>History</b><span>prior turns</span></div>
+                <div class="budget-seg" style="flex:0 0 8%;background:rgba(233,185,74,0.24);"><b>Message</b><span>yours</span></div>
+                <div class="budget-seg" style="flex:0 0 10%;background:var(--paper-dark);"><b>Output</b><span>generated</span></div>
+            </div>
+            <div class="mono" style="margin:16px 0 7px;">AS IT FILLS UP → ANSWERS GET WORSE</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(3,1fr);">
+                <div class="perm"><span class="perm-n">Lost in the middle</span><span class="perm-s">Details buried in a long context get overlooked</span></div>
+                <div class="perm"><span class="perm-n">Forgets earlier rules</span><span class="perm-s">Instructions drift as newer text crowds them out</span></div>
+                <div class="perm"><span class="perm-n">Slower &amp; pricier</span><span class="perm-s">More tokens to read means higher latency and cost</span></div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Example: attach 12 files when only 2 matter and the model may edit the wrong one. Include only what is relevant — start a new chat for a new task.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 11 TOOLS ════════════════ -->
+    <section class="slide" data-screen-label="10 Tools" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Tools (function calling)</span>
+                <span class="page-num">10</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Tools <span class="serif-em">(function calling)</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:16px;max-width:720px;">
+                Tools let a model take actions beyond writing text — read a file, run a command, query a
+                database, fetch a URL.
+            </p>
+            <div class="flow">
+                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Define tools</span><span class="fn-sub">Name, description, parameter schema</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Model calls one</span><span class="fn-sub">Returns a structured tool call, not text</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Host runs it</span><span class="fn-sub">Executes and returns the result</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Model continues</span><span class="fn-sub">Reads the result, may call more tools</span></div>
+            </div>
+            <div class="toolset-grid" style="margin-top:16px;">
+                <div class="toolset">
+                    <div class="ts-head">Filesystem</div>
+                    <div class="ts-tool">create_file</div>
+                    <div class="ts-tool">read_file</div>
+                    <div class="ts-tool">edit_file</div>
+                    <div class="ts-tool">create_directory</div>
+                    <div class="ts-tool">delete_file</div>
+                </div>
+                <div class="toolset">
+                    <div class="ts-head">Terminal</div>
+                    <div class="ts-tool">run_command</div>
+                    <div class="ts-tool">get_output</div>
+                    <div class="ts-tool">send_input</div>
+                    <div class="ts-tool">kill_process</div>
+                    <div class="ts-tool">list_processes</div>
+                </div>
+                <div class="toolset">
+                    <div class="ts-head">Web fetch</div>
+                    <div class="ts-tool">fetch_url</div>
+                    <div class="ts-tool">web_search</div>
+                    <div class="ts-tool">extract_content</div>
+                    <div class="ts-tool">to_markdown</div>
+                    <div class="ts-tool">download_file</div>
+                </div>
+                <div class="toolset">
+                    <div class="ts-head">Database</div>
+                    <div class="ts-tool">run_query</div>
+                    <div class="ts-tool">list_tables</div>
+                    <div class="ts-tool">describe_table</div>
+                    <div class="ts-tool">execute_sql</div>
+                    <div class="ts-tool">list_schemas</div>
+                </div>
+                <div class="toolset">
+                    <div class="ts-head">Browser</div>
+                    <div class="ts-tool">navigate</div>
+                    <div class="ts-tool">click</div>
+                    <div class="ts-tool">type_text</div>
+                    <div class="ts-tool">screenshot</div>
+                    <div class="ts-tool">read_page</div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Example: ask "run the tests and fix what fails" — the model calls <code>run_command</code>, reads the output, then <code>edit_file</code>, and loops. Any capability can be a tool; MCP standardizes how they're exposed →</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 12 AGENTS ════════════════ -->
+    <section class="slide" data-screen-label="11 Agents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Basics · Agents</span>
+                <span class="page-num">11</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;"><span class="serif-em">Agents</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:720px;">
+                An agent is a model plus tools plus a loop. Plain chat is one prompt and one answer; an agent
+                repeats until the task is done.
+            </p>
+            <div class="flow">
+                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Goal</span><span class="fn-sub">You state the task</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Decide</span><span class="fn-sub">Choose the next action</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Run tool</span><span class="fn-sub">Edit a file, run a command</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Read result</span><span class="fn-sub">Check output and errors</span></div>
+            </div>
+            <div class="loop-return">Repeat steps 2–4 until the task is complete</div>
+            <p class="mono" style="margin-top:18px;">Example: "the build is failing — find out why and fix it." The agent reads the error, edits a file, re-runs the build, and repeats until it passes.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 13 CONTEXT ASSEMBLY ════════════════ -->
+    <section class="slide" data-screen-label="12 Context assembly" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Context &amp; prompting · Context assembly</span>
+                <span class="page-num">12</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Context <span class="serif-em">assembly</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:720px;">
+                A request is assembled from these parts, with the stable parts first so they can be reused from cache.
+            </p>
+            <div class="layer-stack">
+                <div class="layer"><span class="ly-n">01</span><span class="ly-t">System prompt</span><span class="ly-s">role &amp; rules — set by the tool</span></div>
+                <div class="layer"><span class="ly-n">02</span><span class="ly-t">Custom instructions</span><span class="ly-s">your project conventions</span></div>
+                <div class="layer"><span class="ly-n">03</span><span class="ly-t">Tool definitions</span><span class="ly-s">available functions + schemas</span></div>
+                <div class="layer"><span class="ly-n">04</span><span class="ly-t">Retrieved content</span><span class="ly-s">attached / open files, selections</span></div>
+                <div class="layer"><span class="ly-n">05</span><span class="ly-t">Conversation history</span><span class="ly-s">prior turns &amp; tool results</span></div>
+                <div class="layer"><span class="ly-n">06</span><span class="ly-t">Your current message</span><span class="ly-s">the new request</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 14 SYSTEM PROMPT ════════════════ -->
+    <section class="slide" data-screen-label="13 System prompt" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Context &amp; prompting · System prompt</span>
+                <span class="page-num">13</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">System <span class="serif-em">prompt</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:24px;max-width:720px;">
+                The top-level instruction block that sets the assistant's role and rules. You do not replace
+                it — you extend it.
+            </p>
+            <div class="rel">
+                <div class="rel-box fixed">
+                    <h4>Built-in system prompt</h4>
+                    <p>Set by the vendor (Copilot, Claude Code). Defines the assistant's role, safety rules, and how it uses tools. Not directly editable.</p>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="rel-box yours">
+                    <h4>Your additions</h4>
+                    <p>Custom instructions and a custom agent's body extend it. Claude Code appends with <code>--append-system-prompt</code> (inline) or <code>--append-system-prompt-file</code> (from a file).</p>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Example: a review-only agent whose body states it never edits files.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 15 INSTRUCTIONS ════════════════ -->
+    <section class="slide" data-screen-label="14 Instructions" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Context &amp; prompting · Custom instructions</span>
+                <span class="page-num">14</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Custom <span class="serif-em">instructions</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:12px;max-width:840px;">
+                Markdown files with standing rules, added automatically so you never repeat them — always-on
+                files apply to every request; path-specific files apply only when their glob matches.
+            </p>
+            <div class="split narrow-left">
+<pre class="code-block tree">your-repo/
+├── AGENTS.md                     <span class="code-cmt">always-on</span>
+├── CLAUDE.md                     <span class="code-cmt">Claude Code</span>
+├── .github/
+│   ├── copilot-instructions.md   <span class="code-cmt">always-on</span>
+│   └── instructions/
+│       └── *.instructions.md     <span class="code-cmt">applyTo glob</span>
+└── .claude/
+    └── rules/*.md                <span class="code-cmt">path-scoped</span></pre>
+                <div>
+                    <div class="mono" style="margin-bottom:6px;">Copilot · <code>.github/instructions/python.instructions.md</code></div>
+<pre class="code-block ex">---
+<span class="code-kw">applyTo</span>: <span class="code-str">"src/**/*.py"</span>
+---
+Use type hints on all functions.</pre>
+                    <div class="mono" style="margin:10px 0 6px;">Claude · <code>.claude/rules/api.md</code></div>
+<pre class="code-block ex">---
+<span class="code-kw">paths</span>:
+  - <span class="code-str">"src/api/**/*.ts"</span>
+---
+Validate every endpoint input.</pre>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:12px;">Precedence high → low: personal · path-specific (<code>applyTo</code> / <code>paths</code>) · repository-wide (<code>copilot-instructions.md</code>, <code>AGENTS.md</code>).</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 16 PROMPT FILES ════════════════ -->
+    <section class="slide" data-screen-label="15 Prompt files" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Context &amp; prompting · Commands and prompt files</span>
+                <span class="page-num">15</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Commands &amp; <span class="serif-em">prompt files</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:12px;max-width:840px;">
+                Reusable Markdown files that hold a task's steps and run on demand with <code>/name</code> — unlike
+                always-on instructions, they run only when you call them.
+            </p>
+            <div class="split">
+                <div>
+                    <div class="mono" style="margin-bottom:6px;">Copilot · <code>.github/prompts/security-review.prompt.md</code></div>
+<pre class="code-block ex">---
+<span class="code-kw">description</span>: <span class="code-str">Security review of a REST API</span>
+<span class="code-kw">tools</span>: <span class="code-str">['codebase', 'search']</span>
+---
+Review <span class="code-kw">${file}</span> for OWASP Top 10 issues.
+Report findings as a table with severity.</pre>
+                </div>
+                <div>
+                    <div class="mono" style="margin-bottom:6px;">Claude · <code>.claude/commands/fix-issue.md</code></div>
+<pre class="code-block ex">---
+<span class="code-kw">description</span>: <span class="code-str">Fix a GitHub issue</span>
+<span class="code-kw">argument-hint</span>: <span class="code-str">[issue-number]</span>
+<span class="code-kw">allowed-tools</span>: <span class="code-str">Bash(gh issue view:*)</span>
+---
+Fix issue #<span class="code-kw">$ARGUMENTS</span>.
+Context: <span class="code-kw">!`gh issue view $ARGUMENTS`</span></pre>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:12px;">Type <code>/security-review</code> or <code>/fix-issue</code> to run. Copilot fills <code>${input:x}</code> / <code>${file}</code>; Claude fills <code>$ARGUMENTS</code> and runs <code>!`cmd`</code>. This repo has a real <code>remotion-permission-levels.prompt.md</code>.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 17 PROMPT ENGINEERING ════════════════ -->
+    <section class="slide" data-screen-label="16 Prompt engineering" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Context &amp; prompting · Prompt engineering</span>
+                <span class="page-num">16</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Prompt <span class="serif-em">engineering</span><span class="dot">.</span></h2>
+            <div class="vs" style="margin-bottom:18px;">
+                <div class="vs-card bad">
+                    <div class="vs-tag">Vague</div>
+                    <div class="vs-quote">"Make this code better."</div>
+                    <div class="vs-note">No goal, no constraints, no output format → unpredictable result.</div>
+                </div>
+                <div class="vs-card good">
+                    <div class="vs-tag">Specific</div>
+                    <div class="vs-quote">"Refactor for readability. Keep the public signature. Add doc comments. Do not change behavior. Return only the diff."</div>
+                    <div class="vs-note">Clear goal + constraints + output → reliable result.</div>
+                </div>
+            </div>
+            <div class="mono" style="margin-bottom:8px;">TECHNIQUES — STRUCTURE THE PROMPT</div>
+            <div class="tech-grid">
+                <div class="tech">
+                    <div class="tech-name">Zero-shot</div>
+                    <div class="tech-desc">Ask directly, no examples.</div>
+                    <div class="tech-ex">Classify the sentiment of this review: "Shipping was slow."</div>
+                </div>
+                <div class="tech">
+                    <div class="tech-name">Few-shot</div>
+                    <div class="tech-desc">Show a few input → output examples first.</div>
+                    <div class="tech-ex">"love it" → pos
+"it broke" → neg
+"it's fine" → ?</div>
+                </div>
+                <div class="tech">
+                    <div class="tech-name">Chain-of-thought</div>
+                    <div class="tech-desc">Ask it to reason step by step first.</div>
+                    <div class="tech-ex">Work through it step by step, then give the answer.</div>
+                </div>
+                <div class="tech">
+                    <div class="tech-name">Role + format</div>
+                    <div class="tech-desc">Set a persona and the output shape.</div>
+                    <div class="tech-ex">You are a security auditor. Return findings as JSON.</div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:12px;">Claude tip: wrap distinct sections in XML tags like <code>&lt;context&gt;</code> and <code>&lt;task&gt;</code> so the model can tell them apart.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 18 AGENT MODE ════════════════ -->
+    <section class="slide" data-screen-label="17 Agent mode" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agentic · Agent mode</span>
+                <span class="page-num">17</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Agent <span class="serif-em">mode</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:20px;max-width:760px;">
+                The autonomous mode: the model plans, runs tools, edits files across the project, and runs
+                commands until the task is done. Pick the mode that matches the job.
+            </p>
+            <div class="chip-row" style="margin-bottom:18px;">
+                <span class="chip">Ask <span class="k">questions</span></span>
+                <span class="chip">Edit <span class="k">direct edits</span></span>
+                <span class="chip">Plan <span class="k">plan first</span></span>
+                <span class="chip on">Agent <span class="k">autonomous + tools</span></span>
+            </div>
+            <div class="flow">
+                <div class="flow-node"><span class="fn-title">Select "Agent"</span><span class="fn-sub">in the VS Code Chat view</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-title">Configure tools</span><span class="fn-sub">enable per request; <code>#toolname</code> inline</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-title">It works &amp; self-corrects</span><span class="fn-sub">reads errors, retries, continues</span></div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Example: "Find why the build fails and fix it" — reads the error, edits, re-runs, repeats.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 19 PERMISSIONS ════════════════ -->
+    <section class="slide" data-screen-label="18 Permissions" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agentic · Permissions</span>
+                <span class="page-num">18</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;"><span class="serif-em">Permissions</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:14px;max-width:840px;">
+                Permission levels control when an agent may run a tool without asking. Higher levels act
+                faster; lower levels are safer — both tools sit on the same spectrum.
+            </p>
+            <div style="margin:0 6px 4px;">
+                <div class="spectrum-track"></div>
+                <div class="spectrum-ends"><span>Safe</span><span>Autonomous</span></div>
+            </div>
+            <div class="mono" style="margin:14px 0 7px;">GITHUB COPILOT · agent mode</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(3,1fr);">
+                <div class="perm"><span class="perm-n">Default Approvals</span><span class="perm-s">Confirm sensitive tools before they run</span></div>
+                <div class="perm"><span class="perm-n">Bypass Approvals</span><span class="perm-s">Auto-approve all tool calls</span></div>
+                <div class="perm"><span class="perm-n">Autopilot</span><span class="perm-s">Auto-approve, auto-answer questions, continue</span></div>
+            </div>
+            <div class="mono" style="margin:14px 0 7px;">CLAUDE CODE · permission modes (Shift+Tab to cycle)</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="perm"><span class="perm-n">Plan</span><span class="perm-k">plan</span><span class="perm-s">Read-only; proposes a plan, no edits</span></div>
+                <div class="perm"><span class="perm-n">Manual</span><span class="perm-k">default</span><span class="perm-s">Asks before edits &amp; commands</span></div>
+                <div class="perm"><span class="perm-n">Accept edits</span><span class="perm-k">acceptEdits</span><span class="perm-s">Auto-applies edits; asks for the rest</span></div>
+                <div class="perm"><span class="perm-n">Auto</span><span class="perm-k">auto</span><span class="perm-s">Runs all with a safety classifier</span></div>
+                <div class="perm"><span class="perm-n">Bypass</span><span class="perm-k">bypassPermissions</span><span class="perm-s">Skips every check — VMs only</span></div>
+            </div>
+            <p class="mono" style="margin-top:12px;color:var(--rust);">Copilot Bypass / Autopilot and Claude <code>bypassPermissions</code> skip prompts even for destructive actions — use only in isolated, reversible environments. Claude Code also layers <code>.claude/settings.json</code> allow / deny rules (<code>dontAsk</code> = locked-down CI).</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 20 MCP ════════════════ -->
+    <section class="slide" data-screen-label="19 MCP" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agentic · Model Context Protocol</span>
+                <span class="page-num">19</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Model Context <span class="serif-em">Protocol</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:760px;">
+                An open standard that connects an agent to external tools and data through one interface, so a
+                single integration works across tools.
+            </p>
+            <div class="split narrow-left">
+<pre class="code-block tree"><span class="code-cmt">// .vscode/mcp.json  —  VS Code</span>
+{
+  <span class="code-str">"servers"</span>: {
+    <span class="code-str">"github"</span>: {
+      <span class="code-str">"type"</span>: <span class="code-str">"http"</span>,
+      <span class="code-str">"url"</span>: <span class="code-str">"https://api.githubcopilot.com/mcp"</span>
+    },
+    <span class="code-str">"playwright"</span>: {
+      <span class="code-str">"command"</span>: <span class="code-str">"npx"</span>,
+      <span class="code-str">"args"</span>: [<span class="code-str">"-y"</span>, <span class="code-str">"@playwright/mcp"</span>]
+    }
+  }
+}
+<span class="code-cmt">// Claude .mcp.json uses key "mcpServers"</span></pre>
+                <div>
+                    <div class="flow vert">
+                        <div class="flow-node"><div class="fn-body"><span class="fn-title">Agent</span><span class="fn-sub">Copilot / Claude Code</span></div></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><div class="fn-body"><span class="fn-title">MCP server</span><span class="fn-sub">stdio (local) or Streamable HTTP (remote)</span></div></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><div class="fn-body"><span class="fn-title">External systems</span><span class="fn-sub">GitHub · database · browser · files</span></div></div>
+                    </div>
+                    <div class="chip-row" style="margin-top:12px;">
+                        <span class="chip">Tools</span><span class="chip">Resources</span><span class="chip">Prompts</span>
+                    </div>
+                    <p class="mono" style="margin-top:10px;color:var(--rust);">Only add servers from trusted sources — tool results are untrusted input.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 21 AGENT SKILLS ════════════════ -->
+    <section class="slide" data-screen-label="20 Agent skills" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agentic · Agent skills</span>
+                <span class="page-num">20</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Agent <span class="serif-em">skills</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:14px;max-width:760px;">
+                A folder with a <code>SKILL.md</code> that packages a repeatable procedure. It loads in stages, so it
+                uses few tokens until it is actually needed.
+            </p>
+            <div class="split narrow-left">
+                <div>
+<pre class="code-block tree"><span class="code-cmt">Copilot: .github/skills/&lt;name&gt;/</span>
+<span class="code-cmt">Claude:  .claude/skills/&lt;name&gt;/</span>
+skills/
+└── pdf-forms/
+    ├── SKILL.md         <span class="code-cmt">name + description</span>
+    ├── reference.md     <span class="code-cmt">loaded when needed</span>
+    └── scripts/
+        └── extract.py   <span class="code-cmt">run, not read in</span></pre>
+                    <div class="mono" style="margin:12px 0 6px;">Inside <code>SKILL.md</code></div>
+<pre class="code-block ex">---
+<span class="code-kw">name</span>: <span class="code-str">pdf-forms</span>
+<span class="code-kw">description</span>: <span class="code-str">Fill and extract PDF form fields. Use for PDF tasks.</span>
+---
+To fill a form:
+1. Read field names with scripts/extract.py
+2. Map values, then write the output PDF.
+See reference.md for the full field catalog.</pre>
+                </div>
+                <div>
+                    <div class="flow vert">
+                        <div class="flow-node"><span class="fn-badge">1</span><div class="fn-body"><span class="fn-title">Metadata</span><span class="fn-sub">name + description — always available</span></div></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-badge">2</span><div class="fn-body"><span class="fn-title">SKILL.md body</span><span class="fn-sub">read only when the skill is triggered</span></div></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-badge">3</span><div class="fn-body"><span class="fn-title">Bundled files</span><span class="fn-sub">opened as needed; scripts run without loading</span></div></div>
+                    </div>
+                    <p class="mono" style="margin-top:12px;">This repo: <code>.agents/skills/caveman</code> and <code>cavecrew</code>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 22 SUBAGENTS ════════════════ -->
+    <section class="slide" data-screen-label="21 Subagents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Orchestration · Subagents</span>
+                <span class="page-num">21</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;"><span class="serif-em">Subagents</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:760px;">
+                A subagent runs in its own separate context with its own tools, then returns only a short
+                summary. Verbose work stays out of the main conversation.
+            </p>
+            <div class="fan">
+                <div class="flow-node" style="flex:1 1 0;"><span class="fn-title">Parent agent</span><span class="fn-sub">main context preserved</span></div>
+                <div class="flow-arrow"></div>
+                <div class="sub-stack">
+                    <div class="sub-box"><div class="sb-t">Explore</div><div class="sb-s">search the codebase</div></div>
+                    <div class="sub-box"><div class="sb-t">Task</div><div class="sb-s">run the test suite</div></div>
+                    <div class="sub-box"><div class="sb-t">Review</div><div class="sb-s">check the diff</div></div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node" style="flex:1 1 0;"><span class="fn-title">Summary back</span><span class="fn-sub">one compact result</span></div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Claude Code: <code>.claude/agents/*.md</code> · VS Code: the run-subagent tool. Independent subagents can run in parallel.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 23 CUSTOM AGENTS ════════════════ -->
+    <section class="slide" data-screen-label="22 Custom agents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Orchestration · Custom agents</span>
+                <span class="page-num">22</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Custom <span class="serif-em">agents</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:760px;">
+                A named agent that bundles instructions, a limited tool set, and an optional model. Selectable
+                in chat and reusable as a subagent.
+            </p>
+            <div class="split narrow-left">
+<pre class="code-block tree"><span class="code-cmt">.github/agents/reviewer.agent.md   (VS Code)</span>
+<span class="code-cmt">.claude/agents/code-reviewer.md    (Claude)</span>
+---
+name: code-reviewer
+description: Review code after changes.
+tools: Read, Grep, Glob, Bash
+model: inherit
+---
+You are a senior code reviewer...</pre>
+                <div>
+                    <div class="mono" style="margin-bottom:8px;">FRONTMATTER</div>
+                    <div class="chip-row" style="margin-bottom:16px;">
+                        <span class="chip"><span class="k">name</span></span>
+                        <span class="chip"><span class="k">description</span></span>
+                        <span class="chip"><span class="k">tools</span></span>
+                        <span class="chip"><span class="k">model</span></span>
+                        <span class="chip"><span class="k">handoffs</span></span>
+                    </div>
+                    <div class="mono" style="margin-bottom:8px;">HANDOFF WORKFLOW</div>
+                    <div class="flow">
+                        <div class="flow-node"><span class="fn-title">Plan</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Implement</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Review</span></div>
+                    </div>
+                    <p class="mono" style="margin-top:12px;">Shown: Claude format. VS Code <code>.agent.md</code> uses a YAML <code>tools:</code> array.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 24 PARALLEL WORK ════════════════ -->
+    <section class="slide" data-screen-label="23 Parallel work" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Orchestration · Running work in parallel</span>
+                <span class="page-num">23</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Running work in <span class="serif-em">parallel</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:760px;">
+                Run several agents at once — independent investigations, or a main agent delegating to subagents.
+            </p>
+            <div class="fan">
+                <div class="flow-node" style="flex:1 1 0;"><span class="fn-title">One task</span><span class="fn-sub">"Review this change"</span></div>
+                <div class="flow-arrow"></div>
+                <div class="sub-stack">
+                    <div class="sub-box"><div class="sb-t">Correctness</div></div>
+                    <div class="sub-box"><div class="sb-t">Security</div></div>
+                    <div class="sub-box"><div class="sb-t">Performance</div></div>
+                </div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node" style="flex:1 1 0;"><span class="fn-title">Compare results</span><span class="fn-sub">merge the findings</span></div>
+            </div>
+            <p class="mono" style="margin-top:18px;">Trade-off: each subagent starts with a fresh context (its configuration and the delegated task) and adds time and cost. VS Code shows them in the Sessions view.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 25 TOKEN ECONOMICS ════════════════ -->
+    <section class="slide" data-screen-label="24 Token economics" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Cost · Token economics</span>
+                <span class="page-num">24</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Token <span class="serif-em">economics</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:22px;max-width:760px;">
+                You pay per token. Rates differ sharply — output is the expensive part, and repeated content
+                billed from cache is cheap.
+            </p>
+            <div style="max-width:820px;">
+                <div class="cost-row"><span class="cost-label">Cached input</span><div class="cost-track"><div class="cost-fill" style="width:2%;"></div></div><span class="cost-val">≈0.1× input</span></div>
+                <div class="cost-row"><span class="cost-label">Input</span><div class="cost-track"><div class="cost-fill" style="width:20%;"></div></div><span class="cost-val">baseline</span></div>
+                <div class="cost-row"><span class="cost-label">Output</span><div class="cost-track"><div class="cost-fill" style="width:100%;"></div></div><span class="cost-val">≈5× input</span></div>
+            </div>
+            <p class="mono" style="margin-top:14px;">GitHub Copilot: usage-based AI Credits with a monthly allowance (older annual plans use premium requests). Code completions are not charged per request on paid plans. Verify current numbers in the billing docs.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 26 TOKEN OPTIMIZATION ════════════════ -->
+    <section class="slide" data-screen-label="25 Token optimization" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">Cost · Token optimization</span>
+                <span class="page-num">25</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:12px;">Token <span class="serif-em">optimization</span><span class="dot">.</span></h2>
+            <div class="mono" style="margin:2px 0 7px;">FOUNDATION · PRACTICES</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="perm"><span class="perm-n">Scope context</span><span class="perm-k">#file</span><span class="perm-s">Point at the 2&ndash;3 files a task touches</span></div>
+                <div class="perm"><span class="perm-n">Terse prompts</span><span class="perm-s">Drop filler &mdash; 30&ndash;50% less input</span></div>
+                <div class="perm"><span class="perm-n">Constrain output</span><span class="perm-s">"Code only" &mdash; output is &asymp;5&times; input</span></div>
+                <div class="perm"><span class="perm-n">Compact often</span><span class="perm-k">/compact</span><span class="perm-s">After each sub-task; new topic = new chat</span></div>
+                <div class="perm"><span class="perm-n">Right-size effort</span><span class="perm-s">Lower reasoning for renames &amp; simple edits</span></div>
+            </div>
+            <div class="mono" style="margin:13px 0 7px;">SURFACES · TOOLS</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="perm"><span class="perm-n">Pick the mode</span><span class="perm-s">Ask · Edit · Agent &mdash; Agent costs 5&ndash;25&times;</span></div>
+                <div class="perm"><span class="perm-n">Model on Auto</span><span class="perm-s">Override only when a task needs it</span></div>
+                <div class="perm"><span class="perm-n">Scope instructions</span><span class="perm-k">applyTo</span><span class="perm-s">Globs cut per-call context 50&ndash;80%</span></div>
+                <div class="perm"><span class="perm-n">Delegate reads</span><span class="perm-s">Heavy file reads &rarr; a subagent's own context</span></div>
+                <div class="perm"><span class="perm-n">CLI over MCP</span><span class="perm-s">Disable MCP servers you don't use</span></div>
+            </div>
+            <div class="mono" style="margin:13px 0 7px;">OBSERVABILITY · USAGE</div>
+            <div class="perm-grid" style="grid-template-columns:repeat(5,1fr);">
+                <div class="perm"><span class="perm-n">Track credits</span><span class="perm-s">Watch AI Credit spend in Settings</span></div>
+                <div class="perm"><span class="perm-n">Set a baseline</span><span class="perm-s">Measure one task before and after</span></div>
+                <div class="perm"><span class="perm-n">Catch loops</span><span class="perm-s">Intervene on runaway agents; don't retry</span></div>
+                <div class="perm"><span class="perm-n">Prune context files</span><span class="perm-s">Keep only non-obvious "landmines"</span></div>
+                <div class="perm"><span class="perm-n">Read the errors</span><span class="perm-s">"Limit reached" = context too large</span></div>
+            </div>
+            <p class="mono" style="margin-top:13px;">Output costs about 5&times; input and Agent mode costs 5&ndash;25&times; more than Ask &mdash; terser prompts, scoped context, and the right surface and model compound into large savings.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 27 CLAUDE CODE ════════════════ -->
+    <section class="slide" data-screen-label="26 Claude Code" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Command line · Claude Code</span>
+                <span class="page-num">26</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Claude <span class="serif-em">Code</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:760px;">
+                Anthropic's agent in the terminal — memory files, commands, subagents, skills, MCP, and hooks.
+                Also runs in IDEs and CI.
+            </p>
+            <div class="split narrow-left">
+<pre class="code-block tree">your-repo/
+├── CLAUDE.md            <span class="code-cmt">project memory</span>
+├── .mcp.json            <span class="code-cmt">MCP servers</span>
+├── .claude/
+│   ├── settings.json    <span class="code-cmt">permissions, hooks</span>
+│   ├── commands/        <span class="code-cmt">/slash commands</span>
+│   ├── agents/          <span class="code-cmt">subagents</span>
+│   └── skills/          <span class="code-cmt">SKILL.md folders</span>
+└── .github/workflows/
+    └── claude.yml       <span class="code-cmt">GitHub Actions</span></pre>
+                <div>
+                    <div class="mono" style="margin-bottom:8px;">COMMANDS</div>
+                    <div class="chip-row" style="margin-bottom:14px;">
+                        <span class="chip"><span class="k">claude</span></span>
+                        <span class="chip"><span class="k">claude -p</span> headless</span>
+                        <span class="chip"><span class="k">-c</span> continue</span>
+                        <span class="chip"><span class="k">-r</span> resume</span>
+                        <span class="chip"><span class="k">--model</span></span>
+                    </div>
+                    <div class="check-list" style="grid-template-columns:1fr;">
+                        <div class="check-item">Attach images: drag or paste (<kbd>Ctrl+V</kbd>); <code>@file</code> adds a file</div>
+                        <div class="check-item">CI: the Claude Code GitHub Action (mention <code>@claude</code> on an issue or PR)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 28 CLAUDE CODE COMMANDS ════════════════ -->
+    <section class="slide" data-screen-label="27 Claude Code commands" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Command line · Claude Code commands</span>
+                <span class="page-num">27</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Claude Code <span class="serif-em">commands</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:16px;max-width:840px;">
+                Commands steer a session from inside Claude Code. Type <code>/</code> to see them all; text after the name becomes its arguments.
+            </p>
+            <div class="cmd-cols">
+                <div class="cmd-col">
+                    <div class="cmd-cat">Set up &amp; steer</div>
+                    <div class="ci"><code>/init</code><span>— Generate a CLAUDE.md project guide</span></div>
+                    <div class="ci"><code>/memory</code><span>— Edit CLAUDE.md memory files</span></div>
+                    <div class="ci"><code>/mcp</code><span>— Manage MCP server connections</span></div>
+                    <div class="ci"><code>/permissions</code><span>— Set allow / ask / deny rules</span></div>
+                    <div class="ci"><code>/agents</code><span>— Create or manage subagents</span></div>
+                    <div class="ci"><code>/config</code><span>— Open settings: theme, model, editor</span></div>
+                    <div class="ci"><code>/model</code><span>— Switch the AI model</span></div>
+                    <div class="ci"><code>/effort</code><span>— Set the reasoning effort level</span></div>
+                    <div class="ci"><code>/plan</code><span>— Enter plan mode before a big change</span></div>
+                    <div class="ci"><code>/context</code><span>— Show what fills the context window</span></div>
+                    <div class="ci"><code>/compact</code><span>— Summarize the chat to free context</span></div>
+                    <div class="ci"><code>/clear</code><span>— Start fresh, keep project memory</span></div>
+                    <div class="ci"><code>/rewind</code><span>— Roll back code and conversation</span></div>
+                    <div class="ci"><code>/resume</code><span>— Resume a past conversation</span></div>
+                </div>
+                <div class="cmd-col">
+                    <div class="cmd-cat">Build, ship &amp; check</div>
+                    <div class="ci"><code>/batch</code><span>— Split a big change across worktrees</span></div>
+                    <div class="ci"><code>/fork</code><span>— Send a side task to a background agent</span></div>
+                    <div class="ci"><code>/background</code><span>— Detach the session to keep it running</span></div>
+                    <div class="ci"><code>/tasks</code><span>— View background work in the session</span></div>
+                    <div class="ci"><code>/diff</code><span>— View uncommitted changes</span></div>
+                    <div class="ci"><code>/code-review</code><span>— Review the diff (<code>--fix</code> applies)</span></div>
+                    <div class="ci"><code>/security-review</code><span>— Scan the diff for vulnerabilities</span></div>
+                    <div class="ci"><code>/review</code><span>— Fast read-only review of a GitHub PR</span></div>
+                    <div class="ci"><code>/doctor</code><span>— Setup checkup that can fix issues</span></div>
+                    <div class="ci"><code>/usage</code><span>— Session cost and plan limits</span></div>
+                    <div class="ci"><code>/skills</code><span>— List and filter available skills</span></div>
+                    <div class="ci"><code>/export</code><span>— Save the conversation to a file</span></div>
+                    <div class="ci"><code>/copy</code><span>— Copy the last reply or a code block</span></div>
+                    <div class="ci"><code>/help</code><span>— Show help and every command</span></div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:16px;">Custom commands live in <code>.claude/commands/</code> or <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Source: code.claude.com/docs/en/commands</p>
+        </div>
+    </section>
+
+    <!-- ════════════════ 29 COPILOT CLI ════════════════ -->
+    <section class="slide" data-screen-label="28 Copilot CLI" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Command line · Copilot CLI</span>
+                <span class="page-num">28</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:10px;">Copilot <span class="serif-em">CLI</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:760px;">
+                GitHub's terminal agent — the <code>copilot</code> command from <code>@github/copilot</code>. It reads and
+                changes files and runs commands, with permission prompts.
+            </p>
+            <div class="split narrow-left">
+<pre class="code-block" style="font-size:11.5px;"><span class="code-cmt"># install and start</span>
+<span class="code-kw">npm</span> install -g @github/copilot
+<span class="code-kw">copilot</span>
+
+<span class="code-cmt"># in the session</span>
+/login
+<span class="code-str">"Add validation to the signup form"</span>
+
+@path   <span class="code-cmt">add a file</span>
+!cmd    <span class="code-cmt">run a shell command</span>
+/mcp add   <span class="code-cmt">add a server</span></pre>
+                <div>
+                    <div class="check-list" style="grid-template-columns:1fr;">
+                        <div class="check-item">The older <code>gh copilot</code> extension is retired — use <code>@github/copilot</code></div>
+                        <div class="check-item">Config in <code>~/.copilot</code>; servers in <code>~/.copilot/mcp-config.json</code></div>
+                        <div class="check-item">Reads repo instructions and <code>.github/agents/</code></div>
+                        <div class="check-item">VS Code can run it as a background Copilot CLI session</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 30 CHEATSHEET ════════════════ -->
+    <section class="slide" data-screen-label="29 Cheatsheet" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VII.</span>
+                <span class="rule-meta">Reference · File cheatsheet</span>
+                <span class="page-num">29</span>
+            </div>
+            <h2 class="h-lg" style="margin-bottom:16px;">File <span class="serif-em">cheatsheet</span><span class="dot">.</span></h2>
+            <table class="plan-table">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">Purpose</th>
+                        <th>GitHub Copilot (VS Code)</th>
+                        <th>Claude Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Always-on instructions</td><td><code>.github/copilot-instructions.md</code>, <code>AGENTS.md</code></td><td><code>CLAUDE.md</code>, <code>~/.claude/CLAUDE.md</code></td></tr>
+                    <tr><td>File-scoped instructions</td><td><code>.github/instructions/*.instructions.md</code></td><td><code>.claude/rules/*.md</code></td></tr>
+                    <tr><td>Command / prompt</td><td><code>.github/prompts/*.prompt.md</code></td><td><code>.claude/commands/*.md</code></td></tr>
+                    <tr><td>Custom agent</td><td><code>.github/agents/*.agent.md</code></td><td><code>.claude/agents/*.md</code></td></tr>
+                    <tr><td>Skill</td><td><code>.github/skills/&lt;n&gt;/SKILL.md</code></td><td><code>.claude/skills/&lt;n&gt;/SKILL.md</code></td></tr>
+                    <tr><td>MCP servers</td><td><code>.vscode/mcp.json</code> (key <code>servers</code>)</td><td><code>.mcp.json</code> (key <code>mcpServers</code>)</td></tr>
+                    <tr><td>Permissions</td><td>setting <code>chat.permissions.default</code></td><td><code>.claude/settings.json</code></td></tr>
+                    <tr><td>Command line</td><td><code>copilot</code> (<code>@github/copilot</code>)</td><td><code>claude</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ════════════════ 31 RESOURCES ════════════════ -->
+    <section class="slide" data-screen-label="30 Resources" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VII.</span>
+                <span class="rule-meta">Reference · Resources</span>
+                <span class="page-num">30</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Resources<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:18px;max-width:820px;">
+                Tools worth installing after this workshop — each one cuts tokens, adds insight, or ships ready-made customizations.
+            </p>
+            <div class="res-grid">
+                <a class="res-card" href="https://github.com/Graphify-Labs/graphify" target="_blank" rel="noopener">
+                    <div class="res-head"><span class="res-name">graphify</span><span class="res-kind">Skill</span></div>
+                    <p class="res-desc">Turns any codebase, docs, or media into a queryable knowledge graph you search instead of grepping.</p>
+                    <span class="res-link">github.com/Graphify-Labs/graphify</span>
+                </a>
+                <a class="res-card" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">
+                    <div class="res-head"><span class="res-name">rtk</span><span class="res-kind">CLI</span></div>
+                    <p class="res-desc">Proxy that filters and compresses command output, saving 60–90% of the tokens tools would spend.</p>
+                    <span class="res-link">github.com/rtk-ai/rtk</span>
+                </a>
+                <a class="res-card" href="https://github.com/JuliusBrussee/caveman" target="_blank" rel="noopener">
+                    <div class="res-head"><span class="res-name">caveman</span><span class="res-kind">Skill</span></div>
+                    <p class="res-desc">Makes your agent answer in terse caveman-speak — same substance, ~65% fewer output tokens.</p>
+                    <span class="res-link">github.com/JuliusBrussee/caveman</span>
+                </a>
+                <a class="res-card wide" href="https://marketplace.visualstudio.com/items?itemName=RobBos.ai-engineering-fluency" target="_blank" rel="noopener">
+                    <div class="res-head"><span class="res-name">AI Engineering Fluency</span><span class="res-kind">VS Code extension</span></div>
+                    <p class="res-desc">Tracks your Copilot token usage, cost, and a fluency score right in the VS Code status bar.</p>
+                    <span class="res-link">marketplace.visualstudio.com · RobBos.ai-engineering-fluency</span>
+                </a>
+                <a class="res-card wide" href="https://awesome-copilot.github.com/" target="_blank" rel="noopener">
+                    <div class="res-head"><span class="res-name">Awesome Copilot</span><span class="res-kind">Collection</span></div>
+                    <p class="res-desc">A curated library of ready-made Copilot instructions, prompts, chat modes, and MCP servers.</p>
+                    <span class="res-link">awesome-copilot.github.com</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════ 32 THANK YOU ════════════════ -->
+    <section class="slide" data-screen-label="31 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
+                         alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 31</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
