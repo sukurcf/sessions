@@ -461,6 +461,44 @@
             transform: rotate(45deg);
         }
 
+        /* Labeled comparison rows — same flow kit, one row per behaviour */
+        .io-compare { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .io-row { display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: center; }
+        .io-tag {
+            font-family: 'Inter Tight', sans-serif; font-weight: 800;
+            font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--ink-faint); line-height: 1.4; text-align: right;
+        }
+        .io-row.on .io-tag { color: var(--coral); }
+        .flow.compact .flow-node { padding: 8px 10px; gap: 3px; }
+        .flow.compact .fn-title { font-size: 12.5px; }
+        .flow.compact .fn-sub { font-size: 10.5px; }
+        .flow.compact .flow-arrow { flex: 0 0 22px; }
+        .loop-return.inline { margin-top: 7px; padding: 6px; font-size: 11.5px; }
+        /* Repeated runs of one input — alternatives, so no arrows between them */
+        .run-set { flex: 2 1 0; min-width: 0; display: flex; gap: 8px; }
+        .run-set .flow-node { flex: 1 1 0; }
+
+        /* Equation infographic — parts that add up to one thing */
+        .eq { display: flex; align-items: stretch; justify-content: center; width: 100%; }
+        .eq-term {
+            flex: 1 1 0; min-width: 0;
+            display: flex; flex-direction: column; gap: 5px;
+            padding: 11px 12px; border-radius: 12px; text-align: center;
+            background: var(--bone); border: 1px solid rgba(21,20,15,0.10);
+            box-shadow: 0 1px 6px rgba(21,20,15,0.04);
+        }
+        .eq-term.sum { flex: 1.2 1 0; background: var(--coral); border-color: var(--coral); }
+        .eq-t { font-family: 'Inter Tight', sans-serif; font-weight: 800; font-size: 15px; line-height: 1.15; }
+        .eq-s { font-size: 11px; color: var(--ink-mute); line-height: 1.4; }
+        .eq-term.sum .eq-t { color: #fff; }
+        .eq-term.sum .eq-s { color: rgba(255,255,255,0.9); }
+        .eq-op {
+            flex: 0 0 34px; align-self: center; text-align: center;
+            font-family: 'Inter Tight', sans-serif; font-weight: 800;
+            font-size: 22px; color: var(--coral);
+        }
+
         /* Chips */
         .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
@@ -604,13 +642,13 @@
 
         /* Command reference — two labeled columns of "cmd — description" rows */
         .cmd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 44px; width: 100%; }
-        .cmd-col { display: flex; flex-direction: column; gap: 8px; }
+        .cmd-col { display: flex; flex-direction: column; gap: 6px; }
         .cmd-cat {
             font-family: 'Inter Tight', sans-serif; font-weight: 700;
             font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
             color: var(--coral); margin-bottom: 2px;
         }
-        .ci { display: flex; align-items: baseline; gap: 8px; font-size: 13px; line-height: 1.3; color: var(--ink-soft); }
+        .ci { display: flex; align-items: baseline; gap: 8px; font-size: 13px; line-height: 1.25; color: var(--ink-soft); }
         .ci code { flex: 0 0 auto; white-space: nowrap; overflow-wrap: normal; }
         .ci span { color: var(--ink-mute); }
 
@@ -765,12 +803,39 @@
                 <span class="rule-meta">Basics · How LLMs differ from normal software</span>
                 <span class="page-num">05</span>
             </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Not like <span class="serif-em">normal software</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:20px;max-width:780px;">
-                Traditional programs follow rules a developer wrote by hand. A language model was never told
-                the rules — it learned patterns from examples, so it behaves very differently.
+            <h2 class="h-xl" style="margin-bottom:8px;">Not like <span class="serif-em">normal software</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:12px;max-width:880px;">
+                A traditional program follows rules a developer wrote by hand. A model was never told the rules
+                — it learned patterns from examples, so it behaves very differently.
             </p>
-            <table class="plan-table">
+            <div class="mono" style="margin-bottom:6px;">RUN THE SAME THING THREE TIMES</div>
+            <div class="io-compare">
+                <div class="io-row">
+                    <span class="io-tag">Program<br>identical</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-title">calc_tax(1000)</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="run-set">
+                            <div class="flow-node"><span class="fn-title">180</span></div>
+                            <div class="flow-node"><span class="fn-title">180</span></div>
+                            <div class="flow-node"><span class="fn-title">180</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="io-row on">
+                    <span class="io-tag">Model<br>varies</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-title">“write calc_tax”</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="run-set">
+                            <div class="flow-node"><span class="fn-title">Version A</span></div>
+                            <div class="flow-node"><span class="fn-title">Version B</span></div>
+                            <div class="flow-node"><span class="fn-title">Version C</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="plan-table" style="margin-top:14px;">
                 <thead>
                     <tr><th style="width:20%;">Aspect</th><th>Traditional program</th><th>Language model</th></tr>
                 </thead>
@@ -782,7 +847,7 @@
                     <tr><td>Fixing it</td><td>Edit the code and redeploy</td><td>Change the prompt, or retrain the model</td></tr>
                 </tbody>
             </table>
-            <p class="mono" style="margin-top:16px;">Example: a tax function returns the same number every time; ask Copilot for that function twice and you may get two different but valid versions — which is why you always review AI output.</p>
+            <p class="mono" style="margin-top:12px;">All three versions can be correct — which is why you always review AI output.</p>
         </div>
     </section>
 
@@ -917,43 +982,56 @@
                 <span class="rule-meta">Basics · Tools (function calling)</span>
                 <span class="page-num">10</span>
             </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Tools <span class="serif-em">(function calling)</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:16px;max-width:720px;">
-                Tools let a model take actions beyond writing text — read a file, run a command, query a
-                database, fetch a URL.
+            <h2 class="h-xl" style="margin-bottom:8px;">Tools <span class="serif-em">(function calling)</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:14px;max-width:880px;">
+                By default a model does exactly one thing: text in, text out. Tools add a second path — the model
+                asks the host to run something, reads the real result, and answers from that.
             </p>
-            <div class="flow">
-                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Define tools</span><span class="fn-sub">Name, description, parameter schema</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Model calls one</span><span class="fn-sub">Returns a structured tool call, not text</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Host runs it</span><span class="fn-sub">Executes and returns the result</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Model continues</span><span class="fn-sub">Reads the result, may call more tools</span></div>
+            <div class="io-compare">
+                <div class="io-row">
+                    <span class="io-tag">Default<br>text only</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-title">Text in</span><span class="fn-sub">your prompt, as tokens</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Predict</span><span class="fn-sub">only from what it learned in training</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Text out</span><span class="fn-sub">written, never read or run or verified</span></div>
+                    </div>
+                </div>
+                <div class="io-row on">
+                    <span class="io-tag">With tools</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-title">Text in + tools</span><span class="fn-sub">prompt plus each tool's name &amp; schema</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Decide</span><span class="fn-sub">emits a structured call <code>read_file(path)</code></span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Host executes</span><span class="fn-sub">your machine runs it, not the model</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Result back</span><span class="fn-sub">real output enters the context</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Text out</span><span class="fn-sub">grounded in what actually ran</span></div>
+                    </div>
+                </div>
             </div>
-            <div class="toolset-grid" style="margin-top:16px;">
+            <div class="loop-return inline" style="margin-left:118px;">Decide → execute → result repeats until the model has what it needs</div>
+            <div class="mono" style="margin:9px 0 6px;">ANY CAPABILITY CAN BE A TOOL · REPRESENTATIVE EXAMPLES</div>
+            <div class="toolset-grid">
                 <div class="toolset">
                     <div class="ts-head">Filesystem</div>
-                    <div class="ts-tool">create_file</div>
                     <div class="ts-tool">read_file</div>
+                    <div class="ts-tool">create_file</div>
                     <div class="ts-tool">edit_file</div>
-                    <div class="ts-tool">create_directory</div>
-                    <div class="ts-tool">delete_file</div>
                 </div>
                 <div class="toolset">
                     <div class="ts-head">Terminal</div>
                     <div class="ts-tool">run_command</div>
                     <div class="ts-tool">get_output</div>
-                    <div class="ts-tool">send_input</div>
                     <div class="ts-tool">kill_process</div>
-                    <div class="ts-tool">list_processes</div>
                 </div>
                 <div class="toolset">
                     <div class="ts-head">Web fetch</div>
                     <div class="ts-tool">fetch_url</div>
                     <div class="ts-tool">web_search</div>
-                    <div class="ts-tool">extract_content</div>
-                    <div class="ts-tool">to_markdown</div>
                     <div class="ts-tool">download_file</div>
                 </div>
                 <div class="toolset">
@@ -961,19 +1039,15 @@
                     <div class="ts-tool">run_query</div>
                     <div class="ts-tool">list_tables</div>
                     <div class="ts-tool">describe_table</div>
-                    <div class="ts-tool">execute_sql</div>
-                    <div class="ts-tool">list_schemas</div>
                 </div>
                 <div class="toolset">
                     <div class="ts-head">Browser</div>
                     <div class="ts-tool">navigate</div>
                     <div class="ts-tool">click</div>
-                    <div class="ts-tool">type_text</div>
                     <div class="ts-tool">screenshot</div>
-                    <div class="ts-tool">read_page</div>
                 </div>
             </div>
-            <p class="mono" style="margin-top:14px;">Example: ask "run the tests and fix what fails" — the model calls <code>run_command</code>, reads the output, then <code>edit_file</code>, and loops. Any capability can be a tool; MCP standardizes how they're exposed →</p>
+            <p class="mono" style="margin-top:10px;">Example: ask "run the tests and fix what fails" — without tools the model can only describe what to try; with tools it calls <code>run_command</code>, reads the actual failure, calls <code>edit_file</code>, and repeats. MCP standardizes how tools are exposed →</p>
         </div>
     </section>
 
@@ -985,22 +1059,62 @@
                 <span class="rule-meta">Basics · Agents</span>
                 <span class="page-num">11</span>
             </div>
-            <h2 class="h-xl" style="margin-bottom:10px;"><span class="serif-em">Agents</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:22px;max-width:720px;">
-                An agent is a model plus tools plus a loop. Plain chat is one prompt and one answer; an agent
-                repeats until the task is done.
+            <h2 class="h-xl" style="margin-bottom:8px;"><span class="serif-em">Agents</span><span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:16px;max-width:880px;">
+                An agent is not a different or smarter model. It is the same model, wrapped in a program that
+                gives it tools and re-runs it in a loop until the goal is met.
             </p>
-            <div class="flow">
-                <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Goal</span><span class="fn-sub">You state the task</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Decide</span><span class="fn-sub">Choose the next action</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Run tool</span><span class="fn-sub">Edit a file, run a command</span></div>
-                <div class="flow-arrow"></div>
-                <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Read result</span><span class="fn-sub">Check output and errors</span></div>
+            <div class="eq">
+                <div class="eq-term">
+                    <span class="eq-t">Model</span>
+                    <span class="eq-s">Predicts the next token. Hosted by a provider — Claude, GPT, Gemini.</span>
+                </div>
+                <div class="eq-op">+</div>
+                <div class="eq-term">
+                    <span class="eq-t">Harness</span>
+                    <span class="eq-s">The app around it — Copilot, Claude Code. Builds the prompt, keeps the context, calls the API.</span>
+                </div>
+                <div class="eq-op">+</div>
+                <div class="eq-term">
+                    <span class="eq-t">Tools</span>
+                    <span class="eq-s">Actions the harness will run for it — read, edit, execute, fetch.</span>
+                </div>
+                <div class="eq-op">+</div>
+                <div class="eq-term">
+                    <span class="eq-t">Loop</span>
+                    <span class="eq-s">Feed each result back and call the model again until it stops.</span>
+                </div>
+                <div class="eq-op">=</div>
+                <div class="eq-term sum">
+                    <span class="eq-t">Agent</span>
+                    <span class="eq-s">Takes a goal and works toward it on its own, one action at a time.</span>
+                </div>
             </div>
-            <div class="loop-return">Repeat steps 2–4 until the task is complete</div>
-            <p class="mono" style="margin-top:18px;">Example: "the build is failing — find out why and fix it." The agent reads the error, edits a file, re-runs the build, and repeats until it passes.</p>
+            <div class="mono" style="margin:11px 0 6px;">CHAT VS AGENT · SAME MODEL, DIFFERENT WRAPPER</div>
+            <div class="io-compare">
+                <div class="io-row">
+                    <span class="io-tag">Plain<br>chat</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-title">You ask</span><span class="fn-sub">one prompt</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-title">Model answers</span><span class="fn-sub">one reply, then it stops and waits for you</span></div>
+                    </div>
+                </div>
+                <div class="io-row on">
+                    <span class="io-tag">Agent</span>
+                    <div class="flow compact">
+                        <div class="flow-node"><span class="fn-badge">1</span><span class="fn-title">Goal</span><span class="fn-sub">you state the task</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-badge">2</span><span class="fn-title">Decide</span><span class="fn-sub">pick the next action</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-badge">3</span><span class="fn-title">Run tool</span><span class="fn-sub">edit a file, run a command</span></div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node"><span class="fn-badge">4</span><span class="fn-title">Read result</span><span class="fn-sub">check output and errors</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="loop-return inline" style="margin-left:118px;">Steps 2–4 repeat until the task is complete</div>
+            <p class="mono" style="margin-top:10px;">Example: "the build is failing — find out why and fix it." It reads the error, edits a file, re-runs the build, and repeats until it passes. Swap the model to change how well it decides; swap the harness to change what it may do.</p>
         </div>
     </section>
 
@@ -1130,7 +1244,17 @@ Fix issue #<span class="code-kw">$ARGUMENTS</span>.
 Context: <span class="code-kw">!`gh issue view $ARGUMENTS`</span></pre>
                 </div>
             </div>
-            <p class="mono" style="margin-top:12px;">Type <code>/security-review</code> or <code>/fix-issue</code> to run. Copilot fills <code>${input:x}</code> / <code>${file}</code>; Claude fills <code>$ARGUMENTS</code> and runs <code>!`cmd`</code>. This repo has a real <code>remotion-permission-levels.prompt.md</code>.</p>
+            <div class="mono" style="margin:12px 0 6px;">HOW A PROMPT FILE RUNS</div>
+            <div class="flow compact">
+                <div class="flow-node"><span class="fn-title">Save the file</span><span class="fn-sub">the filename becomes the command name</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-title">Type /name</span><span class="fn-sub">text after it becomes the argument</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-title">Placeholders fill in</span><span class="fn-sub">Copilot ${file} · Claude $ARGUMENTS</span></div>
+                <div class="flow-arrow"></div>
+                <div class="flow-node"><span class="fn-title">Sent as your prompt</span><span class="fn-sub">the body becomes that turn's message</span></div>
+            </div>
+            <p class="mono" style="margin-top:10px;">Claude also runs <code>!`cmd`</code> first and pastes the output in. This repo has a real <code>remotion-permission-levels.prompt.md</code>.</p>
         </div>
     </section>
 
@@ -1552,7 +1676,7 @@ You are a senior code reviewer...</pre>
                 <span class="page-num">27</span>
             </div>
             <h2 class="h-xl" style="margin-bottom:8px;">Claude Code <span class="serif-em">commands</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:16px;max-width:840px;">
+            <p class="lead" style="margin-bottom:12px;max-width:840px;">
                 Commands steer a session from inside Claude Code. Type <code>/</code> to see them all; text after the name becomes its arguments.
             </p>
             <div class="cmd-cols">
@@ -1591,7 +1715,7 @@ You are a senior code reviewer...</pre>
                     <div class="ci"><code>/help</code><span>— Show help and every command</span></div>
                 </div>
             </div>
-            <p class="mono" style="margin-top:16px;">Custom commands live in <code>.claude/commands/</code> or <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Source: code.claude.com/docs/en/commands</p>
+            <p class="mono" style="margin-top:10px;">Custom commands live in <code>.claude/commands/</code> or <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Source: code.claude.com/docs/en/commands</p>
         </div>
     </section>
 
