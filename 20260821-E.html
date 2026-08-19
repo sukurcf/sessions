@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot Agents &amp; MCP — Developer Workshop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(28px, 3.45vw, 45px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(20px, 2.5vw, 34px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(15px, 1.7vw, 22px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(13px, 1.17vw, 17.5px);
+            line-height: 1.55; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(96px, 12vh, 128px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            padding-bottom: clamp(96px, 12vh, 128px);
+            position: relative; z-index: 1;
+        }
+
+        /* Filled by script: holds each slide's children so they can be scaled to fit above the nav overlays. */
+        .fit-wrap {
+            display: flex; flex-direction: column;
+            width: 100%;
+            flex: 0 0 auto;
+            transform-origin: top center;
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 22px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* Code-left split: code column first, explanation second. */
+        .split { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 22px; align-items: start; }
+        .split.even { grid-template-columns: 1fr 1fr; }
+        .split.wide-code { grid-template-columns: 1.35fr 0.65fr; }
+        .stack { display: flex; flex-direction: column; gap: 12px; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 14px 16px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15.4px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13.6px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .feature-card code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.2px; color: var(--ink-soft);
+        }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(34px, 4vw, 54px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 12.4px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Plan pill ── */
+        .plan-pill {
+            display: inline-block;
+            padding: 3px 11px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 10.5px; font-weight: 600;
+            letter-spacing: 0.08em;
+            max-width: 100%; overflow-wrap: anywhere;
+        }
+        .pill-free { background: var(--olive); color: var(--paper); }
+        .pill-pro { background: var(--coral); color: #fff; }
+        .pill-biz { background: var(--ink); color: var(--paper); }
+        .pill-ent { background: var(--mustard); color: var(--ink); }
+
+        kbd {
+            display: inline-block;
+            padding: 2px 7px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--ink-soft);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 18px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 6px; padding: 7px 13px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            flex-wrap: nowrap; max-width: 56vw;
+        }
+        #nav .dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0; flex: 0 0 auto;
+        }
+        #nav .dot.mod { height: 9px; width: 3px; border-radius: 2px; background: rgba(21,20,15,0.34); }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 16px; height: 5px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 62px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a { display: grid; place-items: center; transition: transform 0.15s ease; }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img { width: 130px; height: 130px; border-radius: 14px; display: block; }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute); margin-top: 8px; letter-spacing: 0.02em;
+        }
+
+        /* ── Decorative elements ── */
+        .corner-bracket {
+            position: absolute; width: 22px; height: 22px;
+            border-color: var(--ink-faint); border-style: solid;
+            border-width: 0; opacity: 0.3;
+        }
+        .corner-bracket.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+        .corner-bracket.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+        .corner-bracket.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+        .corner-bracket.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13.6px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13.6px;
+            padding: 9px 11px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 7px 11px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+        .plan-table.dense { font-size: 12.4px; }
+        .plan-table.dense th { font-size: 12.4px; padding: 7px 9px; }
+        .plan-table.dense td { padding: 6px 9px; }
+        .plan-table code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.94em; color: var(--ink);
+        }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.4px; line-height: 1.55;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 15px 17px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .code-block.sm { font-size: 12.2px; }
+        .code-block.xs { font-size: 11px; line-height: 1.5; padding: 13px 15px; }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════════════════════════════════════
+         01  TITLE
+         ════════════════════════════════════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:20px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="180" height="180" style="display:block;" />
+            <h1 class="h-hero" style="margin-top:4px;">Agents &amp; <span class="serif-em">MCP</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:620px;">A developer workshop on GitHub Copilot customization files, agent design, and the Model Context Protocol.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         02  AGENDA
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="02 Agenda" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">I.</span>
+                <span class="rule-meta">Agenda</span>
+                <span class="page-num">02</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:20px;">Five <span class="serif-em">modules</span><span class="dot">.</span></h2>
+            <div class="grid-2">
+                <div class="feature-card">
+                    <h3>01 · GitHub Copilot Advanced</h3>
+                    <p>The customization files in a repository. Instructions, prompts, and skills.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>02 · Copilot Agent Fundamentals</h3>
+                    <p>How an agent runs, and how to define your own with <code>.agent.md</code>.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>03 · Agentic Framework Envisioning</h3>
+                    <p>How to plan context, tools, and permissions before you write code.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>04 · Copilot Agents and MCP</h3>
+                    <p>The protocol, the wire methods, and <code>.vscode/mcp.json</code>.</p>
+                </div>
+                <div class="feature-card" style="grid-column:1 / -1;">
+                    <h3>05 · Custom MCP Workshop</h3>
+                    <p>Build, run, and test an MCP server in Python, then connect it to GitHub Copilot.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         03  MODULE I DIVIDER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="03 Module 1" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:14px;">
+            <p class="eyebrow">Module 01</p>
+            <h2 class="h-hero" style="max-width:900px;">GitHub Copilot <span class="serif-em">Advanced</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:640px;">
+                GitHub Copilot reads plain Markdown files from your repository.
+                You control its behaviour by adding files, not by changing settings.
+            </p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         04  FILE TREE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="04 File layout" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Copilot Advanced · file layout</span>
+                <span class="page-num">04</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Where the files <span class="serif-em">live</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm">your-repo/
+├── <span class="code-kw">AGENTS.md</span>                        <span class="code-cmt"># repo-wide rules</span>
+├── .github/
+│   ├── <span class="code-kw">copilot-instructions.md</span>       <span class="code-cmt"># repo-wide rules</span>
+│   ├── instructions/
+│   │   └── python.instructions.md   <span class="code-cmt"># scoped by glob</span>
+│   ├── prompts/
+│   │   └── new-endpoint.prompt.md   <span class="code-cmt"># /new-endpoint</span>
+│   ├── agents/
+│   │   └── reviewer.agent.md        <span class="code-cmt"># custom agent</span>
+│   ├── skills/
+│   │   └── release-notes/
+│   │       └── SKILL.md             <span class="code-cmt"># /release-notes</span>
+│   └── workflows/
+│       └── copilot-setup-steps.yml  <span class="code-cmt"># cloud agent env</span>
+└── .vscode/
+    └── mcp.json                     <span class="code-cmt"># MCP servers</span></div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Two scopes</h3>
+                        <p>Files under <code>.github/</code> are shared with the team through Git. The same file types also work per user under <code>~/.copilot/</code>.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>All plain Markdown</h3>
+                        <p>Each file is Markdown text. Some types add a small YAML block at the top, called frontmatter.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>No build step</h3>
+                        <p>Save the file and GitHub Copilot picks it up. Commit it and your team gets it too.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         05  AGENTS.MD
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="05 Repo instructions" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Copilot Advanced · repo instructions</span>
+                <span class="page-num">05</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Two files for <span class="serif-em">repo rules</span><span class="dot">.</span></h2>
+            <div class="split even">
+                <div class="code-block sm"><span class="code-cmt"># AGENTS.md  — repo root, no frontmatter</span>
+
+## Build and test
+Run <span class="code-str">`npm ci`</span> then <span class="code-str">`npm test`</span>.
+Do not commit without a passing test run.
+
+## Code style
+Use named exports. No default exports.
+Every new endpoint needs an integration test.
+
+## Do not touch
+<span class="code-str">`db/migrations/`</span> is generated. Edit the schema file
+instead and run <span class="code-str">`npm run migrate:gen`</span>.</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:34%;">File</th><th>Read by</th></tr>
+                        <tr><td><code>AGENTS.md</code></td><td>VS Code, Copilot CLI, cloud agent, and other tools that follow the open AGENTS.md format</td></tr>
+                        <tr><td><code>.github/<br>copilot-instructions.md</code></td><td>VS Code, github.com, code review, cloud agent</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>Which one to write</h3>
+                        <p>Write <code>AGENTS.md</code> if more than one tool reads your repository. Write <code>copilot-instructions.md</code> if you only use GitHub Copilot. Both are plain Markdown with no frontmatter.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Nested files</h3>
+                        <p>You can put an <code>AGENTS.md</code> in a subfolder. The nearest file in the directory tree wins. This is experimental, behind <code>chat.useNestedAgentsMdFiles</code>.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: agents.md · code.visualstudio.com/docs/copilot/customization/custom-instructions · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         06  INSTRUCTIONS.MD
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="06 Instructions files" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Copilot Advanced · scoped instructions</span>
+                <span class="page-num">06</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Rules for <span class="serif-em">some</span> files<span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/instructions/python.instructions.md</span>
+
+---
+description: <span class="code-str">Python rules for this repo</span>
+applyTo: <span class="code-str">"**/*.py"</span>
+---
+
+Use type hints on every public function.
+Raise <span class="code-str">`ValueError`</span> for bad input. Never return None
+to signal an error.
+
+Write tests with pytest. Name them <span class="code-str">`test_&lt;thing&gt;`</span>.</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:38%;">applyTo value</th><th>Applies to</th></tr>
+                        <tr><td><code>"**/*.py"</code></td><td>Every Python file</td></tr>
+                        <tr><td><code>"**/*.ts,**/*.tsx"</code></td><td>Two patterns, comma separated</td></tr>
+                        <tr><td><code>"src/api/**"</code></td><td>One folder and everything under it</td></tr>
+                        <tr><td><code>"**"</code></td><td>Every file in the repository</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>How it works</h3>
+                        <p>When a file you are working on matches the glob, GitHub Copilot adds this file to the request. Files that do not match are not sent, so you keep the request small.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>If you leave applyTo out</h3>
+                        <p>The file is never added on its own. You must reference it by hand in chat.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization/custom-instructions · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         07  PROMPT.MD
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="07 Prompt files" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Copilot Advanced · prompt files</span>
+                <span class="page-num">07</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">A task you run <span class="serif-em">again</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/prompts/new-endpoint.prompt.md</span>
+
+---
+description: <span class="code-str">Add a REST endpoint with tests</span>
+agent: <span class="code-str">agent</span>
+model: <span class="code-str">Claude Sonnet 5</span>
+tools: [<span class="code-str">'search'</span>, <span class="code-str">'edit'</span>, <span class="code-str">'runCommands'</span>]
+argument-hint: <span class="code-str">&lt;resource name&gt;</span>
+---
+
+Add a REST endpoint for <span class="code-kw">${input:resource}</span>.
+
+1. Add the route in <span class="code-str">`src/routes/`</span>.
+2. Add a request model with validation.
+3. Add an integration test.
+4. Run <span class="code-str">`npm test`</span> and fix what fails.</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Run it</h3>
+                        <p>Type <code>/new-endpoint</code> in chat. The file name is the command name.</p>
+                    </div>
+                    <table class="plan-table dense">
+                        <tr><th style="width:46%;">Variable</th><th>Value</th></tr>
+                        <tr><td><code>${input:name}</code></td><td>Asks the user for a value</td></tr>
+                        <tr><td><code>${input:name:hint}</code></td><td>Same, with placeholder text</td></tr>
+                        <tr><td><code>${selection}</code></td><td>The text selected in the editor</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>Why a file, not a message</h3>
+                        <p>A prompt file is reviewed in a pull request like any other code. When the steps change, you change one file.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization/prompt-files · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         08  SKILLS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="08 Skills" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">II.</span>
+                <span class="rule-meta">Copilot Advanced · skills</span>
+                <span class="page-num">08</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Package a <span class="serif-em">procedure</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/skills/release-notes/SKILL.md</span>
+
+---
+name: <span class="code-str">release-notes</span>
+description: <span class="code-str">Write release notes from merged pull</span>
+  <span class="code-str">requests since the last tag. Use when the</span>
+  <span class="code-str">user asks to prepare a release.</span>
+argument-hint: <span class="code-str">&lt;tag&gt;</span>
+---
+
+## Steps
+1. Run <span class="code-str">`git log &lt;last-tag&gt;..HEAD --oneline`</span>.
+2. Group commits into Added, Fixed, Changed.
+3. Write the file to <span class="code-str">`CHANGELOG.md`</span>.</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>The name rule</h3>
+                        <p><code>name</code> must match the parent folder name. Lowercase, no dots, no slashes, no colons, up to 64 characters.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>The description does the routing</h3>
+                        <p>GitHub Copilot reads only the <code>description</code> until the skill is needed. Say what the skill does and when to use it. Up to 1024 characters.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Two ways to load</h3>
+                        <p>Type <code>/release-notes</code>, or let GitHub Copilot match the description to your request and load it on its own.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization/skills · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         09  MODULE II DIVIDER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="09 Module 2" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:14px;">
+            <p class="eyebrow">Module 02</p>
+            <h2 class="h-hero" style="max-width:900px;">Agent <span class="serif-em">fundamentals</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:640px;">
+                An agent is a loop. It reads the task, calls a tool, reads the result,
+                and repeats until the task is done or it needs you.
+            </p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         10  THE AGENT LOOP
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="10 The agent loop" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agent fundamentals · the loop</span>
+                <span class="page-num">10</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">What an agent actually <span class="serif-em">does</span><span class="dot">.</span></h2>
+            <div class="split wide-code">
+                <div class="code-block sm"><span class="code-cmt">USER    "Fix the failing test in cart.py"</span>
+
+<span class="code-kw">1. READ</span>    task + instruction files + open file
+<span class="code-kw">2. PLAN</span>    decide the next single step
+<span class="code-kw">3. CALL</span>    a tool:  read_file("tests/cart.py")
+<span class="code-kw">4. OBSERVE</span> the tool result goes back into context
+<span class="code-kw">5. REPEAT</span>  until done, blocked, or out of budget
+
+<span class="code-cmt">Tools it calls along the way:</span>
+   search        find the failing assert
+   read_file     load cart.py
+   edit          change the function
+   runCommands   run pytest        <span class="code-cmt">← asks you first</span>
+   runCommands   pytest passes     <span class="code-cmt">← loop ends</span></div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Context is the input</h3>
+                        <p>Everything the agent knows comes from the request: your message, the instruction files that match, and the results of tools it already called.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Tools are the output</h3>
+                        <p>The model cannot touch your disk. It can only ask to run a tool. The editor runs it and hands back text.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>You approve the risky ones</h3>
+                        <p>Reading a file is automatic. Running a terminal command asks for confirmation the first time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         11  AGENT.MD
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="11 Custom agents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agent fundamentals · custom agents</span>
+                <span class="page-num">11</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Define your own <span class="serif-em">agent</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/agents/reviewer.agent.md</span>
+
+---
+name: <span class="code-str">reviewer</span>
+description: <span class="code-str">Reviews a diff for security bugs.</span>
+argument-hint: <span class="code-str">&lt;pull request number&gt;</span>
+model: <span class="code-str">Claude Opus 5</span>
+tools: [<span class="code-str">'search'</span>, <span class="code-str">'githubRepo'</span>, <span class="code-str">'runCommands'</span>]
+agents: [<span class="code-str">'Explore'</span>]
+user-invocable: <span class="code-kw">true</span>
+disable-model-invocation: <span class="code-kw">false</span>
+---
+
+You review code for security problems only.
+
+Read the diff. For each change, check input
+validation, authentication, and secrets in code.
+Report file and line. Do not edit any file.</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:44%;">Field</th><th>Meaning</th></tr>
+                        <tr><td><code>name</code></td><td>How you select it in chat</td></tr>
+                        <tr><td><code>description</code></td><td>When it should be picked</td></tr>
+                        <tr><td><code>tools</code></td><td>The only tools it may call</td></tr>
+                        <tr><td><code>agents</code></td><td>Agents it may hand work to</td></tr>
+                        <tr><td><code>model</code></td><td>Which model runs it</td></tr>
+                        <tr><td><code>user-invocable</code></td><td>Shows in the picker</td></tr>
+                        <tr><td><code>target</code></td><td><code>vscode</code> or <code>github-copilot</code></td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>Folder</h3>
+                        <p><code>.github/agents/</code> for the team. <code>~/.copilot/agents/</code> for you only. Chat mode files (<code>.chatmode.md</code>) are replaced by this format.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization/custom-agents · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         12  TOOLS LIST
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="12 Tool lists" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agent fundamentals · tool lists</span>
+                <span class="page-num">12</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Naming a <span class="serif-em">tool</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># Every tool from one MCP server</span>
+tools: [<span class="code-str">'bookshop/*'</span>]
+
+<span class="code-cmt"># One named tool from that server</span>
+tools: [<span class="code-str">'bookshop/find_book'</span>]
+
+<span class="code-cmt"># Built-in tools and MCP tools together</span>
+tools: [<span class="code-str">'search'</span>, <span class="code-str">'edit'</span>, <span class="code-str">'bookshop/find_book'</span>]
+
+<span class="code-cmt"># In the body text, point at one tool</span>
+Use <span class="code-kw">#tool:bookshop/find_book</span> before you answer.</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>The format is server slash tool</h3>
+                        <p>The part before the slash is the server name from your MCP config file. The part after is the function name in your server.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>There is a limit</h3>
+                        <p>VS Code sends up to 128 tools in one request. Past that, tools are grouped. The setting is <code>github.copilot.chat.virtualTools.threshold</code>.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Fewer tools work better</h3>
+                        <p>A short list makes the choice easy for the model. Use the <b>Configure Tools</b> button in the chat box to turn tools off for a session.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/agents/run/tools · code.visualstudio.com/docs/agents/reference/ai-settings · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         13  SUBAGENTS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="13 Subagents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agent fundamentals · delegation</span>
+                <span class="page-num">13</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">One agent calls <span class="serif-em">another</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/agents/release.agent.md</span>
+
+---
+name: <span class="code-str">release</span>
+description: <span class="code-str">Prepare a release branch.</span>
+tools: [<span class="code-str">'search'</span>, <span class="code-str">'edit'</span>, <span class="code-str">'runCommands'</span>]
+agents: [<span class="code-str">'reviewer'</span>, <span class="code-str">'Explore'</span>]
+handoffs:
+  - label: <span class="code-str">Security review</span>
+    agent: <span class="code-str">reviewer</span>
+    prompt: <span class="code-str">Review the release diff.</span>
+    send: <span class="code-kw">true</span>
+---
+
+Cut the release, then hand the diff to reviewer.</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Why split the work</h3>
+                        <p>Each agent gets its own context window. A search that reads 40 files does not fill up the main conversation.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>agents: accepts three shapes</h3>
+                        <p>A list of names, <code>*</code> for every agent, or <code>[]</code> for none. Use <code>[]</code> when an agent must stay in one place.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>handoffs are one-way</h3>
+                        <p>A subagent runs, returns one message, and stops. It cannot ask the parent a question halfway through. Write the full task in the prompt.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/copilot/customization/custom-agents · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         14  SETUP STEPS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="14 Cloud agent setup" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">III.</span>
+                <span class="rule-meta">Agent fundamentals · cloud agent</span>
+                <span class="page-num">14</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Give the cloud agent a <span class="serif-em">machine</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># .github/workflows/copilot-setup-steps.yml</span>
+
+name: <span class="code-str">Copilot setup steps</span>
+
+on: [<span class="code-str">workflow_dispatch</span>]
+
+jobs:
+  <span class="code-kw">copilot-setup-steps</span>:        <span class="code-cmt"># exact name</span>
+    runs-on: <span class="code-str">ubuntu-latest</span>
+    steps:
+      - uses: <span class="code-str">actions/checkout@v5</span>
+      - uses: <span class="code-str">actions/setup-python@v5</span>
+        with:
+          python-version: <span class="code-str">'3.12'</span>
+      - run: <span class="code-str">pip install -r requirements.txt</span></div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>The job name is fixed</h3>
+                        <p>The job must be called <code>copilot-setup-steps</code>. Any other name is ignored and the agent starts on a bare machine.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>What it is for</h3>
+                        <p>The cloud agent runs on GitHub, not on your laptop. Without this file it has no dependencies installed, so it cannot run your tests.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Test it like a workflow</h3>
+                        <p>It is a normal GitHub Actions file. Trigger it by hand to check that the steps pass before the agent needs them.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: docs.github.com/en/copilot · customize the agent environment · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         15  MODULE III DIVIDER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="15 Module 3" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:14px;">
+            <p class="eyebrow">Module 03</p>
+            <h2 class="h-hero" style="max-width:960px;">Agentic framework <span class="serif-em">envisioning</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:640px;">
+                Before you write an agent, decide three things: what it knows,
+                what it can do, and what it is allowed to do without asking.
+            </p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         16  THREE PARTS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="16 Three parts" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Envisioning · the three parts</span>
+                <span class="page-num">16</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:18px;">Context, tools, <span class="serif-em">policy</span><span class="dot">.</span></h2>
+            <div class="grid-3">
+                <div class="feature-card">
+                    <h3>Context — what it knows</h3>
+                    <p style="margin-bottom:8px;">Facts the agent cannot guess: your build command, your folder layout, your naming rules.</p>
+                    <p><b>Ask:</b> what does a new developer need on day one? Write that down.</p>
+                    <p style="margin-top:8px;"><code>AGENTS.md</code> · <code>.instructions.md</code></p>
+                </div>
+                <div class="feature-card">
+                    <h3>Tools — what it can do</h3>
+                    <p style="margin-bottom:8px;">Actions in your systems: query a database, read a ticket, call an internal API.</p>
+                    <p><b>Ask:</b> what do you open a second window for? That is a tool.</p>
+                    <p style="margin-top:8px;">MCP server · built-in tools</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Policy — what needs approval</h3>
+                    <p style="margin-bottom:8px;">The line between an action the agent takes alone and one you confirm first.</p>
+                    <p><b>Ask:</b> which action cannot be undone with <code>git checkout</code>?</p>
+                    <p style="margin-top:8px;"><code>tools:</code> list · tool approvals</p>
+                </div>
+            </div>
+            <div class="pt" style="margin-top:18px;padding:14px 18px;">
+                <p class="lead" style="font-size:14px;">Most failing agent projects skip the third one. They give an agent every tool, then turn it off after the first bad write.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         17  LAYER MAP
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="17 Layer map" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Envisioning · which file for which job</span>
+                <span class="page-num">17</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Pick the right <span class="serif-em">layer</span><span class="dot">.</span></h2>
+            <table class="plan-table">
+                <tr>
+                    <th style="width:26%;">You want to…</th>
+                    <th style="width:30%;">Use</th>
+                    <th>Loaded when</th>
+                </tr>
+                <tr>
+                    <td>State a rule for the whole repository</td>
+                    <td><code>AGENTS.md</code></td>
+                    <td>Every request</td>
+                </tr>
+                <tr>
+                    <td>State a rule for one language or folder</td>
+                    <td><code>*.instructions.md</code> with <code>applyTo</code></td>
+                    <td>When a file matches the glob</td>
+                </tr>
+                <tr>
+                    <td>Repeat a task you do often</td>
+                    <td><code>*.prompt.md</code></td>
+                    <td>You type <code>/name</code></td>
+                </tr>
+                <tr>
+                    <td>Teach a multi-step procedure</td>
+                    <td><code>SKILL.md</code></td>
+                    <td>You type <code>/name</code>, or the description matches</td>
+                </tr>
+                <tr>
+                    <td>Change behaviour, model, and tool access</td>
+                    <td><code>*.agent.md</code></td>
+                    <td>You select the agent, or a parent hands off</td>
+                </tr>
+                <tr>
+                    <td>Reach a system outside the editor</td>
+                    <td>MCP server in <code>mcp.json</code></td>
+                    <td>The agent calls one of its tools</td>
+                </tr>
+            </table>
+            <div class="pt" style="margin-top:16px;padding:14px 18px;">
+                <p class="lead" style="font-size:14px;">Rule of thumb: start at the top. Move down a row only when the layer above cannot do the job. Every layer you add costs tokens on every request.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         18  PICK THE SURFACE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="18 Pick the surface" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">IV.</span>
+                <span class="rule-meta">Envisioning · where the agent runs</span>
+                <span class="page-num">18</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:18px;">Three places to <span class="serif-em">run</span> it<span class="dot">.</span></h2>
+            <div class="grid-3">
+                <div class="feature-card">
+                    <h3>Agent mode in VS Code</h3>
+                    <p style="margin-bottom:8px;">Runs on your machine, in your workspace, with your files open. You watch each step and approve commands.</p>
+                    <p><b>Use for:</b> work where you want to read the diff as it appears.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Copilot cloud agent</h3>
+                    <p style="margin-bottom:8px;">Runs on GitHub. You give it an issue, it works on a branch and opens a pull request.</p>
+                    <p><b>Use for:</b> small, well-described tasks you do not want to sit through.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>GitHub Copilot CLI</h3>
+                    <p style="margin-bottom:8px;">Runs in your terminal. Same agent loop, no editor.</p>
+                    <div class="code-block xs" style="margin-top:8px;">npm install -g @github/copilot
+copilot</div>
+                    <p style="margin-top:8px;">Needs Node.js 22 or later.</p>
+                </div>
+            </div>
+            <div class="pt" style="margin-top:18px;padding:14px 18px;">
+                <p class="lead" style="font-size:14px;">All three read the same <code>AGENTS.md</code>, the same instruction files, and the same MCP servers. Write the customization once and it follows the work.</p>
+            </div>
+            <p class="mono" style="margin-top:12px;">Source: docs.github.com/en/copilot · install Copilot CLI · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         19  MODULE IV DIVIDER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="19 Module 4" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:14px;">
+            <p class="eyebrow">Module 04</p>
+            <h2 class="h-hero" style="max-width:960px;">Agents and <span class="serif-em">MCP</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:660px;">
+                The Model Context Protocol is one standard way for an agent to call
+                a tool you wrote. Write the server once, use it in every client.
+            </p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         20  ARCHITECTURE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="20 MCP architecture" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">MCP · architecture</span>
+                <span class="page-num">20</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Host, client, <span class="serif-em">server</span><span class="dot">.</span></h2>
+            <div class="split wide-code">
+                <div class="stack" style="gap:10px;">
+                    <div class="pt" style="padding:14px 16px;background:var(--paper-dark);">
+                        <p class="eyebrow" style="margin-bottom:3px;">Host</p>
+                        <p class="meta" style="font-size:12.4px;margin-bottom:10px;">VS Code · GitHub Copilot CLI · cloud agent. Runs the model, keeps the conversation, asks you to approve actions.</p>
+                        <div class="pt" style="padding:10px 14px;">
+                            <p class="eyebrow" style="margin-bottom:3px;">Client</p>
+                            <p class="meta" style="font-size:12.4px;">One connection per server. Created by the host. You do not write this part.</p>
+                        </div>
+                    </div>
+                    <p class="mono" style="text-align:center;color:var(--coral);font-size:11px;letter-spacing:0.12em;">↓ &nbsp;JSON-RPC 2.0&nbsp; ↓</p>
+                    <div class="grid-2" style="gap:12px;">
+                        <div class="pt" style="padding:12px 14px;">
+                            <p class="eyebrow" style="margin-bottom:3px;">Server · stdio</p>
+                            <p class="meta" style="font-size:12.4px;">A local process the host starts. Messages travel over standard input and output.</p>
+                        </div>
+                        <div class="pt" style="padding:12px 14px;">
+                            <p class="eyebrow" style="margin-bottom:3px;">Server · Streamable HTTP</p>
+                            <p class="meta" style="font-size:12.4px;">A server behind a URL. One deployment serves many developers.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>You build one box</h3>
+                        <p>Of the four boxes on the left, only the server is yours. The host and the client already exist.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Write once, use everywhere</h3>
+                        <p>The same server works in VS Code, in the CLI, and in the cloud agent. The protocol is the same in all three.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Pick stdio to start</h3>
+                        <p>A stdio server needs no port, no deployment, and no authentication. Move to HTTP when other people need the same server.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: modelcontextprotocol.io/docs/learn/architecture · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         21  PRIMITIVES
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="21 Primitives" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">MCP · what a server exposes</span>
+                <span class="page-num">21</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:18px;">Three things a server <span class="serif-em">offers</span><span class="dot">.</span></h2>
+            <div class="grid-3">
+                <div class="feature-card">
+                    <h3>Tools</h3>
+                    <p style="margin-bottom:8px;">Functions the model can call. This is the one you will use most.</p>
+                    <div class="code-block xs">@mcp.tool()
+def find_book(q: str) -> str:
+    ...</div>
+                    <p style="margin-top:8px;"><b>Chosen by:</b> the model, during the loop.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Resources</h3>
+                    <p style="margin-bottom:8px;">Read-only data at a URI. Like a GET request with no side effects.</p>
+                    <div class="code-block xs">@mcp.resource("catalog://{isbn}")
+def book(isbn: str) -> str:
+    ...</div>
+                    <p style="margin-top:8px;"><b>Chosen by:</b> the host application.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Prompts</h3>
+                    <p style="margin-bottom:8px;">Message templates your server ships, so users do not retype them.</p>
+                    <div class="code-block xs">@mcp.prompt()
+def review(title: str) -> str:
+    ...</div>
+                    <p style="margin-top:8px;"><b>Chosen by:</b> the user, from a menu.</p>
+                </div>
+            </div>
+            <div class="pt" style="margin-top:18px;padding:14px 18px;">
+                <p class="lead" style="font-size:14px;">If you are not sure which one to write, write a tool. Resources and prompts are optional; almost every real server is a set of tools.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         22  WIRE PROTOCOL
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="22 Wire protocol" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">MCP · on the wire</span>
+                <span class="page-num">22</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">What travels on the <span class="serif-em">wire</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt">// request</span>
+{
+  <span class="code-str">"jsonrpc"</span>: <span class="code-str">"2.0"</span>,
+  <span class="code-str">"id"</span>: 3,
+  <span class="code-str">"method"</span>: <span class="code-str">"tools/call"</span>,
+  <span class="code-str">"params"</span>: {
+    <span class="code-str">"name"</span>: <span class="code-str">"find_book"</span>,
+    <span class="code-str">"arguments"</span>: { <span class="code-str">"query"</span>: <span class="code-str">"Dune"</span> }
+  }
+}
+
+<span class="code-cmt">// result</span>
+{
+  <span class="code-str">"jsonrpc"</span>: <span class="code-str">"2.0"</span>,
+  <span class="code-str">"id"</span>: 3,
+  <span class="code-str">"result"</span>: {
+    <span class="code-str">"content"</span>: [{ <span class="code-str">"type"</span>: <span class="code-str">"text"</span>,
+                  <span class="code-str">"text"</span>: <span class="code-str">"Found 3 books."</span> }]
+  }
+}</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:48%;">Method</th><th>Does</th></tr>
+                        <tr><td><code>server/discover</code></td><td>Ask what the server offers</td></tr>
+                        <tr><td><code>tools/list</code></td><td>List tools</td></tr>
+                        <tr><td><code>tools/call</code></td><td>Run one tool</td></tr>
+                        <tr><td><code>resources/list</code></td><td>List resources</td></tr>
+                        <tr><td><code>resources/read</code></td><td>Read one resource</td></tr>
+                        <tr><td><code>prompts/list</code></td><td>List prompts</td></tr>
+                        <tr><td><code>prompts/get</code></td><td>Get one prompt</td></tr>
+                        <tr><td><code>subscriptions/listen</code></td><td>Watch for changes</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>The SDK writes all of this</h3>
+                        <p>You never build these messages by hand. You write a Python function; the SDK produces the schema, parses the call, and formats the result.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: modelcontextprotocol.io/docs/learn/architecture · spec revision 2026-07-28</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         23  MCP.JSON
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="23 mcp.json" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">MCP · VS Code configuration</span>
+                <span class="page-num">23</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">The config <span class="serif-em">file</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block xs"><span class="code-cmt">// .vscode/mcp.json</span>
+{
+  <span class="code-str">"inputs"</span>: [
+    {
+      <span class="code-str">"id"</span>: <span class="code-str">"api-key"</span>,
+      <span class="code-str">"type"</span>: <span class="code-str">"promptString"</span>,
+      <span class="code-str">"description"</span>: <span class="code-str">"Catalog API key"</span>,
+      <span class="code-str">"password"</span>: <span class="code-kw">true</span>
+    }
+  ],
+  <span class="code-str">"servers"</span>: {
+    <span class="code-str">"bookshop"</span>: {
+      <span class="code-str">"type"</span>: <span class="code-str">"stdio"</span>,
+      <span class="code-str">"command"</span>: <span class="code-str">"uv"</span>,
+      <span class="code-str">"args"</span>: [<span class="code-str">"run"</span>, <span class="code-str">"server.py"</span>],
+      <span class="code-str">"cwd"</span>: <span class="code-str">"${workspaceFolder}/bookshop"</span>,
+      <span class="code-str">"env"</span>: { <span class="code-str">"API_KEY"</span>: <span class="code-str">"${input:api-key}"</span> }
+    },
+    <span class="code-str">"catalog"</span>: {
+      <span class="code-str">"type"</span>: <span class="code-str">"http"</span>,
+      <span class="code-str">"url"</span>: <span class="code-str">"https://api.example.com/mcp"</span>,
+      <span class="code-str">"headers"</span>: { <span class="code-str">"Authorization"</span>: <span class="code-str">"Bearer ${input:api-key}"</span> }
+    }
+  }
+}</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:36%;">Key</th><th>Meaning</th></tr>
+                        <tr><td><code>servers</code></td><td>Name to configuration</td></tr>
+                        <tr><td><code>inputs</code></td><td>Values to ask the user for</td></tr>
+                        <tr><td><code>sandbox</code></td><td>File and network limits</td></tr>
+                        <tr><td><code>type</code></td><td><code>stdio</code>, <code>http</code>, or <code>sse</code></td></tr>
+                        <tr><td><code>dev.watch</code></td><td>Restart on file change</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>Never put a secret in this file</h3>
+                        <p>Declare an input with <code>"password": true</code> and reference it as <code>${input:api-key}</code>. VS Code asks once and stores the value securely. The file stays safe to commit.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Two locations</h3>
+                        <p><code>.vscode/mcp.json</code> for this workspace. Your user profile for every workspace: run <b>MCP: Open User Configuration</b>.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/agents/reference/mcp-configuration · 12 August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         24  OTHER SURFACES
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="24 CLI and cloud agent" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">V.</span>
+                <span class="rule-meta">MCP · CLI and cloud agent</span>
+                <span class="page-num">24</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">The same server, <span class="serif-em">elsewhere</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># GitHub Copilot CLI — add a local server</span>
+copilot mcp add bookshop -- uv run server.py
+
+<span class="code-cmt"># Add a remote server</span>
+copilot mcp add --transport http catalog \
+  https://api.example.com/mcp
+
+<span class="code-cmt"># Manage them from inside a session</span>
+/mcp list
+/mcp show bookshop
+/mcp edit bookshop
+/mcp delete bookshop
+
+<span class="code-cmt"># Config file the CLI writes</span>
+~/.copilot/mcp-config.json</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Cloud agent</h3>
+                        <p>Configure servers in the repository: <b>Settings → Copilot → MCP servers</b>. The JSON uses an <code>mcpServers</code> key.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Cloud agent limits</h3>
+                        <p>List the tools you allow in a <code>tools</code> array. Store secrets as repository secrets whose names start with <code>COPILOT_MCP_</code>.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Portable config</h3>
+                        <p>A workspace <code>.mcp.json</code> or a user <code>~/.copilot/mcp-config.json</code> is read directly by the agent host, so the same file serves more than one tool.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: docs.github.com/en/copilot · add MCP servers · configure MCP servers · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         25  MODULE V DIVIDER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="25 Module 5" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:14px;">
+            <p class="eyebrow">Module 05</p>
+            <h2 class="h-hero" style="max-width:960px;">Custom MCP <span class="serif-em">workshop</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:660px;">
+                Seven labs. Build a server in Python, run it, test it,
+                and connect it to GitHub Copilot in VS Code.
+            </p>
+            <p class="mono" style="margin-top:8px;">Python SDK v2.0.0 · Python 3.10 or higher</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         26  LAB 0 SETUP
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="26 Lab 0 setup" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 0</span>
+                <span class="page-num">26</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Set up the <span class="serif-em">project</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># macOS and Linux</span>
+uv init bookshop
+cd bookshop
+
+uv venv
+source .venv/bin/activate
+
+uv add <span class="code-str">"mcp[cli]"</span>
+
+touch server.py
+
+<span class="code-cmt"># Windows</span>
+<span class="code-cmt"># .venv\Scripts\activate</span>
+<span class="code-cmt"># new-item server.py</span></div>
+                <div class="stack">
+                    <div class="code-block sm">bookshop/
+├── pyproject.toml   <span class="code-cmt"># uv wrote this</span>
+├── server.py        <span class="code-cmt"># your server</span>
+├── test_server.py   <span class="code-cmt"># lab 5</span>
+└── .venv/</div>
+                    <div class="feature-card">
+                        <h3>Why the <code>[cli]</code> extra</h3>
+                        <p>It adds the <code>mcp</code> command: <code>mcp dev</code>, <code>mcp run</code>, and <code>mcp install</code>. Plain <code>mcp</code> gives you the library only.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Pin the major version</h3>
+                        <p><code>pip install mcp</code> now installs 2.x. If a library of yours still needs the old API, keep an upper bound such as <code>mcp&gt;=1.28,&lt;2</code>.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: modelcontextprotocol.io/docs/develop/build-server · github.com/modelcontextprotocol/python-sdk · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         27  LAB 1 FIRST SERVER
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="27 Lab 1 first server" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 1</span>
+                <span class="page-num">27</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">A server in fifteen <span class="serif-em">lines</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># server.py</span>
+<span class="code-kw">from</span> mcp.server <span class="code-kw">import</span> MCPServer
+
+mcp = MCPServer(<span class="code-str">"Bookshop"</span>)
+
+
+<span class="code-kw">@mcp.tool()</span>
+<span class="code-kw">def</span> add(a: int, b: int) -> int:
+    <span class="code-str">"""Add two numbers."""</span>
+    <span class="code-kw">return</span> a + b
+
+
+<span class="code-kw">@mcp.resource(</span><span class="code-str">"greeting://{name}"</span><span class="code-kw">)</span>
+<span class="code-kw">def</span> greeting(name: str) -> str:
+    <span class="code-str">"""Greet someone by name."""</span>
+    <span class="code-kw">return</span> f<span class="code-str">"Hello, {name}!"</span></div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Open it in the Inspector</h3>
+                        <div class="code-block xs" style="margin-top:6px;">uv run mcp dev server.py</div>
+                        <p style="margin-top:6px;">Call <code>add</code> with <code>a=1</code>, <code>b=2</code> and you get <code>3</code> back.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>What you did not write</h3>
+                        <p>No JSON Schema. No request parsing. No validation code. No protocol handling. <code>a: int, b: int</code> is the schema.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Renamed in v2</h3>
+                        <p>The class used to be <code>FastMCP</code> from <code>mcp.server.fastmcp</code>. In v2 it is <code>MCPServer</code> from <code>mcp.server</code>. The old import path was removed, not deprecated.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: github.com/modelcontextprotocol/python-sdk · py.sdk.modelcontextprotocol.io/whats-new · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         28  LAB 2 TYPED TOOLS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="28 Lab 2 typed tools" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 2</span>
+                <span class="page-num">28</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Typed inputs and <span class="serif-em">errors</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block xs"><span class="code-kw">from</span> pydantic <span class="code-kw">import</span> BaseModel
+
+<span class="code-kw">from</span> mcp <span class="code-kw">import</span> MCPError
+<span class="code-kw">from</span> mcp.server <span class="code-kw">import</span> MCPServer
+<span class="code-kw">from</span> mcp.types <span class="code-kw">import</span> INVALID_PARAMS
+
+mcp = MCPServer(<span class="code-str">"Bookshop"</span>)
+
+
+<span class="code-kw">class</span> Book(BaseModel):
+    title: str
+    author: str
+
+
+<span class="code-kw">@mcp.tool()</span>
+<span class="code-kw">def</span> find_book(query: str, limit: int = 5) -> list[Book]:
+    <span class="code-str">"""Search the catalog by title or author.</span>
+
+<span class="code-str">    Args:</span>
+<span class="code-str">        query: Words to match in a title or an author name.</span>
+<span class="code-str">        limit: How many books to return. Must be 1 or more.</span>
+<span class="code-str">    """</span>
+    <span class="code-kw">if</span> limit &lt; 1:
+        <span class="code-kw">raise</span> MCPError(INVALID_PARAMS, <span class="code-str">"limit must be 1 or more"</span>)
+    <span class="code-kw">return</span> [Book(title=<span class="code-str">"Dune"</span>, author=<span class="code-str">"Herbert"</span>)]</div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>The schema comes from the hints</h3>
+                        <p>Type hints become the input schema. A Pydantic model as the return type becomes the structured output schema.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Two kinds of failure</h3>
+                        <p><code>MCPError</code> is a protocol error. The model never sees it. Every other exception becomes a result marked as an error, which the model reads and can act on.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Choose on purpose</h3>
+                        <p>Raise <code>MCPError</code> for a broken call the model cannot fix. Raise a normal <code>ValueError</code> when you want the model to read the message and try again.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: py.sdk.modelcontextprotocol.io/servers/handling-errors · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         29  LAB 3 RESOURCES AND PROMPTS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="29 Lab 3 resources" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 3</span>
+                <span class="page-num">29</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Resources and <span class="serif-em">prompts</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># A fixed resource: one URI, no parameters</span>
+<span class="code-kw">@mcp.resource(</span><span class="code-str">"catalog://recent"</span><span class="code-kw">)</span>
+<span class="code-kw">def</span> recent() -> str:
+    <span class="code-str">"""The ten newest titles."""</span>
+    <span class="code-kw">return</span> <span class="code-str">"Dune\nNeuromancer\nSolaris"</span>
+
+
+<span class="code-cmt"># A templated resource: {isbn} is a parameter</span>
+<span class="code-kw">@mcp.resource(</span><span class="code-str">"catalog://book/{isbn}"</span><span class="code-kw">)</span>
+<span class="code-kw">def</span> record(isbn: str) -> str:
+    <span class="code-str">"""Return one catalog record."""</span>
+    <span class="code-kw">return</span> f<span class="code-str">"ISBN {isbn}: Dune, Herbert, 1965"</span>
+
+
+<span class="code-cmt"># A prompt: a message the user can pick</span>
+<span class="code-kw">@mcp.prompt()</span>
+<span class="code-kw">def</span> review_request(title: str) -> str:
+    <span class="code-str">"""Ask for a short review of one book."""</span>
+    <span class="code-kw">return</span> f<span class="code-str">"Write three sentences about {title}."</span></div>
+                <div class="stack">
+                    <div class="feature-card">
+                        <h3>Resource or tool?</h3>
+                        <p>A resource reads data and changes nothing. A tool may change something. If in doubt, and the model should decide when to call it, make it a tool.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>URI templates are RFC 6570</h3>
+                        <p>In v2 the templates follow the standard, so <code>{+path}</code> and <code>{?query}</code> work. Matching is exact, and path traversal in extracted values is rejected by default.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Errors are caught early</h3>
+                        <p>A template that is not valid fails when the decorator runs, at import time. You do not wait for the first request to find out.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: py.sdk.modelcontextprotocol.io/servers/uri-templates · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         30  LAB 4 RUN
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="30 Lab 4 run it" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 4</span>
+                <span class="page-num">30</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Run it, two <span class="serif-em">ways</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt"># server.py — bottom of the file</span>
+<span class="code-kw">if</span> __name__ == <span class="code-str">"__main__"</span>:
+    mcp.run(transport=<span class="code-str">"stdio"</span>)
+
+
+<span class="code-cmt"># Open in the MCP Inspector</span>
+uv run mcp dev server.py
+
+<span class="code-cmt"># Run over stdio, the local default</span>
+uv run mcp run server.py
+
+<span class="code-cmt"># Run over HTTP for a deployed server</span>
+uv run mcp run server.py \
+  --transport streamable-http</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:44%;">Transport</th><th>Use it for</th></tr>
+                        <tr><td><code>"stdio"</code></td><td>A local process the editor starts</td></tr>
+                        <tr><td><code>"streamable-http"</code></td><td>A server you deploy behind a URL</td></tr>
+                        <tr><td><code>"sse"</code></td><td>Older clients only</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>Transport options live on run()</h3>
+                        <p><code>MCPServer(...)</code> describes what your server is. <code>run()</code> decides how it is served. <code>MCPServer("x", port=9000)</code> raises a <code>TypeError</code> in v2.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Never print on stdio</h3>
+                        <p><code>print()</code> writes to stdout, which is the message channel. One <code>print</code> corrupts the JSON and breaks the server. Use the <code>logging</code> module, which writes to stderr.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: py.sdk.modelcontextprotocol.io/run · modelcontextprotocol.io/docs/develop/build-server · August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         31  LAB 5 CONNECT
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="31 Lab 5 connect" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule">
+                <span class="roman">VI.</span>
+                <span class="rule-meta">Workshop · lab 6</span>
+                <span class="page-num">31</span>
+            </div>
+            <h2 class="h-xl" style="margin-bottom:16px;">Connect it to <span class="serif-em">GitHub Copilot</span><span class="dot">.</span></h2>
+            <div class="split">
+                <div class="code-block sm"><span class="code-cmt">// .vscode/mcp.json</span>
+{
+  <span class="code-str">"servers"</span>: {
+    <span class="code-str">"bookshop"</span>: {
+      <span class="code-str">"type"</span>: <span class="code-str">"stdio"</span>,
+      <span class="code-str">"command"</span>: <span class="code-str">"uv"</span>,
+      <span class="code-str">"args"</span>: [<span class="code-str">"run"</span>, <span class="code-str">"server.py"</span>],
+      <span class="code-str">"cwd"</span>: <span class="code-str">"${workspaceFolder}/bookshop"</span>,
+      <span class="code-str">"dev"</span>: { <span class="code-str">"watch"</span>: <span class="code-str">"**/*.py"</span> }
+    }
+  }
+}
+
+<span class="code-cmt"># Then, in an agent file:</span>
+tools: [<span class="code-str">'bookshop/find_book'</span>]</div>
+                <div class="stack">
+                    <table class="plan-table dense">
+                        <tr><th style="width:16%;">Step</th><th>Do</th></tr>
+                        <tr><td><b>1</b></td><td>Save <code>.vscode/mcp.json</code></td></tr>
+                        <tr><td><b>2</b></td><td>Run <b>MCP: List Servers</b>, start <code>bookshop</code></td></tr>
+                        <tr><td><b>3</b></td><td>Check the output panel for start errors</td></tr>
+                        <tr><td><b>4</b></td><td>Open chat, click <b>Configure Tools</b>, enable it</td></tr>
+                        <tr><td><b>5</b></td><td>Ask a question only your tool can answer</td></tr>
+                    </table>
+                    <div class="feature-card">
+                        <h3>If the tool list looks stale</h3>
+                        <p>Run <b>MCP: Reset Cached Tools</b>. VS Code caches the tool list, so a renamed tool may not appear until you clear it.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>The watch key saves restarts</h3>
+                        <p>With <code>dev.watch</code> set, saving a Python file restarts the server. You do not restart VS Code for every change.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mono" style="margin-top:14px;">Source: code.visualstudio.com/docs/agents/reference/mcp-configuration · 12 August 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         32  THANK YOU
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="32 Thank you" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:18px;">
+            <p class="eyebrow">GitHub Copilot · MCP workshop</p>
+            <h1 class="h-hero">Thank <span class="serif-em">you</span><span class="dot">.</span></h1>
+            <p class="lead" style="max-width:620px;">Build one small server. Give it one clear tool. Let the agent use it.</p>
+            <p class="mono" style="margin-top:12px;">modelcontextprotocol.io · py.sdk.modelcontextprotocol.io · code.visualstudio.com/docs/copilot</p>
+        </div>
+    </section>
+
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 32</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<script>
+/* Scales a slide's content down when it would otherwise overflow into the bottom nav overlays. */
+(function () {
+    var SEL = '.slide-inner, .cover-inner';
+    var MIN_SCALE = 0.58;
+
+    function ensureWrap(inner) {
+        var wrap = inner.querySelector(':scope > .fit-wrap');
+        if (wrap) return wrap;
+        wrap = document.createElement('div');
+        wrap.className = 'fit-wrap';
+        var cs = getComputedStyle(inner);
+        wrap.style.rowGap = cs.rowGap;
+        wrap.style.alignItems = cs.alignItems;
+        wrap.style.justifyContent = cs.justifyContent;
+        wrap.style.transformOrigin =
+            (inner.classList.contains('center') || inner.classList.contains('cover-inner'))
+                ? 'top center' : 'top left';
+        while (inner.firstChild) wrap.appendChild(inner.firstChild);
+        inner.appendChild(wrap);
+        return wrap;
+    }
+
+    function fit(inner) {
+        var wrap = ensureWrap(inner);
+        wrap.style.transform = 'none';
+        wrap.style.height = 'auto';
+        var cs = getComputedStyle(inner);
+        var avail = inner.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        var natural = wrap.getBoundingClientRect().height;
+        if (avail > 0 && natural > avail + 1) {
+            wrap.style.height = natural + 'px';
+            wrap.style.transform = 'scale(' + Math.max(MIN_SCALE, avail / natural) + ')';
+        } else {
+            wrap.style.height = '100%';
+        }
+    }
+
+    var lastSig = '';
+    function sig() { return window.innerWidth + 'x' + window.innerHeight; }
+
+    function fitAll() {
+        lastSig = sig();
+        document.querySelectorAll(SEL).forEach(fit);
+    }
+
+    var pending = null, trailing = null;
+    function runFit() {
+        pending = null;
+        fitAll();
+        // Trailing pass: viewport resizes can land in stages, so re-measure once layout has settled.
+        clearTimeout(trailing);
+        trailing = setTimeout(fitAll, 250);
+    }
+    // setTimeout rather than requestAnimationFrame: rAF is throttled when the page is backgrounded,
+    // which would leave slides unscaled until the next interaction.
+    function schedule() {
+        if (pending) clearTimeout(pending);
+        pending = setTimeout(runFit, 16);
+    }
+
+    function start() {
+        fitAll();
+        if (typeof ResizeObserver !== 'undefined') {
+            var ro = new ResizeObserver(schedule);
+            document.querySelectorAll(SEL).forEach(function (el) { ro.observe(el); });
+        }
+        // Cheap self-heal: covers display changes and fullscreen, where resize events can be missed.
+        setInterval(function () { if (sig() !== lastSig) schedule(); }, 300);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+    addEventListener('load', function () { schedule(); setTimeout(schedule, 400); });
+    addEventListener('resize', schedule);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+})();
+</script>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+    var moduleStarts = [2, 8, 14, 18, 24];
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot' + (moduleStarts.indexOf(i) !== -1 ? ' mod' : '');
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
