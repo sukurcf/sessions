@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot feature releases | July-September 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            --blue: #536d9a;
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(30px, 3.8vw, 52px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(14px, 1.25vw, 18px);
+            line-height: 1.55; color: var(--ink-soft);
+        }
+        .meta {
+            font-size: 13px; color: var(--ink-mute); line-height: 1.45;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px; letter-spacing: 0.03em;
+            color: var(--ink-faint); line-height: 1.45;
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        .slide-inner, .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(220px, 18vw, 270px);
+            padding-bottom: clamp(96px, 12vh, 128px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center { align-items: center; text-align: center; padding-right: clamp(80px, 10vw, 140px); }
+        .slide-inner.wide { padding-right: clamp(180px, 16vw, 230px); }
+
+        .fit-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 auto;
+            width: 100%;
+            min-height: 0;
+            transform-origin: center center;
+        }
+
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 24px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+        .feature-card, .pt {
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(21,20,15,0.035);
+        }
+        .feature-card { padding: 16px; }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 14.5px;
+            line-height: 1.2; margin-bottom: 6px;
+        }
+        .feature-card p { font-size: 12.2px; line-height: 1.45; color: var(--ink-mute); }
+        .feature-card .small { font-size: 11px; }
+        .feature-card .card-icon {
+            width: 30px; height: 30px; margin-bottom: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Inter Tight', sans-serif; font-weight: 800;
+            font-size: 17px; color: var(--coral);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 8px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.05em; text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .tag-ga { background: var(--olive); color: var(--paper); }
+        .tag-preview { background: var(--mustard); color: var(--ink); }
+        .tag-experimental { background: var(--blue); color: #fff; }
+        .tag-rollout { background: var(--coral); color: #fff; }
+        .tag-policy { background: var(--ink); color: var(--paper); }
+
+        .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 10px 0 24px; }
+        .stat-block { text-align: center; padding: 16px 10px; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(38px, 4.5vw, 62px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label { font-size: 12px; color: var(--ink-mute); margin-top: 7px; line-height: 1.3; }
+
+        .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .timeline-month { border-top: 3px solid var(--coral); padding-top: 10px; }
+        .timeline-month:nth-child(2) { border-top-color: var(--mustard); }
+        .timeline-month:nth-child(3) { border-top-color: var(--olive); }
+        .timeline-month h3 { font-family: 'Inter Tight', sans-serif; font-size: 18px; margin-bottom: 8px; }
+        .timeline-month p { font-size: 12.5px; line-height: 1.5; color: var(--ink-mute); }
+        .timeline-month ul { list-style: none; margin-top: 10px; }
+        .timeline-month li { font-size: 12px; line-height: 1.45; color: var(--ink-soft); padding-left: 13px; position: relative; margin-bottom: 6px; }
+        .timeline-month li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 5px; height: 5px; border-radius: 50%; background: var(--coral); }
+
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px; line-height: 1.55;
+            background: var(--paper-dark); color: var(--ink);
+            padding: 14px 16px; border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow: hidden;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; color: var(--ink-soft); }
+
+        .source-line { margin-top: 14px; }
+        .source-line a, .source-link { color: var(--coral); text-decoration: none; }
+        .source-line a:hover, .source-link:hover { text-decoration: underline; }
+        .source-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; }
+        .source-list a { display: block; color: var(--ink-soft); text-decoration: none; font-size: 11px; line-height: 1.35; }
+        .source-list a:hover { color: var(--coral); }
+        .source-list strong { font-family: 'Inter Tight', sans-serif; font-size: 12.5px; }
+
+        .inventory { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        .inventory th { text-align: left; font-family: 'Inter Tight', sans-serif; font-size: 12px; padding: 8px 10px; border-bottom: 2px solid var(--coral); }
+        .inventory td { vertical-align: top; padding: 9px 10px; border-bottom: 1px solid rgba(21,20,15,0.08); color: var(--ink-soft); line-height: 1.4; }
+        .inventory tr:last-child td { border-bottom: none; }
+        .inventory td:first-child { width: 14%; font-family: 'Inter Tight', sans-serif; font-weight: 700; }
+
+        .checklist { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        .checklist .pt { padding: 16px; }
+        .checklist h3 { font-family: 'Inter Tight', sans-serif; font-size: 15px; margin-bottom: 7px; }
+        .checklist ul { list-style: none; }
+        .checklist li { font-size: 12.2px; line-height: 1.45; color: var(--ink-mute); padding-left: 16px; position: relative; margin-bottom: 5px; }
+        .checklist li::before { content: '\2713'; position: absolute; left: 0; color: var(--olive); font-weight: 700; }
+
+        .gh-logo { position: fixed; top: 18px; left: 18px; width: 40px; height: 40px; display: grid; place-items: center; z-index: 20; pointer-events: none; }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+        .social-bar { position: fixed; bottom: 16px; left: 18px; display: flex; align-items: center; gap: 12px; z-index: 20; }
+        .social-bar a { display: grid; place-items: center; transition: transform 0.15s ease; }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 36px; height: 36px; object-fit: contain; }
+        .qr-corner { position: fixed; top: 14px; right: 14px; display: flex; flex-direction: column; align-items: center; z-index: 20; text-decoration: none; }
+        .qr-glass { padding: 8px; border-radius: 18px; background: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .qr-corner img { width: 116px; height: 116px; border-radius: 12px; display: block; }
+        .qr-label { font-size: 11px; color: var(--ink-mute); margin-top: 6px; }
+
+        .deck-progress { position: fixed; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(21,20,15,0.08); z-index: 30; }
+        .deck-progress .bar { height: 100%; background: var(--coral); width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1); }
+        #nav { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 30; display: flex; gap: 7px; padding: 8px 13px; border-radius: 999px; background: rgba(239,231,210,0.8); border: 1px solid rgba(21,20,15,0.08); backdrop-filter: blur(8px); }
+        #nav .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(21,20,15,0.22); cursor: pointer; transition: all 0.3s ease; border: 0; padding: 0; }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active { background: var(--coral); width: 20px; border-radius: 999px; }
+        #hint { position: fixed; bottom: 36px; right: 28px; z-index: 30; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); opacity: 0.75; }
+        .slide-counter { position: fixed; bottom: 62px; left: 28px; z-index: 30; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.06em; color: var(--ink-faint); }
+
+        @media (max-width: 900px) {
+            .slide-inner, .cover-inner { padding-left: 34px; padding-right: 34px; }
+            .slide-inner.center { padding-right: 34px; }
+            .qr-corner, .social-bar { display: none; }
+            .grid-3, .timeline, .stat-row { grid-template-columns: repeat(2, 1fr); }
+            .source-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40">
+</div>
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="36" height="36"></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="36" height="36"></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="36" height="36"></a>
+</div>
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass"><img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="116" height="116"></div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<div class="presentation">
+    <section class="slide" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="gap:20px;">
+            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub Copilot" width="210" height="210" style="display:block;">
+            <h1 class="h-hero">GitHub <span class="serif-em">Copilot</span><span class="dot">.</span></h1>
+            <p class="mono">feature releases · 15 Jul - 15 Sep 2026</p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
+        <div class="cover-inner">
+            <p class="eyebrow" style="margin-bottom:14px;">Release review · 2026</p>
+            <h1 class="h-hero" style="max-width:900px;">What changed in GitHub <span class="serif-em">Copilot</span><span class="dot">.</span></h1>
+            <p class="lead" style="margin-top:20px;max-width:690px;">A dated review of the most useful new capabilities across models, agents, code review, IDEs, the CLI, the Copilot app, and enterprise controls.</p>
+            <p class="mono" style="margin-top:28px;">Window: 15 Jul - 15 Sep 2026 · verified against official GitHub Changelog and VS Code release notes</p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="03 New models" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Models · July to September</span><span class="page-num">03</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">The model <span class="serif-em">shelf</span> expanded<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:760px;margin-bottom:18px;">New choices target different tradeoffs: long-horizon agents, terminal work, image understanding, lower-cost coding, and general-purpose reasoning.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-ga">GA · Aug 6</span><h3>Kimi K3</h3><p>Open-weight model for agentic coding with provider-list usage billing. Rolling out to Pro, Pro+, Max, Business, and Enterprise; Business and Enterprise enable it explicitly.</p></div>
+                <div class="feature-card"><span class="tag tag-rollout">Rollout · Aug 11</span><h3>MAI-Code-1.1-Flash</h3><p>Native vision plus better coding quality, instruction following, tool use, and performance. GitHub reported a 73% lower list price than its predecessor.</p></div>
+                <div class="feature-card"><span class="tag tag-rollout">Rollout · Aug 13</span><h3>Gemini 3.7 Flash</h3><p>Improvements in web and app development, agentic coding, codebase research, and verification. Business and Enterprise policy is off by default.</p></div>
+                <div class="feature-card"><span class="tag tag-rollout">Rollout · Aug 14</span><h3>Grok 4.6</h3><p>xAI reasoning model aimed at long-horizon terminal tasks and sustained tool use across Visual Studio Code and Copilot CLI.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">GA · Sep 1 / 4</span><h3>Claude Fable 5.1 + GPT-6 Astra</h3><p>Two long-horizon models for autonomous coding and knowledge work. Availability is gradual and usage is billed at provider pricing.</p></div>
+                <div class="feature-card"><span class="tag tag-rollout">Available · Sep 3</span><h3>Gemini 3.8 Flash</h3><p>Strong early results on complex terminal coding, validation, and recovery. Introductory provider pricing applies through December 31, 2026.</p></div>
+            </div>
+            <p class="mono source-line">Sources: <a class="source-link" href="https://github.blog/changelog/2026-08-06-kimi-k3-is-now-available-in-github-copilot" target="_blank">Kimi K3</a> · <a class="source-link" href="https://github.blog/changelog/2026-08-11-mai-code-1-1-flash-available-in-github-copilot" target="_blank">MAI-Code</a> · <a class="source-link" href="https://github.blog/changelog/2026-09-04-gpt-6-astra-is-generally-available-in-github-copilot" target="_blank">September model releases</a></p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="04 Model control" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">Models · control and economics</span><span class="page-num">04</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Model choice became <span class="serif-em">policy</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:770px;margin-bottom:18px;">The new controls make cost, quality, reasoning depth, model availability, and usage evidence visible to both developers and administrators.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-rollout">Sep 14 · rollout</span><h3>Auto: Efficiency, Balance, Intelligence</h3><p>Choose how GitHub Copilot weighs cost, quality, and latency. Auto still evaluates each prompt and selects from the available model set.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 3 · all paid plans</span><h3>Cloud-agent reasoning level</h3><p>Choose more or less reasoning for supported models when delegating work. Higher reasoning can improve complex tasks but consumes more credits.</p></div>
+                <div class="feature-card"><span class="tag tag-policy">Jul 29 / Aug 26</span><h3>Default model enablement</h3><p>GA models can inherit a global Business or Enterprise default. Explicit choices remain intact; open-weight and data-retention-excluded models stay out.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">Jul 31 · preview</span><h3>Team-targeted model policies</h3><p>Enterprise teams can receive optional models on top of an enterprise baseline, matching access to roles, training, or frontier experimentation.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 11 · reporting</span><h3>Per-model token breakdown</h3><p>Usage reports now show input, output, cache-read, and cache-write tokens beside AI credits, making model cost easier to explain.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 28 · Visual Studio</span><h3>Model management</h3><p>Pin favorites, hide unused models, compare capability and cost, and adjust thinking effort with Low, Medium, or High controls.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="05 VS Code agents" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">Agents · Visual Studio Code</span><span class="page-num">05</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">The Agents window became a <span class="serif-em">workspace</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:780px;margin-bottom:18px;">July through September releases make sessions easier to isolate, continue, compare, review, automate, and connect to GitHub work.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-ga">July · 1.127-131</span><h3>Agent sessions, worktrees, and multi-chat</h3><p>Use isolated worktrees, quick chats, peer chats, grouped sessions, subagent status, and pull request update banners.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">July · 1.131</span><h3>Vision, PDFs, and BYOK</h3><p>Copilot Vision is generally available for images and PDFs. BYOK models now work in the Agents window, with <code>!</code> for terminal commands.</p></div>
+                <div class="feature-card"><span class="tag tag-experimental">1.132-133</span><h3>Side questions and portable plugins</h3><p>Use <code>/btw</code> for a context-sharing side chat, keep prompt sticky scroll, and install Agent Plugins 1.0 packages.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">1.135-136</span><h3>Continue and critique</h3><p>Continue sessions created elsewhere, ask a complementary model for a second opinion with <code>/rubber-duck</code>, and organize related chats.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">1.136</span><h3>Agent Merge</h3><p>Ask an agent to address review feedback, failed checks, and merge conflicts until a pull request is ready to merge.</p></div>
+                <div class="feature-card"><span class="tag tag-rollout">1.137 · Sep 9</span><h3>Automations, voice, and GitHub context</h3><p>Schedule recurring agent work, talk and interrupt by voice, attach issues and pull requests in any chat, and continue quick chats into a workspace.</p></div>
+            </div>
+            <p class="mono source-line">Sources: <a class="source-link" href="https://github.blog/changelog/2026-07-30-github-copilot-in-visual-studio-code-july-2026-releases" target="_blank">July VS Code releases</a> · <a class="source-link" href="https://code.visualstudio.com/updates/v1_137" target="_blank">VS Code 1.137</a></p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="06 CLI and app" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">IV.</span><span class="rule-meta">Agents · CLI and app</span><span class="page-num">06</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Agent work became <span class="serif-em">resumable</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:710px;margin-bottom:18px;">The GitHub Copilot CLI and GitHub Copilot app now expose the controls needed for parallel work, recovery, customization, and cost visibility.</p>
+            <div class="grid-2" style="align-items:start;">
+                <div>
+                    <div class="code-block" style="margin-bottom:14px;"><span class="code-cmt"># August CLI additions</span><br><span class="code-kw">/tasks</span>       manage subagents and their tasks<br><span class="code-kw">/rewind</span>      restore changes without Git<br><span class="code-kw">/worktree</span>   isolate a parallel workspace<br><span class="code-kw">/app</span>         open the app with session context<br><br><span class="code-cmt"># headless plan then implementation</span><br>gh copilot -p <span class="code-str">"Fix the failing test"</span> --plan --mode autopilot</div>
+                    <p class="mono">The CLI also queues prompts while a turn runs and moved to a native Rust runtime for faster performance.</p>
+                </div>
+                <div class="grid-2" style="gap:14px;">
+                    <div class="feature-card"><span class="tag tag-ga">Aug 25</span><h3>Customize tab</h3><p>MCP servers, plugins, skills, canvases, and Azure DevOps work now have one discovery surface in the GitHub Copilot app.</p></div>
+                    <div class="feature-card"><span class="tag tag-ga">Aug 7</span><h3>Auto transparency</h3><p>Auto can show the model used for each request, with AI credit and cache details when available.</p></div>
+                    <div class="feature-card"><span class="tag tag-preview">Aug 10</span><h3>Ask in side chat</h3><p>Open a parallel conversation about an agent question while the original task waits for your answer.</p></div>
+                    <div class="feature-card"><span class="tag tag-experimental">Aug 25</span><h3>WSL and layout</h3><p>Use a Linux environment through WSL, split tabs, and send browser previews to an external browser.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="07 Shared collaboration" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">V.</span><span class="rule-meta">Agents · shared collaboration</span><span class="page-num">07</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Start where the <span class="serif-em">conversation</span> is<span class="dot">.</span></h2>
+            <p class="lead" style="max-width:750px;margin-bottom:18px;">GitHub Copilot sessions can now begin in team chat, continue in the app or IDE, and end as reviewable repository work.</p>
+            <div class="grid-2">
+                <div class="feature-card"><span class="tag tag-preview">Slack · Aug 21</span><h3><code>@GitHub</code> shared agent sessions</h3><p>Investigate failures, update or create issues, implement changes, validate in a cloud sandbox, and open a pull request from a conversation. Teams can inspect and redirect the same session.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">Microsoft Teams · Aug 21</span><h3>Turn meeting decisions into work</h3><p>Mention <code>@GitHub</code> in a channel, thread, or direct message. Participants can add context and steer the cloud agent; repository admins can require an additional approval.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">JetBrains · Sep 8</span><h3><code>/ide</code> connects CLI to the IDE</h3><p>Connect a terminal session to JetBrains selections, diagnostics, file references, environment variables, and the project Python interpreter.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Cross-surface</span><h3>Continue without re-explaining</h3><p>Agent Host, app, CLI, VS Code, JetBrains, GitHub.com, and Mobile now share more session and context continuity across the same work.</p></div>
+            </div>
+            <p class="mono source-line">Sources: <a class="source-link" href="https://github.blog/changelog/2026-08-21-the-new-github-copilot-experience-in-slack" target="_blank">Slack</a> · <a class="source-link" href="https://github.blog/changelog/2026-08-21-shared-agentic-work-with-github-copilot-in-microsoft-teams" target="_blank">Microsoft Teams</a></p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="08 Plugins and context" data-nav-theme="light">
+        <div class="slide-inner">
+            <div class="sec-rule"><span class="roman">VI.</span><span class="rule-meta">Customization · portable context</span><span class="page-num">08</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Customize once, use across <span class="serif-em">clients</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:750px;margin-bottom:18px;">Agent Plugins 1.0 standardizes a portable package for skills and MCP servers, while memory and project context reduce repeated setup.</p>
+            <div class="grid-2" style="align-items:start;">
+                <div class="code-block"><span class="code-cmt"># one portable plugin</span><br>my-plugin/<br>&nbsp;&nbsp;plugin.json<br>&nbsp;&nbsp;skills/<br>&nbsp;&nbsp;mcp.json<br>&nbsp;&nbsp;com.github.copilot/<br>&nbsp;&nbsp;&nbsp;&nbsp;agents/<br>&nbsp;&nbsp;&nbsp;&nbsp;commands/<br>&nbsp;&nbsp;&nbsp;&nbsp;hooks/<br><br><span class="code-str">VS Code · CLI · SDK · app</span></div>
+                <div class="grid-2" style="gap:14px;">
+                    <div class="feature-card"><span class="tag tag-ga">Aug 12</span><h3>Agent Plugins 1.0</h3><p>Build a plugin once. Compatible clients can discover the skills and MCP configuration they support from the same package. Existing plugins remain supported.</p></div>
+                    <div class="feature-card"><span class="tag tag-ga">Aug 11</span><h3>Copilot Memory</h3><p>In JetBrains, GitHub Copilot can retain useful project details and preferences across agent chat sessions.</p></div>
+                    <div class="feature-card"><span class="tag tag-preview">Sep 8</span><h3>Global project context</h3><p>Add global files and folders to JetBrains chat for changes that span multiple areas of a project.</p></div>
+                    <div class="feature-card"><span class="tag tag-ga">Aug 24</span><h3>Copilot harness</h3><p>The JetBrains harness reached GA, with built-in JetBrains MCP support in public preview and direct <code>/review</code> integration.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="09 Code review" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">VII.</span><span class="rule-meta">Review · quality and approval</span><span class="page-num">09</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Code review gained <span class="serif-em">judgment</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:800px;margin-bottom:18px;">GitHub Copilot code review now offers configurable depth, richer context, broader pull request coverage, and an explicit approval path.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-ga">Aug 7 · GA</span><h3>Lite and Balanced effort</h3><p>Use Lite for straightforward changes and Balanced for deeper analysis. Organizations can set a default inherited by repositories.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Jul 29 · GA</span><h3>Skills and MCP context</h3><p>Reviews can use repository skills and read-only MCP connections. Comments show when that additional context contributed.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 27</span><h3>Bots, cloud agents, large PRs</h3><p>Review bot-authored and Copilot cloud-agent pull requests, and review PRs beyond the former 300-file or 20,000-line limit.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">Sep 1 · preview</span><h3>Approval assessments</h3><p>Every review signals whether the pull request appears ready. Admins can authorize an approval that counts toward required approvals.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Sep 11</span><h3>Automatic resolution</h3><p>Addressed comments resolve during rereview, autofix suggestions get smart commit messages, and Lite uses an ensemble of agents.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Sep 11</span><h3>Deeper validation</h3><p>The review agent can use the Copilot SDK shell tools behind its firewall to run builds, tests, scripts, and available tool calls.</p></div>
+            </div>
+            <p class="mono source-line">Source: <a class="source-link" href="https://github.blog/changelog/2026-09-11-auto-resolution-and-analysis-updates-in-copilot-code-review" target="_blank">Copilot code review updates</a></p>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="10 Guardrails" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">VIII.</span><span class="rule-meta">Enterprise · guardrails</span><span class="page-num">10</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">More agent power came with <span class="serif-em">more control</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:800px;margin-bottom:18px;">Enterprise administrators can now define what agents may do, what context they may read, which tools they may connect to, and how policies vary by team.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-ga">Sep 9</span><h3>Deny, ask, allow permissions</h3><p>Manage shell commands, file reads, file edits, and network domains centrally in the GitHub Copilot app, CLI, and VS Code Agent Host.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Sep 2</span><h3>Content exclusions reach app and CLI</h3><p>Enterprise, organization, and repository exclusions now keep sensitive files out of agent context across these surfaces.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 6</span><h3>MCP allowlists</h3><p>Allow or deny MCP servers by URL, command, or name. Policies fail closed and can be layered with team overrides.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">Jul 31 / Aug 3</span><h3>Team-specialized managed settings</h3><p>Mark selected settings overridable and map files to enterprise teams while keeping the enterprise baseline as the floor.</p></div>
+                <div class="feature-card"><span class="tag tag-preview">Sep 8 · JetBrains</span><h3>Managed sandbox policies</h3><p>Control filesystem and network access, proxies, developer tools, Keychain access, and sandbox enablement in JetBrains IDEs.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Sep 2</span><h3>Any default model</h3><p>Business and Enterprise admins can set a default model for new conversations and specialize that default by enterprise team.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="11 Automation and measurement" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">IX.</span><span class="rule-meta">Automation · measurement</span><span class="page-num">11</span></div>
+            <h2 class="h-xl" style="margin-bottom:8px;">Agents can now run on a <span class="serif-em">schedule</span> and show their <span class="serif-em">cost</span><span class="dot">.</span></h2>
+            <p class="lead" style="max-width:800px;margin-bottom:18px;">The release window added recurring work, event-driven work, voice interaction, and better evidence for adoption and spend.</p>
+            <div class="grid-3">
+                <div class="feature-card"><span class="tag tag-preview">Sep 9 · VS Code</span><h3>Scheduled automations</h3><p>Run recurring agent tasks hourly, daily, or weekly, or on demand. Templates cover change catch-up, issue triage, and bug finding.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 3</span><h3>Comment-triggered cloud work</h3><p>Use an issue or pull request comment to generate documentation, investigate errors, or create follow-up tasks.</p></div>
+                <div class="feature-card"><span class="tag tag-experimental">Sep 9 · VS Code</span><h3>Voice Mode</h3><p>Talk to an agent while it works, interrupt it, or redirect it. Gradual rollout; not available with Business or Enterprise plans.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Sep 11</span><h3>VS Code Agents metrics</h3><p>Usage reports add dedicated Agents-window users, sessions, and message counts at aggregate and user levels.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 11</span><h3>Token-level usage reporting</h3><p>Admins and individual users can attribute AI credit consumption to input, output, cache reads, and cache writes by model.</p></div>
+                <div class="feature-card"><span class="tag tag-ga">Aug 7</span><h3>Impact dashboard ROI view</h3><p>Compare estimated cost per developer with pull request output across passive and agent-first adoption cohorts.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-screen-label="12 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin:18px 0 26px;max-width:640px;">The feature releases are summarized in the previous slides. Use the linked release notes for current availability, plan limits, and administrator setup.</p>
+            <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="190" height="190" style="border-radius:16px;padding:8px;background:#fff;"></a>
+        </div>
+    </section>
+</div>
+
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 12</div>
+<div id="hint">&larr; / &rarr; · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<script>
+(function () {
+    var containers = Array.prototype.slice.call(document.querySelectorAll('.slide-inner, .cover-inner'));
+    var fitTimer = null;
+    var lastViewport = '';
+
+    function ensureWrap(inner) {
+        var wrap = inner.querySelector(':scope > .fit-wrap');
+        if (wrap) return wrap;
+        wrap = document.createElement('div');
+        wrap.className = 'fit-wrap';
+        var styles = getComputedStyle(inner);
+        wrap.style.justifyContent = styles.justifyContent;
+        wrap.style.alignItems = styles.alignItems;
+        wrap.style.rowGap = styles.rowGap;
+        wrap.style.columnGap = styles.columnGap;
+        var children = Array.prototype.slice.call(inner.children);
+        children.forEach(function (child) { wrap.appendChild(child); });
+        inner.appendChild(wrap);
+        return wrap;
+    }
+
+    function fitAll() {
+        containers.forEach(function (inner) {
+            var wrap = ensureWrap(inner);
+            wrap.style.transform = 'none';
+            wrap.style.height = 'max-content';
+            var styles = getComputedStyle(inner);
+            var available = inner.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom);
+            var natural = wrap.scrollHeight;
+            if (natural > available && available > 0) {
+                var scale = available / natural;
+                wrap.style.height = natural + 'px';
+                wrap.style.transform = 'scale(' + scale + ')';
+            } else {
+                wrap.style.height = '100%';
+            }
+        });
+        lastViewport = window.innerWidth + 'x' + window.innerHeight;
+    }
+
+    function scheduleFit() {
+        clearTimeout(fitTimer);
+        fitTimer = setTimeout(fitAll, 70);
+    }
+
+    addEventListener('resize', scheduleFit);
+    if (typeof ResizeObserver !== 'undefined') {
+        var observer = new ResizeObserver(scheduleFit);
+        containers.forEach(function (container) { observer.observe(container); });
+    }
+    setInterval(function () {
+        var current = window.innerWidth + 'x' + window.innerHeight;
+        if (current !== lastViewport) scheduleFit();
+    }, 500);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleFit);
+    scheduleFit();
+})();
+</script>
+
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    deck.style.width = (total * 100) + 'vw';
+    slides.forEach(function (slide, i) {
+        var button = document.createElement('button');
+        button.className = 'dot';
+        button.dataset.i = i;
+        button.setAttribute('aria-label', 'Slide ' + (i + 1));
+        button.onclick = function () { go(i); };
+        nav.appendChild(button);
+    });
+
+    function applySlide(next) {
+        idx = Math.max(0, Math.min(total - 1, next));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (slide, i) { slide.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (dot, i) { dot.classList.toggle('active', i === idx); });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    }
+
+    function go(next) {
+        if (lock) return;
+        applySlide(next);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ' || event.key === 'ArrowDown') {
+            event.preventDefault(); go(idx + 1);
+        } else if (event.key === 'ArrowLeft' || event.key === 'PageUp' || event.key === 'ArrowUp') {
+            event.preventDefault(); go(idx - 1);
+        } else if (event.key === 'Home') {
+            event.preventDefault(); go(0);
+        } else if (event.key === 'End') {
+            event.preventDefault(); go(total - 1);
+        }
+    });
+
+    var wheelTimer = null, wheelAccumulation = 0;
+    addEventListener('wheel', function (event) {
+        wheelAccumulation += event.deltaY + event.deltaX;
+        if (Math.abs(wheelAccumulation) > 60) {
+            go(idx + (wheelAccumulation > 0 ? 1 : -1));
+            wheelAccumulation = 0;
+        }
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(function () { wheelAccumulation = 0; }, 150);
+    }, { passive: true });
+
+    var touchX = 0, touchY = 0;
+    addEventListener('touchstart', function (event) {
+        touchX = event.touches[0].clientX;
+        touchY = event.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (event) {
+        var dx = event.changedTouches[0].clientX - touchX;
+        var dy = event.changedTouches[0].clientY - touchY;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(idx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    addEventListener('message', function (event) {
+        var data = event && event.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mutationObserver = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i);
+                    return;
+                }
+            }
+        });
+        slides.forEach(function (slide) { mutationObserver.observe(slide, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
