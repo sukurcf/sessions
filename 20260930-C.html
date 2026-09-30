@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHEC &amp; GHAS Updates — August–September 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            /* Atelier Zero palette */
+            --paper: #efe7d2;
+            --paper-warm: #ece4cf;
+            --paper-dark: #ddd2b6;
+            --bone: #f7f1de;
+            --ink: #15140f;
+            --ink-soft: #2a2620;
+            --ink-mute: #5a5448;
+            --ink-faint: #8b8676;
+            --coral: #ed6f5c;
+            --coral-soft: #f08e7c;
+            --mustard: #e9b94a;
+            --olive: #6e7448;
+            /* Semantic aliases */
+            --accent-fg: var(--coral);
+            --fg-muted: var(--ink-faint);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        /* Paper noise texture */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
+            mix-blend-mode: multiply;
+        }
+
+        .presentation {
+            position: fixed; inset: 0; height: 100vh;
+            display: flex; flex-wrap: nowrap;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 5; will-change: transform;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            flex: 0 0 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Typography ── */
+        .h-hero {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; letter-spacing: -0.03em;
+            font-size: clamp(48px, 7vw, 90px);
+            line-height: 1.0;
+        }
+        .h-xl {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(32px, 4vw, 54px);
+            line-height: 1.1;
+        }
+        .h-lg {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; letter-spacing: -0.02em;
+            font-size: clamp(22px, 2.8vw, 38px);
+            line-height: 1.15;
+        }
+        .h-md {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: clamp(17px, 2vw, 26px);
+            line-height: 1.2;
+        }
+        .lead {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(15px, 1.4vw, 20px);
+            line-height: 1.6; color: var(--ink-soft);
+        }
+        .meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; color: var(--ink-mute);
+            line-height: 1.5;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.04em;
+            color: var(--ink-faint);
+        }
+        .eyebrow {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        .dot { color: var(--coral); }
+        .serif-em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+        }
+
+        /* ── Card / panel tokens ── */
+        .pt {
+            background: var(--bone);
+            border-radius: 14px;
+            border: 1px solid rgba(21,20,15,0.06);
+            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        }
+
+        /* ── Slide layout helpers ── */
+        .slide-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            padding-right: clamp(200px, 18vw, 260px);
+            position: relative; z-index: 1;
+        }
+        .slide-inner.center {
+            align-items: center; text-align: center;
+            padding-right: clamp(80px, 10vw, 140px);
+        }
+        .slide-inner.wide {
+            padding-right: clamp(180px, 16vw, 220px);
+        }
+
+        /* Cover variant */
+        .cover-inner {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
+            padding-top: clamp(64px, 8vh, 90px);
+            position: relative; z-index: 1;
+        }
+
+        /* Dark slide variant */
+        .slide-dark { background: var(--ink); color: var(--paper); }
+        .slide-dark .lead { color: var(--paper-dark); }
+        .slide-dark .meta { color: var(--ink-faint); }
+        .slide-dark .pt {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .eyebrow { color: var(--coral); }
+
+        /* Coral slide variant */
+        .slide-coral { background: var(--coral); color: var(--ink); }
+        .slide-coral .lead { color: rgba(21,20,15,0.7); }
+        .slide-coral .pt {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── Section rule ── */
+        .sec-rule {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 28px;
+            border-top: 1px solid rgba(21,20,15,0.12);
+            padding-top: 12px;
+        }
+        .sec-rule .roman {
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 500;
+            font-size: 14px; color: var(--coral);
+        }
+        .sec-rule .rule-meta {
+            flex: 1; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ink-faint); letter-spacing: 0.04em;
+        }
+        .sec-rule .page-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; color: var(--ink-faint);
+        }
+        .slide-dark .sec-rule { border-top-color: rgba(239,231,210,0.12); }
+
+        /* ── Grid layouts ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* ── Feature card ── */
+        .feature-card {
+            padding: 20px; border-radius: 14px;
+            background: var(--bone);
+            border: 1px solid rgba(21,20,15,0.06);
+        }
+        .feature-card .card-icon {
+            width: 36px; height: 36px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .feature-card .card-icon img {
+            width: 36px; height: 36px; object-fit: contain;
+        }
+        .feature-card h3 {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 13px; line-height: 1.5;
+            color: var(--ink-mute);
+        }
+        .slide-dark .feature-card {
+            background: var(--ink-soft);
+            border-color: rgba(239,231,210,0.08);
+        }
+        .slide-dark .feature-card p { color: var(--paper-dark); }
+
+        /* ── Stat block ── */
+        .stat-block { text-align: center; }
+        .stat-num {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 900; font-size: clamp(42px, 5vw, 66px);
+            color: var(--coral); line-height: 1;
+        }
+        .stat-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; color: var(--ink-mute);
+            margin-top: 6px;
+        }
+
+        /* ── Plan pill ── */
+        .plan-pill {
+            display: inline-block;
+            padding: 4px 12px; border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .pill-free { background: var(--olive); color: var(--paper); }
+        .pill-pro { background: var(--coral); color: #fff; }
+        .pill-biz { background: var(--ink); color: var(--paper); }
+        .pill-ent { background: var(--mustard); color: var(--ink); }
+
+        /* ── Keyboard shortcut ── */
+        kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: var(--paper-dark);
+            border: 1px solid rgba(21,20,15,0.12);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--ink-soft);
+        }
+        .slide-dark kbd {
+            background: rgba(239,231,210,0.1);
+            border-color: rgba(239,231,210,0.15);
+            color: var(--paper-dark);
+        }
+
+        /* ── Navigation ── */
+        .deck-progress {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
+        }
+        .deck-progress .bar {
+            height: 100%; background: var(--coral);
+            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #nav {
+            position: fixed; left: 50%; bottom: 40px;
+            transform: translateX(-50%); z-index: 30;
+            display: flex; gap: 10px; padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239,231,210,0.78);
+            border: 1px solid rgba(21,20,15,0.08);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #nav .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(21,20,15,0.22);
+            cursor: pointer; transition: all 0.3s ease;
+            border: 0; padding: 0;
+        }
+        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
+        #nav .dot.active {
+            background: var(--coral); width: 22px; border-radius: 999px;
+        }
+
+        #hint {
+            position: fixed; bottom: 36px; right: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        }
+
+        .slide-counter {
+            position: fixed; bottom: 36px; left: 28px; z-index: 30;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.06em;
+            color: var(--ink-faint);
+        }
+
+        /* ── Fixed overlays ── */
+        .gh-logo {
+            position: fixed; top: 18px; left: 18px;
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            z-index: 20; pointer-events: none;
+        }
+        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
+
+        .social-bar {
+            position: fixed; bottom: 16px; left: 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 20; pointer-events: auto;
+        }
+        .social-bar a {
+            display: grid; place-items: center;
+            transition: transform 0.15s ease;
+        }
+        .social-bar a:hover { transform: scale(1.15); }
+        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
+
+        .qr-corner {
+            position: fixed; top: 14px; right: 14px;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 20; text-decoration: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .qr-corner:hover { transform: scale(1.04); }
+        .qr-glass {
+            position: relative;
+            padding: 10px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                inset 0 -1px 0 rgba(255,255,255,0.15);
+        }
+        .qr-glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 22px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .qr-corner img {
+            width: 130px; height: 130px; border-radius: 14px;
+            display: block;
+        }
+        .qr-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-mute);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Decorative elements ── */
+        .corner-bracket {
+            position: absolute; width: 22px; height: 22px;
+            border-color: var(--ink-faint); border-style: solid;
+            border-width: 0; opacity: 0.3;
+        }
+        .corner-bracket.tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+        .corner-bracket.tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+        .corner-bracket.bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+        .corner-bracket.br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* ── Comparison table ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .plan-table th {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700; font-size: 13px;
+            padding: 10px 12px; text-align: left;
+            border-bottom: 2px solid var(--coral);
+        }
+        .plan-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(21,20,15,0.08);
+            color: var(--ink-soft);
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        /* Code block */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; line-height: 1.6;
+            background: var(--paper-dark);
+            color: var(--ink);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(21,20,15,0.1);
+            overflow-x: auto;
+        }
+        .code-kw { color: var(--coral); }
+        .code-str { color: var(--olive); }
+        .code-cmt { color: var(--ink-faint); }
+
+        /* ══════════════════════════════════════════════════════
+           Deck additions — GHEC & GHAS updates
+           Template tokens only (no new palette). Everything below
+           the tokens is sized in --u, one CSS pixel at 1366x768, so
+           slides keep their proportions on larger displays.
+           ══════════════════════════════════════════════════════ */
+
+        :root { --u: clamp(0.9px, min(calc(100vw / 1366), calc(100vh / 768)), 3px); }
+
+        /* Reserve space for the fixed bottom overlays; keep the counter clear of the social bar */
+        .slide-inner, .cover-inner { padding-bottom: clamp(96px, 12vh, 128px); }
+        .slide-counter { bottom: 66px; }
+
+        /* Fit-to-viewport wrapper for dense slides (must not shrink) */
+        .fit-wrap {
+            display: flex; flex-direction: column;
+            width: 100%;
+            flex: 0 0 auto;
+            transform-origin: top center;
+        }
+
+        /* Section rule, headings, lead */
+        .sec-rule { margin-bottom: calc(22 * var(--u)); }
+        .sec-rule .roman { font-size: calc(14 * var(--u)); }
+        .sec-rule .rule-meta { font-size: calc(10 * var(--u)); }
+        .sec-rule .page-num { font-size: calc(11 * var(--u)); }
+        .slide-inner .h-xl { font-size: clamp(32px, 4vw, calc(54 * var(--u))); }
+        .slide-inner .h-lg { font-size: clamp(22px, 2.8vw, calc(38 * var(--u))); }
+        .slide-inner .eyebrow { font-size: calc(11 * var(--u)); }
+        .lead.sm { font-size: calc(16.4 * var(--u)); line-height: 1.55; }
+
+        code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.86em;
+            background: var(--paper-dark); border-radius: 5px;
+            padding: 1px 5px; color: var(--ink-soft);
+            overflow-wrap: anywhere;
+        }
+        .code-block {
+            font-size: calc(11.75 * var(--u)); line-height: 1.55;
+            padding: calc(16 * var(--u)) calc(20 * var(--u));
+            overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere;
+        }
+        .code-block code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+        /* Status tags */
+        .tag {
+            display: inline-block; padding: calc(4 * var(--u)) calc(10 * var(--u)); border-radius: 999px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: calc(10.5 * var(--u)); font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .tag-ga { background: var(--olive); color: var(--paper); }
+        .tag-preview { background: var(--mustard); color: var(--ink); }
+        .tag-new { background: var(--coral); color: var(--ink); }
+
+        /* One-update slide: top-anchored so the title never moves between slides */
+        .slide-inner.upd { justify-content: flex-start; padding-top: clamp(64px, 10vh, 110px); }
+        .upd-head { display: flex; align-items: center; flex-wrap: wrap; gap: calc(8 * var(--u)) calc(14 * var(--u)); margin-bottom: calc(10 * var(--u)); }
+        .upd-head .h-xl { margin: 0; }
+        .upd-lead {
+            max-width: calc(800 * var(--u)); margin-bottom: calc(18 * var(--u));
+            min-height: calc(2 * 1.55em); /* reserve two lines so the grid starts at the same height */
+        }
+        /* Both columns end on the same line */
+        .upd-grid {
+            display: grid; grid-template-columns: 0.92fr 1.08fr; gap: calc(18 * var(--u));
+            align-items: stretch;
+        }
+        .upd-grid.wide-left { grid-template-columns: 1.08fr 0.92fr; }
+        .upd-grid > * { min-width: 0; }
+        .upd-left { display: flex; flex-direction: column; justify-content: space-between; gap: calc(12 * var(--u)); }
+        .upd-left > :only-child { flex: 1; }
+        .upd-cards { gap: calc(14 * var(--u)); grid-auto-rows: 1fr; }
+        .upd-cards.one { grid-template-columns: 1fr; gap: calc(12 * var(--u)); }
+        .upd-cards .feature-card { padding: calc(15 * var(--u)) calc(16 * var(--u)); border-radius: calc(14 * var(--u)); }
+        .upd-cards .feature-card h3 { font-size: calc(14.5 * var(--u)); margin-bottom: calc(5 * var(--u)); }
+        .upd-cards .feature-card p { font-size: calc(12.5 * var(--u)); line-height: 1.5; }
+
+        .source-line {
+            margin-top: calc(14 * var(--u)); overflow-wrap: anywhere; color: var(--ink-mute);
+            font-size: calc(11 * var(--u));
+        }
+        .source-line a {
+            color: var(--ink-soft); text-decoration: underline;
+            text-decoration-color: var(--coral); text-underline-offset: 3px;
+        }
+        .source-line a:hover { color: var(--coral); }
+
+        /* Callout */
+        .note { padding: calc(12 * var(--u)) calc(14 * var(--u)); border-left: 4px solid var(--coral); border-radius: 0 calc(12 * var(--u)) calc(12 * var(--u)) 0; }
+        .note .eyebrow { margin-bottom: calc(4 * var(--u)); font-size: calc(10 * var(--u)); }
+        .note p:not(.eyebrow) { font-size: calc(12.5 * var(--u)); line-height: 1.5; color: var(--ink-soft); }
+
+        /* Numbered steps */
+        .steps { padding: calc(4 * var(--u)) calc(18 * var(--u)); display: flex; flex-direction: column; justify-content: space-between; }
+        .step { display: flex; gap: calc(14 * var(--u)); padding: calc(11 * var(--u)) 0; border-bottom: 1px solid rgba(21,20,15,0.08); }
+        .step:last-child { border-bottom: 0; }
+        .step-n { font-family: 'JetBrains Mono', monospace; font-size: calc(11 * var(--u)); color: var(--coral); padding-top: calc(3 * var(--u)); }
+        .step h3 { font-family: 'Inter Tight', sans-serif; font-size: calc(14.5 * var(--u)); margin-bottom: calc(2 * var(--u)); }
+        .step p { font-size: calc(12.5 * var(--u)); line-height: 1.45; color: var(--ink-mute); }
+
+        /* Before / now panels */
+        .cmp { padding: calc(15 * var(--u)) calc(18 * var(--u)); border-left: 4px solid var(--ink-faint); border-radius: 0 calc(14 * var(--u)) calc(14 * var(--u)) 0; }
+        .cmp.now { border-left-color: var(--coral); }
+        .cmp .eyebrow { color: var(--ink-faint); margin-bottom: calc(5 * var(--u)); }
+        .cmp.now .eyebrow { color: var(--coral); }
+        .cmp h3 { font-family: 'Inter Tight', sans-serif; font-size: calc(16 * var(--u)); margin-bottom: calc(4 * var(--u)); }
+        .cmp p:not(.eyebrow) { font-size: calc(12.5 * var(--u)); line-height: 1.5; color: var(--ink-mute); }
+
+        /* Stats */
+        .bigstat { display: flex; align-items: center; justify-content: center; gap: calc(18 * var(--u)); padding: calc(22 * var(--u)) calc(16 * var(--u)); }
+        .bigstat .stat-num { font-size: calc(68 * var(--u)); }
+        .bigstat .stat-label { font-size: calc(13 * var(--u)); }
+        .bigstat .stat-kicker {
+            font-family: 'JetBrains Mono', monospace; font-size: calc(10.5 * var(--u));
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--ink-faint); margin-bottom: calc(6 * var(--u));
+        }
+        .bigstat .arrow { font-family: 'Inter Tight', sans-serif; font-size: calc(34 * var(--u)); color: var(--ink-faint); }
+
+        /* Tables inside panels */
+        .tbl { padding: calc(6 * var(--u)) calc(8 * var(--u)); }
+        .upd-left > .tbl:only-child { display: flex; flex-direction: column; }
+        .upd-left > .tbl:only-child .plan-table { flex: 1; }
+        .tbl .plan-table th { font-size: calc(12 * var(--u)); padding: calc(8 * var(--u)) calc(10 * var(--u)); }
+        .tbl .plan-table td { font-size: calc(12 * var(--u)); padding: calc(6 * var(--u)) calc(10 * var(--u)); }
+        .tbl.roomy .plan-table td { padding-top: calc(10 * var(--u)); padding-bottom: calc(10 * var(--u)); }
+        .tbl .plan-table td code {
+            font-family: 'JetBrains Mono', monospace; font-size: calc(11 * var(--u));
+            white-space: nowrap; background: none; padding: 0;
+        }
+        .tbl .plan-table td.grp {
+            font-family: 'Inter Tight', sans-serif; font-weight: 700; font-size: calc(10.5 * var(--u));
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--coral); vertical-align: top; padding-top: calc(8 * var(--u)); border-bottom: 0;
+        }
+        .tbl .plan-table tr.sep td { border-top: 1px solid rgba(21,20,15,0.16); }
+        .tbl .plan-table .lock { color: var(--coral); font-weight: 700; }
+        .tbl .plan-table .open { color: var(--olive); font-weight: 700; }
+
+        /* Agenda */
+        .ag-grid { gap: calc(24 * var(--u)); align-items: start; }
+        .ag-grid .eyebrow { margin-bottom: calc(12 * var(--u)); }
+        .ag-list { display: flex; flex-direction: column; gap: calc(8 * var(--u)); }
+        .ag-row { display: flex; align-items: baseline; gap: calc(12 * var(--u)); padding: calc(10 * var(--u)) calc(14 * var(--u)); }
+        .ag-row h3 { flex: 1; margin: 0; font-size: calc(14 * var(--u)); }
+        .ag-row .mono { white-space: nowrap; font-size: calc(11 * var(--u)); }
+
+        /* Sources */
+        .src-grid { gap: calc(24 * var(--u)); align-items: start; }
+        .src-grid .eyebrow { margin-bottom: calc(10 * var(--u)); }
+        .source-list { display: flex; flex-direction: column; gap: calc(9 * var(--u)); }
+        .source-list a {
+            display: block; color: var(--ink-soft); text-decoration: none;
+            padding-left: calc(12 * var(--u)); border-left: 2px solid var(--coral);
+            font-size: calc(11 * var(--u)); line-height: 1.35;
+        }
+        .source-list a:hover { color: var(--coral); }
+        .source-list strong { display: block; font-family: 'Inter Tight', sans-serif; font-size: calc(12.5 * var(--u)); }
+        .source-list span { font-family: 'JetBrains Mono', monospace; font-size: calc(10.5 * var(--u)); color: var(--ink-faint); }
+
+        /* Narrow screens (for example 4:3 projectors): let long identifiers in tables wrap */
+        @media (max-width: 1180px) {
+            .tbl .plan-table td code { white-space: normal; overflow-wrap: anywhere; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Fixed overlays (outside slides) ── -->
+<div class="gh-logo" aria-hidden="true">
+    <img src="https://img.icons8.com/?size=100&id=12599&format=png" alt="" width="40" height="40" />
+</div>
+
+<div class="social-bar" aria-label="Social links">
+    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
+    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
+    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
+    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
+</div>
+
+<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+    <div class="qr-glass">
+        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
+    </div>
+    <span class="qr-label">Scan to know more</span>
+</a>
+
+<!-- ── Slide deck ── -->
+<div class="presentation">
+
+    <!-- ════════════════════════════════════════════════
+         01  TITLE
+         ════════════════════════════════════════════════ -->
+    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
+        <div class="slide-inner center" style="justify-content:center;gap:22px;">
+            <img src="https://img.icons8.com/?size=200&id=12599&format=png" alt="GitHub" width="200" height="200" style="display:block;" />
+            <h1 class="h-hero" style="margin-top:6px;">GHEC <span class="serif-em">&amp;</span> GHAS<span class="dot">.</span></h1>
+            <p class="lead" style="max-width:760px;">What's new in GitHub Enterprise Cloud and GitHub Advanced Security</p>
+            <p class="mono">Changelog digest · August – September 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         02  AGENDA
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="02 Agenda" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">I.</span><span class="rule-meta">Agenda</span><span class="page-num">02</span></div>
+            <h2 class="h-xl" style="margin-bottom:20px;">What we'll <span class="serif-em">cover</span><span class="dot">.</span></h2>
+            <div class="grid-2 ag-grid">
+                <div>
+                    <p class="eyebrow">GitHub Enterprise Cloud · 6 updates</p>
+                    <div class="ag-list">
+                        <div class="feature-card ag-row"><h3>01 · Managed settings validator</h3><span class="mono">Sep 25</span></div>
+                        <div class="feature-card ag-row"><h3>02 · Credential inventory exports</h3><span class="mono">Sep 21</span></div>
+                        <div class="feature-card ag-row"><h3>03 · Automated SSO authorization</h3><span class="mono">Sep 16</span></div>
+                        <div class="feature-card ag-row"><h3>04 · Enterprise Live Migrations (GA)</h3><span class="mono">Sep 1</span></div>
+                        <div class="feature-card ag-row"><h3>05 · Billing data for GitHub Apps</h3><span class="mono">Aug 26</span></div>
+                        <div class="feature-card ag-row"><h3>06 · Rule insights dashboard (GA)</h3><span class="mono">Aug 25</span></div>
+                    </div>
+                </div>
+                <div>
+                    <p class="eyebrow">GitHub Advanced Security · 5 updates</p>
+                    <div class="ag-list">
+                        <div class="feature-card ag-row"><h3>01 · Agentic autofix + GitHub Copilot Memory</h3><span class="mono">Sep 25</span></div>
+                        <div class="feature-card ag-row"><h3>02 · Block PRs with exposed secrets</h3><span class="mono">Sep 9</span></div>
+                        <div class="feature-card ag-row"><h3>03 · Secret scanning coverage updates</h3><span class="mono">Aug 7</span></div>
+                        <div class="feature-card ag-row"><h3>04 · GHAS trials, expanded</h3><span class="mono">Sep 9</span></div>
+                        <div class="feature-card ag-row"><h3>05 · Enforce GHAS configurations</h3><span class="mono">Sep 15</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         03  GHEC 1  SETTINGS VALIDATOR
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="03 GHEC · Settings validator" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">II.</span><span class="rule-meta">GHEC · Update 1 of 6 · Sep 25, 2026</span><span class="page-num">03</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Managed settings, <span class="serif-em">validated</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">An in-product validator for enterprise managed settings for GitHub Copilot flags errors that can stop your policies from being enforced.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-cmt"># 1 · Open the validator</span>
+Enterprise AI controls page
+<span class="code-str">"Copilot settings validation"</span>
+
+<span class="code-cmt"># 2 · Fix each issue (file + JSON path)</span>
+copilot/managed-settings.json
+copilot/team-mappings.json
+<span class="code-cmt">+ team settings files it references</span>
+
+<span class="code-cmt"># 3 · Commit to the default branch of</span>
+<span class="code-kw">.github-private</span>
+
+<span class="code-cmt"># 4 · Reload the Agents page, re-check</span></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Malformed JSON</h3><p>Catches broken JSON in the managed settings files, one of the errors that can stop policies from being enforced.</p></div>
+                    <div class="feature-card"><h3>Unsupported configurations</h3><p>Flags configurations that aren’t supported, each with the affected file and JSON path.</p></div>
+                    <div class="feature-card"><h3>Invalid team mappings</h3><p>Checks <code>team-mappings.json</code> and the team settings files it references.</p></div>
+                    <div class="feature-card"><h3>Confirm the fix</h3><p>After you commit, reload the Agents page and review the validator results to confirm the configuration is valid.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-25-enterprise-managed-settings-in-product-validator/" target="_blank" rel="noopener">github.blog/changelog/2026-09-25-enterprise-managed-settings-in-product-validator/</a> · Sep 25, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         04  GHEC 2  CREDENTIAL INVENTORY
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="04 GHEC · Credential inventory" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">III.</span><span class="rule-meta">GHEC · Update 2 of 6 · Sep 21, 2026</span><span class="page-num">04</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Credential inventory <span class="serif-em">exports</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">Enterprise owners can export every credential that can access the enterprise: one view across members and apps, built for incident response.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-cmt"># UI · enterprise settings</span>
+Settings › Authentication Security › Credentials
+<span class="code-kw">Export CSV</span>   <span class="code-cmt">(next to "Overview")</span>
+
+<span class="code-cmt"># REST · asynchronous CSV export</span>
+<span class="code-kw">POST</span> /enterprises/{enterprise}/credentials/exports
+<span class="code-kw">GET</span>  …/credentials/exports/{export_id}</div>
+                    <div class="pt note"><p class="eyebrow">REST docs note</p><p>The earlier list endpoint, <code>GET /enterprises/{enterprise}/credentials</code>, closes down on Oct 2, 2026. Use the export endpoints.</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Every credential</h3><p>SSH keys, classic and fine-grained PATs, OAuth App tokens, and GitHub App user-to-server and installation tokens.</p></div>
+                    <div class="feature-card"><h3>Rich metadata</h3><p>Owners, scopes and permissions, creation, expiration and last-used dates, and target organizations or repositories.</p></div>
+                    <div class="feature-card"><h3>Filter and correlate</h3><p>Filter by user, app, credential type, or organization. Correlate with audit log activity to gauge risk exposure.</p></div>
+                    <div class="feature-card"><h3>Who and where</h3><p>Enterprise owners and members with <code>View enterprise credentials</code>. Available on GHEC now; coming to GHES.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-21-github-enterprise-adds-credential-inventory-exports/" target="_blank" rel="noopener">github.blog/changelog/2026-09-21-github-enterprise-adds-credential-inventory-exports/</a> · Sep 21, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         05  GHEC 3  SSO AUTHORIZATION
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="05 GHEC · SSO authorization" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">IV.</span><span class="rule-meta">GHEC · Update 3 of 6 · Sep 16, 2026</span><span class="page-num">05</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Automated SSO <span class="serif-em">authorization</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">Enterprise admins can bulk-authorize existing classic PATs and SSH keys for up to 50 organizations in one request, through an enterprise-installed GitHub App.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-cmt"># GitHub App with enterprise_credentials:write</span>
+<span class="code-kw">POST</span> /enterprises/{enterprise}/credential-authorizations
+{
+  "credential_type": <span class="code-str">"classic_pat"</span>,
+  "credential_id": 12345678,
+  "organizations": [<span class="code-str">"octo-org"</span>, <span class="code-str">"octo-enterprise-org"</span>]
+}
+<span class="code-cmt"># ssh_key: pass the key fingerprint · max 50 orgs</span></div>
+                    <div class="pt note"><p class="eyebrow">Good fit</p><p>Service accounts and automation credentials. Call the API whenever a token rotates or new organizations are added.</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>The friction</h3><p>Authorizing credentials one SSO-protected organization at a time is manual work and encourages long-lived tokens.</p></div>
+                    <div class="feature-card"><h3>Opt in, then delegate</h3><p>Enable the new enterprise setting so enterprise-installed GitHub Apps with <code>enterprise_credentials:write</code> can call the API.</p></div>
+                    <div class="feature-card"><h3>No secrets passed</h3><p>The credential is identified by its non-secret token ID or SSH key fingerprint, so no secrets reach the app.</p></div>
+                    <div class="feature-card"><h3>Checked before granting</h3><p>Verifies the orgs are in the enterprise, the owner belongs to each, and enterprise-level SSO is used. Skips active authorizations.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-16-automate-sso-authorization-for-classic-pats-and-ssh-keys/" target="_blank" rel="noopener">github.blog/changelog/2026-09-16-automate-sso-authorization-for-classic-pats-and-ssh-keys/</a> · Sep 16, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         06  GHEC 4  LIVE MIGRATIONS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="06 GHEC · Live migrations" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">V.</span><span class="rule-meta">GHEC · Update 4 of 6 · Sep 1, 2026</span><span class="page-num">06</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Live migrations, now <span class="serif-em">GA</span><span class="dot">.</span></h2>
+                <span class="tag tag-ga">Generally available</span>
+            </div>
+            <p class="lead upd-lead">Enterprise Live Migrations (ELM) moves repositories from GitHub Enterprise Server to GitHub Enterprise Cloud with data residency with near-zero downtime.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-kw">gh</span> extension install github/gh-elm
+<span class="code-kw">gh</span> elm configure
+
+<span class="code-kw">gh</span> elm migration create \
+  --source-org ORG --source-repo REPO \
+  --target-org ORG --target-repo REPO
+<span class="code-kw">gh</span> elm migration start   --migration-id $MIGRATION_ID
+<span class="code-kw">gh</span> elm migration status  --migration-id $MIGRATION_ID
+<span class="code-kw">gh</span> elm migration cutover --migration-id $MIGRATION_ID</div>
+                    <div class="pt note"><p class="eyebrow">Supported GHES versions</p><p>3.17.18+ · 3.18.12+ · 3.19.9+ · 3.20.3+ · 3.21.3+ · 3.22.0+</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Cutover in minutes</h3><p>Data syncs continuously while developers keep working. Cutover only drains the remaining in-flight changes.</p></div>
+                    <div class="feature-card"><h3>Built for monorepos</h3><p>Deep history, heavy issue and pull request volume, constant activity. Progress tracking surfaces failures before cutover.</p></div>
+                    <div class="feature-card"><h3>Pairs with GEI</h3><p>Use GitHub Enterprise Importer where brief downtime is fine and ELM where it isn’t. Run both concurrently.</p></div>
+                    <div class="feature-card"><h3>Scriptable CLI</h3><p><code>gh elm</code> manages the lifecycle through the GHES REST API, with readable or JSON output for automation.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-01-enterprise-live-migrations-from-ghes-to-ghe-com-generally-available/" target="_blank" rel="noopener">github.blog/changelog/2026-09-01-enterprise-live-migrations-from-ghes-to-ghe-com-generally-available/</a> · Sep 1, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         07  GHEC 5  BILLING DATA FOR APPS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="07 GHEC · Billing data for apps" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">VI.</span><span class="rule-meta">GHEC · Update 5 of 6 · Aug 26, 2026</span><span class="page-num">07</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Billing data for <span class="serif-em">GitHub Apps</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">Enterprise owners can grant a GitHub App the enterprise billing permission, so billing automation no longer depends on one person’s token.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="pt cmp"><p class="eyebrow">Before</p><h3>Personal access token</h3><p>Belonged to an enterprise owner or billing manager. Automation broke when that person changed roles or left.</p></div>
+                    <div class="pt cmp now"><p class="eyebrow">Now</p><h3>GitHub App installation token</h3><p>Carries the enterprise billing permission, read or read and write, and calls the enterprise billing REST API.</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Pick a level</h3><p>Select the enterprise billing permission when you create or configure the app: read, or read and write.</p></div>
+                    <div class="feature-card"><h3>Use the billing API</h3><p>An installation access token with the permission can call the enterprise billing REST API endpoints.</p></div>
+                    <div class="feature-card"><h3>Automate finance work</h3><p>Pull usage into finance and BI systems, reconcile invoices, and manage budgets and cost centers.</p></div>
+                    <div class="feature-card"><h3>More resilient</h3><p>Higher rate limits than a personal access token, and no dependence on one person’s role.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-08-26-github-apps-can-now-access-enterprise-billing-data/" target="_blank" rel="noopener">github.blog/changelog/2026-08-26-github-apps-can-now-access-enterprise-billing-data/</a> · Aug 26, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         08  GHEC 6  RULE INSIGHTS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="08 GHEC · Rule insights" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">VII.</span><span class="rule-meta">GHEC · Update 6 of 6 · Aug 25, 2026</span><span class="page-num">08</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Rule insights, now <span class="serif-em">GA</span><span class="dot">.</span></h2>
+                <span class="tag tag-ga">Generally available</span>
+            </div>
+            <p class="lead upd-lead">A visual view of how GitHub evaluates and enforces your repository rulesets, at both the repository and organization levels.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-cmt"># Organization level</span>
+Settings › Repository
+
+<span class="code-cmt"># Repository level</span>
+Settings › Rules
+
+<span class="code-cmt"># Either level</span>
+<span class="code-kw">Export to CSV</span></div>
+                    <div class="pt note"><p class="eyebrow">Repository charts</p><p>Each chart links back to rule insights with filters prefilled, so you can jump straight to a status, bypass, or time range.</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Aggregate view</h3><p>Rule-evaluation metrics across every repository, so governance and compliance teams can report at organization scale.</p></div>
+                    <div class="feature-card"><h3>Find the bypasses</h3><p>See top repositories by bypasses at organization level, and the most active bypassers per repository.</p></div>
+                    <div class="feature-card"><h3>Filter your way in</h3><p>Filter by evaluation status, branch, ruleset, and date range to focus on the activity you care about.</p></div>
+                    <div class="feature-card"><h3>Report and audit</h3><p>Export the data to CSV at either level for reporting and record keeping.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-08-25-rule-insights-dashboard-generally-available/" target="_blank" rel="noopener">github.blog/changelog/2026-08-25-rule-insights-dashboard-generally-available/</a> · Aug 25, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         09  GHAS 1  AGENTIC AUTOFIX
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="09 GHAS · Agentic autofix" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">VIII.</span><span class="rule-meta">GHAS · Update 1 of 5 · Sep 25, 2026</span><span class="page-num">09</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Autofix that <span class="serif-em">remembers</span><span class="dot">.</span></h2>
+                <span class="tag tag-preview">Public preview</span>
+            </div>
+            <p class="lead upd-lead">For customers who have enabled GitHub Copilot Memory, agentic autofix now reads existing memories for context and stores the fix patterns it creates.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="pt steps"><div class="step"><span class="step-n">01</span><div><h3>Security alert</h3><p>You use agentic autofix to resolve it.</p></div></div><div class="step"><span class="step-n">02</span><div><h3>Review memories</h3><p>It reads existing memories for context that can help resolve the alert.</p></div></div><div class="step"><span class="step-n">03</span><div><h3>Create the fix</h3><p>It proposes a fix for the alert.</p></div></div><div class="step"><span class="step-n">04</span><div><h3>Store the pattern</h3><p>The fix pattern is saved as a memory for future use.</p></div></div></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Resolves more alerts</h3><p>Stored fix patterns help agentic autofix resolve additional security alerts.</p></div>
+                    <div class="feature-card"><h3>Teaches other features</h3><p>GitHub Copilot code review and cloud agent learn secure development patterns unique to your repository.</p></div>
+                    <div class="feature-card"><h3>Needs Memory</h3><p>Applies to customers who have enabled GitHub Copilot Memory.</p></div>
+                    <div class="feature-card"><h3>Public preview</h3><p>Both agentic autofix and GitHub Copilot Memory are in public preview.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-25-agentic-autofix-now-uses-copilot-memory/" target="_blank" rel="noopener">github.blog/changelog/2026-09-25-agentic-autofix-now-uses-copilot-memory/</a> · Sep 25, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         10  GHAS 2  BLOCK SECRETS AT MERGE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="10 GHAS · Block secrets at merge" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">IX.</span><span class="rule-meta">GHAS · Update 2 of 5 · Sep 9, 2026</span><span class="page-num">10</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Block secrets at <span class="serif-em">merge</span><span class="dot">.</span></h2>
+                <span class="tag tag-preview">Public preview</span>
+            </div>
+            <p class="lead upd-lead">A new repository ruleset rule stops a pull request from merging while it introduces open secret scanning alerts.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="code-block"><span class="code-cmt"># Repository > Rulesets (repo, org, or enterprise)</span>
+Require secret scanning alerts are resolved
+
+<span class="code-cmt"># REST API</span>
+type        <span class="code-kw">require_secret_scanning_alert_resolution</span>
+parameters  secret_types
+
+<span class="code-cmt"># GraphQL</span>
+<span class="code-kw">REQUIRE_SECRET_SCANNING_ALERT_RESOLUTION</span></div>
+                    <div class="pt note"><p class="eyebrow">Default scope</p><p>Runs on open pull requests and blocks provider-pattern secrets. You can also block other categories, such as custom or generic patterns.</p></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>Two checks</h3><p>A secret scan has completed for the head commit, and no alerts are open for secrets the pull request’s commits introduced.</p></div>
+                    <div class="feature-card"><h3>Developers resolve</h3><p>Without bypass permission, developers clear the block by resolving each alert.</p></div>
+                    <div class="feature-card"><h3>Beyond push protection</h3><p>Adds a pull request layer for cases push protection can’t or isn’t set to catch, like generic patterns with push protection off.</p></div>
+                    <div class="feature-card"><h3>Availability</h3><p>Public preview for customers with GitHub Secret Protection or GitHub Advanced Security.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-09-block-pull-requests-with-exposed-secrets-from-merging/" target="_blank" rel="noopener">github.blog/changelog/2026-09-09-block-pull-requests-with-exposed-secrets-from-merging/</a> · Sep 9, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         11  GHAS 3  SECRET SCANNING COVERAGE
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="11 GHAS · Secret scanning coverage" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">X.</span><span class="rule-meta">GHAS · Update 3 of 5 · Aug 7, 2026</span><span class="page-num">11</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Secret scanning, <span class="serif-em">broader</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">This release expands secret scanning coverage: one new partner, four more secrets blocked by push protection by default, and richer alert metadata for four patterns.</p>
+            <div class="upd-grid wide-left">
+                <div class="upd-left">
+                    <div class="pt tbl"><table class="plan-table"><thead><tr><th>Change</th><th>Provider</th><th>Secret type</th></tr></thead><tbody><tr><td class="grp">New partner</td><td>Lovable Labs</td><td><code>lovable_api_key</code></td></tr><tr class="sep"><td class="grp" rowspan="4">Push protection default</td><td>APIclub</td><td><code>apiclub_api_key</code></td></tr><tr><td>Mistral AI</td><td><code>mistral_ai_api_key</code></td></tr><tr><td>PostHog</td><td><code>posthog_oauth_access_token</code></td></tr><tr><td>Resend</td><td><code>resend_api_key</code></td></tr><tr class="sep"><td class="grp" rowspan="4">Extended metadata</td><td>Cohere</td><td><code>cohere_api_key</code></td></tr><tr><td>GoCardless</td><td><code>gocardless_live_access_token</code></td></tr><tr><td>GoCardless</td><td><code>gocardless_sandbox_access_token</code></td></tr><tr><td>Square</td><td><code>square_access_token</code></td></tr></tbody></table></div>
+                </div>
+                <div class="grid-2 upd-cards">
+                    <div class="feature-card"><h3>New partner</h3><p>Lovable Labs joins the partner program. Secrets found in public repositories are forwarded to the provider.</p></div>
+                    <div class="feature-card"><h3>Push protection defaults</h3><p>These four are blocked by default wherever secret scanning is on, including free public repositories.</p></div>
+                    <div class="feature-card"><h3>Extended metadata</h3><p>Alerts can show the secret’s owner, creation and expiry dates, and the associated project or organization.</p></div>
+                    <div class="feature-card"><h3>Best effort</h3><p>Metadata availability varies by provider, token type, and even individual secret.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-08-07-secret-scanning-coverage-updates/" target="_blank" rel="noopener">github.blog/changelog/2026-08-07-secret-scanning-coverage-updates/</a> · Aug 7, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         12  GHAS 4  TRIAL AVAILABILITY
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="12 GHAS · Trial availability" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">XI.</span><span class="rule-meta">GHAS · Update 4 of 5 · Sep 9, 2026</span><span class="page-num">12</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">GHAS trials, <span class="serif-em">expanded</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">More GitHub Enterprise Cloud customers can start a self-serve GitHub Advanced Security trial to evaluate GitHub Code Security and GitHub Secret Protection.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="pt bigstat"><div class="stat-block"><div class="stat-kicker">Before · up to</div><div class="stat-num">100</div><div class="stat-label">licenses</div></div><div class="arrow">→</div><div class="stat-block"><div class="stat-kicker">Now · up to</div><div class="stat-num">300</div><div class="stat-label">licenses</div></div></div>
+                </div>
+                <div class="grid-2 upd-cards one">
+                    <div class="feature-card"><h3>What you can trial</h3><p>GitHub Code Security and GitHub Secret Protection, through a self-serve GitHub Advanced Security trial.</p></div>
+                    <div class="feature-card"><h3>Who is eligible</h3><p>GitHub Enterprise Cloud enterprises with up to 300 licenses, up from up to 100 before.</p></div>
+                    <div class="feature-card"><h3>Where to start</h3><p>Open the enterprise “Billing and licensing” page and set up the trial.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-09-github-advanced-security-expands-trial-availability/" target="_blank" rel="noopener">github.blog/changelog/2026-09-09-github-advanced-security-expands-trial-availability/</a> · Sep 9, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         13  GHAS 5  ENFORCE CONFIGURATIONS
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="13 GHAS · Enforce configurations" data-nav-theme="light">
+        <div class="slide-inner wide upd">
+            <div class="sec-rule"><span class="roman">XII.</span><span class="rule-meta">GHAS · Update 5 of 5 · Sep 15, 2026</span><span class="page-num">13</span></div>
+            <div class="upd-head">
+                <h2 class="h-xl">Enforce GHAS <span class="serif-em">configurations</span><span class="dot">.</span></h2>
+                <span class="tag tag-new">Available now</span>
+            </div>
+            <p class="lead upd-lead">Enterprise admins can now stop both organization and repository administrators from overriding security settings defined at the enterprise level.</p>
+            <div class="upd-grid">
+                <div class="upd-left">
+                    <div class="pt tbl roomy"><table class="plan-table"><thead><tr><th>“Enforcement” option</th><th>Repository owners</th><th>Organization owners</th></tr></thead><tbody><tr><td>Don’t enforce</td><td><span class="open">Can override</span></td><td><span class="open">Can override</span></td></tr><tr><td>Enforce for repository owners</td><td><span class="lock">Locked</span></td><td><span class="open">Can override</span></td></tr><tr><td>Enforce for repository and organization owners</td><td><span class="lock">Locked</span></td><td><span class="lock">Locked</span></td></tr></tbody></table></div>
+                    <div class="pt note"><p class="eyebrow">Where to set it</p><p>In a security configuration, choose from the “Enforcement” dropdown menu.</p></div>
+                </div>
+                <div class="grid-2 upd-cards one">
+                    <div class="feature-card"><h3>What changed</h3><p>Enforcement only stopped repository owners from changing settings. It can now stop organization owners too.</p></div>
+                    <div class="feature-card"><h3>Consistent policy</h3><p>Security and compliance teams can apply the same GitHub Advanced Security settings across every organization.</p></div>
+                    <div class="feature-card"><h3>Strictest option</h3><p>Enforcing for repository and organization owners stops both from overriding what the enterprise defines.</p></div>
+                </div>
+            </div>
+            <p class="mono source-line">Source: <a href="https://github.blog/changelog/2026-09-15-enforce-github-advanced-security-configurations/" target="_blank" rel="noopener">github.blog/changelog/2026-09-15-enforce-github-advanced-security-configurations/</a> · Sep 15, 2026</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         14  SOURCES
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="14 Sources" data-nav-theme="light">
+        <div class="slide-inner wide">
+            <div class="sec-rule"><span class="roman">XIII.</span><span class="rule-meta">Official sources</span><span class="page-num">14</span></div>
+            <h2 class="h-lg" style="margin-bottom:8px;">Read the <span class="serif-em">changelogs</span><span class="dot">.</span></h2>
+            <p class="lead sm" style="max-width:calc(780 * var(--u));margin-bottom:16px;">Every update in this deck comes from the linked GitHub Changelog entry.</p>
+            <div class="grid-2 src-grid">
+                <div>
+                    <p class="eyebrow">GitHub Enterprise Cloud</p>
+                    <div class="source-list">
+                        <a href="https://github.blog/changelog/2026-09-25-enterprise-managed-settings-in-product-validator/" target="_blank" rel="noopener"><strong>Enterprise managed settings in-product validator</strong><span>Sep 25, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-21-github-enterprise-adds-credential-inventory-exports/" target="_blank" rel="noopener"><strong>GitHub Enterprise adds credential inventory exports</strong><span>Sep 21, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-16-automate-sso-authorization-for-classic-pats-and-ssh-keys/" target="_blank" rel="noopener"><strong>Automate SSO authorization for classic PATs and SSH keys</strong><span>Sep 16, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-01-enterprise-live-migrations-from-ghes-to-ghe-com-generally-available/" target="_blank" rel="noopener"><strong>Enterprise Live Migrations from GHES to ghe.com generally available</strong><span>Sep 1, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-08-26-github-apps-can-now-access-enterprise-billing-data/" target="_blank" rel="noopener"><strong>GitHub Apps can now access enterprise billing data</strong><span>Aug 26, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-08-25-rule-insights-dashboard-generally-available/" target="_blank" rel="noopener"><strong>Rule insights dashboard generally available</strong><span>Aug 25, 2026 · GitHub Changelog</span></a>
+                    </div>
+                </div>
+                <div>
+                    <p class="eyebrow">GitHub Advanced Security</p>
+                    <div class="source-list">
+                        <a href="https://github.blog/changelog/2026-09-25-agentic-autofix-now-uses-copilot-memory/" target="_blank" rel="noopener"><strong>Agentic autofix now uses GitHub Copilot Memory</strong><span>Sep 25, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-09-block-pull-requests-with-exposed-secrets-from-merging/" target="_blank" rel="noopener"><strong>Block pull requests with exposed secrets from merging</strong><span>Sep 9, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-08-07-secret-scanning-coverage-updates/" target="_blank" rel="noopener"><strong>Secret scanning coverage updates</strong><span>Aug 7, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-09-github-advanced-security-expands-trial-availability/" target="_blank" rel="noopener"><strong>GitHub Advanced Security expands trial availability</strong><span>Sep 9, 2026 · GitHub Changelog</span></a>
+                        <a href="https://github.blog/changelog/2026-09-15-enforce-github-advanced-security-configurations/" target="_blank" rel="noopener"><strong>Enforce GitHub Advanced Security configurations</strong><span>Sep 15, 2026 · GitHub Changelog</span></a>
+                    </div>
+                </div>
+            </div>
+            <p class="mono source-line">As of September 30, 2026 · endpoint and CLI examples follow the GitHub REST and ELM docs · availability can change after publication.</p>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         15  THANK YOU
+         ════════════════════════════════════════════════ -->
+    <section class="slide" data-screen-label="15 Thank you" data-nav-theme="light">
+        <div class="slide-inner center">
+            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
+            <p class="lead" style="margin-bottom:32px;">Follow for more · Connect on LinkedIn · Subscribe on YouTube</p>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
+                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
+                         alt="Scan to know more" width="210" height="210" style="border-radius:16px;padding:8px;background:#fff;" />
+                </a>
+                <div style="display:flex;gap:20px;">
+                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="51" height="51" /></a>
+                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="51" height="51" /></a>
+                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="51" height="51" /></a>
+                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="51" height="51" /></a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div><!-- .presentation -->
+
+<!-- ── Navigation UI ── -->
+<div id="nav"></div>
+<div class="slide-counter" id="slideCounter">01 / 15</div>
+<div id="hint">← / → · esc · swipe</div>
+<div class="deck-progress"><div class="bar"></div></div>
+
+<!-- ── Fit to viewport (dense slides) ── -->
+<script>
+/* Scales a slide's content down when it would otherwise overflow into the bottom nav overlays. */
+(function () {
+    var SEL = '.slide-inner, .cover-inner';
+    var MIN_SCALE = 0.58;
+
+    function ensureWrap(inner) {
+        var wrap = inner.querySelector(':scope > .fit-wrap');
+        if (wrap) return wrap;
+        wrap = document.createElement('div');
+        wrap.className = 'fit-wrap';
+        var cs = getComputedStyle(inner);
+        wrap.style.rowGap = cs.rowGap;
+        wrap.style.alignItems = cs.alignItems;
+        wrap.style.justifyContent = cs.justifyContent;
+        wrap.style.transformOrigin =
+            (inner.classList.contains('center') || inner.classList.contains('cover-inner'))
+                ? 'top center' : 'top left';
+        while (inner.firstChild) wrap.appendChild(inner.firstChild);
+        inner.appendChild(wrap);
+        return wrap;
+    }
+
+    function fit(inner) {
+        var wrap = ensureWrap(inner);
+        wrap.style.transform = 'none';
+        wrap.style.height = 'auto';
+        var cs = getComputedStyle(inner);
+        var avail = inner.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        var natural = wrap.getBoundingClientRect().height;
+        if (avail > 0 && natural > avail + 1) {
+            wrap.style.height = natural + 'px';
+            wrap.style.transform = 'scale(' + Math.max(MIN_SCALE, avail / natural) + ')';
+        } else {
+            wrap.style.height = '100%';
+        }
+    }
+
+    var lastSig = '';
+    function sig() { return window.innerWidth + 'x' + window.innerHeight; }
+
+    function fitAll() {
+        lastSig = sig();
+        document.querySelectorAll(SEL).forEach(fit);
+    }
+
+    var pending = null, trailing = null;
+    function runFit() {
+        pending = null;
+        fitAll();
+        // Trailing pass: viewport resizes can land in stages, so re-measure once layout has settled.
+        clearTimeout(trailing);
+        trailing = setTimeout(fitAll, 250);
+    }
+    // setTimeout rather than requestAnimationFrame: rAF is throttled when the page is backgrounded,
+    // which would leave slides unscaled until the next interaction.
+    function schedule() {
+        if (pending) clearTimeout(pending);
+        pending = setTimeout(runFit, 16);
+    }
+
+    function start() {
+        fitAll();
+        if (typeof ResizeObserver !== 'undefined') {
+            var ro = new ResizeObserver(schedule);
+            document.querySelectorAll(SEL).forEach(function (el) { ro.observe(el); });
+        }
+        // Cheap self-heal: covers display changes and fullscreen, where resize events can be missed.
+        setInterval(function () { if (sig() !== lastSig) schedule(); }, 300);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+    addEventListener('load', function () { schedule(); setTimeout(schedule, 400); });
+    addEventListener('resize', schedule);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+})();
+</script>
+
+<!-- ── Navigation script (do NOT modify) ── -->
+<script>
+(function () {
+    var deck = document.querySelector('.presentation');
+    if (!deck) return;
+    var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+    var nav = document.getElementById('nav');
+    var bar = document.querySelector('.deck-progress .bar');
+    var counter = document.getElementById('slideCounter');
+    var total = slides.length;
+    var idx = 0, lock = false;
+
+    /* match deck width to slide count so translateX works */
+    deck.style.width = (total * 100) + 'vw';
+
+    /* build dot nav */
+    slides.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.className = 'dot';
+        b.dataset.i = i;
+        b.setAttribute('aria-label', 'Slide ' + (i + 1));
+        b.onclick = function () { go(i); };
+        nav.appendChild(b);
+    });
+
+    function applySlide(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        nav.querySelectorAll('.dot').forEach(function (d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
+        if (counter) counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(total).padStart(2, '0');
+    }
+
+    function go(n) {
+        if (lock) return;
+        applySlide(n);
+        lock = true;
+        setTimeout(function () { lock = false; }, 700);
+    }
+
+    /* keyboard nav */
+    addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault(); go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault(); go(idx - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault(); go(0);
+        } else if (e.key === 'End') {
+            e.preventDefault(); go(total - 1);
+        }
+    });
+
+    /* wheel nav (horizontal + vertical accumulation) */
+    var wheelTO = null, wheelAcc = 0;
+    addEventListener('wheel', function (e) {
+        wheelAcc += e.deltaY + e.deltaX;
+        if (Math.abs(wheelAcc) > 60) {
+            go(idx + (wheelAcc > 0 ? 1 : -1));
+            wheelAcc = 0;
+        }
+        clearTimeout(wheelTO);
+        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+    }, { passive: true });
+
+    /* touch nav */
+    var tx = 0, ty = 0;
+    addEventListener('touchstart', function (e) {
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    }, { passive: true });
+    addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx;
+        var dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            go(idx + (dx < 0 ? 1 : -1));
+        }
+    }, { passive: true });
+
+    /* Host-driven navigation for Open Design bridge */
+    addEventListener('message', function (e) {
+        var data = e && e.data;
+        if (!data || data.type !== 'od:slide') return;
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
+        else if (data.action === 'next') applySlide(idx + 1);
+        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'first') applySlide(0);
+        else if (data.action === 'last') applySlide(total - 1);
+    });
+
+    if (typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].classList.contains('active') && i !== idx) {
+                    applySlide(i); return;
+                }
+            }
+        });
+        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+    }
+
+    applySlide(0);
+})();
+</script>
+</body>
+</html>
