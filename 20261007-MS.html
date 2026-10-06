@@ -1,0 +1,1411 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>GitHub Copilot | 2.5-hour hands-on workshop</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #0d1b2d;
+      --panel-2: #11243a;
+      --panel-3: #162d45;
+      --ink: #eff5ff;
+      --muted: #a8b9d1;
+      --quiet: #71839d;
+      --line: rgba(183, 204, 231, .16);
+      --lime: #c7f36b;
+      --aqua: #67e3d1;
+      --blue: #78aaff;
+      --violet: #c0a7ff;
+      --orange: #ffbf78;
+      --rose: #ff8e9b;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .28);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      display: grid;
+      grid-template-rows: 62px minmax(0, 1fr) 70px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 14% 6%, rgba(103, 227, 209, .09), transparent 32%),
+        radial-gradient(ellipse at 86% 88%, rgba(120, 170, 255, .09), transparent 34%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", ui-sans-serif, sans-serif;
+      font-size: 16px;
+      line-height: 1.45;
+      letter-spacing: -.01em;
+    }
+
+    a { color: var(--aqua); text-underline-offset: 3px; }
+    a:hover { color: var(--lime); }
+    button { font: inherit; }
+    .skip-link {
+      position: fixed;
+      z-index: 20;
+      top: 8px;
+      left: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--bg);
+      background: var(--lime);
+      transform: translateY(-150%);
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .topbar {
+      position: relative;
+      z-index: 5;
+      grid-row: 1;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 54px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 17, 31, .78);
+      backdrop-filter: blur(18px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .github-mark { display: block; width: 28px; height: 28px; flex: 0 0 auto; color: var(--ink); }
+    .top-meta { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+    .top-meta strong { color: var(--ink); font-weight: 700; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); }
+
+    .deck {
+      position: relative;
+      grid-row: 2;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: auto;
+      overflow-x: hidden;
+      padding: 18px clamp(20px, 6vw, 88px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .slide-content { width: min(1240px, 100%); min-width: 0; margin: 0 auto; }
+    .slide-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; margin-bottom: clamp(18px, 2.3vw, 30px); }
+    .time-chip, .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .025);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2 { margin-bottom: 12px; font-weight: 760; line-height: 1.08; letter-spacing: -.035em; }
+    h1 { max-width: 850px; font-size: clamp(42px, 6vw, 82px); }
+    h2 { font-size: clamp(32px, 4vw, 55px); }
+    h3 { margin-bottom: 8px; font-size: clamp(15px, 1.45vw, 19px); line-height: 1.2; }
+    .lead { max-width: 750px; margin-bottom: 0; color: var(--muted); font-size: clamp(17px, 1.8vw, 23px); }
+    .sublead { max-width: 820px; margin: 0; color: var(--muted); font-size: clamp(14px, 1.25vw, 17px); }
+    .accent { color: var(--lime); }
+    .accent-aqua { color: var(--aqua); }
+    .accent-violet { color: var(--violet); }
+    .accent-orange { color: var(--orange); }
+    .accent-rose { color: var(--rose); }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .micro { font-size: 10px; }
+    .mono, code, pre { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    code { color: var(--lime); }
+    pre { margin: 0; white-space: pre-wrap; }
+
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: 14px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card {
+      position: relative;
+      min-width: 0;
+      padding: clamp(16px, 2vw, 23px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .018));
+      box-shadow: var(--shadow);
+    }
+    .card p { margin-bottom: 0; color: var(--muted); font-size: 13px; }
+    .card .card-kicker { margin-bottom: 8px; color: var(--quiet); font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .accent-card { border-top: 2px solid var(--lime); }
+    .aqua-card { border-top: 2px solid var(--aqua); }
+    .violet-card { border-top: 2px solid var(--violet); }
+    .orange-card { border-top: 2px solid var(--orange); }
+    .rose-card { border-top: 2px solid var(--rose); }
+    .number {
+      display: inline-grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      margin-bottom: 14px;
+      border: 1px solid rgba(199, 243, 107, .36);
+      border-radius: 11px;
+      color: var(--lime);
+      background: rgba(199, 243, 107, .08);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .icon-dot { display: inline-grid; width: 31px; height: 31px; place-items: center; margin-bottom: 12px; border-radius: 10px; color: var(--ink); background: rgba(103, 227, 209, .14); font-size: 14px; font-weight: 800; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .025);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill.lime { border-color: rgba(199, 243, 107, .32); color: var(--lime); background: rgba(199, 243, 107, .07); }
+    .pill.aqua { border-color: rgba(103, 227, 209, .32); color: var(--aqua); background: rgba(103, 227, 209, .07); }
+    .pill.violet { border-color: rgba(192, 167, 255, .32); color: var(--violet); background: rgba(192, 167, 255, .07); }
+    .pill.orange { border-color: rgba(255, 191, 120, .32); color: var(--orange); background: rgba(255, 191, 120, .07); }
+    .pill.rose { border-color: rgba(255, 142, 155, .32); color: var(--rose); background: rgba(255, 142, 155, .07); }
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(199, 243, 107, .24);
+      border-radius: 16px;
+      color: var(--muted);
+      background: rgba(199, 243, 107, .055);
+      font-size: 13px;
+    }
+    .callout strong { color: var(--ink); }
+    .callout-mark { flex: 0 0 auto; color: var(--lime); font-weight: 900; }
+    .source {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 14px;
+      color: var(--quiet);
+      font-size: 10px;
+      text-decoration: none;
+    }
+    .source::after { content: "↗"; color: var(--aqua); }
+    .activity {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 14px;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border: 1px solid rgba(103, 227, 209, .28);
+      border-radius: 17px;
+      background: linear-gradient(100deg, rgba(103, 227, 209, .1), rgba(103, 227, 209, .025));
+    }
+    .activity-label { color: var(--aqua); font-size: 10px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    .activity p { margin: 4px 0 0; color: var(--ink); font-size: 13px; }
+    .activity .small { color: var(--muted); }
+    .codebox {
+      padding: 17px 19px;
+      border: 1px solid rgba(183, 204, 231, .17);
+      border-radius: 17px;
+      color: #d6e5fa;
+      background: #050b13;
+      font-size: clamp(11px, 1.15vw, 14px);
+      line-height: 1.62;
+      overflow-wrap: anywhere;
+    }
+    .codebox .comment { color: #7487a0; }
+    .codebox .green { color: var(--lime); }
+    .codebox .blue { color: var(--aqua); }
+    .codebox .orange { color: var(--orange); }
+
+    .hero { background: radial-gradient(ellipse at 81% 47%, rgba(103, 227, 209, .1), transparent 30%); }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); align-items: center; gap: 5vw; }
+    .hero h1 { margin: 18px 0 18px; }
+    .hero h1 span { color: var(--lime); }
+    .hero .lead { max-width: 620px; }
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 27px; }
+    .hero-art {
+      position: relative;
+      display: grid;
+      min-height: 360px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at center, rgba(199, 243, 107, .09), transparent 35%),
+        linear-gradient(155deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .01));
+      overflow: hidden;
+    }
+    .orbit { position: absolute; width: min(82%, 340px); aspect-ratio: 1; border: 1px dashed rgba(168, 185, 209, .3); border-radius: 50%; }
+    .orbit::before, .orbit::after { position: absolute; content: ""; border: 1px solid rgba(103, 227, 209, .19); border-radius: 50%; }
+    .orbit::before { inset: 13%; }
+    .orbit::after { inset: 28%; }
+    .hero-core {
+      z-index: 1;
+      display: grid;
+      width: 110px;
+      height: 110px;
+      place-items: center;
+      border: 1px solid rgba(199, 243, 107, .5);
+      border-radius: 32px;
+      color: var(--lime);
+      background: linear-gradient(145deg, rgba(199, 243, 107, .2), rgba(199, 243, 107, .04));
+      box-shadow: 0 12px 34px rgba(0, 0, 0, .2);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-align: center;
+    }
+    .orbit-node {
+      position: absolute;
+      z-index: 2;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: #0d1b2d;
+      font-size: 11px;
+      font-weight: 750;
+      box-shadow: var(--shadow);
+    }
+    .orbit-node.one { top: 15%; left: 13%; color: var(--aqua); }
+    .orbit-node.two { top: 15%; right: 12%; color: var(--violet); }
+    .orbit-node.three { right: 9%; bottom: 17%; color: var(--orange); }
+    .orbit-node.four { bottom: 14%; left: 12%; color: var(--lime); }
+    .hero-note { margin-top: 13px; color: var(--quiet); font-size: 10px; text-align: center; }
+
+    .outcome-card { min-height: 170px; }
+    .outcome-card h3 { margin-bottom: 7px; }
+    .outcome-card .big { display: block; margin-bottom: 11px; color: var(--lime); font-size: 29px; font-weight: 850; letter-spacing: -.06em; }
+
+    .agenda { display: grid; grid-template-columns: 1fr 2.5fr 1fr; gap: 14px; align-items: stretch; margin-top: 24px; }
+    .agenda-phase { min-height: 230px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255, 255, 255, .025); }
+    .agenda-phase.lab { border-color: rgba(199, 243, 107, .36); background: linear-gradient(150deg, rgba(199, 243, 107, .12), rgba(199, 243, 107, .025)); }
+    .agenda-time { color: var(--quiet); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .agenda-phase.lab .agenda-time { color: var(--lime); }
+    .agenda-phase h3 { margin: 14px 0 8px; font-size: 22px; }
+    .agenda-phase p { margin: 0; color: var(--muted); font-size: 12px; }
+    .agenda-phase .duration { margin-top: auto; padding-top: 18px; color: var(--ink); font-size: 30px; font-weight: 850; letter-spacing: -.05em; }
+    .agenda-lab-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-top: 14px; }
+    .agenda-lab-list span { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .agenda-lab-list b { color: var(--ink); font-weight: 700; white-space: nowrap; }
+
+    .setup-list { display: grid; gap: 10px; }
+    .setup-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 12px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255, 255, 255, .025); }
+    .setup-row .check { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; color: var(--lime); background: rgba(199, 243, 107, .1); font-size: 14px; font-weight: 900; }
+    .setup-row strong { display: block; font-size: 13px; }
+    .setup-row span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .setup-row .tag { padding: 5px 8px; font-size: 9px; }
+
+    .prompt-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: stretch; margin-top: 22px; }
+    .prompt-formula { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .formula-item { min-height: 116px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, .03); }
+    .formula-item b { display: block; margin-bottom: 8px; color: var(--lime); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+    .formula-item p { margin: 0; color: var(--muted); font-size: 12px; }
+    .prompt-example { display: flex; flex-direction: column; gap: 12px; }
+    .prompt-example .codebox { flex: 1; display: flex; align-items: center; }
+    .contrast { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 15px; color: var(--muted); font-size: 11px; }
+    .contrast div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, .025); }
+    .contrast .bad { color: var(--rose); }
+    .contrast .good { color: var(--lime); }
+    .contrast span { color: var(--quiet); font-size: 18px; }
+
+    .agent-loop { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; align-items: stretch; margin: 25px 0 17px; }
+    .loop-step { position: relative; min-height: 135px; padding: 15px 13px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255, 255, 255, .03); }
+    .loop-step:not(:last-child)::after { content: "→"; position: absolute; z-index: 2; top: 46%; right: -14px; color: var(--aqua); font-size: 17px; }
+    .loop-step .step-no { display: block; margin-bottom: 18px; color: var(--aqua); font-size: 10px; font-weight: 900; letter-spacing: .11em; }
+    .loop-step b { display: block; margin-bottom: 5px; font-size: 13px; }
+    .loop-step span { color: var(--muted); font-size: 10px; }
+    .loop-step.gate { border-color: rgba(255, 191, 120, .35); background: rgba(255, 191, 120, .055); }
+    .loop-step.gate .step-no { color: var(--orange); }
+
+    .repo-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 16px; align-items: stretch; margin-top: 20px; }
+    .tree { font-size: 12px; line-height: 1.82; }
+    .tree .folder { color: var(--aqua); }
+    .tree .file { color: #d9e6f8; }
+    .tree .why { color: var(--quiet); }
+    .repo-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .repo-part { padding: 13px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255, 255, 255, .025); }
+    .repo-part b { display: block; margin-bottom: 4px; color: var(--ink); font-size: 12px; }
+    .repo-part span { color: var(--muted); font-size: 10px; }
+
+    .pr-flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; align-items: center; margin: 25px 0 17px; }
+    .pr-step { position: relative; min-height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 9px; padding: 10px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, .03); text-align: center; }
+    .pr-step:not(:last-child)::after { content: "›"; position: absolute; right: -10px; color: var(--aqua); font-size: 24px; font-weight: 300; }
+    .pr-step i { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 9px; color: var(--lime); background: rgba(199, 243, 107, .1); font-style: normal; font-size: 10px; font-weight: 900; }
+    .pr-step b { font-size: 11px; }
+    .pr-step span { color: var(--muted); font-size: 9px; }
+    .pr-principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .pr-principles div { padding: 12px 13px; border-left: 2px solid var(--aqua); background: rgba(103, 227, 209, .04); }
+    .pr-principles b { display: block; margin-bottom: 4px; font-size: 11px; }
+    .pr-principles span { color: var(--muted); font-size: 10px; }
+
+    .role-map { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .75fr); gap: 18px; margin-top: 21px; }
+    .roles { display: grid; gap: 8px; }
+    .role { display: grid; grid-template-columns: 100px 1fr auto; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, .025); }
+    .role strong { font-size: 12px; }
+    .role span { color: var(--muted); font-size: 11px; }
+    .role em { color: var(--quiet); font-size: 9px; font-style: normal; text-transform: uppercase; }
+    .role.admin { border-color: rgba(255, 142, 155, .27); }
+    .role.admin strong { color: var(--rose); }
+    .role-note { display: flex; flex-direction: column; justify-content: space-between; gap: 15px; }
+    .role-note .mini-metric { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 13px; }
+    .role-note .mini-metric b { color: var(--lime); font-size: 38px; line-height: 1; }
+    .role-note .mini-metric span { color: var(--muted); font-size: 11px; }
+
+    .lab-board { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: stretch; margin-top: 22px; }
+    .lab-repo { display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; padding: 22px; border: 1px solid rgba(103, 227, 209, .28); border-radius: 24px; background: linear-gradient(145deg, rgba(103, 227, 209, .1), rgba(103, 227, 209, .015)); }
+    .repo-link { display: inline-flex; width: fit-content; align-items: center; gap: 8px; color: var(--aqua); font-size: 17px; font-weight: 800; text-decoration: none; }
+    .repo-link::after { content: "↗"; font-size: 13px; }
+    .lab-list { display: grid; gap: 10px; }
+    .lab-row { display: grid; grid-template-columns: 35px 1fr; gap: 11px; padding: 13px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255, 255, 255, .025); }
+    .lab-row b { display: block; font-size: 12px; }
+    .lab-row span { color: var(--muted); font-size: 10px; }
+    .lab-row i { color: var(--lime); font-size: 11px; font-style: normal; font-weight: 900; }
+
+    .lab-work { display: grid; grid-template-columns: 1fr .95fr; gap: 16px; margin-top: 20px; }
+    .test-list { display: grid; gap: 9px; }
+    .test-item { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; color: var(--muted); font-size: 12px; }
+    .test-item i { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 7px; color: var(--lime); background: rgba(199, 243, 107, .1); font-size: 10px; font-style: normal; font-weight: 900; }
+
+    .custom-map { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 21px; }
+    .custom-card { min-height: 139px; padding: 18px; border: 1px solid var(--line); border-radius: 19px; background: rgba(255, 255, 255, .025); }
+    .custom-card .kind { display: inline-block; margin-bottom: 12px; padding: 5px 8px; border-radius: 8px; background: rgba(255, 255, 255, .06); color: var(--aqua); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .custom-card p { margin: 0 0 9px; color: var(--muted); font-size: 11px; }
+    .custom-card code { font-size: 10px; }
+    .custom-card.skill { border-color: rgba(199, 243, 107, .28); }
+    .custom-card.skill .kind { color: var(--lime); background: rgba(199, 243, 107, .08); }
+    .custom-card.agent { border-color: rgba(192, 167, 255, .28); }
+    .custom-card.agent .kind { color: var(--violet); background: rgba(192, 167, 255, .08); }
+    .custom-card.workflow { border-color: rgba(255, 191, 120, .28); }
+    .custom-card.workflow .kind { color: var(--orange); background: rgba(255, 191, 120, .08); }
+
+    .skill-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 16px; margin-top: 20px; }
+    .skill-shape { display: grid; align-content: center; gap: 11px; }
+    .skill-file { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgba(199, 243, 107, .25); border-radius: 15px; background: rgba(199, 243, 107, .055); }
+    .file-icon { display: grid; width: 35px; height: 41px; place-items: center; border: 1px solid rgba(199, 243, 107, .5); border-radius: 8px; color: var(--lime); font-size: 9px; font-weight: 900; }
+    .skill-file b { display: block; font-size: 12px; }
+    .skill-file span { color: var(--muted); font-size: 10px; }
+    .skill-flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .skill-flow div { padding: 10px 8px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); background: rgba(255, 255, 255, .02); font-size: 9px; text-align: center; }
+    .skill-flow b { display: block; margin-bottom: 5px; color: var(--lime); font-size: 11px; }
+
+    .agent-card-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    .agent-spec { display: grid; gap: 8px; }
+    .agent-spec div { display: grid; grid-template-columns: 85px 1fr; gap: 10px; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+    .agent-spec b { color: var(--violet); font-size: 10px; text-transform: uppercase; }
+    .agent-spec span { color: var(--muted); font-size: 11px; }
+
+    .modern-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; margin-top: 18px; }
+    .modern-cycle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+    .modern-step { position: relative; min-height: 114px; padding: 13px 10px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, .025); }
+    .modern-step:not(:last-child)::after { content: "→"; position: absolute; top: 43%; right: -12px; z-index: 2; color: var(--aqua); }
+    .modern-step b { display: block; margin-bottom: 6px; color: var(--aqua); font-size: 11px; }
+    .modern-step span { color: var(--muted); font-size: 9px; }
+    .modern-try { display: grid; gap: 8px; }
+    .modern-try div { display: grid; grid-template-columns: 25px 1fr; gap: 9px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255, 255, 255, .025); }
+    .modern-try i { color: var(--lime); font-size: 10px; font-style: normal; font-weight: 900; }
+    .modern-try span { color: var(--muted); font-size: 10px; }
+    .modern-try b { color: var(--ink); }
+
+    .workflow-canvas { display: grid; grid-template-columns: .92fr 1.08fr; gap: 15px; align-items: stretch; margin-top: 18px; }
+    .compare-panel { padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, .025); }
+    .compare-panel h3 { margin: 0 0 13px; color: var(--muted); font-size: 12px; }
+    .compare-path { display: flex; align-items: center; gap: 6px; margin: 9px 0; }
+    .compare-path span { flex: 1; min-width: 0; padding: 10px 7px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: rgba(255, 255, 255, .025); font-size: 9px; text-align: center; }
+    .compare-path i { color: var(--quiet); font-size: 13px; font-style: normal; }
+    .agentic-path span:nth-of-type(1) { color: var(--orange); }
+    .agentic-path span:nth-of-type(2) { color: var(--aqua); }
+    .agentic-path span:nth-of-type(3) { color: var(--lime); }
+    .preview-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 10px; border: 1px solid rgba(255, 191, 120, .32); border-radius: 999px; color: var(--orange); background: rgba(255, 191, 120, .07); font-size: 9px; font-weight: 800; text-transform: uppercase; }
+
+    .actions-flow { display: grid; grid-template-columns: 1fr auto 1.2fr auto 1fr auto 1fr; align-items: center; gap: 8px; margin: 28px 0 18px; }
+    .actions-box { min-height: 132px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px; padding: 15px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, .03); }
+    .actions-box b { color: var(--aqua); font-size: 13px; }
+    .actions-box span { color: var(--muted); font-size: 10px; }
+    .actions-box .tag { font-size: 9px; }
+    .flow-arrow { color: var(--lime); font-size: 21px; }
+    .jobs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; width: 100%; }
+    .jobs span { padding: 8px 7px; border: 1px solid rgba(120, 170, 255, .22); border-radius: 9px; color: var(--blue); background: rgba(120, 170, 255, .06); font-size: 9px; text-align: center; }
+
+    .mapping { width: 100%; border-collapse: collapse; margin-top: 18px; overflow: hidden; border-radius: 15px; font-size: 11px; }
+    .mapping th, .mapping td { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .mapping th { color: var(--aqua); background: rgba(103, 227, 209, .07); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .mapping td { color: var(--muted); background: rgba(255, 255, 255, .02); }
+    .mapping td:first-child { color: var(--ink); font-weight: 700; }
+    .mapping td code { color: var(--lime); font-size: 10px; }
+
+    .migration-rail { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; margin: 18px 0; }
+    .migration-step { min-height: 110px; padding: 13px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255, 255, 255, .025); }
+    .migration-step b { display: block; margin: 0 0 6px; color: var(--lime); font-size: 12px; }
+    .migration-step span { display: block; color: var(--muted); font-size: 10px; }
+    .provider-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .provider-row .pill { font-size: 9px; }
+
+    .gate-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 20px; }
+    .gate-card { min-height: 134px; padding: 16px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255, 255, 255, .025); }
+    .gate-card b { display: block; margin: 0 0 8px; color: var(--lime); font-size: 12px; }
+    .gate-card p { margin: 0; color: var(--muted); font-size: 10px; }
+    .exit-ticket { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; margin-top: 15px; padding: 14px 16px; border: 1px solid rgba(192, 167, 255, .26); border-radius: 16px; background: rgba(192, 167, 255, .055); }
+    .exit-ticket b { color: var(--violet); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    .exit-ticket span { color: var(--ink); font-size: 12px; }
+
+    .source-groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 19px; }
+    .source-group { padding: 15px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255, 255, 255, .025); }
+    .source-group h3 { margin-bottom: 9px; color: var(--aqua); font-size: 12px; }
+    .source-group a { display: block; margin: 7px 0; color: var(--muted); font-size: 10px; line-height: 1.35; text-decoration-color: rgba(103, 227, 209, .36); }
+    .source-group     a:hover { color: var(--lime); }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+    .research-date { margin-top: 14px; color: var(--quiet); font-size: 10px; }
+
+    .slide-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin-top: 16px; color: var(--quiet); font-size: 9px; }
+    .slide-foot .foot-right { color: var(--quiet); }
+    .controlbar {
+      position: relative;
+      z-index: 6;
+      grid-row: 3;
+      height: 70px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 clamp(18px, 4vw, 54px);
+      border-top: 1px solid var(--line);
+      background: rgba(7, 17, 31, .86);
+      backdrop-filter: blur(18px);
+    }
+    .control-left, .control-right { display: flex; align-items: center; gap: 9px; }
+    .counter { min-width: 57px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .counter b { color: var(--ink); }
+    .nav-btn {
+      display: inline-grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .04);
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .nav-btn:hover { border-color: rgba(199, 243, 107, .55); background: rgba(199, 243, 107, .1); transform: translateY(-1px); }
+    .nav-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .nav-btn.fs { width: auto; padding: 0 12px; color: var(--muted); font-size: 10px; }
+    .dot-nav { display: flex; align-items: center; gap: 5px; }
+    .dot-nav button { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+    .dot-nav button::before { display: block; width: 6px; height: 6px; margin: auto; border-radius: 50%; background: #61728a; content: ""; }
+    .dot-nav button[aria-current="true"]::before { width: 10px; height: 10px; background: var(--lime); }
+    .progress-track { position: absolute; z-index: 7; inset: 0 0 auto; height: 2px; background: rgba(255, 255, 255, .06); }
+    .progress-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--aqua), var(--lime)); transform: scaleX(0); transform-origin: left; transition: transform .2s ease; }
+    .keyboard-hint { color: var(--quiet); font-size: 9px; }
+
+    .slide.hero { display: flex; align-items: center; justify-content: center; }
+    .slide.hero .slide-content { margin: auto; }
+
+    .slide-content h3 { font-size: clamp(17px, 1.5vw, 21px); }
+    .slide-content .lead { font-size: clamp(18px, 1.8vw, 24px); }
+    .slide-content .sublead { font-size: clamp(16px, 1.3vw, 19px); }
+    .slide-content .small { font-size: 14px; }
+    .slide-content .micro { font-size: 12px; }
+    .slide-content .time-chip,
+    .slide-content .tag,
+    .slide-content .pill,
+    .slide-content .card-kicker,
+    .slide-content .activity-label,
+    .slide-content .agenda-time,
+    .slide-content .role em,
+    .slide-content .custom-card .kind,
+    .slide-content .preview-note,
+    .slide-content .source,
+    .slide-content .source-group h3,
+    .slide-content .hero-note,
+    .slide-content .orbit-node,
+    .slide-content .hero-core,
+    .slide-content .file-icon,
+    .slide-content .formula-item b,
+    .slide-content .lab-row i,
+    .slide-content .test-item i,
+    .slide-content .pr-step i,
+    .slide-content .repo-link::after,
+    .slide-content .source::after,
+    .slide-content .loop-step .step-no,
+    .slide-content .agent-spec b,
+    .slide-content .mapping th,
+    .slide-content .exit-ticket b,
+    .slide-content .counter,
+    .slide-content .nav-btn.fs,
+    .slide-content .keyboard-hint {
+      font-size: clamp(12px, .95vw, 14px);
+    }
+    .slide-content .card p,
+    .slide-content .callout,
+    .slide-content .activity p,
+    .slide-content .agenda-phase p,
+    .slide-content .agenda-lab-list span,
+    .slide-content .formula-item p,
+    .slide-content .contrast,
+    .slide-content .loop-step span,
+    .slide-content .loop-step b,
+    .slide-content .tree,
+    .slide-content .repo-part span,
+    .slide-content .repo-part b,
+    .slide-content .pr-step span,
+    .slide-content .pr-step b,
+    .slide-content .pr-principles span,
+    .slide-content .pr-principles b,
+    .slide-content .role span,
+    .slide-content .role strong,
+    .slide-content .role-note .mini-metric span,
+    .slide-content .setup-row span,
+    .slide-content .lab-row span,
+    .slide-content .lab-row b,
+    .slide-content .test-item,
+    .slide-content .custom-card p,
+    .slide-content .custom-card code,
+    .slide-content .skill-file span,
+    .slide-content .skill-file b,
+    .slide-content .skill-flow div,
+    .slide-content .skill-flow b,
+    .slide-content .agent-spec span,
+    .slide-content .modern-step span,
+    .slide-content .modern-step b,
+    .slide-content .modern-try span,
+    .slide-content .modern-try i,
+    .slide-content .modern-try b,
+    .slide-content .compare-path span,
+    .slide-content .actions-box span,
+    .slide-content .actions-box b,
+    .slide-content .jobs span,
+    .slide-content .mapping,
+    .slide-content .mapping td,
+    .slide-content .mapping td code,
+    .slide-content .migration-step span,
+    .slide-content .migration-step b,
+    .slide-content .gate-card p,
+    .slide-content .gate-card b,
+    .slide-content .exit-ticket span,
+    .slide-content .source-group a,
+    .slide-content .research-date,
+    .slide-content .slide-foot {
+      font-size: clamp(14px, 1.05vw, 16px);
+      line-height: 1.5;
+    }
+    .slide-content .codebox { font-size: clamp(14px, 1.05vw, 16px); line-height: 1.55; }
+    .slide-content .source-group a { overflow-wrap: anywhere; }
+    .slide-content .tree,
+    .slide-content code,
+    .slide-content .codebox pre { overflow-wrap: anywhere; }
+    .slide-content .slide-foot .foot-right { color: var(--muted); }
+    .slide-head > *, .slide-foot > * { min-width: 0; }
+    .slide-content :is(.agenda-phase, .loop-step, .repo-part, .pr-step, .role, .lab-row, .test-item, .custom-card, .modern-step, .actions-box, .migration-step, .gate-card, .source-group, .setup-row, .activity, .formula-item, .compare-panel) { min-width: 0; }
+    .skill-file > div, .agent-spec span, .modern-try span { min-width: 0; overflow-wrap: anywhere; }
+    .time-chip { flex-shrink: 0; }
+
+    @media (max-width: 1000px) {
+      .slide { padding: 26px 34px; }
+      .slide.hero { display: block; }
+      .slide.hero .slide-content { margin: 0 auto; }
+      .grid-2, .hero-grid, .prompt-layout, .repo-layout, .role-map, .lab-board, .lab-work, .skill-layout, .agent-card-layout, .modern-layout, .workflow-canvas { grid-template-columns: 1fr; }
+      .hero-art { min-height: 240px; }
+      .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .agenda { grid-template-columns: 1fr; }
+      .agenda-phase { min-height: 0; }
+      .agenda-phase .duration { padding-top: 10px; }
+      .agenda-lab-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .agent-loop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .loop-step::after { display: none; }
+      .pr-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .pr-step:nth-child(3)::after { display: none; }
+      .actions-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .actions-flow .flow-arrow { display: none; }
+      .migration-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .modern-cycle { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .modern-step:nth-child(2)::after, .modern-step:nth-child(4)::after { display: none; }
+      .dot-nav, .keyboard-hint { display: none; }
+      .controlbar { padding: 0 20px; }
+      .mapping, .mapping tbody, .mapping tr, .mapping td { display: block; width: 100%; }
+      .mapping thead { display: none; }
+      .mapping tr { margin: 0 0 12px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+      .mapping td { display: grid; grid-template-columns: minmax(135px, .38fr) minmax(0, 1fr); gap: 12px; border-bottom: 1px solid var(--line); }
+      .mapping td:last-child { border-bottom: 0; }
+      .mapping td::before { content: attr(data-label); color: var(--aqua); font-size: 12px; font-weight: 800; }
+    }
+    @media (max-width: 620px) {
+      body { grid-template-rows: 54px minmax(0, 1fr) 65px; }
+      .topbar { height: 54px; padding: 0 14px; }
+      .top-meta { gap: 5px; font-size: 11px; }
+      .brand { gap: 8px; font-size: 11px; }
+      .slide { padding: 20px 18px; }
+      .slide.hero { display: block; }
+      .slide.hero .slide-content { margin: 0 auto; }
+      .grid-2, .grid-3, .grid-4, .agenda, .prompt-formula, .pr-principles, .custom-map, .source-groups, .gate-grid, .agent-loop, .actions-flow { grid-template-columns: 1fr; }
+      .agenda-lab-list { grid-template-columns: 1fr; }
+      .pr-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pr-step::after { display: none; }
+      .role { grid-template-columns: 78px minmax(0, 1fr); }
+      .role em { grid-column: 2; }
+      .migration-rail { grid-template-columns: 1fr; }
+      .contrast { grid-template-columns: 1fr; }
+      .contrast > span { text-align: center; transform: rotate(90deg); }
+      .mapping td { grid-template-columns: 1fr; gap: 4px; }
+      .skill-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .modern-cycle { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .modern-step::after { display: none; }
+      .exit-ticket { grid-template-columns: 1fr; }
+      .setup-row { grid-template-columns: 28px minmax(0, 1fr); }
+      .setup-row .tag { grid-column: 2; justify-self: start; }
+      .dot-nav, .keyboard-hint { display: none; }
+      .controlbar { height: 65px; min-height: 65px; padding: 0 12px; }
+      .control-left, .control-right { gap: 6px; }
+      .hero-art { min-height: 220px; }
+      .hero h1 { font-size: clamp(38px, 10vw, 56px); }
+      .source-group { min-height: 0; }
+    }
+    @media (max-width: 360px) {
+      .top-meta span:last-child, .top-meta span:nth-last-child(2) { display: none; }
+      .counter { min-width: 46px; }
+      .nav-btn { width: 40px; height: 40px; }
+      .nav-btn.fs { padding: 0 8px; }
+    }
+    @media (max-width: 1000px), (max-height: 880px) {
+      html, body { height: auto; min-height: 100%; }
+      body { display: block; overflow-x: hidden; overflow-y: auto; }
+      .topbar { position: relative; }
+      .deck { position: relative; min-height: 0; overflow: visible; }
+      .slide { position: relative; inset: auto; display: none; width: 100%; height: auto; min-height: calc(100svh - 132px); overflow: visible; }
+      .slide.is-active { display: block; }
+      .slide.hero { display: none; min-height: calc(100svh - 132px); }
+      .slide.hero.is-active { display: block; }
+      .slide.hero .slide-content { margin: 0 auto; }
+      .controlbar { position: relative; grid-row: auto; }
+    }
+    @media (max-width: 620px) {
+      .slide, .slide.hero { min-height: calc(100svh - 119px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      html, body { display: block; width: auto; height: auto; overflow: visible; background: #07111f !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .topbar, .controlbar, .progress-track, .skip-link { display: none !important; }
+      .deck { position: static; min-height: 0; overflow: visible; }
+      .slide, .slide.is-active { position: relative; inset: auto; display: block; width: 100%; height: auto; min-height: 100vh; overflow: visible; opacity: 1; visibility: visible; page-break-after: always; break-after: page; }
+      .slide-content { max-width: 1180px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#slides">Skip to slides</a>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="github-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/></svg>
+      <span>GitHub Copilot</span>
+    </div>
+    <div class="top-meta"><span class="live-dot" aria-hidden="true"></span><strong>Learn it</strong><span>·</span><span>Try it</span><span>·</span><span>Review it</span></div>
+  </header>
+
+  <main id="slides" class="deck" aria-label="GitHub Copilot workshop slides">
+    <section class="slide hero is-active" data-section="Start" data-time="Welcome" aria-hidden="false" aria-labelledby="title-1">
+      <div class="slide-content hero-grid">
+        <div>
+          <h1 id="title-1">Build with intent.<br><span>Ship with Copilot.</span></h1>
+          <p class="lead">A guided session on agentic development, useful customizations, safe collaboration, and CI/CD.</p>
+          <div class="hero-stats">
+            <span class="pill lime">90 min guided lab</span>
+            <span class="pill aqua">Public-repo lab</span>
+            <span class="pill violet">VS Code + GitHub</span>
+          </div>
+          <div class="slide-foot"><span>Concept first · guided task next</span><span class="foot-right">Research checked 6 Oct 2026</span></div>
+        </div>
+        <div>
+          <div class="hero-art" aria-label="Intent, plan, build, and verify around Copilot">
+            <div class="orbit" aria-hidden="true"></div>
+            <div class="hero-core">COPILOT<br>WORK LOOP</div>
+            <span class="orbit-node one">01 · Intent</span>
+            <span class="orbit-node two">02 · Plan</span>
+            <span class="orbit-node three">03 · Build</span>
+            <span class="orbit-node four">04 · Verify</span>
+          </div>
+          <div class="hero-note">People set direction and accept the result.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Outcomes" data-time="00:03" aria-hidden="true" aria-labelledby="title-2">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:00–00:03 · 3 min</span></div>
+        <h2 id="title-2">Leave with <span class="accent">working patterns</span>, not a feature tour.</h2>
+        <p class="sublead">Each topic ends with a small action. Each action leaves a result the team can inspect.</p>
+        <div class="grid-4" style="margin-top:22px">
+          <article class="card outcome-card accent-card"><span class="big">01</span><h3>Steer the agent</h3><p>Give a goal, useful context, clear limits, and a way to verify the result.</p></article>
+          <article class="card outcome-card aqua-card"><span class="big accent-aqua">02</span><h3>Shape repeatable work</h3><p>Create a workspace skill and custom agent. Review a Java modernization assessment if you have the optional setup.</p></article>
+          <article class="card outcome-card violet-card"><span class="big accent-violet">03</span><h3>Work in the open</h3><p>Use a branch, a small pull request, an evidence-based review, and least privilege.</p></article>
+          <article class="card outcome-card orange-card"><span class="big accent-orange">04</span><h3>Connect automation</h3><p>Map a current pipeline to GitHub Actions and choose a safe migration path.</p></article>
+        </div>
+        <div class="callout" style="margin-top:15px"><span class="callout-mark">→</span><span><strong>Workshop output:</strong> one reviewed change, one skill, one custom agent, one agentic workflow draft, one CI/CD map, and an optional modernization assessment.</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Run of show" data-time="00:03" aria-hidden="true" aria-labelledby="title-3">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:03–00:06 · 3 min</span></div>
+        <h2 id="title-3">Three blocks. <span class="accent">One end-to-end path.</span></h2>
+        <div class="agenda">
+          <article class="agenda-phase">
+            <span class="agenda-time">00:00–00:30</span><h3>Frame</h3><p>Setup, the Copilot loop, repository habits, and access boundaries.</p><span class="duration">30<span class="small"> min</span></span>
+          </article>
+          <article class="agenda-phase lab">
+            <span class="agenda-time">00:30–02:00</span><h3>Build together</h3><p>Follow along in a public repository. Pause after each small result to review it.</p>
+            <div class="agenda-lab-list">
+              <span><b>Repo setup + explore</b><b>10m</b></span><span><b>Agentic development</b><b>15m</b></span>
+              <span><b>Skills</b><b>15m</b></span><span><b>Custom agent</b><b>15m</b></span>
+              <span><b>Agentic workflow</b><b>15m</b></span><span><b>PR review</b><b>10m</b></span>
+              <span><b>Modernization option</b><b>10m</b></span><span><b>Guided lab total</b><b>90m</b></span>
+            </div>
+          </article>
+          <article class="agenda-phase">
+            <span class="agenda-time">02:00–02:30</span><h3>Automate</h3><p>Actions concepts, a sanitized pipeline map, a short workflow draft, and an optional importer demo.</p><span class="duration">30<span class="small"> min</span></span>
+          </article>
+        </div>
+        <div class="slide-foot"><span>This run-of-show is exactly 150 minutes. Shorten a block if you need a break.</span><span class="foot-right">150 minutes</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Setup" data-time="Before" aria-hidden="true" aria-labelledby="title-4">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">Before the session</span></div>
+        <h2 id="title-4">Set up before the session.</h2>
+        <div class="grid-2" style="margin-top:20px">
+          <div class="setup-list">
+            <div class="setup-row"><i class="check">✓</i><div><strong>VS Code and Copilot</strong><span>Sign in. Confirm that Copilot Chat is available in your organization.</span></div><span class="tag">Required</span></div>
+            <div class="setup-row"><i class="check">✓</i><div><strong>GitHub account, Git, Node.js, and npm</strong><span>Use your work-approved identity. Node and npm run the repository validation scripts.</span></div><span class="tag">Required</span></div>
+            <div class="setup-row"><i class="check">✓</i><div><strong>Fork and clone the practice repo</strong><span><a href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer">github/awesome-copilot</a>. Do not push to upstream.</span></div><span class="tag">Required</span></div>
+            <div class="setup-row"><i class="check">✓</i><div><strong>GitHub CLI and Docker</strong><span>Useful for the optional Actions Importer and agentic-workflow exercises.</span></div><span class="tag">Optional</span></div>
+          </div>
+          <div class="card aqua-card">
+            <span class="card-kicker">House rules</span>
+            <h3>Keep the lab safe and small.</h3>
+            <div class="test-list" style="margin-top:13px">
+              <div class="test-item"><i>1</i><span>Use a fork or a workshop sandbox with the right access.</span></div>
+              <div class="test-item"><i>2</i><span>Do not paste secrets, customer data, or private code into prompts.</span></div>
+              <div class="test-item"><i>3</i><span>Review every diff and every requested tool action.</span></div>
+              <div class="test-item"><i>4</i><span>Skip optional steps if your account or organization blocks them.</span></div>
+            </div>
+            <div class="callout" style="margin-top:15px"><span class="callout-mark">i</span><span>No repository admin rights are needed for the first lab. Pair with another attendee for the PR review.</span></div>
+            <div class="callout" style="margin-top:10px"><span class="callout-mark">+</span><span><strong>Optional Java track:</strong> install the <a href="https://marketplace.visualstudio.com/items?itemName=vscjava.migrate-java-to-azure" target="_blank" rel="noopener noreferrer">App Modernization extension</a>, VS Code 1.113+, Java 21+, Maven or Gradle, and prepare an active Azure subscription.</span></div>
+          </div>
+        </div>
+        <div class="slide-foot"><span>Facilitator: send the repo and setup checklist before the session.</span><span class="foot-right">Pre-work</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Copilot basics" data-time="00:13" aria-hidden="true" aria-labelledby="title-5">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:06–00:13 · 7 min</span></div>
+        <h2 id="title-5">A strong prompt is a <span class="accent">small spec.</span></h2>
+        <p class="sublead">Start with the outcome. Add the context and rules that affect the answer. State how to prove it works.</p>
+        <div class="prompt-layout">
+          <div>
+            <div class="prompt-formula">
+              <div class="formula-item"><b>Goal</b><p>What should change? Name the user or system outcome.</p></div>
+              <div class="formula-item"><b>Context</b><p>Point to the files, patterns, examples, and relevant tests.</p></div>
+              <div class="formula-item"><b>Constraints</b><p>State what must stay the same and what is out of scope.</p></div>
+              <div class="formula-item"><b>Proof</b><p>Ask for a test, check, or observable result.</p></div>
+            </div>
+            <div class="contrast">
+              <div><span class="bad">Vague</span><br>“Fix the tests.”</div><span>→</span>
+              <div><span class="good">Useful</span><br>“Fix this test without changing the public API; run the focused test.”</div>
+            </div>
+            <div class="activity"><span class="activity-label">Try it · 2 min</span><div><p>Rewrite “Fix the tests” with a goal, context, constraints, and proof.</p><p class="small">Use a public-repo task. Do not paste private code.</p></div></div>
+          </div>
+          <div class="prompt-example">
+            <div class="card">
+              <span class="card-kicker">A repo-specific prompt</span>
+              <div class="codebox"><pre>In this fork, clarify when an existing skill should be used.
+Follow the current SKILL.md format.
+Do not add tools or scripts.
+Run npm run skill:validate and report the file and result.</pre></div>
+            </div>
+            <div class="pills"><span class="pill lime">Open relevant files</span><span class="pill aqua">Give examples</span><span class="pill violet">Iterate in small steps</span><span class="pill orange">Check the result</span></div>
+          </div>
+        </div>
+        <a class="source" href="https://docs.github.com/en/copilot/concepts/prompting/prompt-engineering" target="_blank" rel="noopener noreferrer">Official guide: prompt engineering for GitHub Copilot Chat</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Agentic development" data-time="00:18" aria-hidden="true" aria-labelledby="title-6">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:13–00:18 · 5 min</span></div>
+        <h2 id="title-6">Delegate the work.<br><span class="accent-aqua">Keep the decisions.</span></h2>
+        <p class="sublead">An agent can use tools to inspect files, edit code, and run checks. You set the scope and decide which changes to keep.</p>
+        <div class="agent-loop">
+          <div class="loop-step"><span class="step-no">01 · FRAME</span><b>State the outcome</b><span>Context, limits, acceptance checks.</span></div>
+          <div class="loop-step"><span class="step-no">02 · PLAN</span><b>Ask before editing</b><span>Review files, steps, risks, and tests.</span></div>
+          <div class="loop-step gate"><span class="step-no">03 · HUMAN GATE</span><b>Approve the scope</b><span>Answer questions or narrow the task.</span></div>
+          <div class="loop-step"><span class="step-no">04 · BUILD</span><b>Make one change</b><span>Ask for tests and a clear summary.</span></div>
+          <div class="loop-step gate"><span class="step-no">05 · VERIFY</span><b>Review the diff</b><span>Run checks. Accept or reject edits.</span></div>
+        </div>
+        <div class="activity">
+          <span class="activity-label">Try it · 2 min</span>
+          <div><p>Ask the agent to inspect one small issue and return a plan only.</p><p class="small">Name the files, checks, and risks. Do not request edits yet.</p></div>
+        </div>
+        <a class="source" href="https://code.visualstudio.com/docs/agents/overview" target="_blank" rel="noopener noreferrer">Official guide: build with AI in VS Code</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Repository structure" data-time="00:23" aria-hidden="true" aria-labelledby="title-7">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:18–00:23 · 5 min</span></div>
+        <h2 id="title-7">A clear repo gives people and agents <span class="accent">better context.</span></h2>
+        <div class="repo-layout">
+          <div class="card">
+            <span class="card-kicker">A useful map</span>
+            <div class="tree mono">
+              <div><span class="file">README.md</span> <span class="why"># purpose, setup, run</span></div>
+              <div><span class="file">CONTRIBUTING.md</span> <span class="why"># how to change it</span></div>
+              <div><span class="file">LICENSE · SECURITY.md</span> <span class="why"># use and report</span></div>
+              <div><span class="folder">src/ · tests/</span> <span class="why"># product and proof</span></div>
+              <div><span class="folder">.github/</span></div>
+              <div>&nbsp;&nbsp;├ <span class="file">copilot-instructions.md</span></div>
+              <div>&nbsp;&nbsp;├ <span class="folder">skills/ · agents/</span> <span class="why"># repeatable help</span></div>
+              <div>&nbsp;&nbsp;├ <span class="folder">workflows/</span> <span class="why"># automation</span></div>
+              <div>&nbsp;&nbsp;└ <span class="file">CODEOWNERS</span> <span class="why"># route review</span></div>
+            </div>
+          </div>
+          <div class="repo-parts">
+            <div class="repo-part"><b>Explain</b><span>README, contribution steps, local checks.</span></div>
+            <div class="repo-part"><b>Guide</b><span>Short project instructions and conventions.</span></div>
+            <div class="repo-part"><b>Separate</b><span>Keep source, tests, and generated output clear.</span></div>
+            <div class="repo-part"><b>Own</b><span>Use CODEOWNERS to find the right reviewers.</span></div>
+          </div>
+        </div>
+        <div class="activity"><span class="activity-label">Try it · 2 min</span><div><p>Find the contribution guide, one skill, and the validation script in your fork.</p><p class="small">Ask Copilot to cite the files it used. Confirm those files exist.</p></div></div>
+        <a class="source" href="https://docs.github.com/en/repositories/creating-and-managing-repositories/best-practices-for-repositories" target="_blank" rel="noopener noreferrer">Official guide: repository best practices</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Branches and PRs" data-time="00:27" aria-hidden="true" aria-labelledby="title-8">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:23–00:27 · 4 min</span></div>
+        <h2 id="title-8">Use a short path from <span class="accent">change</span> to review.</h2>
+        <div class="pr-flow" aria-label="Issue to branch to tests to pull request to review to merge">
+          <div class="pr-step"><i>01</i><b>Issue</b><span>Agree on the need.</span></div>
+          <div class="pr-step"><i>02</i><b>Branch</b><span>Keep one task small.</span></div>
+          <div class="pr-step"><i>03</i><b>Change + test</b><span>Show evidence.</span></div>
+          <div class="pr-step"><i>04</i><b>Pull request</b><span>Explain why and what.</span></div>
+          <div class="pr-step"><i>05</i><b>Review</b><span>Discuss risks and checks.</span></div>
+          <div class="pr-step"><i>06</i><b>Merge</b><span>Only when rules pass.</span></div>
+        </div>
+        <div class="pr-principles">
+          <div><b>For a team repo</b><span>Use a branch in the shared repository.</span></div>
+          <div><b>For a public lab</b><span>Fork first. Do not push to upstream.</span></div>
+          <div><b>For a protected branch</b><span>Require reviews and passing status checks.</span></div>
+        </div>
+        <div class="activity"><span class="activity-label">Try it · 1 min</span><div><p>Write a one-line PR goal and name one check that must pass.</p></div></div>
+        <a class="source" href="https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request" target="_blank" rel="noopener noreferrer">Official guide: create a pull request</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Permissions" data-time="00:30" aria-hidden="true" aria-labelledby="title-9">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:27–00:30 · 3 min</span></div>
+        <h2 id="title-9">Access is a <span class="accent-orange">ladder.</span> Give only what the work needs.</h2>
+        <div class="role-map">
+          <div class="roles">
+            <div class="role"><strong>Read</strong><span>View, discuss, and follow the project.</span><em>Least access</em></div>
+            <div class="role"><strong>Triage</strong><span>Manage issues and pull requests without code write access.</span><em>Work intake</em></div>
+            <div class="role"><strong>Write</strong><span>Push changes and contribute code.</span><em>Code work</em></div>
+            <div class="role"><strong>Maintain</strong><span>Manage the repository without sensitive admin actions.</span><em>Operations</em></div>
+            <div class="role admin"><strong>Admin</strong><span>Manage settings, access, security, and deletion.</span><em>Restricted</em></div>
+          </div>
+          <div class="card role-note orange-card">
+            <div><span class="card-kicker">Decision rule</span><h3>Grant the role for the task.</h3><p>Do not grant admin access so someone can review a pull request. Keep branch rules and sensitive settings with the right maintainers.</p></div>
+            <div class="mini-metric"><b>1</b><span>Question: what is the lowest role that lets this person complete the task?</span></div>
+          </div>
+        </div>
+        <div class="activity"><span class="activity-label">Try it · 1 min</span><div><p>Match each job to a role: label issues, push code, manage repository settings.</p><p class="small">Do not change permissions in the public lab repo.</p></div></div>
+        <a class="source" href="https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization" target="_blank" rel="noopener noreferrer">Official guide: repository roles</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Lab map" data-time="00:40" aria-hidden="true" aria-labelledby="title-10">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:30–00:40 · 10 min</span></div>
+        <h2 id="title-10">Start in a <span class="accent-aqua">public repo</span> you can safely change.</h2>
+        <div class="lab-board">
+          <div class="lab-repo">
+            <div><span class="card-kicker">Practice repo</span><h3 style="font-size:25px">A real collection of Copilot customizations</h3><p class="muted small">The repo contains examples of agents, instructions, skills, plugins, and workflows.</p></div>
+            <a class="repo-link" href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer">github/awesome-copilot</a>
+            <div class="pills"><span class="pill aqua">Public</span><span class="pill lime">Fork first</span><span class="pill orange">Inspect before installing</span></div>
+          </div>
+          <div class="lab-list">
+            <div class="lab-row"><i>01</i><div><b>Confirm your fork</b><span>Use an approved account or a facilitator-provided public sandbox.</span></div></div>
+            <div class="lab-row"><i>02</i><div><b>Create a branch</b><span><code>workshop/&lt;your-handle&gt;</code> keeps your work separate.</span></div></div>
+            <div class="lab-row"><i>03</i><div><b>Explore the repo</b><span>Find a skill, its validation command, and the contribution rules.</span></div></div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:15px"><span class="callout-mark">!</span><span>The repo is community-created. Read its contribution guide and inspect any customization before you install or run it.</span></div>
+        <a class="source" href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer">Practice repo: README and contribution guide</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Agentic development lab" data-time="00:55" aria-hidden="true" aria-labelledby="title-11">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:40–00:55 · 15 min</span></div>
+        <h2 id="title-11">Ask for a <span class="accent-aqua">plan first.</span> Then make one safe change.</h2>
+        <div class="lab-work">
+          <div>
+            <div class="card aqua-card">
+              <span class="card-kicker">Use Agent or Plan mode</span>
+              <div class="codebox"><pre>Inspect this repository and suggest one small improvement to an existing skill or instruction.
+Do not edit files yet.
+Name the files and patterns you used.
+Return a short plan, risks, and checks for me to review.</pre></div>
+            </div>
+            <div class="card" style="margin-top:12px">
+              <span class="card-kicker">After you approve the plan</span>
+              <div class="codebox"><pre>Implement only the approved change.
+Follow the existing format.
+Run the relevant check. For a skill change, use npm run skill:validate.
+Summarize changed files and any check that failed.</pre></div>
+            </div>
+          </div>
+          <div class="card">
+            <span class="card-kicker">Watch for these signals</span>
+            <div class="test-list">
+              <div class="test-item"><i>1</i><span>It points to real files, not guessed paths.</span></div>
+              <div class="test-item"><i>2</i><span>The plan stays within one small change.</span></div>
+              <div class="test-item"><i>3</i><span>It asks before a major design choice.</span></div>
+              <div class="test-item"><i>4</i><span>You inspect the diff and test result.</span></div>
+            </div>
+            <div class="callout" style="margin-top:16px"><span class="callout-mark">✓</span><span><strong>Done means:</strong> a bounded change with a human-reviewed diff and evidence.</span></div>
+          </div>
+        </div>
+        <a class="source" href="https://code.visualstudio.com/docs/agents/run/planning" target="_blank" rel="noopener noreferrer">Official guide: plan work with agents in VS Code</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Skills lab" data-time="01:10" aria-hidden="true" aria-labelledby="title-12">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">00:55–01:10 · 15 min</span></div>
+        <h2 id="title-12">A skill is a reusable <span class="accent">task playbook.</span></h2>
+        <p class="sublead">Copilot can load it when the task matches. A skill has a <code>SKILL.md</code> file and can include examples or resources.</p>
+        <div class="skill-layout">
+          <div class="skill-shape">
+            <div class="skill-file"><span class="file-icon">MD</span><div><b>.github/skills/pr-description-coach/SKILL.md</b><span>Project skill · shared with the repo</span></div></div>
+            <div class="skill-flow">
+              <div><b>WHEN</b>trigger</div><div><b>WHAT</b>goal</div><div><b>HOW</b>steps</div><div><b>CHECK</b>output</div>
+            </div>
+            <div class="callout"><span class="callout-mark">≠</span><span>A skill is not a blanket coding rule. Use instructions for rules that apply to most tasks.</span></div>
+          </div>
+          <div class="card accent-card">
+            <span class="card-kicker">Build it in VS Code</span>
+            <div class="codebox"><pre><span class="green">/create-skill</span>
+Create a workspace skill named <span class="blue">pr-description-coach</span>.
+When asked, guide the user to describe the change, user impact,
+tests, risk, and rollout. Ask for missing details.
+Do not edit code, approve, or merge a pull request.
+Include one good example and one weak example.</pre></div>
+            <div class="test-list" style="margin-top:13px">
+              <div class="test-item"><i>1</i><span>Choose workspace scope so the skill is in the repo.</span></div>
+              <div class="test-item"><i>2</i><span>Check the name, description, steps, and boundaries in <code>SKILL.md</code>.</span></div>
+              <div class="test-item"><i>3</i><span>Invoke <code>/pr-description-coach</code> with a vague PR summary. Improve the result.</span></div>
+            </div>
+          </div>
+        </div>
+        <a class="source" href="https://code.visualstudio.com/docs/agent-customization/agent-skills" target="_blank" rel="noopener noreferrer">Official guide: create Agent Skills in VS Code</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Custom agents lab" data-time="01:25" aria-hidden="true" aria-labelledby="title-13">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">01:10–01:25 · 15 min</span></div>
+        <h2 id="title-13">A custom agent is a reusable <span class="accent-violet">role and tool set.</span></h2>
+        <p class="sublead">Use it when a recurring job needs a clear point of view, tool access, or safety boundary.</p>
+        <div class="agent-card-layout">
+          <div class="card violet-card">
+            <span class="card-kicker">Create in VS Code</span>
+            <div class="test-list">
+              <div class="test-item"><i>1</i><span>Open <strong>Chat: Open Customizations</strong>.</span></div>
+              <div class="test-item"><i>2</i><span>Choose <strong>Agents</strong> → <strong>New Agent (Workspace)</strong>.</span></div>
+              <div class="test-item"><i>3</i><span>Save a role such as <code>pr-reviewer.agent.md</code> in <code>.github/agents/</code>.</span></div>
+              <div class="test-item"><i>4</i><span>Select it and test it on your small lab change.</span></div>
+            </div>
+            <div class="callout" style="margin-top:15px"><span class="callout-mark">→</span><span>Review its instructions and tools before you use it.</span></div>
+          </div>
+          <div class="card">
+            <span class="card-kicker">Starter role</span>
+            <div class="codebox"><pre>Act as a read-only pull request reviewer.
+Check correctness, test gaps, security, and scope.
+For each finding, cite the file and line.
+Ask a question when evidence is missing.
+Do not edit, commit, or merge files.</pre></div>
+            <div class="agent-spec">
+              <div><b>Role</b><span>What the agent is responsible for.</span></div>
+              <div><b>Tools</b><span>Only the tools the job needs.</span></div>
+              <div><b>Boundary</b><span>What it must not do.</span></div>
+              <div><b>Test</b><span>Check its output on a real, small diff.</span></div>
+            </div>
+          </div>
+        </div>
+        <a class="source" href="https://code.visualstudio.com/docs/agent-customization/custom-agents" target="_blank" rel="noopener noreferrer">Official guide: custom agents in VS Code</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Agentic workflows lab" data-time="01:40" aria-hidden="true" aria-labelledby="title-15">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">01:25–01:40 · 15 min</span></div>
+        <h2 id="title-15">A workflow is an agent that runs <span class="accent-orange">on a repository event.</span></h2>
+        <p class="sublead">Unlike an in-editor agent, a GitHub Agentic Workflow runs in GitHub Actions. Markdown describes the task. Frontmatter defines triggers and guardrails.</p>
+        <div class="workflow-canvas">
+          <div class="compare-panel">
+            <h3>Two places for agent work</h3>
+            <div class="compare-path"><span>Developer</span><i>→</i><span>VS Code agent</span><i>→</i><span>Reviewed diff</span></div>
+            <div class="compare-path agentic-path"><span>GitHub event</span><i>→</i><span>Actions + agent</span><i>→</i><span>Safe output</span></div>
+            <span class="preview-note">Public preview · check current rules</span>
+          </div>
+          <div class="card orange-card">
+            <span class="card-kicker">Try it · design first</span>
+            <h3>Draft a weekly repository status report.</h3>
+            <div class="test-list">
+              <div class="test-item"><i>1</i><span>Use a Markdown source in <code>.github/workflows/</code>.</span></div>
+              <div class="test-item"><i>2</i><span>Ask for a report from issues and pull requests; start read-only.</span></div>
+              <div class="test-item"><i>3</i><span>Define a narrow safe output, such as creating a report issue.</span></div>
+              <div class="test-item"><i>4</i><span>Review the trigger, permissions, safe output, and Markdown source.</span></div>
+            </div>
+            <div class="codebox" style="margin-top:12px"><pre>Optional compile (only in an approved repo):
+gh extension install github/gh-aw
+gh aw compile</pre></div>
+            <p class="small" style="margin-top:10px">Do not trigger or merge a workflow until authentication, billing, permissions, and policy are reviewed.</p>
+          </div>
+        </div>
+        <a class="source" href="https://docs.github.com/en/copilot/concepts/agents/about-github-agentic-workflows" target="_blank" rel="noopener noreferrer">Official guide: GitHub Agentic Workflows and guardrails</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="PR review lab" data-time="01:50" aria-hidden="true" aria-labelledby="title-16">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">01:40–01:50 · 10 min</span></div>
+        <h2 id="title-16">Review the <span class="accent">evidence</span>, not the agent's confidence.</h2>
+        <div class="grid-2" style="margin-top:20px">
+          <div class="card aqua-card">
+            <span class="card-kicker">Open a draft PR in your fork</span>
+            <div class="test-list">
+              <div class="test-item"><i>1</i><span>State the problem and user impact.</span></div>
+              <div class="test-item"><i>2</i><span>Use <code>/pr-description-coach</code> to write the PR body.</span></div>
+              <div class="test-item"><i>3</i><span>Run <code>pr-reviewer</code>, then ask a partner to review.</span></div>
+              <div class="test-item"><i>4</i><span>Set the base repo to your fork and its default branch. Do not target upstream.</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <span class="card-kicker">Human review checklist</span>
+            <div class="gate-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
+              <div class="gate-card"><b>Correct?</b><p>Does the change meet the request?</p></div>
+              <div class="gate-card"><b>Tested?</b><p>Do checks cover the changed behavior?</p></div>
+              <div class="gate-card"><b>Scoped?</b><p>Is unrelated work left out?</p></div>
+              <div class="gate-card"><b>Safe?</b><p>Are data, permissions, and dependencies handled well?</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="activity"><span class="activity-label">Peer task</span><div><p>Leave one finding with evidence, then one question that would help the author.</p><p class="small">For team repos, protect important branches with required reviews and status checks.</p></div></div>
+        <a class="source" href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" target="_blank" rel="noopener noreferrer">Official guide: branch protection and required reviews</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="App modernization" data-time="02:00" aria-hidden="true" aria-labelledby="title-14">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">01:50–02:00 · Optional Java track</span></div>
+        <h2 id="title-14">Modernization <span class="accent-aqua">reduces risk</span> and extends app life.</h2>
+        <p class="sublead">Modernization updates runtimes, frameworks, dependencies, design, or hosting so an app stays supportable, secure, and ready for current needs.</p>
+        <div class="modern-layout">
+          <div>
+            <div class="modern-cycle" aria-label="Assess, plan, transform, validate">
+              <div class="modern-step"><b>01 · Assess</b><span>Find end-of-support runtimes, dependency risk, and migration blockers.</span></div>
+              <div class="modern-step"><b>02 · Plan</b><span>Choose a target and split work into safe steps.</span></div>
+              <div class="modern-step"><b>03 · Transform</b><span>Apply focused upgrades and code changes.</span></div>
+              <div class="modern-step"><b>04 · Validate</b><span>Run tests, review the diff, and check operations.</span></div>
+            </div>
+            <div class="pills"><span class="pill rose">Unsupported software</span><span class="pill orange">Security exposure</span><span class="pill aqua">Reliability</span><span class="pill violet">Cloud readiness</span></div>
+            <div class="callout" style="margin-top:13px"><span class="callout-mark">!</span><span>AI suggestions are a starting point. Test and review every migration.</span></div>
+          </div>
+          <div class="card aqua-card">
+            <span class="card-kicker">Tool + follow-along task</span>
+            <h3>GitHub Copilot App Modernization for Java</h3>
+            <p>Use the <a href="https://marketplace.visualstudio.com/items?itemName=vscjava.migrate-java-to-azure" target="_blank" rel="noopener noreferrer">VS Code extension</a> with the optional Java setup from the pre-work slide. This is a Java example; use a compatible modernization tool for other stacks.</p>
+            <div class="modern-try" style="margin-top:13px">
+              <div><i>1</i><span>Open <a href="https://github.com/Azure-Samples/java-migration-copilot-samples" target="_blank" rel="noopener noreferrer">Java migration samples</a>, branch <code>source</code>, folder <code>mi-sql-public-demo</code>.</span></div>
+              <div><i>2</i><span>Run <b>Start Assessment</b> → <b>Recommended Assessment</b> → <b>Cloud Readiness</b>.</span></div>
+              <div><i>3</i><span>Try <b>Upgrade Runtime &amp; Frameworks</b> or <b>Upgrade Java Framework</b>. Review the plan before changes.</span></div>
+            </div>
+            <p class="small" style="margin-top:12px">No Java setup? Follow the facilitator demo and discuss the report.</p>
+          </div>
+        </div>
+        <a class="source" href="https://learn.microsoft.com/en-us/azure/developer/java/migration/migrate-github-copilot-app-modernization-for-java-quickstart-assess-migrate" target="_blank" rel="noopener noreferrer">Official quickstart: assess and migrate a Java project</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Actions basics" data-time="02:07" aria-hidden="true" aria-labelledby="title-17">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">02:00–02:07 · 7 min</span></div>
+        <h2 id="title-17">Actions turns a repo event into <span class="accent-aqua">repeatable checks.</span></h2>
+        <div class="actions-flow" aria-label="Event triggers workflow, jobs run on runners, steps use actions or scripts">
+          <div class="actions-box"><b>Event</b><span>pull request<br>push · release · schedule</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="actions-box"><b>Workflow</b><span><code>.github/workflows/ci.yml</code></span><div class="jobs"><span>build job</span><span>test job</span></div></div>
+          <span class="flow-arrow">→</span>
+          <div class="actions-box"><b>Runner</b><span>GitHub-hosted or self-hosted environment</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="actions-box"><b>Steps</b><span>Run a script or call a reusable action. Save reports or deploy when allowed.</span></div>
+        </div>
+        <div class="grid-3">
+          <div class="card accent-card"><span class="card-kicker">CI</span><h3>Build and test</h3><p>Run checks on every pull request. Give reviewers fast feedback.</p></div>
+          <div class="card aqua-card"><span class="card-kicker">CD</span><h3>Release and deploy</h3><p>Deploy after the required checks and approvals pass.</p></div>
+          <div class="card violet-card"><span class="card-kicker">Automation</span><h3>Manage repo work</h3><p>Run issue, label, report, and maintenance tasks from events.</p></div>
+        </div>
+        <div class="activity"><span class="activity-label">Try it · 1 min</span><div><p>For your project, name one event, one job, one runner, and one test step.</p></div></div>
+        <a class="source" href="https://docs.github.com/en/actions/get-started/understand-github-actions" target="_blank" rel="noopener noreferrer">Official guide: GitHub Actions concepts</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="CI/CD mapping" data-time="02:15" aria-hidden="true" aria-labelledby="title-18">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">02:07–02:15 · 8 min</span></div>
+        <h2 id="title-18">Map the <span class="accent">intent</span>, not just the old syntax.</h2>
+        <p class="sublead">There is no perfect one-to-one conversion. Check triggers, ordering, runners, credentials, artifacts, approvals, and failure behavior.</p>
+        <table class="mapping">
+          <thead><tr><th>Existing CI/CD concept</th><th>GitHub Actions pattern</th><th>Check during migration</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Pipeline file</span></td><td data-label="GitHub Actions pattern"><span class="cell-value"><code>.github/workflows/*.yml</code></span></td><td data-label="Check during migration"><span class="cell-value">Split unrelated build, release, and deploy work into clear workflows.</span></td></tr>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Trigger / schedule</span></td><td data-label="GitHub Actions pattern"><span class="cell-value"><code>on</code></span></td><td data-label="Check during migration"><span class="cell-value">Confirm branch filters, event types, and cron timing.</span></td></tr>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Agent / pool</span></td><td data-label="GitHub Actions pattern"><span class="cell-value"><code>runs-on</code> runner</span></td><td data-label="Check during migration"><span class="cell-value">Match operating system, tools, network, and hardware needs.</span></td></tr>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Stage, job, task, step</span></td><td data-label="GitHub Actions pattern"><span class="cell-value"><code>jobs</code>, <code>needs</code>, <code>steps</code></span></td><td data-label="Check during migration"><span class="cell-value">Preserve ordering, parallel work, conditions, and failure rules.</span></td></tr>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Credentials / variables</span></td><td data-label="GitHub Actions pattern"><span class="cell-value"><code>secrets</code>, <code>vars</code>, <code>env</code>, permissions</span></td><td data-label="Check during migration"><span class="cell-value">Use least privilege. Never copy credentials into YAML.</span></td></tr>
+            <tr><td data-label="Existing CI/CD concept"><span class="cell-value">Artifacts / release</span></td><td data-label="GitHub Actions pattern"><span class="cell-value">Actions artifacts, packages, environments</span></td><td data-label="Check during migration"><span class="cell-value">Check retention, approval gates, and rollback steps.</span></td></tr>
+          </tbody>
+        </table>
+        <a class="source" href="https://docs.github.com/en/actions/tutorials/migrate-to-github-actions/manual-migrations/migrate-from-jenkins" target="_blank" rel="noopener noreferrer">Official example: map Jenkins pipelines to GitHub Actions</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Migration lab" data-time="02:26" aria-hidden="true" aria-labelledby="title-19">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">02:15–02:26 · 11 min</span></div>
+        <h2 id="title-19">Inventory → <span class="accent">convert</span> → validate → cut over.</h2>
+        <div class="migration-rail">
+          <div class="migration-step"><b>1 · Inventory</b><span>List workflows, owners, secrets, runners, and dependencies.</span></div>
+          <div class="migration-step"><b>2 · Map</b><span>Record each trigger, job, artifact, approval, and failure path.</span></div>
+          <div class="migration-step"><b>3 · Convert</b><span>Draft a small workflow. Use the importer for a real migration.</span></div>
+          <div class="migration-step"><b>4 · Validate</b><span>Compare outputs and run tests in a safe branch.</span></div>
+          <div class="migration-step"><b>5 · Cut over</b><span>Roll out in stages. Keep rollback steps clear.</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="card accent-card">
+            <span class="card-kicker">Do it now · provider-neutral</span>
+            <div class="codebox"><pre>Use a sanitized pipeline, or sketch this toy path:
+checkout → install dependencies → run tests.
+First fill in the mapping table for this pipeline.
+Then ask Copilot to draft a pull_request workflow.
+Run only a test command that exists in the repo.
+Set the minimum required token permissions.
+Do not paste private code or add secrets or deployment steps.
+Explain any behavior that does not map directly.</pre></div>
+          </div>
+          <div class="card aqua-card">
+            <span class="card-kicker">Optional facilitator demo / take-home</span>
+            <p>GitHub Actions Importer can audit and convert pipelines from Azure DevOps, Bamboo, Bitbucket Pipelines, CircleCI, GitLab, Jenkins, and Travis CI.</p>
+            <div class="codebox" style="margin-top:11px"><pre>gh extension install github/gh-actions-importer
+gh actions-importer configure
+# then run audit and dry-run for an approved provider</pre></div>
+            <p class="small" style="margin-top:9px">This needs Docker and CI credentials. Review converted YAML and tests before production.</p>
+          </div>
+        </div>
+        <a class="source" href="https://docs.github.com/en/actions/tutorials/migrate-to-github-actions/automated-migrations/use-github-actions-importer" target="_blank" rel="noopener noreferrer">Official guide: GitHub Actions Importer</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="Guardrails and close" data-time="02:30" aria-hidden="true" aria-labelledby="title-20">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">02:26–02:30 · 4 min</span></div>
+        <h2 id="title-20">Automate the checks.<br><span class="accent">Keep humans accountable.</span></h2>
+        <div class="gate-grid">
+          <div class="gate-card"><b>Limit permissions</b><p>Start with minimum token access, such as <code>contents: read</code>. Add write access only when needed.</p></div>
+          <div class="gate-card"><b>Protect secrets</b><p>Use repository or environment secrets. Do not put secrets in code, prompts, or logs.</p></div>
+          <div class="gate-card"><b>Require evidence</b><p>Run tests, review the diff, check workflow changes, and use branch rules before merge.</p></div>
+        </div>
+        <div class="exit-ticket"><b>Exit ticket</b><span>What is one low-risk task you will try with Copilot next week? What check will tell you it worked?</span></div>
+        <div class="pills" style="margin-top:15px"><span class="pill lime">Prompt pattern</span><span class="pill aqua">Reviewed PR</span><span class="pill violet">Skill + agent</span><span class="pill orange">Workflow map</span></div>
+        <a class="source" href="https://docs.github.com/en/actions/reference/security/secure-use" target="_blank" rel="noopener noreferrer">Official guide: secure use of GitHub Actions</a>
+      </div>
+    </section>
+
+    <section class="slide" data-section="References" data-time="Follow-up" aria-hidden="true" aria-labelledby="title-21">
+      <div class="slide-content">
+        <div class="slide-head"><span class="time-chip">Official docs and public samples</span></div>
+        <h2 id="title-21">Keep learning from <span class="accent-aqua">the source.</span></h2>
+        <div class="source-groups">
+          <div class="source-group">
+            <h3>Copilot in VS Code</h3>
+            <a href="https://docs.github.com/en/copilot/concepts/prompting/prompt-engineering" target="_blank" rel="noopener noreferrer">Prompt engineering for GitHub Copilot Chat</a>
+            <a href="https://code.visualstudio.com/docs/agents/overview" target="_blank" rel="noopener noreferrer">Build with AI in VS Code</a>
+            <a href="https://code.visualstudio.com/docs/agents/run/planning" target="_blank" rel="noopener noreferrer">Plan work with agents</a>
+            <a href="https://code.visualstudio.com/docs/agent-customization/agent-skills" target="_blank" rel="noopener noreferrer">Agent Skills in VS Code</a>
+            <a href="https://code.visualstudio.com/docs/agent-customization/custom-agents" target="_blank" rel="noopener noreferrer">Custom agents in VS Code</a>
+          </div>
+          <div class="source-group">
+            <h3>Repo collaboration</h3>
+            <a href="https://docs.github.com/en/repositories/creating-and-managing-repositories/best-practices-for-repositories" target="_blank" rel="noopener noreferrer">Repository best practices</a>
+            <a href="https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners" target="_blank" rel="noopener noreferrer">About CODEOWNERS</a>
+            <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets" target="_blank" rel="noopener noreferrer">About rulesets</a>
+            <a href="https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization" target="_blank" rel="noopener noreferrer">Repository roles for an organization</a>
+            <a href="https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request" target="_blank" rel="noopener noreferrer">Creating a pull request</a>
+          </div>
+          <div class="source-group">
+            <h3>Modernization + agentic workflows</h3>
+            <a href="https://code.visualstudio.com/docs/java/java-app-mod" target="_blank" rel="noopener noreferrer">Modernize legacy Java apps in VS Code</a>
+            <a href="https://learn.microsoft.com/en-us/azure/developer/java/migration/migrate-github-copilot-app-modernization-for-java-quickstart-assess-migrate" target="_blank" rel="noopener noreferrer">Java assessment and migration quickstart</a>
+            <a href="https://docs.github.com/en/copilot/concepts/agents/about-github-agentic-workflows" target="_blank" rel="noopener noreferrer">About GitHub Agentic Workflows</a>
+            <a href="https://docs.github.com/en/copilot/how-tos/github-agentic-workflows/quickstart" target="_blank" rel="noopener noreferrer">Your first agentic workflow</a>
+            <a href="https://github.github.com/gh-aw/" target="_blank" rel="noopener noreferrer">Agentic Workflows reference</a>
+          </div>
+          <div class="source-group">
+            <h3>Actions and migration</h3>
+            <a href="https://docs.github.com/en/actions/get-started/understand-github-actions" target="_blank" rel="noopener noreferrer">Understanding GitHub Actions</a>
+            <a href="https://docs.github.com/en/actions/tutorials/migrate-to-github-actions" target="_blank" rel="noopener noreferrer">Migrate to GitHub Actions</a>
+            <a href="https://docs.github.com/en/actions/tutorials/migrate-to-github-actions/automated-migrations/use-github-actions-importer" target="_blank" rel="noopener noreferrer">GitHub Actions Importer</a>
+            <a href="https://docs.github.com/en/actions/reference/security/secure-use" target="_blank" rel="noopener noreferrer">Secure use reference</a>
+          </div>
+          <div class="source-group">
+            <h3>Public practice repositories</h3>
+            <a href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer">GitHub Copilot community customizations</a>
+            <a href="https://github.com/Azure-Samples/java-migration-copilot-samples" target="_blank" rel="noopener noreferrer">Java migration Copilot samples</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=vscjava.migrate-java-to-azure" target="_blank" rel="noopener noreferrer">GitHub Copilot App Modernization extension</a>
+          </div>
+          <div class="source-group">
+            <h3>Facilitator reminder</h3>
+            <a href="https://docs.github.com/en/copilot/concepts/agents/about-github-agentic-workflows" target="_blank" rel="noopener noreferrer">Agentic Workflows are in public preview; check the current docs before delivery.</a>
+            <a href="https://docs.github.com/en/actions/tutorials/migrate-to-github-actions/automated-migrations/use-github-actions-importer" target="_blank" rel="noopener noreferrer">Importer output must be reviewed before production use.</a>
+          </div>
+        </div>
+        <p class="research-date">Official documentation checked on 6 October 2026. Product names, prerequisites, and preview status can change. Confirm them before the workshop.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="controlbar" aria-label="Slide controls">
+    <div class="progress-track" aria-hidden="true"><div id="progress" class="progress-fill"></div></div>
+    <div class="control-left">
+      <span class="counter"><b id="current-slide">01</b> / <span id="total-slides">21</span></span>
+      <button id="previous" class="nav-btn" type="button" aria-label="Previous slide" title="Previous slide">←</button>
+      <button id="next" class="nav-btn" type="button" aria-label="Next slide" title="Next slide">→</button>
+    </div>
+    <div id="dot-nav" class="dot-nav" aria-label="Choose a slide"></div>
+    <div class="control-right">
+      <span class="keyboard-hint">← → navigate · F fullscreen</span>
+      <button id="fullscreen" class="nav-btn fs" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">Fullscreen</button>
+    </div>
+  </nav>
+
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const currentLabel = document.getElementById("current-slide");
+      const totalLabel = document.getElementById("total-slides");
+      const progress = document.getElementById("progress");
+      const dotNav = document.getElementById("dot-nav");
+      const fullscreenButton = document.getElementById("fullscreen");
+      let current = 0;
+
+      totalLabel.textContent = String(slides.length).padStart(2, "0");
+
+      const dots = slides.map((slide, index) => {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Go to slide ${index + 1}: ${slide.dataset.section}`);
+        dot.setAttribute("aria-current", index === 0 ? "true" : "false");
+        dot.addEventListener("click", () => showSlide(index));
+        dotNav.appendChild(dot);
+        return dot;
+      });
+
+      function showSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, slideIndex) => {
+          const active = slideIndex === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", String(!active));
+          if (active) slide.scrollTop = 0;
+          dots[slideIndex].setAttribute("aria-current", String(active));
+        });
+        if (window.matchMedia("(max-width: 1000px), (max-height: 880px)").matches) {
+          window.scrollTo(0, 0);
+        }
+        currentLabel.textContent = String(current + 1).padStart(2, "0");
+        progress.style.transform = `scaleX(${(current + 1) / slides.length})`;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        document.title = `${slides[current].dataset.section} | GitHub Copilot workshop`;
+      }
+
+      previous.addEventListener("click", () => showSlide(current - 1));
+      next.addEventListener("click", () => showSlide(current + 1));
+      fullscreenButton.addEventListener("click", async () => {
+        try {
+          if (!document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+          } else {
+            await document.exitFullscreen();
+          }
+        } catch {
+          fullscreenButton.textContent = "Use browser fullscreen";
+        }
+      });
+      document.addEventListener("fullscreenchange", () => {
+        fullscreenButton.textContent = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen";
+      });
+      document.addEventListener("keydown", (event) => {
+        const target = event.target;
+        if (target && (target.closest("a, button, input, textarea, select") || target.isContentEditable)) return;
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+          event.preventDefault();
+          showSlide(current + 1);
+        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          showSlide(current - 1);
+        } else if (event.key === "Home") {
+          showSlide(0);
+        } else if (event.key === "End") {
+          showSlide(slides.length - 1);
+        } else if (event.key.toLowerCase() === "f") {
+          fullscreenButton.click();
+        }
+      });
+
+      showSlide(0);
+    })();
+  </script>
+</body>
+</html>
