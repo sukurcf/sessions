@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="A practical guide to choosing Copilot models, building with agents, and using Copilot beyond the editor.">
+  <title>Copilot, your way — October 14, 2026</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --canvas-raised: #161b22;
+      --canvas-soft: #1c2128;
+      --line: #30363d;
+      --fg: #f0f6fc;
+      --fg-muted: #9198a1;
+      --blue: #4493f8;
+      --blue-strong: #0969da;
+      --purple: #d2a8ff;
+      --green: #3fb950;
+      --yellow: #e3b341;
+      --pink: #ff7b72;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-family: var(--font);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--canvas);
+      color: var(--fg);
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse at 82% 16%, rgba(56, 139, 253, .12), transparent 35%),
+        radial-gradient(ellipse at 12% 88%, rgba(163, 113, 247, .08), transparent 38%);
+    }
+
+    button { font: inherit; }
+
+    .deck {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 5;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px clamp(24px, 5vw, 72px);
+      color: var(--fg-muted);
+      font: 600 12px/1 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--fg);
+      letter-spacing: .04em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      border: 1px solid rgba(68, 147, 248, .7);
+      border-radius: 8px;
+      background: rgba(68, 147, 248, .14);
+      color: var(--blue);
+      font: 700 16px/1 var(--font);
+    }
+
+    .slides {
+      position: absolute;
+      inset: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      align-content: center;
+      width: 100%;
+      height: 100%;
+      padding: clamp(88px, 12vh, 128px) clamp(28px, 10vw, 148px) clamp(100px, 13vh, 138px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(28px);
+      transition: opacity .35s ease, transform .35s ease, visibility .35s;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .slide-inner {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--blue);
+      font: 700 12px/1.3 var(--mono);
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1, h2, h3 {
+      text-wrap: balance;
+      letter-spacing: -.045em;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin-bottom: 26px;
+      font-size: clamp(48px, 8.3vw, 112px);
+      line-height: .97;
+      font-weight: 750;
+    }
+
+    h2 {
+      max-width: 960px;
+      margin-bottom: 16px;
+      font-size: clamp(36px, 5.8vw, 72px);
+      line-height: 1.02;
+      font-weight: 720;
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: clamp(18px, 2.1vw, 25px);
+      line-height: 1.15;
+      font-weight: 650;
+    }
+
+    .lede {
+      max-width: 720px;
+      margin-bottom: 32px;
+      color: #c9d1d9;
+      font-size: clamp(17px, 2vw, 23px);
+      line-height: 1.55;
+    }
+
+    .accent { color: var(--blue); }
+    .purple { color: var(--purple); }
+    .green { color: var(--green); }
+    .muted { color: var(--fg-muted); }
+
+    .title-stamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #c9d1d9;
+      background: rgba(22, 27, 34, .75);
+      font: 600 12px/1 var(--mono);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .title-stamp::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      content: "";
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      min-width: 0;
+      padding: clamp(18px, 2.4vw, 27px);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(150deg, rgba(28, 33, 40, .92), rgba(22, 27, 34, .92));
+      box-shadow: 0 12px 36px rgba(1, 4, 9, .14);
+    }
+
+    .card p, .card li {
+      margin-bottom: 0;
+      color: #c9d1d9;
+      font-size: clamp(14px, 1.35vw, 17px);
+      line-height: 1.55;
+    }
+
+    .card-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      margin-bottom: 21px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(68, 147, 248, .12);
+      color: var(--blue);
+      font: 700 15px/1 var(--mono);
+    }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 11px;
+      margin-top: 30px;
+    }
+
+    .model {
+      min-width: 0;
+      padding: 19px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(22, 27, 34, .82);
+    }
+
+    .model .model-number {
+      display: block;
+      margin-bottom: 20px;
+      color: var(--fg-muted);
+      font: 11px/1 var(--mono);
+    }
+
+    .model h3 {
+      min-height: 2.3em;
+      font-size: clamp(15px, 1.55vw, 19px);
+      letter-spacing: -.025em;
+    }
+
+    .model p {
+      margin-bottom: 0;
+      color: #aeb7c1;
+      font-size: clamp(12px, 1.05vw, 14px);
+      line-height: 1.5;
+    }
+
+    .model:nth-child(1) { border-top: 2px solid var(--blue); }
+    .model:nth-child(2) { border-top: 2px solid var(--purple); }
+    .model:nth-child(3) { border-top: 2px solid var(--green); }
+    .model:nth-child(4) { border-top: 2px solid var(--yellow); }
+    .model:nth-child(5) { border-top: 2px solid var(--pink); }
+
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-top: 23px;
+      padding: 16px 18px;
+      border: 1px solid rgba(68, 147, 248, .35);
+      border-radius: 12px;
+      background: rgba(56, 139, 253, .08);
+      color: #c9d1d9;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .callout strong { color: var(--fg); }
+
+    .callout-mark {
+      flex: 0 0 auto;
+      color: var(--blue);
+      font: 700 14px/1.5 var(--mono);
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: minmax(130px, .55fr) 1.45fr;
+      gap: 20px;
+      align-items: center;
+      padding: 20px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .decision:first-child { border-top: 0; }
+
+    .decision-label {
+      color: var(--blue);
+      font: 700 12px/1.5 var(--mono);
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+
+    .decision p {
+      margin: 0;
+      color: #c9d1d9;
+      font-size: clamp(15px, 1.5vw, 18px);
+      line-height: 1.5;
+    }
+
+    .table-like {
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1.2fr;
+      gap: 18px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      color: #c9d1d9;
+      font-size: clamp(13px, 1.25vw, 16px);
+      line-height: 1.45;
+    }
+
+    .table-row.head {
+      color: var(--fg-muted);
+      font: 700 11px/1.4 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .table-row strong { color: var(--fg); font-weight: 650; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 36px;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--canvas-raised);
+    }
+
+    .flow-step:not(:last-child)::after {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: -22px;
+      color: var(--blue);
+      content: "→";
+      font: 24px/1 var(--mono);
+      transform: translateY(-50%);
+    }
+
+    .step-no {
+      display: block;
+      margin-bottom: 24px;
+      color: var(--blue);
+      font: 700 12px/1 var(--mono);
+    }
+
+    .flow-step p {
+      margin-bottom: 0;
+      color: #aeb7c1;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .slash {
+      display: inline-block;
+      padding: 3px 8px;
+      border: 1px solid rgba(210, 168, 255, .36);
+      border-radius: 7px;
+      background: rgba(163, 113, 247, .1);
+      color: var(--purple);
+      font: 600 .86em/1.4 var(--mono);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(22px, 5vw, 72px);
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .choice-list { list-style: none; margin: 0; padding: 0; }
+    .choice-list li {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 13px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+      color: #c9d1d9;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .choice-list li::before {
+      color: var(--green);
+      content: "✓";
+      font: 700 16px/1.5 var(--mono);
+    }
+
+    .quote-panel {
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid rgba(210, 168, 255, .3);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(163, 113, 247, .12), rgba(22, 27, 34, .72));
+    }
+
+    .quote-panel p {
+      margin-bottom: 0;
+      color: var(--fg);
+      font-size: clamp(20px, 2.7vw, 32px);
+      font-weight: 600;
+      letter-spacing: -.025em;
+      line-height: 1.25;
+    }
+
+    .quote-panel small {
+      display: block;
+      margin-top: 18px;
+      color: var(--fg-muted);
+      font: 11px/1.5 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .closing h2 { max-width: 800px; }
+
+    .takeaway {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 29px;
+    }
+
+    .takeaway span {
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(22, 27, 34, .82);
+      color: #c9d1d9;
+      font: 12px/1.3 var(--mono);
+    }
+
+    .controls {
+      position: absolute;
+      z-index: 6;
+      inset: auto 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px clamp(24px, 5vw, 72px) 24px;
+    }
+
+    .control-group { display: flex; align-items: center; gap: 10px; }
+
+    .control {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(22, 27, 34, .9);
+      color: var(--fg);
+      cursor: pointer;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .control:hover:not(:disabled) {
+      border-color: var(--blue);
+      background: rgba(56, 139, 253, .1);
+      transform: translateY(-1px);
+    }
+
+    .control:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .control:disabled { color: #484f58; cursor: not-allowed; }
+    .control svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+    .slide-status {
+      min-width: 65px;
+      color: var(--fg-muted);
+      font: 12px/1 var(--mono);
+      text-align: center;
+    }
+
+    .key-hint {
+      color: var(--fg-muted);
+      font: 11px/1.4 var(--mono);
+    }
+
+    .progress-track {
+      position: absolute;
+      z-index: 7;
+      inset: auto 0 0;
+      height: 3px;
+      background: rgba(48, 54, 61, .8);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue-strong), var(--purple));
+      transform: scaleX(.125);
+      transform-origin: left center;
+      transition: transform .3s ease;
+    }
+
+    @media (max-width: 900px) {
+      .model-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .model:nth-child(n+4) { min-height: 0; }
+      .slide { overflow-y: auto; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar { padding: 18px 20px; font-size: 10px; }
+      .topbar .edition { display: none; }
+      .slide { padding: 82px 23px 96px; }
+      .grid.three, .grid.two, .model-grid, .flow, .split { grid-template-columns: 1fr; }
+      .grid { gap: 10px; margin-top: 23px; }
+      .card { padding: 18px; }
+      .card-icon { margin-bottom: 14px; }
+      .model-grid { gap: 8px; margin-top: 22px; }
+      .model { padding: 15px; }
+      .model .model-number { margin-bottom: 10px; }
+      .model h3 { min-height: 0; margin-bottom: 5px; }
+      .model p { font-size: 13px; }
+      .flow { gap: 10px; margin-top: 25px; }
+      .flow-step { padding: 18px; }
+      .flow-step:not(:last-child)::after { top: auto; right: 18px; bottom: -20px; transform: rotate(90deg); }
+      .step-no { margin-bottom: 14px; }
+      .decision { grid-template-columns: 1fr; gap: 4px; padding: 14px 0; }
+      .table-row { grid-template-columns: .8fr 1fr 1fr; gap: 8px; font-size: 12px; }
+      .controls { padding: 14px 20px 18px; }
+      .key-hint { display: none; }
+      .control { width: 39px; height: 39px; }
+      .title-stamp { font-size: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Copilot presentation">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span> COPILOT / FIELD GUIDE</div>
+      <span class="edition">OCT 14, 2026</span>
+    </header>
+
+    <div class="slides" aria-live="polite">
+      <section class="slide active" aria-label="Slide 1 of 8: Copilot, your way">
+        <div class="slide-inner">
+          <p class="eyebrow">A practical guide to what’s next</p>
+          <h1>Copilot,<br><span class="accent">your way.</span></h1>
+          <p class="lede">Choose the right model. Build with agents. Take Copilot beyond the editor.</p>
+          <span class="title-stamp">Models · agentic development · more places to work</span>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 2 of 8: Three shifts">
+        <div class="slide-inner">
+          <p class="eyebrow">The landscape</p>
+          <h2>Three shifts.<br>One <span class="accent">workflow.</span></h2>
+          <p class="lede">More choice is useful when it makes your next step clearer.</p>
+          <div class="grid three">
+            <article class="card">
+              <span class="card-icon" aria-hidden="true">01</span>
+              <h3>Pick a model</h3>
+              <p>Choose from multiple vendors. Start with Auto, then compare when the task calls for it.</p>
+            </article>
+            <article class="card">
+              <span class="card-icon" aria-hidden="true">02</span>
+              <h3>Work agentically</h3>
+              <p>Plan, edit, and verify in your IDE or terminal, with your own skills and workflow.</p>
+            </article>
+            <article class="card">
+              <span class="card-icon" aria-hidden="true">03</span>
+              <h3>Go beyond the editor</h3>
+              <p>Continue in the Copilot desktop app or on the web when that fits the task.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 3 of 8: A multi-vendor model picker">
+        <div class="slide-inner">
+          <p class="eyebrow">01 / Model roster</p>
+          <h2>One picker.<br><span class="purple">More ways to think.</span></h2>
+          <p class="lede">The roster spans vendors and model types. Treat each as a candidate, not a permanent default.</p>
+          <div class="model-grid">
+            <article class="model">
+              <span class="model-number">01 / OPENAI</span>
+              <h3>GPT-6 Astra</h3>
+              <p>A frontier option to compare on your hardest tasks.</p>
+            </article>
+            <article class="model">
+              <span class="model-number">02 / ANTHROPIC</span>
+              <h3>Claude</h3>
+              <p>Compare for sustained reasoning, writing, and agent work.</p>
+            </article>
+            <article class="model">
+              <span class="model-number">03 / GOOGLE</span>
+              <h3>Gemini Flash</h3>
+              <p>Try when a quick response and iteration speed matter.</p>
+            </article>
+            <article class="model">
+              <span class="model-number">04 / MICROSOFT</span>
+              <h3>Microsoft MAI</h3>
+              <p>Evaluate alongside the tools and workflows you use.</p>
+            </article>
+            <article class="model">
+              <span class="model-number">05 / OPEN-WEIGHT</span>
+              <h3>Kimi</h3>
+              <p>Consider when open-weight options are important.</p>
+            </article>
+          </div>
+          <aside class="callout"><span class="callout-mark">i</span><span><strong>Availability varies.</strong> Check your model picker for the exact models enabled in your environment.</span></aside>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 4 of 8: How to choose a model">
+        <div class="slide-inner">
+          <p class="eyebrow">02 / Choose with intent</p>
+          <h2>Start with Auto.<br><span class="accent">Step up when it matters.</span></h2>
+          <div class="split">
+            <div class="table-like" role="table" aria-label="Model choice guide">
+              <div class="table-row head" role="row"><span role="columnheader">If the task is…</span><span role="columnheader">Start here</span><span role="columnheader">Then compare…</span></div>
+              <div class="table-row" role="row"><strong>Routine</strong><span>Auto</span><span>Only if results fall short</span></div>
+              <div class="table-row" role="row"><strong>High-impact</strong><span>Auto, then test</span><span>A larger model on the same task</span></div>
+              <div class="table-row" role="row"><strong>Specialized</strong><span>Check your constraints</span><span>Models that fit tools, context, and policy</span></div>
+            </div>
+            <div>
+              <div class="quote-panel">
+                <p>Compare the result, not the label.</p>
+                <small>Quality · speed · cost · context · tool fit</small>
+              </div>
+              <aside class="callout"><span class="callout-mark">↗</span><span>Use the same prompt and success criteria. Keep the model that improves the outcome enough to justify its trade-offs.</span></aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 5 of 8: When a model is retired">
+        <div class="slide-inner">
+          <p class="eyebrow">03 / Model transitions</p>
+          <h2>Model retired?<br><span class="green">Keep the workflow.</span></h2>
+          <p class="lede">A model change is a chance to preserve what works and retest what matters.</p>
+          <div class="flow">
+            <article class="flow-step">
+              <span class="step-no">STEP 01</span>
+              <h3>Follow the picker</h3>
+              <p>Use the listed successor or migration guidance for the retired model.</p>
+            </article>
+            <article class="flow-step">
+              <span class="step-no">STEP 02</span>
+              <h3>Keep the task fixed</h3>
+              <p>Reuse your prompt, context, tools, and acceptance criteria.</p>
+            </article>
+            <article class="flow-step">
+              <span class="step-no">STEP 03</span>
+              <h3>Verify the swap</h3>
+              <p>Check quality, latency, and cost. Adjust only where the result regresses.</p>
+            </article>
+          </div>
+          <aside class="callout"><span class="callout-mark">!</span><span>Retired model names and successor mappings depend on your environment. Check the retirement notice before switching.</span></aside>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 6 of 8: Agentic development in your IDE">
+        <div class="slide-inner">
+          <p class="eyebrow">04 / Agentic development in the IDE</p>
+          <h2>From blank folder<br>to <span class="accent">verified change.</span></h2>
+          <p class="lede">Start in a local folder, with no special project setup required for your first task.</p>
+          <div class="flow">
+            <article class="flow-step">
+              <span class="step-no">01 / PLAN</span>
+              <h3>Agree on the job</h3>
+              <p>Describe the goal, constraints, and how you will know it is done.</p>
+            </article>
+            <article class="flow-step">
+              <span class="step-no">02 / EDIT</span>
+              <h3>Work in the project</h3>
+              <p>Let the agent inspect relevant files and propose focused changes.</p>
+            </article>
+            <article class="flow-step">
+              <span class="step-no">03 / VERIFY</span>
+              <h3>Run the checks</h3>
+              <p>Review the diff, run tests, and keep control of the final change.</p>
+            </article>
+          </div>
+          <div class="grid two">
+            <article class="card">
+              <h3>Custom skills</h3>
+              <p>Package repeatable instructions and invoke them with a <span class="slash">/slash command</span>.</p>
+            </article>
+            <article class="card">
+              <h3>Copilot CLI</h3>
+              <p>Use a terminal workflow with <span class="slash">/rewind</span> and multiple sessions to move between tasks.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 7 of 8: Copilot beyond the editor">
+        <div class="slide-inner">
+          <p class="eyebrow">05 / Beyond the editor</p>
+          <h2>Your work is bigger<br>than one <span class="purple">window.</span></h2>
+          <p class="lede">The Copilot desktop app and Copilot on the web give you more places to continue.</p>
+          <div class="grid two">
+            <article class="card">
+              <span class="card-icon" aria-hidden="true">APP</span>
+              <h3>Copilot desktop app</h3>
+              <p>Keep a dedicated Copilot workspace close while you move between apps and tasks.</p>
+            </article>
+            <article class="card">
+              <span class="card-icon" aria-hidden="true">WEB</span>
+              <h3>Copilot on the web</h3>
+              <p>Start or continue work in the browser, without making the IDE your only entry point.</p>
+            </article>
+          </div>
+          <aside class="callout"><span class="callout-mark">↗</span><span>Choose the surface that fits the work. Use your organization's access and data policies wherever you go.</span></aside>
+        </div>
+      </section>
+
+      <section class="slide closing" aria-label="Slide 8 of 8: A simple rule">
+        <div class="slide-inner">
+          <p class="eyebrow">The simple rule</p>
+          <h2>Pick the smallest step<br>that gets a <span class="accent">great result.</span></h2>
+          <p class="lede">Let Auto handle the ordinary. Spend more model, agent, or workflow effort where the stakes justify it.</p>
+          <div class="takeaway" aria-label="Key takeaways">
+            <span>START WITH AUTO</span>
+            <span>COMPARE ON REAL TASKS</span>
+            <span>PLAN → EDIT → VERIFY</span>
+            <span>WORK WHERE IT FITS</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <nav class="controls" aria-label="Slide controls">
+      <div class="control-group">
+        <button class="control" id="previous" type="button" aria-label="Previous slide" title="Previous slide">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
+        </button>
+        <span class="slide-status" id="status" aria-live="polite">01 / 08</span>
+        <button class="control" id="next" type="button" aria-label="Next slide" title="Next slide">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4.5 5.5 5.5-5.5 5.5"/></svg>
+        </button>
+      </div>
+      <span class="key-hint">← → NAVIGATE &nbsp;·&nbsp; F FULLSCREEN</span>
+      <div class="control-group">
+        <button class="control" id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3.5H3.5V7M13 3.5h3.5V7M3.5 13v3.5H7M16.5 13v3.5H13"/></svg>
+        </button>
+      </div>
+    </nav>
+    <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progress"></div></div>
+  </main>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const status = document.getElementById("status");
+      const progress = document.getElementById("progress");
+      let current = 0;
+
+      function show(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach(function (slide, position) {
+          const active = position === current;
+          slide.classList.toggle("active", active);
+          slide.setAttribute("aria-hidden", String(!active));
+        });
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        status.textContent = String(current + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+        progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
+        document.title = slides[current].getAttribute("aria-label").replace(/^Slide \d+ of \d+: /, "") + " — Copilot Field Guide";
+      }
+
+      previous.addEventListener("click", function () { show(current - 1); });
+      next.addEventListener("click", function () { show(current + 1); });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+          event.preventDefault();
+          show(current + 1);
+        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          show(current - 1);
+        } else if (event.key === "Home") {
+          show(0);
+        } else if (event.key === "End") {
+          show(slides.length - 1);
+        } else if (event.key.toLowerCase() === "f") {
+          toggleFullscreen();
+        }
+      });
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(function (error) {
+            console.error("Could not enter fullscreen:", error);
+          });
+        } else {
+          document.exitFullscreen().catch(function (error) {
+            console.error("Could not exit fullscreen:", error);
+          });
+        }
+      }
+
+      document.getElementById("fullscreen").addEventListener("click", toggleFullscreen);
+
+      let touchStartX = null;
+      document.querySelector(".slides").addEventListener("touchstart", function (event) {
+        touchStartX = event.changedTouches[0].screenX;
+      }, { passive: true });
+      document.querySelector(".slides").addEventListener("touchend", function (event) {
+        if (touchStartX === null) return;
+        const distance = event.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(distance) > 55) show(current + (distance < 0 ? 1 : -1));
+        touchStartX = null;
+      }, { passive: true });
+
+      show(0);
+    }());
+  </script>
+</body>
+</html>
