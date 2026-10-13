@@ -3,855 +3,816 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GitHub Copilot knowledge share: the model roster, agentic development in the IDE, and Copilot beyond the editor. October 14, 2026.">
   <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="A practical guide to choosing Copilot models, building with agents, and using Copilot beyond the editor.">
-  <title>Copilot, your way — October 14, 2026</title>
+  <title>GitHub Copilot knowledge share · October 14, 2026</title>
+  <script>
+    (function () {
+      var light = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+    })();
+  </script>
   <style>
+    /* Colors and fonts follow GitHub Primer (primitives 11.10): light and dark themes. */
     :root {
       color-scheme: dark;
-      --canvas: #0d1117;
-      --canvas-raised: #161b22;
-      --canvas-soft: #1c2128;
-      --line: #30363d;
+      --font-sans: "Mona Sans VF", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Backtick Fix", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --bg-page: #010409;
+      --bg: #0d1117;
+      --bg-subtle: #151b23;
+      --bg-control: #212830;
+      --bg-control-hover: #2a313c;
+      --code-bg: #656c7633;
+      --border: #3d444d;
+      --border-muted: #3d444db3;
       --fg: #f0f6fc;
       --fg-muted: #9198a1;
-      --blue: #4493f8;
-      --blue-strong: #0969da;
-      --purple: #d2a8ff;
-      --green: #3fb950;
-      --yellow: #e3b341;
-      --pink: #ff7b72;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      font-family: var(--font);
-      font-synthesis: none;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      --accent: #4493f8;
+      --accent-emphasis: #1f6feb;
+      --accent-muted: #388bfd1a;
+      --success: #3fb950;
+      --success-muted: #2ea04326;
+      --attention: #d29922;
+      --attention-muted: #bb800926;
+      --danger: #f85149;
+      --danger-muted: #f851491a;
+      --done: #ab7df8;
+      --done-muted: #ab7df826;
+      --shadow: 0 8px 24px rgba(1, 4, 9, .45);
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg-page: #d1d9e0;
+      --bg: #ffffff;
+      --bg-subtle: #f6f8fa;
+      --bg-control: #f6f8fa;
+      --bg-control-hover: #eff2f5;
+      --code-bg: #818b981f;
+      --border: #d1d9e0;
+      --border-muted: #d1d9e0b3;
+      --fg: #1f2328;
+      --fg-muted: #59636e;
+      --accent: #0969da;
+      --accent-emphasis: #0969da;
+      --accent-muted: #ddf4ff;
+      --success: #1a7f37;
+      --success-muted: #dafbe1;
+      --attention: #9a6700;
+      --attention-muted: #fff8c5;
+      --danger: #d1242f;
+      --danger-muted: #ffebe9;
+      --done: #8250df;
+      --done-muted: #fbefff;
+      --shadow: 0 8px 24px rgba(31, 35, 40, .14);
     }
 
     * { box-sizing: border-box; }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: var(--canvas);
-      color: var(--fg);
-    }
+    html, body { height: 100%; margin: 0; }
 
     body {
-      background-image:
-        radial-gradient(ellipse at 82% 16%, rgba(56, 139, 253, .12), transparent 35%),
-        radial-gradient(ellipse at 12% 88%, rgba(163, 113, 247, .08), transparent 38%);
-    }
-
-    button { font: inherit; }
-
-    .deck {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-
-    .topbar {
-      position: absolute;
-      z-index: 5;
-      inset: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px clamp(24px, 5vw, 72px);
-      color: var(--fg-muted);
-      font: 600 12px/1 var(--mono);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+      background: var(--bg-page);
       color: var(--fg);
-      letter-spacing: .04em;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
 
-    .brand-mark {
-      display: grid;
-      width: 25px;
-      height: 25px;
-      place-items: center;
-      border: 1px solid rgba(68, 147, 248, .7);
-      border-radius: 8px;
-      background: rgba(68, 147, 248, .14);
-      color: var(--blue);
-      font: 700 16px/1 var(--font);
+    ul, ol { margin: 0; padding: 0; list-style: none; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+    /* 16:9 stage. All slide sizes use cqw, so the deck scales as one unit. */
+    .deck { position: fixed; inset: 0; display: grid; place-items: center; }
+
+    .stage {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      aspect-ratio: 16 / 9;
+      container-type: inline-size;
+      overflow: hidden;
+      background: var(--bg);
+      box-shadow: var(--shadow);
     }
 
-    .slides {
-      position: absolute;
-      inset: 0;
-    }
+    .progress { position: absolute; z-index: 2; top: 0; left: 0; right: 0; height: 3px; background: var(--border-muted); }
+    .progress span { display: block; height: 100%; background: var(--accent-emphasis); transform: scaleX(0); transform-origin: left center; transition: transform .35s ease; }
 
     .slide {
       position: absolute;
       inset: 0;
-      display: grid;
-      align-content: center;
-      width: 100%;
-      height: 100%;
-      padding: clamp(88px, 12vh, 128px) clamp(28px, 10vw, 148px) clamp(100px, 13vh, 138px);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(28px);
-      transition: opacity .35s ease, transform .35s ease, visibility .35s;
+      display: none;
+      flex-direction: column;
+      padding: 6cqw 6.5cqw 9cqw;
+      overflow: hidden;
     }
 
-    .slide.active {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(0);
+    .slide.is-active { display: flex; animation: slide-in .4s ease both; }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
     }
 
-    .slide-inner {
-      width: min(100%, 1120px);
-      margin: 0 auto;
-    }
-
-    .eyebrow {
-      margin: 0 0 18px;
-      color: var(--blue);
-      font: 700 12px/1.3 var(--mono);
-      letter-spacing: .13em;
-      text-transform: uppercase;
-    }
-
-    h1, h2, h3, p { margin-top: 0; }
-
-    h1, h2, h3 {
-      text-wrap: balance;
-      letter-spacing: -.045em;
-    }
-
-    h1 {
-      max-width: 920px;
-      margin-bottom: 26px;
-      font-size: clamp(48px, 8.3vw, 112px);
-      line-height: .97;
-      font-weight: 750;
-    }
-
-    h2 {
-      max-width: 960px;
-      margin-bottom: 16px;
-      font-size: clamp(36px, 5.8vw, 72px);
-      line-height: 1.02;
-      font-weight: 720;
-    }
-
-    h3 {
-      margin-bottom: 10px;
-      font-size: clamp(18px, 2.1vw, 25px);
-      line-height: 1.15;
-      font-weight: 650;
-    }
-
-    .lede {
-      max-width: 720px;
-      margin-bottom: 32px;
-      color: #c9d1d9;
-      font-size: clamp(17px, 2vw, 23px);
-      line-height: 1.55;
-    }
-
-    .accent { color: var(--blue); }
-    .purple { color: var(--purple); }
-    .green { color: var(--green); }
-    .muted { color: var(--fg-muted); }
-
-    .title-stamp {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 13px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: #c9d1d9;
-      background: rgba(22, 27, 34, .75);
-      font: 600 12px/1 var(--mono);
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-
-    .title-stamp::before {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      content: "";
-    }
-
-    .grid {
-      display: grid;
-      gap: 14px;
-      margin-top: 32px;
-    }
-
-    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-    .card {
-      min-width: 0;
-      padding: clamp(18px, 2.4vw, 27px);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: linear-gradient(150deg, rgba(28, 33, 40, .92), rgba(22, 27, 34, .92));
-      box-shadow: 0 12px 36px rgba(1, 4, 9, .14);
-    }
-
-    .card p, .card li {
-      margin-bottom: 0;
-      color: #c9d1d9;
-      font-size: clamp(14px, 1.35vw, 17px);
-      line-height: 1.55;
-    }
-
-    .card-icon {
-      display: grid;
-      width: 38px;
-      height: 38px;
-      margin-bottom: 21px;
-      place-items: center;
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      background: rgba(68, 147, 248, .12);
-      color: var(--blue);
-      font: 700 15px/1 var(--mono);
-    }
-
-    .model-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 11px;
-      margin-top: 30px;
-    }
-
-    .model {
-      min-width: 0;
-      padding: 19px 16px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(22, 27, 34, .82);
-    }
-
-    .model .model-number {
-      display: block;
-      margin-bottom: 20px;
-      color: var(--fg-muted);
-      font: 11px/1 var(--mono);
-    }
-
-    .model h3 {
-      min-height: 2.3em;
-      font-size: clamp(15px, 1.55vw, 19px);
-      letter-spacing: -.025em;
-    }
-
-    .model p {
-      margin-bottom: 0;
-      color: #aeb7c1;
-      font-size: clamp(12px, 1.05vw, 14px);
-      line-height: 1.5;
-    }
-
-    .model:nth-child(1) { border-top: 2px solid var(--blue); }
-    .model:nth-child(2) { border-top: 2px solid var(--purple); }
-    .model:nth-child(3) { border-top: 2px solid var(--green); }
-    .model:nth-child(4) { border-top: 2px solid var(--yellow); }
-    .model:nth-child(5) { border-top: 2px solid var(--pink); }
-
-    .callout {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin-top: 23px;
-      padding: 16px 18px;
-      border: 1px solid rgba(68, 147, 248, .35);
-      border-radius: 12px;
-      background: rgba(56, 139, 253, .08);
-      color: #c9d1d9;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .callout strong { color: var(--fg); }
-
-    .callout-mark {
-      flex: 0 0 auto;
-      color: var(--blue);
-      font: 700 14px/1.5 var(--mono);
-    }
-
-    .decision {
-      display: grid;
-      grid-template-columns: minmax(130px, .55fr) 1.45fr;
-      gap: 20px;
-      align-items: center;
-      padding: 20px 0;
-      border-top: 1px solid var(--line);
-    }
-
-    .decision:first-child { border-top: 0; }
-
-    .decision-label {
-      color: var(--blue);
-      font: 700 12px/1.5 var(--mono);
-      letter-spacing: .07em;
-      text-transform: uppercase;
-    }
-
-    .decision p {
-      margin: 0;
-      color: #c9d1d9;
-      font-size: clamp(15px, 1.5vw, 18px);
-      line-height: 1.5;
-    }
-
-    .table-like {
-      margin-top: 26px;
-      border-top: 1px solid var(--line);
-    }
-
-    .table-row {
-      display: grid;
-      grid-template-columns: 1fr 1.1fr 1.2fr;
-      gap: 18px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--line);
-      color: #c9d1d9;
-      font-size: clamp(13px, 1.25vw, 16px);
-      line-height: 1.45;
-    }
-
-    .table-row.head {
-      color: var(--fg-muted);
-      font: 700 11px/1.4 var(--mono);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .table-row strong { color: var(--fg); font-weight: 650; }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-top: 36px;
-    }
-
-    .flow-step {
-      position: relative;
-      padding: 24px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--canvas-raised);
-    }
-
-    .flow-step:not(:last-child)::after {
+    .slide::after {
+      content: "GitHub Copilot knowledge share · October 14, 2026";
       position: absolute;
-      z-index: 2;
-      top: 50%;
-      right: -22px;
-      color: var(--blue);
-      content: "→";
-      font: 24px/1 var(--mono);
-      transform: translateY(-50%);
-    }
-
-    .step-no {
-      display: block;
-      margin-bottom: 24px;
-      color: var(--blue);
-      font: 700 12px/1 var(--mono);
-    }
-
-    .flow-step p {
-      margin-bottom: 0;
-      color: #aeb7c1;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .slash {
-      display: inline-block;
-      padding: 3px 8px;
-      border: 1px solid rgba(210, 168, 255, .36);
-      border-radius: 7px;
-      background: rgba(163, 113, 247, .1);
-      color: var(--purple);
-      font: 600 .86em/1.4 var(--mono);
-    }
-
-    .split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: clamp(22px, 5vw, 72px);
-      align-items: center;
-      margin-top: 30px;
-    }
-
-    .choice-list { list-style: none; margin: 0; padding: 0; }
-    .choice-list li {
-      display: grid;
-      grid-template-columns: 22px 1fr;
-      gap: 13px;
-      padding: 15px 0;
-      border-bottom: 1px solid var(--line);
-      color: #c9d1d9;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    .choice-list li::before {
-      color: var(--green);
-      content: "✓";
-      font: 700 16px/1.5 var(--mono);
-    }
-
-    .quote-panel {
-      padding: clamp(24px, 4vw, 42px);
-      border: 1px solid rgba(210, 168, 255, .3);
-      border-radius: 16px;
-      background: linear-gradient(135deg, rgba(163, 113, 247, .12), rgba(22, 27, 34, .72));
-    }
-
-    .quote-panel p {
-      margin-bottom: 0;
-      color: var(--fg);
-      font-size: clamp(20px, 2.7vw, 32px);
-      font-weight: 600;
-      letter-spacing: -.025em;
-      line-height: 1.25;
-    }
-
-    .quote-panel small {
-      display: block;
-      margin-top: 18px;
+      left: 6.5cqw;
+      bottom: 3.8cqw;
+      font-size: 1.05cqw;
       color: var(--fg-muted);
-      font: 11px/1.5 var(--mono);
-      letter-spacing: .08em;
-      text-transform: uppercase;
     }
 
-    .closing h2 { max-width: 800px; }
+    .slide--title { justify-content: center; background:
+      radial-gradient(60% 70% at 88% 18%, var(--accent-muted), transparent 70%),
+      radial-gradient(50% 60% at 8% 100%, var(--done-muted), transparent 70%),
+      var(--bg); }
+    .slide--title::after { content: none; }
 
-    .takeaway {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 29px;
-    }
+    /* Typography: one scale. Title 6.4 / heading 3.6 / card title 2.1 / lead 2.0 / body 1.6 / caption 1.3 */
+    .kicker { display: flex; align-items: center; gap: .5em; margin: 0 0 1.6cqw; font-size: 1.3cqw; font-weight: 600; color: var(--accent); }
+    h1 { margin: 0 0 2.4cqw; font-size: 6.4cqw; line-height: 1.06; font-weight: 600; letter-spacing: -.025em; }
+    h2 { margin: 0 0 1.4cqw; font-size: 3.6cqw; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; }
+    h3 { margin: 0 0 .8cqw; font-size: 2.1cqw; line-height: 1.25; font-weight: 600; }
+    h3.spaced { margin-top: 2.2cqw; }
+    p { margin: 0 0 1.2cqw; font-size: 1.6cqw; line-height: 1.5; }
+    .lead { margin: 0 0 2.6cqw; font-size: 2cqw; line-height: 1.5; color: var(--fg-muted); max-width: 75ch; }
+    .small { font-size: 1.3cqw; line-height: 1.45; color: var(--fg-muted); }
+    .note { margin: 2cqw 0 0; font-size: 1.2cqw; line-height: 1.55; color: var(--fg-muted); }
+    .accent { color: var(--accent); }
+    strong { font-weight: 600; }
+    sup { font-size: .7em; line-height: 0; }
 
-    .takeaway span {
-      padding: 10px 13px;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      background: rgba(22, 27, 34, .82);
-      color: #c9d1d9;
-      font: 12px/1.3 var(--mono);
-    }
+    .oct { width: 1em; height: 1em; fill: currentColor; flex: none; vertical-align: -.125em; }
+    .icon-accent { color: var(--accent); font-size: 2.4cqw; }
 
-    .controls {
-      position: absolute;
-      z-index: 6;
-      inset: auto 0 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px clamp(24px, 5vw, 72px) 24px;
-    }
+    /* Layout */
+    .grid { display: grid; gap: 2cqw; min-width: 0; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .split { margin-top: 2cqw; align-items: start; }
 
-    .control-group { display: flex; align-items: center; gap: 10px; }
+    .card { min-width: 0; padding: 2cqw 2.2cqw; background: var(--bg-subtle); border: 1px solid var(--border-muted); border-radius: 12px; }
+    .card > .label { margin-bottom: 1.2cqw; }
+    .card-head { display: flex; align-items: center; gap: 1cqw; margin-bottom: 1.2cqw; }
+    .card-head h3 { margin: 0; }
+    .num { margin-left: auto; font-size: 2.4cqw; font-weight: 600; color: var(--fg-muted); }
 
-    .control {
-      display: grid;
-      width: 42px;
-      height: 42px;
-      place-items: center;
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      background: rgba(22, 27, 34, .9);
-      color: var(--fg);
-      cursor: pointer;
-      transition: border-color .15s, background .15s, transform .15s;
-    }
+    .vendor { margin: 0 0 .6cqw; font-size: 1.3cqw; font-weight: 600; color: var(--fg-muted); }
 
-    .control:hover:not(:disabled) {
-      border-color: var(--blue);
-      background: rgba(56, 139, 253, .1);
-      transform: translateY(-1px);
-    }
+    .bullets li { position: relative; margin: 0 0 1cqw; padding-left: 2.2cqw; font-size: 1.6cqw; line-height: 1.5; }
+    .bullets li:last-child { margin-bottom: 0; }
+    .bullets li::before { content: ""; position: absolute; left: .3cqw; top: .66em; width: .5cqw; height: .5cqw; border-radius: 50%; background: var(--accent); }
 
-    .control:focus-visible {
-      outline: 2px solid var(--blue);
-      outline-offset: 3px;
-    }
+    /* Labels, chips, callouts */
+    .label { display: inline-flex; align-items: center; gap: .4em; padding: .05em .7em; border: 1px solid; border-radius: 999px; font-size: 1.2cqw; font-weight: 500; line-height: 1.7; white-space: nowrap; }
+    .label--accent { color: var(--accent); background: var(--accent-muted); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+    .label--success { color: var(--success); background: var(--success-muted); border-color: color-mix(in srgb, var(--success) 40%, transparent); }
+    .label--attention { color: var(--attention); background: var(--attention-muted); border-color: color-mix(in srgb, var(--attention) 40%, transparent); }
+    .label--danger { color: var(--danger); background: var(--danger-muted); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+    .label--done { color: var(--done); background: var(--done-muted); border-color: color-mix(in srgb, var(--done) 40%, transparent); }
 
-    .control:disabled { color: #484f58; cursor: not-allowed; }
-    .control svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .chips { display: flex; flex-wrap: wrap; gap: .8cqw; margin-top: 1.4cqw; }
+    .chip { padding: .3em .8em; font-size: 1.3cqw; line-height: 1.4; background: var(--bg); border: 1px solid var(--border-muted); border-radius: 999px; white-space: nowrap; }
 
-    .slide-status {
-      min-width: 65px;
-      color: var(--fg-muted);
-      font: 12px/1 var(--mono);
-      text-align: center;
-    }
+    .flash { flex: none; margin-top: 2.2cqw; padding: 1.4cqw 1.8cqw; background: var(--accent-muted); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 12px; }
+    .flash p { margin: 0; font-size: 1.6cqw; }
+    .flash--attention { background: var(--attention-muted); border-color: color-mix(in srgb, var(--attention) 35%, transparent); }
 
-    .key-hint {
-      color: var(--fg-muted);
-      font: 11px/1.4 var(--mono);
-    }
+    /* Tables */
+    .table-wrap { flex: none; overflow: hidden; background: var(--bg); border: 1px solid var(--border-muted); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 1.4cqw; }
+    th, td { padding: .6cqw 1.2cqw; text-align: left; vertical-align: top; line-height: 1.4; }
+    th { background: var(--bg-subtle); font-size: 1.2cqw; font-weight: 600; color: var(--fg-muted); border-bottom: 1px solid var(--border-muted); }
+    tbody tr + tr td { border-top: 1px solid var(--border-muted); }
 
-    .progress-track {
-      position: absolute;
-      z-index: 7;
-      inset: auto 0 0;
-      height: 3px;
-      background: rgba(48, 54, 61, .8);
-    }
+    /* Flow of three steps with arrows */
+    .flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 1.4cqw; align-items: stretch; }
+    .flow > .oct { align-self: center; width: 1.6cqw; height: 1.6cqw; color: var(--fg-muted); }
+    .flow .card { padding: 1.6cqw 2cqw; }
+    .step-num { display: grid; place-items: center; flex: none; width: 2.8cqw; height: 2.8cqw; border: 1px solid var(--border-muted); border-radius: 50%; background: var(--accent-muted); color: var(--accent); font-size: 1.3cqw; font-weight: 600; }
 
-    .progress-bar {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--blue-strong), var(--purple));
-      transform: scaleX(.125);
-      transform-origin: left center;
-      transition: transform .3s ease;
-    }
+    /* Code */
+    pre { margin: 0; padding: 1.6cqw 1.9cqw; overflow: hidden; background: var(--bg-subtle); border: 1px solid var(--border-muted); border-radius: 12px; font-family: var(--font-mono); font-size: 1.35cqw; line-height: 1.6; white-space: pre; }
+    code { font-family: var(--font-mono); font-size: .9em; }
+    :not(pre) > code { padding: .15em .4em; background: var(--code-bg); border-radius: 6px; }
+    kbd { display: inline-block; min-width: 1.6em; padding: .05em .45em; font-family: var(--font-mono); font-size: .85em; line-height: 1.5; text-align: center; color: var(--fg); background: var(--bg-subtle); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px; }
 
-    @media (max-width: 900px) {
-      .model-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .model:nth-child(n+4) { min-height: 0; }
-      .slide { overflow-y: auto; }
-    }
+    /* Closing slide */
+    .takeaways { display: grid; gap: 1.6cqw; }
+    .takeaways li { display: grid; grid-template-columns: 3.2cqw minmax(0, 1fr); gap: 1.6cqw; align-items: start; font-size: 2cqw; line-height: 1.45; }
+    .takeaways .n { display: grid; place-items: center; width: 3.2cqw; height: 3.2cqw; border-radius: 50%; background: var(--accent-muted); color: var(--accent); font-size: 1.5cqw; font-weight: 600; }
+    .closing-line { margin: 3.6cqw 0 0; font-size: 2.6cqw; font-weight: 600; color: var(--accent); }
 
-    @media (max-width: 620px) {
-      .topbar { padding: 18px 20px; font-size: 10px; }
-      .topbar .edition { display: none; }
-      .slide { padding: 82px 23px 96px; }
-      .grid.three, .grid.two, .model-grid, .flow, .split { grid-template-columns: 1fr; }
-      .grid { gap: 10px; margin-top: 23px; }
-      .card { padding: 18px; }
-      .card-icon { margin-bottom: 14px; }
-      .model-grid { gap: 8px; margin-top: 22px; }
-      .model { padding: 15px; }
-      .model .model-number { margin-bottom: 10px; }
-      .model h3 { min-height: 0; margin-bottom: 5px; }
-      .model p { font-size: 13px; }
-      .flow { gap: 10px; margin-top: 25px; }
-      .flow-step { padding: 18px; }
-      .flow-step:not(:last-child)::after { top: auto; right: 18px; bottom: -20px; transform: rotate(90deg); }
-      .step-no { margin-bottom: 14px; }
-      .decision { grid-template-columns: 1fr; gap: 4px; padding: 14px 0; }
-      .table-row { grid-template-columns: .8fr 1fr 1fr; gap: 8px; font-size: 12px; }
-      .controls { padding: 14px 20px 18px; }
-      .key-hint { display: none; }
-      .control { width: 39px; height: 39px; }
-      .title-stamp { font-size: 10px; }
-    }
+    .links-col h3 { margin-bottom: 1.2cqw; }
+    .links li { margin-bottom: 1.3cqw; font-size: 1.6cqw; line-height: 1.4; font-weight: 600; }
+    .links li a { display: block; font-weight: 600; }
+    .links li span { display: block; margin-top: .2cqw; font-size: 1.2cqw; font-weight: 400; color: var(--fg-muted); word-break: break-all; }
+
+    /* Title slide */
+    .slide--title .title-block { position: relative; max-width: 62cqw; }
+    .slide--title .lead { margin-top: 0; }
+    .hero-mark { position: absolute; right: 9cqw; top: 50%; width: 27cqw; height: 27cqw; transform: translateY(-50%); color: var(--accent); opacity: .85; }
+
+    /* Controls (outside the slide area) */
+    .controls { position: fixed; right: 16px; bottom: 16px; z-index: 10; display: flex; align-items: center; gap: 6px; padding: 4px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 999px; box-shadow: var(--shadow); font-family: var(--font-sans); font-size: 14px; }
+    .controls button { min-height: 32px; padding: 0 12px; font: inherit; font-weight: 500; color: var(--fg); background: var(--bg-control); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+    .controls button:hover:not(:disabled) { background: var(--bg-control-hover); }
+    .controls button:disabled { opacity: .45; cursor: default; }
+    .controls .count { min-width: 4.5em; text-align: center; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      .slide.is-active { animation: none; }
+      .progress span { transition: none; }
+    }
+
+    /* Print or PDF: one slide per 16:9 page */
+    @media print {
+      @page { size: 1280px 720px; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { height: auto; overflow: visible; background: none; }
+      .deck { position: static; display: block; }
+      .stage { width: 1280px; height: auto; aspect-ratio: auto; overflow: visible; box-shadow: none; }
+      .slide { position: relative; inset: auto; display: flex !important; width: 1280px; height: 720px; animation: none; break-after: page; page-break-after: always; }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
+      .progress, .controls { display: none !important; }
     }
   </style>
 </head>
 <body>
-  <main class="deck" aria-label="Copilot presentation">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span> COPILOT / FIELD GUIDE</div>
-      <span class="edition">OCT 14, 2026</span>
-    </header>
+  <main class="deck">
+    <div class="stage" id="stage">
+      <div class="progress" aria-hidden="true"><span></span></div>
 
-    <div class="slides" aria-live="polite">
-      <section class="slide active" aria-label="Slide 1 of 8: Copilot, your way">
-        <div class="slide-inner">
-          <p class="eyebrow">A practical guide to what’s next</p>
-          <h1>Copilot,<br><span class="accent">your way.</span></h1>
-          <p class="lede">Choose the right model. Build with agents. Take Copilot beyond the editor.</p>
-          <span class="title-stamp">Models · agentic development · more places to work</span>
+      <!-- 1. Title -->
+      <section class="slide slide--title is-active" aria-label="Slide 1 of 14">
+        <svg class="oct hero-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M7.998 15.035c-4.562 0-7.873-2.914-7.998-3.749V9.338c.085-.628.677-1.686 1.588-2.065.013-.07.024-.143.036-.218.029-.183.06-.384.126-.612-.201-.508-.254-1.084-.254-1.656 0-.87.128-1.769.693-2.484.579-.733 1.494-1.124 2.724-1.261 1.206-.134 2.262.034 2.944.765.05.053.096.108.139.165.044-.057.094-.112.143-.165.682-.731 1.738-.899 2.944-.765 1.23.137 2.145.528 2.724 1.261.566.715.693 1.614.693 2.484 0 .572-.053 1.148-.254 1.656.066.228.098.429.126.612.012.076.024.148.037.218.924.385 1.522 1.471 1.591 2.095v1.872c0 .766-3.351 3.795-8.002 3.795Zm0-1.485c2.28 0 4.584-1.11 5.002-1.433V7.862l-.023-.116c-.49.21-1.075.291-1.727.291-1.146 0-2.059-.327-2.71-.991A3.222 3.222 0 0 1 8 6.303a3.24 3.24 0 0 1-.544.743c-.65.664-1.563.991-2.71.991-.652 0-1.236-.081-1.727-.291l-.023.116v4.255c.419.323 2.722 1.433 5.002 1.433ZM6.762 2.83c-.193-.206-.637-.413-1.682-.297-1.019.113-1.479.404-1.713.7-.247.312-.369.789-.369 1.554 0 .793.129 1.171.308 1.371.162.181.519.379 1.442.379.853 0 1.339-.235 1.638-.54.315-.322.527-.827.617-1.553.117-.935-.037-1.395-.241-1.614Zm4.155-.297c-1.044-.116-1.488.091-1.681.297-.204.219-.359.679-.242 1.614.091.726.303 1.231.618 1.553.299.305.784.54 1.638.54.922 0 1.28-.198 1.442-.379.179-.2.308-.578.308-1.371 0-.765-.123-1.242-.37-1.554-.233-.296-.693-.587-1.713-.7Z"></path><path d="M6.25 9.037a.75.75 0 0 1 .75.75v1.501a.75.75 0 0 1-1.5 0V9.787a.75.75 0 0 1 .75-.75Zm4.25.75v1.501a.75.75 0 0 1-1.5 0V9.787a.75.75 0 0 1 1.5 0Z"></path></svg>
+        <div class="title-block">
+          <p class="kicker">Knowledge share · October 14, 2026</p>
+          <h1>GitHub Copilot:<br><span class="accent">models, agents, and beyond the editor</span></h1>
+          <p class="lead">Choose the right model. Run agents in your IDE. Use Copilot in the GitHub Copilot app and on GitHub.com.</p>
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 2 of 8: Three shifts">
-        <div class="slide-inner">
-          <p class="eyebrow">The landscape</p>
-          <h2>Three shifts.<br>One <span class="accent">workflow.</span></h2>
-          <p class="lede">More choice is useful when it makes your next step clearer.</p>
-          <div class="grid three">
-            <article class="card">
-              <span class="card-icon" aria-hidden="true">01</span>
-              <h3>Pick a model</h3>
-              <p>Choose from multiple vendors. Start with Auto, then compare when the task calls for it.</p>
-            </article>
-            <article class="card">
-              <span class="card-icon" aria-hidden="true">02</span>
-              <h3>Work agentically</h3>
-              <p>Plan, edit, and verify in your IDE or terminal, with your own skills and workflow.</p>
-            </article>
-            <article class="card">
-              <span class="card-icon" aria-hidden="true">03</span>
-              <h3>Go beyond the editor</h3>
-              <p>Continue in the Copilot desktop app or on the web when that fits the task.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="slide" aria-label="Slide 3 of 8: A multi-vendor model picker">
-        <div class="slide-inner">
-          <p class="eyebrow">01 / Model roster</p>
-          <h2>One picker.<br><span class="purple">More ways to think.</span></h2>
-          <p class="lede">The roster spans vendors and model types. Treat each as a candidate, not a permanent default.</p>
-          <div class="model-grid">
-            <article class="model">
-              <span class="model-number">01 / OPENAI</span>
-              <h3>GPT-6 Astra</h3>
-              <p>A frontier option to compare on your hardest tasks.</p>
-            </article>
-            <article class="model">
-              <span class="model-number">02 / ANTHROPIC</span>
-              <h3>Claude</h3>
-              <p>Compare for sustained reasoning, writing, and agent work.</p>
-            </article>
-            <article class="model">
-              <span class="model-number">03 / GOOGLE</span>
-              <h3>Gemini Flash</h3>
-              <p>Try when a quick response and iteration speed matter.</p>
-            </article>
-            <article class="model">
-              <span class="model-number">04 / MICROSOFT</span>
-              <h3>Microsoft MAI</h3>
-              <p>Evaluate alongside the tools and workflows you use.</p>
-            </article>
-            <article class="model">
-              <span class="model-number">05 / OPEN-WEIGHT</span>
-              <h3>Kimi</h3>
-              <p>Consider when open-weight options are important.</p>
-            </article>
-          </div>
-          <aside class="callout"><span class="callout-mark">i</span><span><strong>Availability varies.</strong> Check your model picker for the exact models enabled in your environment.</span></aside>
-        </div>
-      </section>
-
-      <section class="slide" aria-label="Slide 4 of 8: How to choose a model">
-        <div class="slide-inner">
-          <p class="eyebrow">02 / Choose with intent</p>
-          <h2>Start with Auto.<br><span class="accent">Step up when it matters.</span></h2>
-          <div class="split">
-            <div class="table-like" role="table" aria-label="Model choice guide">
-              <div class="table-row head" role="row"><span role="columnheader">If the task is…</span><span role="columnheader">Start here</span><span role="columnheader">Then compare…</span></div>
-              <div class="table-row" role="row"><strong>Routine</strong><span>Auto</span><span>Only if results fall short</span></div>
-              <div class="table-row" role="row"><strong>High-impact</strong><span>Auto, then test</span><span>A larger model on the same task</span></div>
-              <div class="table-row" role="row"><strong>Specialized</strong><span>Check your constraints</span><span>Models that fit tools, context, and policy</span></div>
+      <!-- 2. Agenda -->
+      <section class="slide" aria-label="Slide 2 of 14">
+        <p class="kicker">Agenda</p>
+        <h2>What we cover today</h2>
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6.5.75V2h3V.75a.75.75 0 0 1 1.5 0V2h1.25c.966 0 1.75.784 1.75 1.75V5h1.25a.75.75 0 0 1 0 1.5H14v3h1.25a.75.75 0 0 1 0 1.5H14v1.25A1.75 1.75 0 0 1 12.25 14H11v1.25a.75.75 0 0 1-1.5 0V14h-3v1.25a.75.75 0 0 1-1.5 0V14H3.75A1.75 1.75 0 0 1 2 12.25V11H.75a.75.75 0 0 1 0-1.5H2v-3H.75a.75.75 0 0 1 0-1.5H2V3.75C2 2.784 2.784 2 3.75 2H5V.75a.75.75 0 0 1 1.5 0Zm5.75 11.75a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25ZM5.75 5h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75v-4.5A.75.75 0 0 1 5.75 5Zm.75 4.5h3v-3h-3Z"></path></svg>
+              <h3>Model roster</h3>
+              <span class="num">01</span>
             </div>
-            <div>
-              <div class="quote-panel">
-                <p>Compare the result, not the label.</p>
-                <small>Quality · speed · cost · context · tool fit</small>
-              </div>
-              <aside class="callout"><span class="callout-mark">↗</span><span>Use the same prompt and success criteria. Keep the model that improves the outcome enough to justify its trade-offs.</span></aside>
+            <ul class="bullets">
+              <li>The multi-vendor model picker</li>
+              <li>How to choose a model</li>
+              <li>Retired models and what to switch to</li>
+              <li>Which model to use, and when</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M14.064 0h.186C15.216 0 16 .784 16 1.75v.186a8.752 8.752 0 0 1-2.564 6.186l-.458.459c-.314.314-.641.616-.979.904v3.207c0 .608-.315 1.172-.833 1.49l-2.774 1.707a.749.749 0 0 1-1.11-.418l-.954-3.102a1.214 1.214 0 0 1-.145-.125L3.754 9.816a1.218 1.218 0 0 1-.124-.145L.528 8.717a.749.749 0 0 1-.418-1.11l1.71-2.774A1.748 1.748 0 0 1 3.31 4h3.204c.288-.338.59-.665.904-.979l.459-.458A8.749 8.749 0 0 1 14.064 0ZM8.938 3.623h-.002l-.458.458c-.76.76-1.437 1.598-2.02 2.5l-1.5 2.317 2.143 2.143 2.317-1.5c.902-.583 1.74-1.26 2.499-2.02l.459-.458a7.25 7.25 0 0 0 2.123-5.127V1.75a.25.25 0 0 0-.25-.25h-.186a7.249 7.249 0 0 0-5.125 2.123ZM3.56 14.56c-.732.732-2.334 1.045-3.005 1.148a.234.234 0 0 1-.201-.064.234.234 0 0 1-.064-.201c.103-.671.416-2.273 1.15-3.003a1.502 1.502 0 1 1 2.12 2.12Zm6.94-3.935c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 0 0 .119-.213ZM3.678 8.116 5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 0 0-.213.119l-1.2 1.95ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+              <h3>Agentic development in the IDE</h3>
+              <span class="num">02</span>
             </div>
+            <ul class="bullets">
+              <li>Agent mode on a local folder</li>
+              <li>Custom skills (/slash commands)</li>
+              <li>Copilot CLI: faster runtime, /rewind, multi-session workflow</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M14.25 1c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 14.25 12h-3.727c.099 1.041.52 1.872 1.292 2.757A.752.752 0 0 1 11.25 16h-6.5a.75.75 0 0 1-.565-1.243c.772-.885 1.192-1.716 1.292-2.757H1.75A1.75 1.75 0 0 1 0 10.25v-7.5C0 1.784.784 1 1.75 1ZM1.75 2.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25ZM9.018 12H6.982a5.72 5.72 0 0 1-.765 2.5h3.566a5.72 5.72 0 0 1-.765-2.5Z"></path></svg>
+              <h3>Copilot beyond the editor</h3>
+              <span class="num">03</span>
+            </div>
+            <ul class="bullets">
+              <li>The GitHub Copilot app (desktop)</li>
+              <li>Copilot on GitHub.com (web)</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- 3. Model picker -->
+      <section class="slide" aria-label="Slide 3 of 14">
+        <p class="kicker">01 · Model roster</p>
+        <h2>One picker, many vendors</h2>
+        <p class="lead">The model picker lists models from several vendors. Pick a model for each chat or session.</p>
+        <div class="grid grid-5">
+          <article class="card">
+            <p class="vendor">OpenAI</p>
+            <h3>GPT-6 Astra</h3>
+            <p class="small">Long coding tasks with planning and checks.</p>
+          </article>
+          <article class="card">
+            <p class="vendor">Anthropic</p>
+            <h3>Claude</h3>
+            <p class="small">Opus for deep work. Sonnet for everyday tasks. Haiku for quick help.</p>
+          </article>
+          <article class="card">
+            <p class="vendor">Google</p>
+            <h3>Gemini Flash</h3>
+            <p class="small">Gemini 3.8 Flash. Fast help for simple, repetitive tasks.</p>
+          </article>
+          <article class="card">
+            <p class="vendor">Microsoft</p>
+            <h3>MAI</h3>
+            <p class="small">MAI-Code-1.1-Flash. Fast code help, explanations, and tool use.</p>
+          </article>
+          <article class="card">
+            <p class="vendor">Moonshot AI</p>
+            <h3>Kimi</h3>
+            <p class="small">Kimi K3, an open-weight model. Multi-step agent work on large codebases.</p>
+          </article>
+        </div>
+        <p class="note">The picker also lists xAI Grok models. Your admin can limit which models you can use. Kimi K3 has model-specific safety notes. Review them before enterprise use.</p>
+      </section>
+
+      <!-- 4. How to choose -->
+      <section class="slide" aria-label="Slide 4 of 14">
+        <p class="kicker">01 · Model roster</p>
+        <h2>Start with Auto. Step up when it matters.</h2>
+        <p class="lead">Rule of thumb: if the answer is weak, use a bigger model and retry.</p>
+        <div class="grid grid-3">
+          <article class="card">
+            <span class="label label--accent">Default</span>
+            <h3>Auto</h3>
+            <p>Auto picks a model for each task, based on task complexity.</p>
+            <p>On paid plans, Auto gives you a discount on model costs.</p>
+            <p class="small">Keep Auto for most work.</p>
+          </article>
+          <article class="card">
+            <span class="label label--attention">Step up</span>
+            <h3>Go bigger when</h3>
+            <ul class="bullets">
+              <li>The change spans many files.</li>
+              <li>The design choice is hard.</li>
+              <li>A bug survives two or three tries.</li>
+            </ul>
+            <p class="small" style="margin-top:1.8cqw">Try GPT-5.6 Sol, Claude Opus 5, or GPT-6 Astra.</p>
+          </article>
+          <article class="card">
+            <span class="label label--success">Step down</span>
+            <h3>Go smaller when</h3>
+            <ul class="bullets">
+              <li>The task is quick, like a rename.</li>
+              <li>The work is repetitive.</li>
+            </ul>
+            <p class="small" style="margin-top:1.8cqw">Try GPT-5.6 Luna, Claude Haiku 5.5, or Gemini 3.8 Flash.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- 5. Retired models -->
+      <section class="slide" aria-label="Slide 5 of 14">
+        <p class="kicker">01 · Model roster</p>
+        <h2>Retired models: switch now</h2>
+        <p class="lead" style="margin-bottom:1.8cqw">These models are deprecated. Update your workflows and integrations.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Retired model</th><th>Retired on</th><th>Switch to</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Gemini 3.1 Pro</td><td>Sep 1, 2026</td><td>Gemini 3.8 Flash<sup>3</sup></td></tr>
+              <tr><td>Claude Opus 4.5 and 4.6</td><td>Sep 1, 2026</td><td>Claude Opus 5.5, Opus 5, or Opus 4.8</td></tr>
+              <tr><td>Claude Sonnet 4.5 and 4.6<sup>1</sup></td><td>Sep 1, 2026</td><td>Claude Sonnet 5</td></tr>
+              <tr><td>Raptor Mini</td><td>Sep 1, 2026</td><td>MAI-Code-1.1-Flash<sup>2</sup></td></tr>
+              <tr><td>Gemini 3.5 Flash and 3.6 Flash</td><td>Oct 2, 2026</td><td>Gemini 3.8 Flash</td></tr>
+              <tr><td>Kimi K2.7 Code</td><td>Oct 2, 2026</td><td>Kimi K3</td></tr>
+              <tr><td>Claude Opus 4.7</td><td>Oct 2, 2026</td><td>Claude Opus 5.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:1.4cqw"><sup>1</sup> Claude Sonnet 4.6 stays on individual annual plans. <sup>2</sup> The notice named MAI-Code-1-Flash. The docs now list MAI-Code-1.1-Flash. <sup>3</sup> The notice named Gemini 3.6 Flash, which also retired on October 2.</p>
+      </section>
+
+      <!-- 6. Retiring soon -->
+      <section class="slide" aria-label="Slide 6 of 14">
+        <p class="kicker">01 · Model roster</p>
+        <h2>Retiring on October 19, 2026</h2>
+        <p class="lead">Six models retire in five days. Test your main workflows first.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Model</th><th>Replace with</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>GPT-5.5 and GPT-5.4</td><td>GPT-5.6 Sol</td></tr>
+              <tr><td>GPT-5.4 mini and GPT-5 mini</td><td>GPT-5.6 Luna</td></tr>
+              <tr><td>Gemini 3.7 Flash</td><td>Gemini 3.8 Flash</td></tr>
+              <tr><td>Grok 4.5</td><td>Grok 4.6</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flash flash--attention"><p><strong>Admins:</strong> Replacement models turn on by default for Copilot Business and Enterprise. Admins can turn this off in Copilot settings.</p></div>
+      </section>
+
+      <!-- 7. Which model when -->
+      <section class="slide" aria-label="Slide 7 of 14">
+        <p class="kicker">01 · Model roster</p>
+        <h2>Which model to use, and when</h2>
+        <div class="grid grid-3">
+          <article class="card">
+            <span class="label label--success">Fast</span>
+            <h3>Quick help</h3>
+            <p class="small">Use for quick questions, small edits, utility code, and repeated changes.</p>
+            <ul class="chips">
+              <li class="chip">GPT-5.6 Luna</li>
+              <li class="chip">GPT-6 Luna</li>
+              <li class="chip">Claude Haiku 5.5</li>
+              <li class="chip">Gemini 3.8 Flash</li>
+              <li class="chip">MAI-Code-1.1-Flash</li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="label label--accent">Balanced</span>
+            <h3>Everyday work</h3>
+            <p class="small">Use for everyday coding, features, tests, and agent tasks. Good when you want one model for most work.</p>
+            <ul class="chips">
+              <li class="chip">GPT-5.6 Terra</li>
+              <li class="chip">Claude Sonnet 5.5</li>
+              <li class="chip">Claude Sonnet 5</li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="label label--done">Deep</span>
+            <h3>Hard problems</h3>
+            <p class="small">Use for hard bugs, large refactors, architecture, and long agent runs.</p>
+            <ul class="chips">
+              <li class="chip">GPT-5.6 Sol</li>
+              <li class="chip">GPT-6.1 Sol</li>
+              <li class="chip">GPT-6 Astra</li>
+              <li class="chip">Claude Opus 5.5</li>
+              <li class="chip">Claude Opus 5</li>
+              <li class="chip">Kimi K3</li>
+            </ul>
+          </article>
+        </div>
+        <p class="note">Source: GitHub AI model comparison. Model lists change often. Check the docs before you choose.</p>
+      </section>
+
+      <!-- 8. Agent mode -->
+      <section class="slide" aria-label="Slide 8 of 14">
+        <p class="kicker">02 · Agentic development in the IDE</p>
+        <h2>Agent mode: plan, edit, verify</h2>
+        <p class="lead">Open a local folder in VS Code. No repo setup needed.</p>
+        <div class="flow">
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">1</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>
+              <h3>Plan</h3>
+            </div>
+            <p class="small">Ask the agent to propose an approach first. Review it before any edit.</p>
+          </article>
+          <svg class="oct" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"></path></svg>
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">2</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 1.75C4 .784 4.784 0 5.75 0h5.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0 1 14.25 15h-9a.75.75 0 0 1 0-1.5h9a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 10 4.25V1.5H5.75a.25.25 0 0 0-.25.25v2.5a.75.75 0 0 1-1.5 0Zm1.72 4.97a.75.75 0 0 1 1.06 0l2 2a.75.75 0 0 1 0 1.06l-2 2a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l1.47-1.47-1.47-1.47a.75.75 0 0 1 0-1.06ZM3.28 7.78 1.81 9.25l1.47 1.47a.751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018l-2-2a.75.75 0 0 1 0-1.06l2-2a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Zm8.22-6.218V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
+              <h3>Edit</h3>
+            </div>
+            <p class="small">The agent finds the right files. It changes them across the folder.</p>
+          </article>
+          <svg class="oct" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"></path></svg>
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">3</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm1.5 0a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm10.28-1.72-4.5 4.5a.75.75 0 0 1-1.06 0l-2-2a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l1.47 1.47 3.97-3.97a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path></svg>
+              <h3>Verify</h3>
+            </div>
+            <p class="small">The agent runs tests and fixes failures. You review the diff and test the behavior.</p>
+          </article>
+        </div>
+        <div class="grid grid-2 split">
+          <div>
+            <p><strong>Try this prompt</strong></p>
+            <pre><code>The test "applies discount codes" fails.
+Fix the bug. Do not change the public API.
+Run the tests. List the files you changed.</code></pre>
+          </div>
+          <div class="card">
+            <ul class="bullets">
+              <li>Ask for a plan first on a large task.</li>
+              <li>Use Plan mode when it is available.</li>
+              <li>Read every diff before you keep it.</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 5 of 8: When a model is retired">
-        <div class="slide-inner">
-          <p class="eyebrow">03 / Model transitions</p>
-          <h2>Model retired?<br><span class="green">Keep the workflow.</span></h2>
-          <p class="lede">A model change is a chance to preserve what works and retest what matters.</p>
-          <div class="flow">
-            <article class="flow-step">
-              <span class="step-no">STEP 01</span>
-              <h3>Follow the picker</h3>
-              <p>Use the listed successor or migration guidance for the retired model.</p>
-            </article>
-            <article class="flow-step">
-              <span class="step-no">STEP 02</span>
-              <h3>Keep the task fixed</h3>
-              <p>Reuse your prompt, context, tools, and acceptance criteria.</p>
-            </article>
-            <article class="flow-step">
-              <span class="step-no">STEP 03</span>
-              <h3>Verify the swap</h3>
-              <p>Check quality, latency, and cost. Adjust only where the result regresses.</p>
-            </article>
+      <!-- 9. Skills -->
+      <section class="slide" aria-label="Slide 9 of 14">
+        <p class="kicker">02 · Agentic development in the IDE</p>
+        <h2>Custom skills: your own /slash commands</h2>
+        <p class="lead">A skill is a folder with a SKILL.md file. It holds instructions for one task.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Where skills live</h3>
+            <p class="small"><span class="label label--accent">Project</span> Shared in the repo</p>
+            <p><code>.github/skills/release-notes/SKILL.md</code></p>
+            <p class="small"><span class="label label--success">Personal</span> Only for you</p>
+            <p><code>~/.copilot/skills/release-notes/SKILL.md</code></p>
+            <p class="small">Type <code>/release-notes v2.4</code> to run a skill with extra context. Type <code>/skills</code> to open the skills menu.</p>
           </div>
-          <aside class="callout"><span class="callout-mark">!</span><span>Retired model names and successor mappings depend on your environment. Check the retirement notice before switching.</span></aside>
-        </div>
-      </section>
-
-      <section class="slide" aria-label="Slide 6 of 8: Agentic development in your IDE">
-        <div class="slide-inner">
-          <p class="eyebrow">04 / Agentic development in the IDE</p>
-          <h2>From blank folder<br>to <span class="accent">verified change.</span></h2>
-          <p class="lede">Start in a local folder, with no special project setup required for your first task.</p>
-          <div class="flow">
-            <article class="flow-step">
-              <span class="step-no">01 / PLAN</span>
-              <h3>Agree on the job</h3>
-              <p>Describe the goal, constraints, and how you will know it is done.</p>
-            </article>
-            <article class="flow-step">
-              <span class="step-no">02 / EDIT</span>
-              <h3>Work in the project</h3>
-              <p>Let the agent inspect relevant files and propose focused changes.</p>
-            </article>
-            <article class="flow-step">
-              <span class="step-no">03 / VERIFY</span>
-              <h3>Run the checks</h3>
-              <p>Review the diff, run tests, and keep control of the final change.</p>
-            </article>
-          </div>
-          <div class="grid two">
-            <article class="card">
-              <h3>Custom skills</h3>
-              <p>Package repeatable instructions and invoke them with a <span class="slash">/slash command</span>.</p>
-            </article>
-            <article class="card">
-              <h3>Copilot CLI</h3>
-              <p>Use a terminal workflow with <span class="slash">/rewind</span> and multiple sessions to move between tasks.</p>
-            </article>
+          <div>
+            <pre><code>---
+name: release-notes
+description: Write release notes from PRs.
+---
+1. List PRs merged since the last tag.
+2. Write one line per change.</code></pre>
+            <p class="small" style="margin-top:1.6cqw">Rules: <code>name</code> uses lowercase letters, numbers, and hyphens. It must match the folder name. <code>description</code> says what the skill does and when to use it.</p>
           </div>
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 7 of 8: Copilot beyond the editor">
-        <div class="slide-inner">
-          <p class="eyebrow">05 / Beyond the editor</p>
-          <h2>Your work is bigger<br>than one <span class="purple">window.</span></h2>
-          <p class="lede">The Copilot desktop app and Copilot on the web give you more places to continue.</p>
-          <div class="grid two">
-            <article class="card">
-              <span class="card-icon" aria-hidden="true">APP</span>
-              <h3>Copilot desktop app</h3>
-              <p>Keep a dedicated Copilot workspace close while you move between apps and tasks.</p>
-            </article>
-            <article class="card">
-              <span class="card-icon" aria-hidden="true">WEB</span>
-              <h3>Copilot on the web</h3>
-              <p>Start or continue work in the browser, without making the IDE your only entry point.</p>
-            </article>
-          </div>
-          <aside class="callout"><span class="callout-mark">↗</span><span>Choose the surface that fits the work. Use your organization's access and data policies wherever you go.</span></aside>
+      <!-- 10. Copilot CLI -->
+      <section class="slide" aria-label="Slide 10 of 14">
+        <p class="kicker">02 · Agentic development in the IDE</p>
+        <h2>Copilot CLI: faster, reversible, multi-session</h2>
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.75.75A.75.75 0 0 1 6.5 0h3a.75.75 0 0 1 0 1.5h-.75v1l-.001.041a6.724 6.724 0 0 1 3.464 1.435l.007-.006.75-.75a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734l-.75.75-.006.007a6.75 6.75 0 1 1-10.548 0L2.72 5.03l-.75-.75a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l.75.75.007.006A6.72 6.72 0 0 1 7.25 2.541V1.5H6.5a.75.75 0 0 1-.75-.75ZM8 14.5a5.25 5.25 0 1 0-.001-10.501A5.25 5.25 0 0 0 8 14.5Zm.389-6.7 1.33-1.33a.75.75 0 1 1 1.061 1.06L9.45 8.861A1.503 1.503 0 0 1 8 10.75a1.499 1.499 0 1 1 .389-2.95Z"></path></svg>
+              <h3>Faster runtime</h3>
+            </div>
+            <ul class="bullets">
+              <li>The CLI runtime moved from TypeScript to Rust in 2026.</li>
+              <li>Performance improved by orders of magnitude.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m.427 1.927 1.215 1.215a8.002 8.002 0 1 1-1.6 5.685.75.75 0 1 1 1.493-.154 6.5 6.5 0 1 0 1.18-4.458l1.358 1.358A.25.25 0 0 1 3.896 6H.25A.25.25 0 0 1 0 5.75V2.104a.25.25 0 0 1 .427-.177ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>
+              <h3>/rewind: undo a bad turn</h3>
+            </div>
+            <ul class="bullets">
+              <li>Press <kbd>Esc</kbd> twice when idle, or type <code>/rewind</code> (or <code>/undo</code>).</li>
+              <li>Pick a past prompt. Keep the conversation, or restore its files too.</li>
+              <li>Rewind cannot be undone. It restores only files Copilot changed.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M0 1.75C0 .784.784 0 1.75 0h3.5C6.216 0 7 .784 7 1.75v3.5A1.75 1.75 0 0 1 5.25 7H4v4a1 1 0 0 0 1 1h4v-1.25C9 9.784 9.784 9 10.75 9h3.5c.966 0 1.75.784 1.75 1.75v3.5A1.75 1.75 0 0 1 14.25 16h-3.5A1.75 1.75 0 0 1 9 14.25v-.75H5A2.5 2.5 0 0 1 2.5 11V7h-.75A1.75 1.75 0 0 1 0 5.25Zm1.75-.25a.25.25 0 0 0-.25.25v3.5c0 .138.112.25.25.25h3.5a.25.25 0 0 0 .25-.25v-3.5a.25.25 0 0 0-.25-.25Zm9 9a.25.25 0 0 0-.25.25v3.5c0 .138.112.25.25.25h3.5a.25.25 0 0 0 .25-.25v-3.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+              <h3>Multi-session workflow</h3>
+            </div>
+            <ul class="bullets">
+              <li>Run several sessions. Each has its own rewind points.</li>
+              <li>Press <kbd>←</kbd> to open the sessions sidebar. Press <kbd>n</kbd> to start one.</li>
+              <li>Resume an earlier session with <code>copilot --resume=&lt;session-id&gt;</code>.</li>
+            </ul>
+          </article>
         </div>
       </section>
 
-      <section class="slide closing" aria-label="Slide 8 of 8: A simple rule">
-        <div class="slide-inner">
-          <p class="eyebrow">The simple rule</p>
-          <h2>Pick the smallest step<br>that gets a <span class="accent">great result.</span></h2>
-          <p class="lede">Let Auto handle the ordinary. Spend more model, agent, or workflow effort where the stakes justify it.</p>
-          <div class="takeaway" aria-label="Key takeaways">
-            <span>START WITH AUTO</span>
-            <span>COMPARE ON REAL TASKS</span>
-            <span>PLAN → EDIT → VERIFY</span>
-            <span>WORK WHERE IT FITS</span>
+      <!-- 11. Copilot app -->
+      <section class="slide" aria-label="Slide 11 of 14">
+        <p class="kicker">03 · Copilot beyond the editor</p>
+        <h2>The GitHub Copilot app (desktop)</h2>
+        <p class="lead">Generally available since June 17, 2026, on macOS, Windows, and Linux.</p>
+        <div class="grid grid-2">
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M14.25 1c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 14.25 12h-3.727c.099 1.041.52 1.872 1.292 2.757A.752.752 0 0 1 11.25 16h-6.5a.75.75 0 0 1-.565-1.243c.772-.885 1.192-1.716 1.292-2.757H1.75A1.75 1.75 0 0 1 0 10.25v-7.5C0 1.784.784 1 1.75 1ZM1.75 2.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25ZM9.018 12H6.982a5.72 5.72 0 0 1-.765 2.5h3.566a5.72 5.72 0 0 1-.765-2.5Z"></path></svg>
+              <h3>Work in parallel</h3>
+            </div>
+            <ul class="bullets">
+              <li>Start from an issue, a pull request, or a prompt.</li>
+              <li>Run parallel sessions. Each has its own branch and worktree.</li>
+              <li>Review the diff, then open a pull request.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M14.064 0h.186C15.216 0 16 .784 16 1.75v.186a8.752 8.752 0 0 1-2.564 6.186l-.458.459c-.314.314-.641.616-.979.904v3.207c0 .608-.315 1.172-.833 1.49l-2.774 1.707a.749.749 0 0 1-1.11-.418l-.954-3.102a1.214 1.214 0 0 1-.145-.125L3.754 9.816a1.218 1.218 0 0 1-.124-.145L.528 8.717a.749.749 0 0 1-.418-1.11l1.71-2.774A1.748 1.748 0 0 1 3.31 4h3.204c.288-.338.59-.665.904-.979l.459-.458A8.749 8.749 0 0 1 14.064 0ZM8.938 3.623h-.002l-.458.458c-.76.76-1.437 1.598-2.02 2.5l-1.5 2.317 2.143 2.143 2.317-1.5c.902-.583 1.74-1.26 2.499-2.02l.459-.458a7.25 7.25 0 0 0 2.123-5.127V1.75a.25.25 0 0 0-.25-.25h-.186a7.249 7.249 0 0 0-5.125 2.123ZM3.56 14.56c-.732.732-2.334 1.045-3.005 1.148a.234.234 0 0 1-.201-.064.234.234 0 0 1-.064-.201c.103-.671.416-2.273 1.15-3.003a1.502 1.502 0 1 1 2.12 2.12Zm6.94-3.935c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 0 0 .119-.213ZM3.678 8.116 5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 0 0-.213.119l-1.2 1.95ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+              <h3>New in the app</h3>
+            </div>
+            <ul class="bullets">
+              <li><strong>Canvases:</strong> work with the agent on one plan, PR, or terminal.</li>
+              <li><strong>Cloud automations:</strong> run agent work on a schedule.</li>
+              <li>Pick a model per session. Connect MCP servers.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="note"><strong>Business and Enterprise:</strong> an admin must enable Copilot CLI in policy settings. Run <code>copilot app</code> in a folder to open the app there.</p>
+      </section>
+
+      <!-- 12. Copilot on the web -->
+      <section class="slide" aria-label="Slide 12 of 14">
+        <p class="kicker">03 · Copilot beyond the editor</p>
+        <h2>Copilot on GitHub.com (web)</h2>
+        <p class="lead">Ask questions and delegate work in your browser. No local setup needed.</p>
+        <div class="flow">
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">1</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"></path></svg>
+              <h3>Ask</h3>
+            </div>
+            <p class="small">Ask chat about your repositories, code, and options.</p>
+          </article>
+          <svg class="oct" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"></path></svg>
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">2</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M14.064 0h.186C15.216 0 16 .784 16 1.75v.186a8.752 8.752 0 0 1-2.564 6.186l-.458.459c-.314.314-.641.616-.979.904v3.207c0 .608-.315 1.172-.833 1.49l-2.774 1.707a.749.749 0 0 1-1.11-.418l-.954-3.102a1.214 1.214 0 0 1-.145-.125L3.754 9.816a1.218 1.218 0 0 1-.124-.145L.528 8.717a.749.749 0 0 1-.418-1.11l1.71-2.774A1.748 1.748 0 0 1 3.31 4h3.204c.288-.338.59-.665.904-.979l.459-.458A8.749 8.749 0 0 1 14.064 0ZM8.938 3.623h-.002l-.458.458c-.76.76-1.437 1.598-2.02 2.5l-1.5 2.317 2.143 2.143 2.317-1.5c.902-.583 1.74-1.26 2.499-2.02l.459-.458a7.25 7.25 0 0 0 2.123-5.127V1.75a.25.25 0 0 0-.25-.25h-.186a7.249 7.249 0 0 0-5.125 2.123ZM3.56 14.56c-.732.732-2.334 1.045-3.005 1.148a.234.234 0 0 1-.201-.064.234.234 0 0 1-.064-.201c.103-.671.416-2.273 1.15-3.003a1.502 1.502 0 1 1 2.12 2.12Zm6.94-3.935c-.088.06-.177.118-.266.175l-2.35 1.521.548 1.783 1.949-1.2a.25.25 0 0 0 .119-.213ZM3.678 8.116 5.2 5.766c.058-.09.117-.178.176-.266H3.309a.25.25 0 0 0-.213.119l-1.2 1.95ZM12 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+              <h3>Delegate</h3>
+            </div>
+            <p class="small">Start from an issue, a pull request, a chat, or the agents panel. The work runs in the cloud.</p>
+          </article>
+          <svg class="oct" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"></path></svg>
+          <article class="card">
+            <div class="card-head">
+              <span class="step-num">3</span>
+              <svg class="oct icon-accent" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path></svg>
+              <h3>Review</h3>
+            </div>
+            <p class="small">Copilot creates a branch, writes commits, and pushes. You review, then open a pull request.</p>
+          </article>
+        </div>
+        <div class="flash"><p><strong>Also:</strong> Copilot reviews pull requests and suggests fixes. Automations run repository tasks on a schedule or on events. With syncing on, you can ask about sessions from CLI, VS Code, JetBrains, and the app.</p></div>
+      </section>
+
+      <!-- 13. Takeaways -->
+      <section class="slide" aria-label="Slide 13 of 14">
+        <p class="kicker">Summary</p>
+        <h2>Key takeaways</h2>
+        <ol class="takeaways">
+          <li><span class="n">1</span><span><strong>Keep Auto.</strong> Step up to a bigger model only when the answer is weak.</span></li>
+          <li><span class="n">2</span><span><strong>Check the dates.</strong> Six models retire on October 19. Update your workflows first.</span></li>
+          <li><span class="n">3</span><span><strong>Try Agent mode on a small bug.</strong> Plan, edit, verify. Read every diff.</span></li>
+          <li><span class="n">4</span><span><strong>Write one skill.</strong> Pick a task that you repeat every week.</span></li>
+          <li><span class="n">5</span><span><strong>Use /rewind</strong> when an agent goes the wrong way. Pick Conversation + files to restore the code too.</span></li>
+        </ol>
+        <p class="closing-line">Pick the smallest step that gets a great result.</p>
+      </section>
+
+      <!-- 14. Resources -->
+      <section class="slide" aria-label="Slide 14 of 14">
+        <p class="kicker">Resources</p>
+        <h2>Questions</h2>
+        <p class="lead">Links to the sources used in this deck.</p>
+        <div class="grid grid-3">
+          <div class="links-col">
+            <h3>Models</h3>
+            <ul class="links">
+              <li><a href="https://docs.github.com/en/copilot/reference/ai-models/supported-models">Supported AI models<span>docs.github.com · supported-models</span></a></li>
+              <li><a href="https://docs.github.com/en/copilot/reference/ai-models/model-comparison">AI model comparison<span>docs.github.com · model-comparison</span></a></li>
+              <li><a href="https://github.blog/changelog/2026-07-31-upcoming-august-2026-model-deprecations-in-github-copilot/">Deprecation notice, September 1<span>github.blog changelog</span></a></li>
+              <li><a href="https://github.blog/changelog/2026-10-02-selected-models-in-github-copilot-deprecated/">Deprecation notice, October 2<span>github.blog changelog</span></a></li>
+              <li><a href="https://github.blog/changelog/2026-09-18-upcoming-deprecation-of-selected-github-copilot-models-in-mid-october/">Deprecation notice, October 19<span>github.blog changelog</span></a></li>
+            </ul>
+          </div>
+          <div class="links-col">
+            <h3>IDE and CLI</h3>
+            <ul class="links">
+              <li><a href="https://code.visualstudio.com/docs/agent-customization/agent-skills">Agent Skills in VS Code<span>code.visualstudio.com · agent-skills</span></a></li>
+              <li><a href="https://code.visualstudio.com/docs/agents/overview">Build with AI in VS Code<span>code.visualstudio.com · agents overview</span></a></li>
+              <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/roll-back-changes">Roll back CLI changes<span>docs.github.com · roll-back-changes</span></a></li>
+              <li><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference">CLI command reference<span>docs.github.com · cli-command-reference</span></a></li>
+              <li><a href="https://github.blog/ai-and-ml/generative-ai/migrating-the-github-copilot-runtime-to-rust-using-copilot/">Copilot runtime moves to Rust<span>github.blog</span></a></li>
+            </ul>
+          </div>
+          <div class="links-col">
+            <h3>Beyond the editor</h3>
+            <ul class="links">
+              <li><a href="https://github.blog/changelog/2026-06-17-github-copilot-app-generally-available/">GitHub Copilot app is generally available<span>github.blog changelog</span></a></li>
+              <li><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">Copilot on GitHub.com<span>docs.github.com · copilot-on-github</span></a></li>
+            </ul>
           </div>
         </div>
       </section>
     </div>
-
-    <nav class="controls" aria-label="Slide controls">
-      <div class="control-group">
-        <button class="control" id="previous" type="button" aria-label="Previous slide" title="Previous slide">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
-        </button>
-        <span class="slide-status" id="status" aria-live="polite">01 / 08</span>
-        <button class="control" id="next" type="button" aria-label="Next slide" title="Next slide">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4.5 5.5 5.5-5.5 5.5"/></svg>
-        </button>
-      </div>
-      <span class="key-hint">← → NAVIGATE &nbsp;·&nbsp; F FULLSCREEN</span>
-      <div class="control-group">
-        <button class="control" id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3.5H3.5V7M13 3.5h3.5V7M3.5 13v3.5H7M16.5 13v3.5H13"/></svg>
-        </button>
-      </div>
-    </nav>
-    <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progress"></div></div>
   </main>
+
+  <nav class="controls" aria-label="Slide controls">
+    <button type="button" id="prev">← Prev</button>
+    <span class="count" id="count" aria-live="polite">1 / 14</span>
+    <button type="button" id="next">Next →</button>
+    <button type="button" id="theme" title="Light or dark theme (T)">Theme</button>
+    <button type="button" id="fullscreen" title="Full screen (F)">Full screen</button>
+  </nav>
 
   <script>
     (function () {
-      const slides = Array.from(document.querySelectorAll(".slide"));
-      const previous = document.getElementById("previous");
-      const next = document.getElementById("next");
-      const status = document.getElementById("status");
-      const progress = document.getElementById("progress");
-      let current = 0;
+      var root = document.documentElement;
+      var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+      var total = slides.length;
+      var current = 0;
+      var bar = document.querySelector('.progress span');
+      var count = document.getElementById('count');
+      var prev = document.getElementById('prev');
+      var next = document.getElementById('next');
+      var themeBtn = document.getElementById('theme');
+      var fullBtn = document.getElementById('fullscreen');
 
-      function show(index) {
-        current = Math.max(0, Math.min(index, slides.length - 1));
-        slides.forEach(function (slide, position) {
-          const active = position === current;
-          slide.classList.toggle("active", active);
-          slide.setAttribute("aria-hidden", String(!active));
-        });
-        previous.disabled = current === 0;
-        next.disabled = current === slides.length - 1;
-        status.textContent = String(current + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
-        progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
-        document.title = slides[current].getAttribute("aria-label").replace(/^Slide \d+ of \d+: /, "") + " — Copilot Field Guide";
+      function fromHash() {
+        var n = parseInt(window.location.hash.slice(1), 10);
+        return n >= 1 && n <= total ? n - 1 : 0;
       }
 
-      previous.addEventListener("click", function () { show(current - 1); });
-      next.addEventListener("click", function () { show(current + 1); });
+      function show(index, updateHash) {
+        current = Math.max(0, Math.min(total - 1, index));
+        slides.forEach(function (slide, i) {
+          var active = i === current;
+          slide.classList.toggle('is-active', active);
+          slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+        count.textContent = (current + 1) + ' / ' + total;
+        bar.style.transform = 'scaleX(' + ((current + 1) / total) + ')';
+        prev.disabled = current === 0;
+        next.disabled = current === total - 1;
+        if (updateHash !== false) {
+          history.replaceState(null, '', '#' + (current + 1));
+        }
+      }
 
-      document.addEventListener("keydown", function (event) {
-        if (event.altKey || event.ctrlKey || event.metaKey) return;
-        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
-          event.preventDefault();
-          show(current + 1);
-        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
-          event.preventDefault();
-          show(current - 1);
-        } else if (event.key === "Home") {
-          show(0);
-        } else if (event.key === "End") {
-          show(slides.length - 1);
-        } else if (event.key.toLowerCase() === "f") {
-          toggleFullscreen();
+      function toggleTheme() {
+        root.setAttribute('data-theme', root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+      }
+
+      function toggleFullscreen() {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else if (root.requestFullscreen) {
+          root.requestFullscreen();
+        }
+      }
+
+      prev.addEventListener('click', function () { show(current - 1); });
+      next.addEventListener('click', function () { show(current + 1); });
+      themeBtn.addEventListener('click', toggleTheme);
+      fullBtn.addEventListener('click', toggleFullscreen);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        var onControl = e.target.closest && e.target.closest('a, button');
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'ArrowDown':
+          case 'PageDown':
+            e.preventDefault();
+            show(current + 1);
+            break;
+          case 'ArrowLeft':
+          case 'ArrowUp':
+          case 'PageUp':
+            e.preventDefault();
+            show(current - 1);
+            break;
+          case ' ':
+            if (onControl) return;
+            e.preventDefault();
+            show(current + (e.shiftKey ? -1 : 1));
+            break;
+          case 'Home':
+            e.preventDefault();
+            show(0);
+            break;
+          case 'End':
+            e.preventDefault();
+            show(total - 1);
+            break;
+          case 't':
+          case 'T':
+            toggleTheme();
+            break;
+          case 'f':
+          case 'F':
+            toggleFullscreen();
+            break;
         }
       });
 
-      function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(function (error) {
-            console.error("Could not enter fullscreen:", error);
-          });
-        } else {
-          document.exitFullscreen().catch(function (error) {
-            console.error("Could not exit fullscreen:", error);
-          });
-        }
-      }
-
-      document.getElementById("fullscreen").addEventListener("click", toggleFullscreen);
-
-      let touchStartX = null;
-      document.querySelector(".slides").addEventListener("touchstart", function (event) {
-        touchStartX = event.changedTouches[0].screenX;
+      var touchX = null;
+      document.addEventListener('touchstart', function (e) {
+        touchX = e.touches[0].clientX;
       }, { passive: true });
-      document.querySelector(".slides").addEventListener("touchend", function (event) {
-        if (touchStartX === null) return;
-        const distance = event.changedTouches[0].screenX - touchStartX;
-        if (Math.abs(distance) > 55) show(current + (distance < 0 ? 1 : -1));
-        touchStartX = null;
+      document.addEventListener('touchend', function (e) {
+        if (touchX === null) return;
+        var dx = e.changedTouches[0].clientX - touchX;
+        touchX = null;
+        if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
       }, { passive: true });
 
-      show(0);
-    }());
+      window.addEventListener('hashchange', function () { show(fromHash(), false); });
+      show(fromHash(), false);
+    })();
   </script>
 </body>
 </html>
