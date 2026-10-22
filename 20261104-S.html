@@ -1,0 +1,1332 @@
+<!doctype html>
+<!--
+THESIS: Copilot can find review issues and prepare fixes, but people still own the merge decision.
+OWN-WORLD: GitHub dark UI, Primer-like color roles, system sans and monospace for code, crisp borders.
+STORY: Review local changes in VS Code, request a PR review on GitHub, add context, then hand grouped fixes to the cloud agent and CI.
+FIRST VIEWPORT: A two-part opening; a large title on the left and a pull-request review artifact on the right.
+FORM: A standalone 16:9 slide deck that extends this repository's existing HTML presentation system.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="A practical guide to GitHub Copilot code review in VS Code and on GitHub.com.">
+  <title>GitHub Copilot code review</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --panel: #161b22;
+      --panel-raised: #1c2128;
+      --line: #30363d;
+      --line-strong: #484f58;
+      --fg: #f0f6fc;
+      --muted: #9198a1;
+      --blue: #4493f8;
+      --blue-soft: #0c2d6b;
+      --green: #3fb950;
+      --green-soft: #0f2d1a;
+      --yellow: #d29922;
+      --yellow-soft: #3a2c12;
+      --red: #f85149;
+      --red-soft: #3b1717;
+      --purple: #d2a8ff;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-family: var(--font-sans);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --canvas: #ffffff;
+      --panel: #f6f8fa;
+      --panel-raised: #eef1f4;
+      --line: #d1d9e0;
+      --line-strong: #afb8c1;
+      --fg: #1f2328;
+      --muted: #59636e;
+      --blue: #0969da;
+      --blue-soft: #ddf4ff;
+      --green: #1a7f37;
+      --green-soft: #dafbe1;
+      --yellow: #9a6700;
+      --yellow-soft: #fff8c5;
+      --red: #cf222e;
+      --red-soft: #ffebe9;
+      --purple: #8250df;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #010409;
+      color: var(--fg);
+    }
+
+    body { font-family: var(--font-sans); }
+    button { font: inherit; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+    .deck {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      place-items: center;
+    }
+
+    .stage {
+      position: relative;
+      width: min(100vw, 1600px, calc(100dvh * 16 / 9));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      container-type: inline-size;
+      background: var(--canvas);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .42);
+      isolation: isolate;
+    }
+
+    .stage::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.95%, rgba(139, 148, 158, .035) 50%, transparent 50.05%),
+        linear-gradient(rgba(139, 148, 158, .025) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 5.2cqw;
+      content: "";
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 5;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.8cqw 3.2cqw;
+      color: var(--muted);
+      font: 600 .83cqw/1 var(--font-mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .7cqw;
+      color: var(--fg);
+      letter-spacing: .015em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 2cqw;
+      height: 2cqw;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: .55cqw;
+      background: var(--panel);
+      color: var(--blue);
+    }
+
+    .brand-mark svg { width: 1.15cqw; height: 1.15cqw; }
+
+    .slides { position: absolute; inset: 0; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      align-content: center;
+      padding: 7.2cqw 8.1cqw 6.4cqw;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(1.5cqw);
+      transition: opacity .28s ease, transform .28s ease, visibility .28s;
+    }
+
+    .slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .slide-inner {
+      width: min(100%, 1180px);
+      max-height: 100%;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { text-wrap: balance; }
+
+    h1 {
+      max-width: 8ch;
+      margin-bottom: 1.5cqw;
+      font-size: clamp(3rem, 6.7cqw, 6rem);
+      font-weight: 760;
+      letter-spacing: -.065em;
+      line-height: .94;
+    }
+
+    h2 {
+      max-width: 19ch;
+      margin-bottom: 1.2cqw;
+      font-size: clamp(2rem, 4.15cqw, 4.25rem);
+      font-weight: 720;
+      letter-spacing: -.055em;
+      line-height: 1.02;
+    }
+
+    h3 {
+      margin-bottom: .7cqw;
+      font-size: clamp(1.2rem, 1.9cqw, 1.8rem);
+      font-weight: 650;
+      letter-spacing: -.035em;
+      line-height: 1.12;
+    }
+
+    p, li {
+      font-size: clamp(1rem, 1.38cqw, 1.35rem);
+      line-height: 1.48;
+    }
+
+    p { margin-bottom: .9cqw; }
+
+    .lead {
+      max-width: 60ch;
+      margin-bottom: 1.8cqw;
+      color: var(--muted);
+      font-size: clamp(1.1rem, 1.7cqw, 1.6rem);
+      line-height: 1.45;
+    }
+
+    .accent { color: var(--blue); }
+    .muted { color: var(--muted); }
+    .small { font-size: clamp(.9rem, 1.1cqw, 1.05rem); color: var(--muted); }
+    .mono { font-family: var(--font-mono); }
+
+    .title-layout {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 4cqw;
+      align-items: center;
+    }
+
+    .title-layout h1 { max-width: 8ch; }
+
+    .title-meta {
+      display: flex;
+      align-items: center;
+      gap: .8cqw;
+      margin-top: 2cqw;
+      color: var(--muted);
+      font: 600 .92cqw/1.4 var(--font-mono);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .title-meta::before {
+      width: 2.2cqw;
+      height: 2px;
+      background: var(--blue);
+      content: "";
+    }
+
+    .pr-window {
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: .8cqw;
+      background: var(--panel);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, .27);
+      transform: rotate(1.2deg);
+    }
+
+    .window-head, .window-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 3.2cqw;
+      padding: .8cqw 1.1cqw;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .92cqw;
+    }
+
+    .window-foot { border-top: 1px solid var(--line); border-bottom: 0; }
+
+    .dots { display: flex; gap: .32cqw; }
+    .dots span { width: .45cqw; height: .45cqw; border-radius: 50%; background: var(--line-strong); }
+
+    .diff {
+      padding: 1.15cqw;
+      color: var(--muted);
+      font: 500 .93cqw/1.8 var(--font-mono);
+    }
+
+    .diff-row {
+      display: grid;
+      grid-template-columns: 2.3cqw 1fr;
+      padding: .12cqw .35cqw;
+      border-radius: .2cqw;
+    }
+
+    .diff-row .ln { color: var(--muted); }
+    .diff-row.add { background: rgba(46, 160, 67, .15); color: var(--fg); }
+    .diff-row.issue { outline: 1px solid rgba(248, 81, 73, .38); }
+
+    .review-note {
+      margin: 0 1.15cqw 1.1cqw;
+      padding: .9cqw 1cqw;
+      border: 1px solid var(--line);
+      border-radius: .55cqw;
+      background: var(--canvas);
+    }
+
+    .review-note-head {
+      display: flex;
+      align-items: center;
+      gap: .55cqw;
+      margin-bottom: .45cqw;
+      font-size: .88cqw;
+    }
+
+    .avatar {
+      display: grid;
+      width: 1.5cqw;
+      height: 1.5cqw;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: .72cqw;
+      font-weight: 700;
+    }
+
+    .severity {
+      margin-left: auto;
+      padding: .14cqw .5cqw;
+      border: 1px solid rgba(248, 81, 73, .45);
+      border-radius: 999px;
+      color: var(--red);
+      font: 700 .68cqw/1.4 var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .review-note p { margin: 0; font-size: .88cqw; line-height: 1.45; }
+
+    .progress-track {
+      position: absolute;
+      z-index: 6;
+      inset: auto 0 0;
+      height: 3px;
+      background: var(--line);
+    }
+
+    .progress-track span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--blue);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .28s ease;
+    }
+
+    .controls {
+      position: absolute;
+      z-index: 8;
+      right: 2.1cqw;
+      bottom: 1.4cqw;
+      display: flex;
+      align-items: center;
+      gap: .4cqw;
+      padding: .32cqw;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+    }
+
+    .controls button {
+      min-width: 2.4cqw;
+      min-height: 2.25cqw;
+      padding: .35cqw .7cqw;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+      font-size: .86cqw;
+      font-weight: 600;
+    }
+
+    .controls button:hover:not(:disabled) { border-color: var(--line); background: var(--panel-raised); }
+    .controls button:disabled { color: var(--muted); cursor: default; opacity: .55; }
+    .controls .count { min-width: 4.3em; color: var(--muted); font: 600 .76cqw/1 var(--font-mono); text-align: center; }
+
+    .hint {
+      position: absolute;
+      bottom: 1.85cqw;
+      left: 3.2cqw;
+      color: var(--muted);
+      font: 500 .72cqw/1 var(--font-mono);
+    }
+
+    .key {
+      padding: .12em .45em;
+      border: 1px solid var(--line-strong);
+      border-radius: .25em;
+      color: var(--fg);
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5cqw; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2cqw; }
+
+    .surface {
+      min-width: 0;
+      padding: 1.45cqw;
+      border: 1px solid var(--line);
+      border-radius: .7cqw;
+      background: var(--panel);
+    }
+
+    .surface h3 { margin-bottom: .8cqw; }
+    .surface p:last-child, .surface ul:last-child { margin-bottom: 0; }
+
+    .surface-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .8cqw;
+      margin-bottom: 1.1cqw;
+      padding-bottom: .8cqw;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font: 600 .77cqw/1.2 var(--font-mono);
+      letter-spacing: .045em;
+      text-transform: uppercase;
+    }
+
+    .surface-title strong { color: var(--fg); font: 650 1.1cqw/1.2 var(--font-sans); letter-spacing: -.02em; text-transform: none; }
+
+    .bullet-list { margin: 0; padding: 0; list-style: none; }
+    .bullet-list li { position: relative; margin: 0 0 .72cqw; padding-left: 1.25cqw; }
+    .bullet-list li:last-child { margin-bottom: 0; }
+    .bullet-list li::before { position: absolute; top: .62em; left: .2cqw; width: .36cqw; height: .36cqw; border-radius: 50%; background: var(--blue); content: ""; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.4em;
+      padding: .12em .55em;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-raised);
+      color: var(--muted);
+      font: 600 .7cqw/1.4 var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .tag--blue { border-color: rgba(68, 147, 248, .45); background: var(--blue-soft); color: var(--blue); }
+    .tag--green { border-color: rgba(63, 185, 80, .45); background: var(--green-soft); color: var(--green); }
+    .tag--yellow { border-color: rgba(210, 153, 34, .5); background: var(--yellow-soft); color: var(--yellow); }
+    .tag--red { border-color: rgba(248, 81, 73, .45); background: var(--red-soft); color: var(--red); }
+
+    .sequence {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.4cqw;
+      align-items: stretch;
+      counter-reset: step;
+    }
+
+    .sequence article {
+      position: relative;
+      min-width: 0;
+      padding: 1.4cqw 1.35cqw;
+      border: 1px solid var(--line);
+      border-radius: .7cqw;
+      background: var(--panel);
+      counter-increment: step;
+    }
+
+    .sequence article::before {
+      display: grid;
+      width: 2.15cqw;
+      height: 2.15cqw;
+      margin-bottom: 1.05cqw;
+      place-items: center;
+      border: 1px solid rgba(68, 147, 248, .55);
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue);
+      content: counter(step);
+      font: 700 .9cqw/1 var(--font-mono);
+    }
+
+    .sequence article:not(:last-child)::after {
+      position: absolute;
+      top: 2.45cqw;
+      right: -1.15cqw;
+      width: .9cqw;
+      height: 1px;
+      background: var(--line-strong);
+      content: "";
+    }
+
+    .sequence h3 { margin-bottom: .45cqw; }
+    .sequence p { margin: 0; color: var(--muted); }
+
+    .pull-request {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 1.3cqw;
+      align-items: stretch;
+    }
+
+    .code-pane {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: .65cqw;
+      background: var(--canvas);
+    }
+
+    .code-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: .7cqw .9cqw;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font: 600 .75cqw/1.3 var(--font-mono);
+    }
+
+    .code-lines {
+      padding: .8cqw .85cqw;
+      color: var(--muted);
+      font: 500 .92cqw/1.85 var(--font-mono);
+    }
+
+    .code-lines div { display: grid; grid-template-columns: 2.5cqw 1fr; padding: 0 .4cqw; }
+    .code-lines .line-number { color: var(--muted); opacity: .72; }
+    .code-lines .line-added { background: rgba(46, 160, 67, .14); color: var(--fg); }
+    .code-lines .line-focus { background: rgba(248, 81, 73, .13); color: var(--fg); }
+
+    .comment-pane {
+      display: flex;
+      flex-direction: column;
+      gap: .9cqw;
+      padding: 1.15cqw;
+      border: 1px solid var(--line);
+      border-radius: .65cqw;
+      background: var(--panel);
+    }
+
+    .comment-pane h3 { margin: 0; }
+    .comment-pane p { margin: 0; font-size: 1.02cqw; }
+
+    .setting-list { display: grid; grid-template-columns: 1.05fr 1.45fr; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .65cqw; }
+    .setting-list > div { padding: .75cqw 1cqw; border-bottom: 1px solid var(--line); background: var(--panel); font-size: .97cqw; line-height: 1.4; }
+    .setting-list > div:nth-last-child(-n+2) { border-bottom: 0; }
+    .setting-list .setting-label { background: var(--panel-raised); color: var(--fg); font-weight: 650; }
+    .setting-list .setting-value { color: var(--muted); }
+
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: .8cqw;
+      margin-top: 1.15cqw;
+      padding: .95cqw 1.1cqw;
+      border: 1px solid var(--line);
+      border-radius: .55cqw;
+      background: var(--panel);
+    }
+
+    .callout p { margin: 0; font-size: .98cqw; }
+    .callout strong { color: var(--fg); }
+    .callout--warning { border-color: rgba(210, 153, 34, .45); background: var(--yellow-soft); }
+    .callout--success { border-color: rgba(63, 185, 80, .42); background: var(--green-soft); }
+
+    .decision-map {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: .9cqw;
+      align-items: center;
+      margin: 1.2cqw 0;
+    }
+
+    .decision-step {
+      min-height: 6.5cqw;
+      padding: 1cqw;
+      border: 1px solid var(--line);
+      border-radius: .6cqw;
+      background: var(--panel);
+    }
+
+    .decision-step strong { display: block; margin-bottom: .4cqw; font-size: 1cqw; }
+    .decision-step span { color: var(--muted); font-size: .82cqw; line-height: 1.4; }
+    .decision-arrow { color: var(--blue); font: 1.4cqw/1 var(--font-mono); }
+
+    .file-tree {
+      margin: 0;
+      padding: 1.15cqw 1.2cqw;
+      border: 1px solid var(--line);
+      border-radius: .6cqw;
+      background: var(--canvas);
+      color: var(--fg);
+      font: 500 .91cqw/1.8 var(--font-mono);
+      white-space: pre-wrap;
+    }
+
+    .file-tree .path { color: var(--blue); }
+    .file-tree .note { color: var(--muted); }
+
+    .mcp-flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1.1fr auto 1fr;
+      gap: .8cqw;
+      align-items: center;
+      margin: 1.45cqw 0;
+    }
+
+    .mcp-node {
+      min-height: 7.2cqw;
+      display: grid;
+      align-content: center;
+      padding: 1cqw;
+      border: 1px solid var(--line);
+      border-radius: .7cqw;
+      background: var(--panel);
+    }
+
+    .mcp-node strong { margin-bottom: .45cqw; font-size: 1.05cqw; }
+    .mcp-node span { color: var(--muted); font-size: .82cqw; line-height: 1.35; }
+    .mcp-node--active { border-color: rgba(68, 147, 248, .58); background: var(--blue-soft); }
+    .mcp-node--active strong, .mcp-node--active span { color: var(--fg); }
+    .mcp-arrow { color: var(--blue); font: 1.25cqw/1 var(--font-mono); }
+
+    pre {
+      margin: 0;
+      padding: 1cqw 1.15cqw;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: .65cqw;
+      background: var(--canvas);
+      color: var(--fg);
+      font: 500 .82cqw/1.55 var(--font-mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    code { font-family: var(--font-mono); }
+    :not(pre) > code {
+      padding: .12em .36em;
+      border: 1px solid var(--line);
+      border-radius: .3em;
+      background: var(--panel);
+      color: var(--fg);
+      font-size: .88em;
+    }
+
+    .two-column-code {
+      display: grid;
+      grid-template-columns: 1.03fr .97fr;
+      gap: 1.2cqw;
+      align-items: start;
+    }
+
+    .source-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .55cqw 1.8cqw;
+      margin: 1cqw 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .source-list li {
+      min-width: 0;
+      padding: .58cqw 0;
+      border-bottom: 1px solid var(--line);
+      font-size: .88cqw;
+      line-height: 1.35;
+    }
+
+    .source-list a { display: block; overflow-wrap: anywhere; font-weight: 650; }
+    .source-list span { display: block; margin-top: .2cqw; color: var(--muted); font-size: .74cqw; }
+
+    .closing {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 3cqw;
+      align-items: center;
+    }
+
+    .closing h2 {
+      max-width: none;
+      font-size: clamp(1.2rem, 3.5cqw, 2.85rem);
+      line-height: 1.08;
+    }
+
+    .closing h2 span { display: block; white-space: nowrap; }
+
+    .closing-quote {
+      padding: 1.8cqw;
+      border: 1px solid var(--line-strong);
+      border-radius: .7cqw;
+      background: var(--panel);
+      font-size: clamp(1.4rem, 2.35cqw, 2.5rem);
+      font-weight: 650;
+      letter-spacing: -.04em;
+      line-height: 1.25;
+    }
+
+    .closing-quote span { color: var(--blue); }
+
+    @media (max-width: 760px) {
+      html, body { height: 100%; }
+      .deck { display: block; }
+      .stage { width: 100vw; height: 100dvh; aspect-ratio: auto; }
+      .topbar { padding: 18px 20px; font-size: 10px; }
+      .brand-mark { width: 24px; height: 24px; border-radius: 7px; }
+      .brand-mark svg { width: 14px; height: 14px; }
+      .slide { overflow-y: auto; align-content: start; padding: 90px 22px 90px; }
+      .slide-inner { max-height: none; }
+      h1 { max-width: 10ch; margin-bottom: 18px; font-size: clamp(3rem, 15vw, 5.5rem); }
+      h2 { margin-bottom: 14px; font-size: clamp(2rem, 9vw, 3rem); }
+      h3 { margin-bottom: 9px; font-size: 1.22rem; }
+      p, li { font-size: 1rem; }
+      p { margin-bottom: 12px; }
+      .lead { margin-bottom: 20px; font-size: 1.1rem; }
+      .title-layout, .pull-request, .two-column-code, .closing { grid-template-columns: 1fr; gap: 22px; }
+      .title-meta { margin-top: 18px; font-size: 10px; }
+      .title-meta::before { width: 24px; }
+      .pr-window { max-width: 540px; transform: none; }
+      .window-head, .window-foot { min-height: 32px; padding: 8px 10px; font-size: 10px; }
+      .dots { gap: 4px; }
+      .dots span { width: 6px; height: 6px; }
+      .diff { padding: 10px; font-size: 10px; }
+      .diff-row { grid-template-columns: 28px 1fr; }
+      .review-note { margin: 0 10px 10px; padding: 9px; }
+      .review-note-head { gap: 6px; margin-bottom: 5px; font-size: 10px; }
+      .avatar { width: 18px; height: 18px; font-size: 9px; }
+      .severity { padding: 2px 6px; font-size: 8px; }
+      .review-note p { font-size: 10px; }
+      .grid-2, .grid-3, .sequence, .source-list { grid-template-columns: 1fr; gap: 12px; }
+      .surface, .sequence article { padding: 16px; border-radius: 10px; }
+      .surface-title { margin-bottom: 12px; padding-bottom: 9px; font-size: 9px; }
+      .surface-title strong { font-size: 1rem; }
+      .small { font-size: .92rem; }
+      .bullet-list li { margin-bottom: 9px; padding-left: 17px; }
+      .bullet-list li::before { left: 3px; width: 5px; height: 5px; }
+      .tag { font-size: 9px; }
+      .sequence article::before { width: 27px; height: 27px; margin-bottom: 12px; font-size: 11px; }
+      .sequence article:not(:last-child)::after { display: none; }
+      .code-bar { padding: 8px; font-size: 9px; }
+      .code-lines { padding: 8px; font-size: 10px; }
+      .code-lines div { grid-template-columns: 28px 1fr; }
+      .comment-pane { gap: 10px; padding: 14px; }
+      .comment-pane p { font-size: .95rem; }
+      .setting-list { grid-template-columns: 1fr; }
+      .setting-list > div { padding: 10px 12px; font-size: .92rem; }
+      .setting-list > div:nth-last-child(2) { border-bottom: 1px solid var(--line); }
+      .callout { gap: 9px; margin-top: 12px; padding: 11px; }
+      .callout p { font-size: .92rem; }
+      .decision-map, .mcp-flow { grid-template-columns: 1fr; gap: 8px; }
+      .decision-step { min-height: 0; padding: 12px; }
+      .decision-step strong, .mcp-node strong { font-size: 1rem; }
+      .decision-step span, .mcp-node span { font-size: .86rem; }
+      .decision-arrow, .mcp-arrow { justify-self: center; transform: rotate(90deg); font-size: 1.2rem; }
+      .mcp-node { min-height: 0; padding: 13px; }
+      .file-tree { padding: 12px; font-size: 10px; }
+      pre { padding: 12px; font-size: 10px; line-height: 1.5; }
+      .source-list li { padding: 8px 0; font-size: .9rem; }
+      .source-list span { font-size: .78rem; }
+      .closing-quote { padding: 18px; font-size: 1.45rem; }
+      .closing h2 { max-width: none; font-size: clamp(1.2rem, 6.2vw, 2.5rem); }
+      .controls { right: 12px; bottom: 12px; gap: 3px; padding: 3px; }
+      .controls button { min-width: 36px; min-height: 36px; padding: 6px 9px; font-size: 12px; }
+      .controls .count { min-width: 3.9em; font-size: 10px; }
+      .hint { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
+    @media print {
+      @page { size: 1280px 720px; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { width: auto; height: auto; overflow: visible; background: var(--canvas); }
+      .deck { display: block; width: auto; height: auto; }
+      .stage { width: 1280px; height: 720px; aspect-ratio: auto; overflow: visible; box-shadow: none; }
+      .topbar { position: absolute; }
+      .slide { position: relative; inset: auto; display: grid; width: 1280px; height: 720px; opacity: 1; visibility: visible; transform: none; break-after: page; page-break-after: always; }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
+      .progress-track, .controls, .hint { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <div class="stage" id="stage">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 5.5 8 2l5 3.5v5L8 14l-5-3.5v-5Z" stroke="currentColor" stroke-width="1.4"/><path d="m5.2 7.8 1.7 1.7 3.9-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span>GitHub Copilot / Code review</span>
+        </div>
+        <span>Engineering guide · 04 Nov 2026</span>
+      </header>
+
+      <div class="slides" id="slides">
+        <section class="slide slide--title is-active" aria-label="Slide 1 of 14">
+          <div class="slide-inner title-layout">
+            <div>
+              <h1>Copilot code review</h1>
+              <p class="lead">From local changes in VS Code to pull requests on GitHub.com — and back into a working branch.</p>
+              <p class="title-meta">Review · refine · verify</p>
+            </div>
+            <div class="pr-window" aria-label="Illustration of a pull request with an inline review comment">
+              <div class="window-head">
+                <span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                <span>acme / payments · Pull request #184</span>
+                <span class="tag tag--green">Open</span>
+              </div>
+              <div class="diff">
+                <div class="diff-row"><span class="ln">42</span><span>async function charge(order) {</span></div>
+                <div class="diff-row"><span class="ln">43</span><span>&nbsp;&nbsp;const account = await getAccount(order.id);</span></div>
+                <div class="diff-row add"><span class="ln">44</span><span>+ await sendPayment(account, order.total);</span></div>
+                <div class="diff-row add issue"><span class="ln">45</span><span>+ return { ok: true };</span></div>
+                <div class="diff-row"><span class="ln">46</span><span>}</span></div>
+              </div>
+              <div class="review-note">
+                <div class="review-note-head">
+                  <span class="avatar">C</span>
+                  <strong>Copilot</strong>
+                  <span class="severity">High</span>
+                </div>
+                <p>Check the payment result before returning success. The provider can reject this request.</p>
+              </div>
+              <div class="window-foot"><span>1 review comment</span><span>Fix with Copilot →</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 2 of 14">
+          <div class="slide-inner">
+            <h2>One review habit. Two places to use it.</h2>
+            <p class="lead">Review a selection or working changes in VS Code. Ask Copilot to review a pull request on GitHub.com.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>VS Code</strong><span>Local review</span></div>
+                <ul class="bullet-list">
+                  <li>Select code, then choose <code>Generate Code → Review</code>.</li>
+                  <li>Or run <code>Copilot Code Review - Uncommitted Changes</code> from Source Control.</li>
+                  <li>Read comments inline and in the Comments or Problems view.</li>
+                  <li>Accept or discard a suggestion. Applied edits are not committed automatically.</li>
+                </ul>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>GitHub.com</strong><span>Pull request review</span></div>
+                <ul class="bullet-list">
+                  <li>Open the pull request and add Copilot under <code>Reviewers</code>.</li>
+                  <li>Copilot posts a review summary and comments on changed lines.</li>
+                  <li>Use the findings to decide what to fix, ignore, or discuss.</li>
+                  <li>Hand suitable comments to Copilot cloud agent with <code>Fix with Copilot</code>.</li>
+                </ul>
+              </article>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Same rule</span>
+              <p>Copilot offers review feedback. You decide whether each finding is correct and whether to change the code.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 3 of 14">
+          <div class="slide-inner">
+            <h2>Run a local review in VS Code</h2>
+            <p class="lead">Use it before you push, or review only the code that needs another look.</p>
+            <div class="sequence">
+              <article>
+                <h3>Choose scope</h3>
+                <p>Select a code block for a focused review, or use the Source Control action for uncommitted changes.</p>
+              </article>
+              <article>
+                <h3>Read comments</h3>
+                <p>Copilot places comments inline. The Comments or Problems view helps you move between findings.</p>
+              </article>
+              <article>
+                <h3>Keep control</h3>
+                <p>Apply or dismiss each suggestion. Review your edits and commit them when you are ready.</p>
+              </article>
+            </div>
+            <div class="callout callout--success">
+              <span class="tag tag--green">Good fit</span>
+              <p>Use a local review for fast feedback on a working tree. Use a GitHub review when the pull request and its full context matter.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 4 of 14">
+          <div class="slide-inner">
+            <h2>Assign Copilot to a pull request</h2>
+            <p class="lead">A review request works like a request to a teammate. Copilot usually returns a review in less than a minute.</p>
+            <div class="pull-request">
+              <div class="code-pane">
+                <div class="code-bar"><span>github.com / acme / payments / pull / 184</span><span>Reviewers</span></div>
+                <div class="code-lines">
+                  <div><span class="line-number">PR</span><span>Fix payment retry handling</span></div>
+                  <div><span class="line-number">Files</span><span>src/payment.ts · tests/payment.test.ts</span></div>
+                  <div><span class="line-number">Review</span><span>Copilot <span class="tag tag--blue">Request</span></span></div>
+                  <div class="line-added"><span class="line-number">+44</span><span>await sendPayment(account, order.total);</span></div>
+                  <div class="line-focus"><span class="line-number">+45</span><span>return { ok: true };</span></div>
+                </div>
+              </div>
+              <div class="comment-pane">
+                <span class="tag tag--blue">Expected response</span>
+                <h3>Summary + comments</h3>
+                <p>Copilot leaves a review summary and inline comments for issues it finds. Comments show a <strong>High</strong>, <strong>Medium</strong>, or <strong>Low</strong> severity.</p>
+                <p class="small">Where it can, Copilot includes a suggested code change. It does not comment on every line.</p>
+              </div>
+            </div>
+            <div class="callout callout--warning">
+              <span class="tag tag--yellow">Default</span>
+              <p>Copilot normally submits a <strong>Comment</strong> review, not an approval or a request for changes. Treat each comment as a signal to check.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 5 of 14">
+          <div class="slide-inner">
+            <h2>What a Copilot review does — and does not do</h2>
+            <p class="lead">The review summary gives context. Inline comments point to specific changes.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>It can</strong><span class="tag tag--green">Review output</span></div>
+                <ul class="bullet-list">
+                  <li>Report likely bugs, security risks, and style problems.</li>
+                  <li>Use repository context, instructions, and configured MCP tools when relevant.</li>
+                  <li>Offer code suggestions you can apply with a few clicks.</li>
+                  <li>Include an approval assessment in the overview comment.</li>
+                </ul>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>It does not</strong><span class="tag tag--red">Human responsibility</span></div>
+                <ul class="bullet-list">
+                  <li>Prove that the code is correct or secure.</li>
+                  <li>Replace tests, required checks, or a human review.</li>
+                  <li>Count as an approval by default.</li>
+                  <li>Always re-review a new push unless a re-review rule is enabled or requested.</li>
+                </ul>
+              </article>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Read the diff</span>
+              <p>Confirm the issue in context. Run the checks. Then choose whether to apply the suggestion, ask for a fix, or resolve the comment.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 6 of 14">
+          <div class="slide-inner">
+            <h2>Repository settings set the review rules</h2>
+            <p class="lead">Repository administrators can set defaults. Rulesets decide when Copilot reviews automatically.</p>
+            <div class="setting-list">
+              <div class="setting-label">Settings → Copilot → Code review</div><div class="setting-value">Set repository defaults and approval controls.</div>
+              <div class="setting-label">Review effort</div><div class="setting-value"><strong>Lite</strong> targets common issues. <strong>Balanced</strong> gives deeper analysis for complex or security-sensitive changes; it is the built-in default.</div>
+              <div class="setting-label">Automatic reviews</div><div class="setting-value">Turn on for the repository or apply a branch ruleset to selected branches and repositories.</div>
+              <div class="setting-label">Review new pushes</div><div class="setting-value">Request another review for every new commit after the first review.</div>
+              <div class="setting-label">Review drafts</div><div class="setting-value">Ask Copilot to review while the pull request is still a draft.</div>
+              <div class="setting-label">Authorized users</div><div class="setting-value">Optionally limit requests to users who are allowed to trigger code review.</div>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Check both</span>
+              <p>Personal auto-review settings and repository or organization rulesets are separate. If either enables a review, Copilot can review the pull request.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 7 of 14">
+          <div class="slide-inner">
+            <h2>Approvals need explicit policy</h2>
+            <p class="lead">An approval assessment is not the same as an approving review.</p>
+            <div class="decision-map">
+              <div class="decision-step"><strong>Assessment</strong><span>Every review summary says if Copilot considers the PR ready to approve.</span></div>
+              <span class="decision-arrow" aria-hidden="true">→</span>
+              <div class="decision-step"><strong>Enable approval</strong><span>Repository, organization, and enterprise settings control whether Copilot can approve.</span></div>
+              <span class="decision-arrow" aria-hidden="true">→</span>
+              <div class="decision-step"><strong>Count for merge</strong><span>Enable this separately if Copilot approvals can meet a required-review rule.</span></div>
+            </div>
+            <div class="callout callout--warning">
+              <span class="tag tag--yellow">Public preview</span>
+              <p>Copilot approvals are off by default and subject to change. You can limit which changed-file paths qualify. A new commit dismisses an approval, so request another review.</p>
+            </div>
+            <p class="small">Use <code>Settings → Copilot → Code review → Auto-approval</code>. Follow your organization's review and merge policy.</p>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 8 of 14">
+          <div class="slide-inner">
+            <h2>Give Copilot instructions it can use</h2>
+            <p class="lead">Put durable review expectations in repository files. Keep instructions specific, testable, and easy to maintain.</p>
+            <div class="two-column-code">
+              <pre aria-label="Example repository instruction file"><code># Review guidance
+
+- Check error handling at external service boundaries.
+- Confirm that authorization checks cover each new route.
+- Do not flag generated files or established patterns.
+- Run the relevant tests before suggesting a fix.</code></pre>
+              <div>
+                <pre class="file-tree" aria-label="Recommended instruction file paths"><span class="path">.github/copilot-instructions.md</span> <span class="note"># repo-wide</span>
+<span class="path">.github/instructions/api.instructions.md</span> <span class="note"># matched paths</span>
+<span class="path">AGENTS.md</span> <span class="note"># shared agent rules</span>
+<span class="path">.github/skills/code-review/</span> <span class="note"># review workflow</span></pre>
+                <div class="callout">
+                  <p>The user's <code>Use custom instructions</code> preference is on by default. Copilot reads review instructions from the pull request's <strong>head branch</strong>.</p>
+                </div>
+              </div>
+            </div>
+            <p class="small">Use path-specific instructions for local rules. Use a review-focused skill for a repeatable review workflow.</p>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 9 of 14">
+          <div class="slide-inner">
+            <h2>MCP adds repository review context</h2>
+            <p class="lead">Connect Copilot code review to read-only data from tools such as issue trackers, SonarQube, or Wiz.</p>
+            <div class="mcp-flow" aria-label="Review context flow through MCP">
+              <div class="mcp-node"><strong>PR + instructions</strong><span>Diff, issue key, and review criteria</span></div>
+              <span class="mcp-arrow" aria-hidden="true">→</span>
+              <div class="mcp-node mcp-node--active"><strong>Repository MCP</strong><span>Tools enabled in Settings → Copilot → MCP servers</span></div>
+              <span class="mcp-arrow" aria-hidden="true">→</span>
+              <div class="mcp-node"><strong>Grounded review</strong><span>Use relevant external findings as context</span></div>
+            </div>
+            <div class="grid-2">
+              <article class="surface">
+                <h3>What to configure</h3>
+                <ul class="bullet-list">
+                  <li>Repository admins add JSON under <code>Settings → Copilot → MCP servers</code>.</li>
+                  <li>Repository MCP configuration is shared by code review and cloud agent.</li>
+                  <li>Add credentials as Agents secrets or variables named <code>COPILOT_MCP_*</code>.</li>
+                </ul>
+              </article>
+              <article class="surface">
+                <h3>What to protect</h3>
+                <ul class="bullet-list">
+                  <li>Allowlist only the tools the review needs.</li>
+                  <li>Code review filters out tools without <code>readOnlyHint: true</code>.</li>
+                  <li>Tools run without a per-call approval prompt. Do not expose write tools.</li>
+                </ul>
+              </article>
+            </div>
+            <p class="small">GitHub and Playwright MCP servers are enabled by default. The <code>Allow Copilot to use MCP tools when reviewing pull requests</code> setting is also on by default.</p>
+            <p class="small">MCP for code review supports tools, not server prompts or resources. Remote MCP with OAuth is not supported by cloud agent or code review.</p>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 10 of 14">
+          <div class="slide-inner">
+            <h2>Use SonarQube findings in a review</h2>
+            <p class="lead">Run Sonar analysis first. Then let Copilot query relevant quality and security findings through MCP.</p>
+            <div class="two-column-code">
+              <div>
+                <div class="surface">
+                  <div class="surface-title"><strong>Setup path</strong><span>SonarQube</span></div>
+                  <ul class="bullet-list">
+                    <li>Set up SonarQube Server or Cloud analysis in CI.</li>
+                    <li>Expose the SonarQube MCP server at a reachable HTTP endpoint and add it in repository MCP settings.</li>
+                    <li>Set the endpoint's required project or organization details and a scoped token.</li>
+                    <li>Allowlist the server's read-only tools for issues or analysis results.</li>
+                  </ul>
+                </div>
+                <div class="callout callout--warning">
+                  <p><strong>Keep credentials out of JSON.</strong> Store tokens as <code>COPILOT_MCP_*</code> Agents secrets. Use a read-only tool allowlist and a least-privilege Sonar token.</p>
+                </div>
+              </div>
+              <div>
+                          <pre aria-label="SonarQube MCP configuration template"><code>{
+  "mcpServers": {
+    "sonarqube": {
+      "type": "http",
+      "url": "$COPILOT_MCP_SONARQUBE_MCP_URL",
+      "headers": {
+        "Authorization": "Bearer $COPILOT_MCP_SONARQUBE_TOKEN"
+      },
+      "tools": ["&lt;approved-read-only-tool&gt;"]
+    }
+  }
+}</code></pre>
+                          <p class="small">HTTP template: use the MCP endpoint and auth format from your deployment. Do not use the SonarQube application URL unless it serves MCP. Replace the tool name with an exposed read-only tool.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 11 of 14">
+          <div class="slide-inner">
+            <h2>Use Wiz context without giving write access</h2>
+            <p class="lead">Use the same repository MCP settings for Wiz. Choose the transport and authentication that your Wiz deployment supports.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>Useful review context</strong><span>Wiz</span></div>
+                <ul class="bullet-list">
+                  <li>Cloud resources, exposures, or vulnerabilities linked to a change.</li>
+                  <li>Repository or pull request text should identify the relevant account, project, or finding.</li>
+                  <li>Tell Copilot in custom instructions when to query the Wiz tools and what evidence to report.</li>
+                  <li>Use read-only tools. Confirm the exact tool names and transport with your Wiz administrator.</li>
+                </ul>
+              </article>
+              <div>
+                <pre aria-label="Schematic Wiz MCP configuration"><code>{
+  "mcpServers": {
+    "wiz": {
+      "type": "&lt;server transport&gt;",
+      "url": "&lt;Wiz MCP endpoint&gt;",
+      "headers": {
+        "Authorization":
+          "Bearer $COPILOT_MCP_WIZ_TOKEN"
+      },
+      "tools": [
+        "&lt;approved-read-only-tool&gt;"
+      ]
+    }
+  }
+}</code></pre>
+                <div class="callout callout--warning">
+                  <p><strong>This is a shape, not a paste-ready config.</strong> Replace transport, endpoint, authentication, and tool names with the supported values for your Wiz deployment. Do not use OAuth remote MCP; it is not supported here.</p>
+                </div>
+              </div>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Verify usage</span>
+              <p>Open the review session from the PR timeline. Check the session logs to confirm which MCP server and tools Copilot started and called.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 12 of 14">
+          <div class="slide-inner">
+            <h2>Batch related fixes, then hand them back</h2>
+            <p class="lead">Use one clear work request for a related set of findings. Keep unrelated changes separate.</p>
+            <div class="sequence">
+              <article>
+                <h3>Collect</h3>
+                <p>Group related Copilot findings. Record the file, line, reason, and expected result for each one.</p>
+              </article>
+              <article>
+                <h3>Delegate</h3>
+                <p>Choose <code>Fix with Copilot</code> on a Copilot review comment. Add the other related findings to the draft hand-off.</p>
+              </article>
+              <article>
+                <h3>Choose output</h3>
+                <p>Ask for a commit to the same PR or a new PR against your branch. Review the diff and checks before merge.</p>
+              </article>
+            </div>
+            <div class="callout callout--success">
+              <span class="tag tag--green">For suggestions</span>
+              <p>Apply one suggestion or a compatible group of suggestions in a single commit. For wider changes, use the cloud-agent hand-off instead.</p>
+            </div>
+            <p class="small">Re-review after the fix. A push does not trigger another review unless automatic review of new pushes is enabled or you request it.</p>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 13 of 14">
+          <div class="slide-inner">
+            <h2>Make style checks repeatable in GitHub</h2>
+            <p class="lead">Run Markdownlint and Codespell as pull request checks. Let CI report deterministic issues; let Copilot explain code context.</p>
+            <div class="two-column-code">
+              <pre aria-label="GitHub Actions workflow example"><code>name: Content checks
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DavidAnson/markdownlint-cli2-action@v24
+        with:
+          globs: '**/*.md'
+      - uses: codespell-project/actions-codespell@v2</code></pre>
+              <div>
+                <div class="surface">
+                  <div class="surface-title"><strong>Wire it into merge policy</strong><span>GitHub Actions</span></div>
+                  <ul class="bullet-list">
+                    <li>Put workflow files in <code>.github/workflows/</code>.</li>
+                    <li>Configure Markdownlint rules in <code>.markdownlint-cli2.jsonc</code>.</li>
+                    <li>Configure Codespell in <code>.codespellrc</code> or <code>pyproject.toml</code>.</li>
+                    <li>Require the job as a status check in a branch ruleset.</li>
+                  </ul>
+                </div>
+                <div class="callout">
+                  <p>Use the same commands locally. Agree on intentional exceptions in the tool's config, not by hiding failed checks.</p>
+                </div>
+              </div>
+            </div>
+            <p class="small">Pin Actions to reviewed versions or commit SHAs for production workflows. Check each action's current usage and permission guidance.</p>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="Slide 14 of 14">
+          <div class="slide-inner closing">
+            <div>
+              <h2><span>Review the change.</span><span>Keep the decision human.</span></h2>
+              <p class="lead">Use Copilot for another view, MCP for relevant evidence, cloud agent for grouped fixes, and CI for repeatable checks.</p>
+              <p class="small">Deck audience: developers who review pull requests · 04 November 2026</p>
+            </div>
+            <div>
+              <p class="closing-quote">A useful review cycle is:<br><span>request → inspect → fix → verify</span></p>
+              <ul class="source-list">
+                <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-code-review">Using Copilot code review</a><span>VS Code and GitHub.com</span></li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review">Configure code review</a><span>Repository settings and rulesets</span></li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers">Configure repository MCP servers</a><span>Tools, secrets, and access</span></li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions">Repository custom instructions</a><span>Copilot instruction files</span></li>
+                <li><a href="https://github.com/SonarSource/sonarqube-mcp-server">SonarQube MCP server</a><span>Official SonarSource project</span></li>
+                <li><a href="https://docs.wiz.io/">Wiz documentation</a><span>Confirm MCP setup for your tenant</span></li>
+                <li><a href="https://github.com/DavidAnson/markdownlint-cli2-action">markdownlint-cli2 Action</a><span>Markdown lint workflow</span></li>
+                <li><a href="https://github.com/codespell-project/actions-codespell">Codespell Action</a><span>Spelling checks in pull requests</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="hint" aria-hidden="true"><span class="key">←</span> <span class="key">→</span> move · <span class="key">F</span> full screen · <span class="key">T</span> theme · <span class="key">P</span> print</div>
+      <div class="progress-track" aria-hidden="true"><span></span></div>
+
+      <nav class="controls" aria-label="Slide controls">
+        <button type="button" id="prev" aria-label="Previous slide">←</button>
+        <span class="count" id="count" aria-live="polite">1 / 14</span>
+        <button type="button" id="next" aria-label="Next slide">→</button>
+        <button type="button" id="theme" title="Toggle light or dark theme (T)">Theme</button>
+        <button type="button" id="fullscreen" title="Toggle full screen (F)">Full</button>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+      var total = slides.length;
+      var current = 0;
+      var progress = document.querySelector(".progress-track span");
+      var count = document.getElementById("count");
+      var previous = document.getElementById("prev");
+      var next = document.getElementById("next");
+
+      function indexFromHash() {
+        var value = Number.parseInt(window.location.hash.slice(1), 10);
+        return value >= 1 && value <= total ? value - 1 : 0;
+      }
+
+      function show(index, updateHash) {
+        current = Math.max(0, Math.min(total - 1, index));
+        slides.forEach(function (slide, i) {
+          var active = i === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", active ? "false" : "true");
+        });
+        count.textContent = (current + 1) + " / " + total;
+        progress.style.transform = "scaleX(" + ((current + 1) / total) + ")";
+        previous.disabled = current === 0;
+        next.disabled = current === total - 1;
+        if (updateHash !== false) {
+          history.replaceState(null, "", "#" + (current + 1));
+        }
+      }
+
+      function toggleTheme() {
+        root.setAttribute("data-theme", root.getAttribute("data-theme") === "light" ? "dark" : "light");
+      }
+
+      function toggleFullscreen() {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else if (root.requestFullscreen) {
+          root.requestFullscreen();
+        }
+      }
+
+      previous.addEventListener("click", function () { show(current - 1); });
+      next.addEventListener("click", function () { show(current + 1); });
+      document.getElementById("theme").addEventListener("click", toggleTheme);
+      document.getElementById("fullscreen").addEventListener("click", toggleFullscreen);
+
+      document.addEventListener("keydown", function (event) {
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        var onControl = event.target.closest && event.target.closest("a, button");
+        switch (event.key) {
+          case "ArrowRight":
+          case "ArrowDown":
+          case "PageDown":
+            event.preventDefault();
+            show(current + 1);
+            break;
+          case "ArrowLeft":
+          case "ArrowUp":
+          case "PageUp":
+            event.preventDefault();
+            show(current - 1);
+            break;
+          case " ":
+            if (onControl) return;
+            event.preventDefault();
+            show(current + (event.shiftKey ? -1 : 1));
+            break;
+          case "Home":
+            event.preventDefault();
+            show(0);
+            break;
+          case "End":
+            event.preventDefault();
+            show(total - 1);
+            break;
+          case "t":
+          case "T":
+            toggleTheme();
+            break;
+          case "f":
+          case "F":
+            toggleFullscreen();
+            break;
+          case "p":
+          case "P":
+            window.print();
+            break;
+        }
+      });
+
+      var touchStartX = null;
+      document.addEventListener("touchstart", function (event) {
+        touchStartX = event.touches[0].clientX;
+      }, { passive: true });
+      document.addEventListener("touchend", function (event) {
+        if (touchStartX === null) return;
+        var delta = event.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(delta) > 50) show(current + (delta < 0 ? 1 : -1));
+      }, { passive: true });
+
+      window.addEventListener("hashchange", function () { show(indexFromHash(), false); });
+      show(indexFromHash(), false);
+    })();
+  </script>
+</body>
+</html>
