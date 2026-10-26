@@ -1,1638 +1,1207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Spec Kit — Spec-Driven Development</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="description" content="A practical beginner's guide to installing and using GitHub Spec Kit.">
+    <title>GitHub Spec Kit — A practical guide</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,500&family=Playfair+Display:ital,wght@0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
         :root {
-            /* Atelier Zero palette */
-            --paper: #efe7d2;
-            --paper-warm: #ece4cf;
-            --paper-dark: #ddd2b6;
-            --bone: #f7f1de;
-            --ink: #15140f;
-            --ink-soft: #2a2620;
-            --ink-mute: #5a5448;
-            --ink-faint: #8b8676;
-            --coral: #ed6f5c;
-            --coral-soft: #f08e7c;
-            --mustard: #e9b94a;
-            --olive: #6e7448;
-            --accent-fg: var(--coral);
-            --fg-muted: var(--ink-faint);
+            color-scheme: dark;
+            --canvas: #0d1117;
+            --canvas-subtle: #161b22;
+            --canvas-inset: #010409;
+            --canvas-overlay: #1c2128;
+            --border: #30363d;
+            --border-muted: #21262d;
+            --fg: #f0f6fc;
+            --fg-muted: #9198a1;
+            --fg-subtle: #6e7681;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --attention: #d29922;
+            --danger: #f85149;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, "Liberation Mono", monospace;
+            font-family: var(--font-sans);
+            background: var(--canvas);
+            color: var(--fg);
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
         html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            background: var(--paper);
-            color: var(--ink);
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: var(--canvas);
         }
 
-        /* Paper noise texture */
-        body::before {
-            content: '';
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 0;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(106,92,56,0.06) 0%, transparent 70%),
-                radial-gradient(ellipse at 80% 30%, rgba(106,92,56,0.04) 0%, transparent 60%);
-            mix-blend-mode: multiply;
+        body {
+            color: var(--fg);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
         }
+
+        a { color: var(--accent); text-underline-offset: 3px; }
+        a:hover { color: #79c0ff; }
+        button { font: inherit; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
         .presentation {
-            position: fixed; inset: 0; height: 100vh;
-            display: flex; flex-wrap: nowrap;
-            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
-            z-index: 5; will-change: transform;
+            position: fixed;
+            inset: 0 auto 0 0;
+            display: flex;
+            height: 100svh;
+            will-change: transform;
+            transition: transform 420ms cubic-bezier(.2, .8, .2, 1);
         }
 
         .slide {
-            width: 100vw; height: 100vh;
+            display: grid;
             flex: 0 0 100vw;
-            position: relative;
+            place-items: center;
+            width: 100vw;
+            min-width: 0;
+            height: 100svh;
+            min-height: 100svh;
+            padding: 78px 8vw 100px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scrollbar-color: var(--border) var(--canvas);
+        }
+
+        .slide-inner {
+            width: min(100%, 1120px);
+            min-width: 0;
+            margin: auto;
+        }
+
+        .brand {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--fg);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -.01em;
+        }
+
+        .brand svg { width: 24px; height: 24px; }
+        .brand span { color: var(--fg-muted); font-weight: 400; }
+
+        h1, h2, h3, h4, p { margin-top: 0; }
+        h1, h2, h3, h4 { color: var(--fg); }
+        h1 {
+            max-width: 780px;
+            margin-bottom: 22px;
+            font-size: clamp(48px, 7vw, 88px);
+            font-weight: 700;
+            letter-spacing: -.055em;
+            line-height: 1;
+        }
+        h2 {
+            max-width: 900px;
+            margin-bottom: 14px;
+            font-size: clamp(30px, 4.2vw, 52px);
+            font-weight: 650;
+            letter-spacing: -.045em;
+            line-height: 1.08;
+        }
+        h3 {
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -.02em;
+            line-height: 1.25;
+        }
+        h4 {
+            margin-bottom: 6px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        p { color: var(--fg-muted); line-height: 1.6; }
+        .lede {
+            max-width: 680px;
+            margin-bottom: 0;
+            font-size: clamp(17px, 2vw, 21px);
+            line-height: 1.55;
+        }
+        .small { font-size: 14px; }
+        .muted { color: var(--fg-muted); }
+        .subtle { color: var(--fg-subtle); }
+        .accent { color: var(--accent); }
+        .green { color: var(--success); }
+        .yellow { color: var(--attention); }
+
+        .slide-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .slide-heading h2 { margin: 0; }
+        .slide-heading p {
+            flex: 0 0 auto;
+            margin: 0 0 4px;
+            font: 12px var(--font-mono);
+            color: var(--fg-subtle);
+        }
+
+        .panel {
+            min-width: 0;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--canvas-subtle);
+        }
+        .panel p:last-child { margin-bottom: 0; }
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .panel-title::before {
+            width: 9px;
+            height: 9px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            content: "";
+        }
+
+        .grid-3, .grid-2 {
+            display: grid;
+            gap: 14px;
+        }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        .route {
+            display: flex;
+            min-height: 228px;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 2px solid var(--border);
+        }
+        .route.feature { border-top-color: var(--accent); }
+        .route.bug { border-top-color: var(--danger); }
+        .route.idea { border-top-color: var(--success); }
+        .route .route-key {
+            margin-bottom: 24px;
+            font: 12px var(--font-mono);
+            color: var(--fg-subtle);
+        }
+        .route .route-key span { color: var(--fg); }
+        .route .route-use { margin: 0; font-size: 14px; }
+        .route .route-start {
+            display: block;
+            margin-top: 22px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-muted);
+            font: 12px/1.6 var(--font-mono);
+            overflow-wrap: anywhere;
+        }
+        .route.feature .route-start { color: var(--accent); }
+        .route.bug .route-start { color: var(--danger); }
+        .route.idea .route-start { color: var(--success); }
+
+        .two-surfaces {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             overflow: hidden;
         }
+        .surface {
+            min-width: 0;
+            padding: clamp(22px, 4vw, 40px);
+            background: var(--canvas-subtle);
+        }
+        .surface + .surface { border-left: 1px solid var(--border); }
+        .surface .surface-label {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--fg-muted);
+            font: 11px var(--font-mono);
+        }
+        .surface h3 { font-size: 21px; }
 
-        /* ── Typography ── */
-        .h-hero {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 900; letter-spacing: -0.03em;
-            font-size: clamp(44px, 6.4vw, 84px);
-            line-height: 1.0;
+        .terminal {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--canvas-inset);
         }
-        .h-xl {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 800; letter-spacing: -0.025em;
-            font-size: clamp(32px, 4vw, 54px);
-            line-height: 1.1;
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-muted);
+            color: var(--fg-subtle);
+            font: 11px var(--font-mono);
         }
-        .h-lg {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 700; letter-spacing: -0.02em;
-            font-size: clamp(22px, 2.7vw, 36px);
-            line-height: 1.15;
+        .terminal-bar span:first-child { color: var(--success); }
+        pre, code, kbd { font-family: var(--font-mono); }
+        pre {
+            margin: 0;
+            padding: 18px 20px;
+            color: var(--fg);
+            font-size: 13px;
+            line-height: 1.75;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
         }
-        .h-md {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 700;
-            font-size: clamp(17px, 2vw, 26px);
-            line-height: 1.2;
+        code {
+            padding: 2px 5px;
+            border: 1px solid var(--border-muted);
+            border-radius: 5px;
+            background: var(--canvas-inset);
+            color: var(--fg);
+            font-size: .9em;
+            overflow-wrap: anywhere;
         }
-        .lead {
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(15px, 1.35vw, 19px);
-            line-height: 1.6; color: var(--ink-soft);
+        pre code {
+            padding: 0;
+            border: 0;
+            background: transparent;
+            font-size: inherit;
         }
-        .meta {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px; color: var(--ink-mute);
+        .prompt { color: var(--success); }
+        .comment { color: var(--fg-subtle); }
+
+        .install-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr);
+            gap: 22px;
+            align-items: start;
+        }
+        .requirements {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .requirements li {
+            display: flex;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border-muted);
+            color: var(--fg-muted);
+            font-size: 14px;
             line-height: 1.5;
         }
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px; letter-spacing: 0.04em;
-            color: var(--ink-faint);
+        .requirements li:last-child { border-bottom: 0; }
+        .requirements li::before {
+            flex: 0 0 auto;
+            color: var(--success);
+            content: "✓";
         }
-        .eyebrow {
-            font-family: 'Inter Tight', sans-serif;
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: var(--coral);
-        }
-        .dot { color: var(--coral); }
-        .serif-em {
-            font-family: 'Playfair Display', serif;
-            font-style: italic; font-weight: 500;
+        .install-note {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-muted);
+            font-size: 13px;
         }
 
-        /* ── Card / panel tokens ── */
-        .pt {
-            background: var(--bone);
-            border-radius: 14px;
-            border: 1px solid rgba(21,20,15,0.06);
-            box-shadow: 0 2px 12px rgba(21,20,15,0.04);
+        .once-note {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: fit-content;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--canvas-subtle);
+            color: var(--fg-muted);
+            font-size: 13px;
         }
-
-        /* ── Slide layout helpers ── */
-        .slide-inner {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center;
-            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
-            padding-top: clamp(64px, 8vh, 90px);
-            padding-right: clamp(200px, 18vw, 260px);
-            padding-bottom: clamp(92px, 11vh, 122px);
-            position: relative; z-index: 1;
+        .once-note code { color: var(--accent); }
+        .flow-window {
+            overflow-x: auto;
+            padding: 2px 2px 12px;
+            scrollbar-color: var(--border) var(--canvas);
         }
-        .slide-inner.center {
-            align-items: center; text-align: center;
-            padding-right: clamp(80px, 10vw, 140px);
-        }
-        .slide-inner.wide {
-            padding-right: clamp(180px, 16vw, 220px);
-        }
-        /* Dense topic slides (split code + detail) */
-        .slide-inner.topic {
-            padding-right: clamp(150px, 14vw, 210px);
-            padding-top: clamp(52px, 6.5vh, 76px);
-            justify-content: center;
-        }
-
-        /* Cover variant */
-        .cover-inner {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center;
-            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
-            padding-top: clamp(64px, 8vh, 90px);
-            padding-bottom: clamp(92px, 11vh, 122px);
-            position: relative; z-index: 1;
-        }
-
-        /* ── Section rule ── */
-        .sec-rule {
-            display: flex; align-items: center; gap: 16px;
-            margin-bottom: 22px;
-            border-top: 1px solid rgba(21,20,15,0.12);
-            padding-top: 12px;
-        }
-        .sec-rule .roman {
-            font-family: 'Playfair Display', serif;
-            font-style: italic; font-weight: 500;
-            font-size: 14px; color: var(--coral);
-        }
-        .sec-rule .rule-meta {
-            flex: 1; font-size: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--ink-faint); letter-spacing: 0.04em;
-        }
-        .sec-rule .page-num {
-            font-family: 'Inter Tight', sans-serif;
-            font-size: 11px; color: var(--ink-faint);
-        }
-
-        /* ── Grid layouts ── */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-
-        /* ── Feature card ── */
-        .feature-card {
-            padding: 20px; border-radius: 14px;
-            background: var(--bone);
-            border: 1px solid rgba(21,20,15,0.06);
-        }
-        .feature-card .card-icon {
-            width: 36px; height: 36px; margin-bottom: 12px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .feature-card .card-icon img { width: 36px; height: 36px; object-fit: contain; }
-        .feature-card h3 {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 700; font-size: 15px;
-            margin-bottom: 6px;
-        }
-        .feature-card p { font-size: 13px; line-height: 1.5; color: var(--ink-mute); }
-        .feature-card p code, .drow p code, .flow-node code, .tick-list code {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.86em;
-            background: var(--paper-dark); border-radius: 5px;
-            padding: 1px 5px; color: var(--ink-soft);
-        }
-
-        /* ── Split (code LEFT + detail RIGHT) ── */
-        .split {
+        .pipeline {
             display: grid;
-            grid-template-columns: 0.96fr 1.04fr;
-            gap: 26px; width: 100%; align-items: start;
+            min-width: 990px;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
-        .split > * { min-width: 0; }
-        .dstack { display: flex; flex-direction: column; gap: 13px; }
-        .dlabel {
-            display: inline-block;
-            font-family: 'Inter Tight', sans-serif;
-            font-size: 10px; font-weight: 700;
-            letter-spacing: 0.14em; text-transform: uppercase;
-            color: var(--coral); margin-bottom: 3px;
+        .pipeline li {
+            position: relative;
+            display: flex;
+            min-height: 126px;
+            flex-direction: column;
+            justify-content: center;
+            padding: 14px 11px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--canvas-subtle);
         }
-        .drow p { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
-        code { overflow-wrap: anywhere; }
-        .flow-node code, .file-chip code, .chip code, .tick-list code { white-space: nowrap; overflow-wrap: normal; }
+        .pipeline li.optional {
+            border-style: dashed;
+            background: var(--canvas);
+        }
+        .pipeline li:not(:last-child)::after {
+            position: absolute;
+            top: 50%;
+            right: -10px;
+            z-index: 2;
+            color: var(--fg-subtle);
+            content: "›";
+            font-size: 19px;
+            transform: translate(50%, -50%);
+        }
+        .pipeline .step-type {
+            margin-bottom: 9px;
+            color: var(--fg-subtle);
+            font: 10px var(--font-mono);
+            letter-spacing: .02em;
+        }
+        .pipeline code {
+            display: block;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--fg);
+            font-size: 11px;
+            line-height: 1.45;
+        }
+        .pipeline li.optional .step-type { color: var(--attention); }
+        .loop-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 13px 16px;
+            border: 1px solid var(--border-muted);
+            border-radius: 7px;
+            color: var(--fg-muted);
+            font-size: 13px;
+        }
+        .loop-note strong { color: var(--success); }
 
-        /* Tick list */
-        .tick-list { list-style: none; padding-left: 22px; }
-        .tick-list li {
-            position: relative; font-size: 13.5px; line-height: 1.55;
-            color: var(--ink-soft); margin-bottom: 7px;
+        .table-scroll { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
         }
-        .tick-list li::before {
-            content: '—'; position: absolute; left: -22px;
-            color: var(--coral); font-weight: 700;
+        th {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg-muted);
+            font-size: 12px;
+            font-weight: 500;
         }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-muted);
+            color: var(--fg-muted);
+            line-height: 1.5;
+            vertical-align: top;
+        }
+        td:first-child { color: var(--fg); font-weight: 600; }
+        tr:last-child td { border-bottom: 0; }
+        .command-table { min-width: 690px; }
+        .command-table td:first-child { width: 28%; }
+        .command-table td:last-child { width: 30%; color: var(--fg-subtle); }
+        .command-table code { white-space: nowrap; }
 
-        /* File chips row */
-        .files-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .file-chip {
-            font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
-            background: var(--paper-dark); border: 1px solid rgba(21,20,15,0.1);
-            border-radius: 6px; padding: 3px 8px; color: var(--ink-soft);
-            white-space: nowrap;
+        .gate-list { display: grid; gap: 0; }
+        .gate-row {
+            display: grid;
+            grid-template-columns: 180px minmax(0, 1fr);
+            gap: 20px;
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border-muted);
         }
+        .gate-row:last-child { border-bottom: 0; }
+        .gate-row h3 { margin: 0; font-size: 16px; }
+        .gate-row h3 code { color: var(--attention); font-size: 12px; }
+        .gate-row p { margin: 0; font-size: 14px; }
 
-        /* Chips */
-        .chip-group { margin-bottom: 14px; }
-        .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-        .chip {
-            font-family: 'Inter Tight', sans-serif; font-size: 11.5px; font-weight: 600;
-            background: var(--bone); border: 1px solid rgba(21,20,15,0.12);
-            border-radius: 999px; padding: 4px 11px; color: var(--ink-soft);
-            white-space: nowrap;
+        .process-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, .78fr);
+            gap: 28px;
+            align-items: start;
         }
-        .chip.on { background: var(--coral); color: #fff; border-color: var(--coral); }
-        .chip.dash { background: transparent; border-style: dashed; color: var(--ink-mute); }
-        .chip.mono-chip { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 400; }
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .process-step {
+            min-height: 102px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--canvas-subtle);
+        }
+        .process-step .step-index {
+            display: block;
+            margin-bottom: 11px;
+            color: var(--fg-subtle);
+            font: 11px var(--font-mono);
+        }
+        .process-step code {
+            display: block;
+            width: fit-content;
+            color: var(--fg);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .outcome-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .outcome-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-muted);
+            color: var(--fg-muted);
+            font-size: 14px;
+        }
+        .outcome-list li:last-child { border-bottom: 0; }
+        .outcome-list strong { display: inline-block; min-width: 154px; color: var(--fg); }
 
-        /* Resource line */
-        .res-line {
+        .cli-groups {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0 24px;
+        }
+        .cli-group {
+            padding: 18px 0;
+            border-top: 1px solid var(--border);
+        }
+        .cli-group h3 { font-size: 15px; }
+        .cli-group p { margin: 0; font-size: 13px; }
+        .cli-group code { color: var(--accent); }
+        .cli-foot {
             margin-top: 18px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px; color: var(--ink-faint);
-            letter-spacing: 0.03em;
-        }
-        .res-line b { color: var(--coral); font-weight: 500; }
-
-        /* Code block */
-        .code-block {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12.5px; line-height: 1.6;
-            background: var(--paper-dark);
-            color: var(--ink);
-            padding: 16px 18px;
-            border-radius: 10px;
-            border: 1px solid rgba(21,20,15,0.1);
-            white-space: pre-wrap;
-        }
-        .code-block.ex { font-size: 11px; line-height: 1.55; padding: 14px 16px; }
-        .code-kw { color: var(--coral); }
-        .code-str { color: var(--olive); }
-        .code-cmt { color: var(--ink-faint); }
-        .code-fn { color: var(--ink-mute); }
-
-        /* Directory tree */
-        pre.tree {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px; line-height: 1.75;
-            background: var(--paper-dark);
-            border: 1px solid rgba(21,20,15,0.1);
-            border-radius: 10px; padding: 14px 16px;
-            color: var(--ink-soft); white-space: pre;
-        }
-        pre.tree .c { color: var(--ink-faint); }
-        pre.tree .d { color: var(--coral); }
-
-        /* ── Flow (stages) ── */
-        .flow { display: flex; align-items: stretch; width: 100%; }
-        .flow-node {
-            flex: 1; min-width: 0;
-            background: var(--bone);
-            border: 1px solid rgba(21,20,15,0.08);
-            border-radius: 12px;
-            padding: 14px 12px; text-align: center;
-        }
-        .flow-node .fn-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px; color: var(--coral); letter-spacing: 0.08em;
-        }
-        .flow-node h4 {
-            font-family: 'Inter Tight', sans-serif;
-            font-size: 14px; font-weight: 700; margin: 4px 0 5px;
-        }
-        .flow-node p { font-size: 11px; line-height: 1.4; color: var(--ink-mute); }
-        .flow-node.gate { background: transparent; border-style: dashed; }
-        .flow-arrow {
-            display: flex; align-items: center; justify-content: center;
-            color: var(--coral); font-size: 18px; padding: 0 6px; flex: 0 0 auto;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--fg-muted);
+            font-size: 13px;
         }
 
-        /* ── Comparison table ── */
-        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .plan-table th {
-            font-family: 'Inter Tight', sans-serif;
-            font-weight: 700; font-size: 12.5px;
-            padding: 9px 12px; text-align: left;
-            border-bottom: 2px solid var(--coral);
+        .practice-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
         }
-        .plan-table td {
-            padding: 7px 12px;
-            border-bottom: 1px solid rgba(21,20,15,0.08);
-            color: var(--ink-soft); font-size: 12.5px; line-height: 1.45;
+        .practice-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: practices;
         }
-        .plan-table td:first-child {
-            font-family: 'Inter Tight', sans-serif; font-weight: 700; color: var(--ink);
+        .practice-list li {
+            display: grid;
+            grid-template-columns: 28px minmax(0, 1fr);
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border-muted);
+            color: var(--fg-muted);
+            font-size: 14px;
+            line-height: 1.5;
+            counter-increment: practices;
         }
-        .plan-table tr:last-child td { border-bottom: none; }
-        .plan-table code {
-            font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            white-space: nowrap; overflow-wrap: normal;
+        .practice-list li::before {
+            color: var(--accent);
+            content: counter(practices, decimal-leading-zero);
+            font: 11px var(--font-mono);
+            padding-top: 3px;
         }
-        .plan-table.tight td { padding: 5px 10px; font-size: 12px; }
-        .plan-table.tight th { padding: 7px 10px; font-size: 11.5px; }
+        .practice-list strong { color: var(--fg); }
 
-        /* ── Section divider ── */
-        .divider-inner {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center;
-            padding: clamp(48px, 7vh, 80px) clamp(80px, 10vw, 140px);
-            padding-bottom: clamp(92px, 11vh, 122px);
-            position: relative; z-index: 1;
+        .source-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 30px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
-        .divider-inner .badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; letter-spacing: 0.14em;
-            color: var(--coral); margin-bottom: 14px;
+        .source-list li { border-bottom: 1px solid var(--border-muted); }
+        .source-list a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 0;
+            font-size: 14px;
+            text-decoration: none;
         }
-
-        /* Keyboard shortcut */
-        kbd {
-            display: inline-block;
-            padding: 2px 8px; border-radius: 6px;
-            background: var(--paper-dark);
-            border: 1px solid rgba(21,20,15,0.12);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; color: var(--ink-soft);
-        }
-
-        /* ── Navigation ── */
-        .deck-progress {
-            position: fixed; left: 0; right: 0; bottom: 0;
-            height: 2px; background: rgba(21,20,15,0.08); z-index: 30;
-        }
-        .deck-progress .bar {
-            height: 100%; background: var(--coral);
-            width: 0%; transition: width 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        .source-list a::after { color: var(--fg-subtle); content: "↗"; }
+        .source-list a:hover { text-decoration: underline; }
+        .checked-date {
+            margin-top: 24px;
+            font: 12px var(--font-mono);
+            color: var(--fg-subtle);
         }
 
+        .deck-controls {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 180px);
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--canvas-subtle);
+            transform: translateX(-50%);
+        }
+        .deck-controls button {
+            display: grid;
+            min-width: 34px;
+            height: 30px;
+            place-items: center;
+            padding: 0 9px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--fg-muted);
+            cursor: pointer;
+        }
+        .deck-controls button:hover:not(:disabled) {
+            border-color: var(--border);
+            background: var(--canvas-overlay);
+            color: var(--fg);
+        }
+        .deck-controls button:disabled { color: var(--fg-subtle); cursor: not-allowed; }
         #nav {
-            position: fixed; left: 50%; bottom: 18px;
-            transform: translateX(-50%); z-index: 30;
-            display: flex; gap: 10px; padding: 8px 14px;
-            border-radius: 999px;
-            background: rgba(239,231,210,0.78);
-            border: 1px solid rgba(21,20,15,0.08);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            max-width: min(35vw, 310px);
+            align-items: center;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 4px;
         }
         #nav .dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: rgba(21,20,15,0.22);
-            cursor: pointer; transition: all 0.3s ease;
-            border: 0; padding: 0;
+            flex: 0 0 8px;
+            width: 8px;
+            min-width: 8px;
+            height: 8px;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: var(--fg-subtle);
         }
-        #nav .dot:hover { background: rgba(21,20,15,0.45); transform: scale(1.15); }
-        #nav .dot.active { background: var(--coral); width: 22px; border-radius: 999px; }
+        #nav .dot.active { flex-basis: 20px; width: 20px; background: var(--accent); }
 
-        #hint {
-            position: fixed; bottom: 36px; right: 28px; z-index: 30;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9.5px; letter-spacing: 0.22em;
-            text-transform: uppercase; color: var(--ink-faint); opacity: 0.75;
+        .slide-counter, .key-hint {
+            position: fixed;
+            bottom: 26px;
+            z-index: 20;
+            color: var(--fg-subtle);
+            font: 11px var(--font-mono);
+        }
+        .slide-counter { left: 24px; }
+        .key-hint { right: 24px; }
+        .deck-progress {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 31;
+            height: 2px;
+            background: var(--border-muted);
+        }
+        .deck-progress .bar {
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 240ms ease;
         }
 
-        .slide-counter {
-            position: fixed; bottom: 36px; left: 28px; z-index: 30;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px; letter-spacing: 0.06em;
-            color: var(--ink-faint);
+        @media (max-width: 900px) {
+            .slide { padding-right: 6vw; padding-left: 6vw; }
+            .slide-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+            .install-layout, .process-layout { grid-template-columns: 1fr; }
+            .cli-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .practice-layout { gap: 20px; }
         }
 
-        /* ── Fixed overlays ── */
-        .gh-logo {
-            position: fixed; top: 18px; left: 18px;
-            width: 40px; height: 40px;
-            display: grid; place-items: center;
-            z-index: 20; pointer-events: none;
+        @media (max-width: 640px) {
+            .slide { padding: 68px 22px 96px; }
+            .once-note { flex-wrap: wrap; }
+            .brand { top: 16px; left: 18px; }
+            h1 { font-size: clamp(45px, 14vw, 68px); }
+            h2 { font-size: clamp(30px, 9vw, 42px); }
+            .slide-heading { margin-bottom: 22px; padding-bottom: 14px; }
+            .slide-heading p { display: none; }
+            .grid-3, .grid-2, .two-surfaces, .practice-layout { grid-template-columns: 1fr; }
+            .route { min-height: auto; }
+            .surface + .surface { border-top: 1px solid var(--border); border-left: 0; }
+            .process-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .flow-window { overflow-x: visible; }
+            .pipeline { min-width: 0; grid-template-columns: 1fr; gap: 8px; }
+            .pipeline li {
+                min-height: 62px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .pipeline .step-type { margin: 0; }
+            .pipeline li code { text-align: right; }
+            .pipeline li:not(:last-child)::after {
+                top: auto;
+                right: 50%;
+                bottom: -13px;
+                transform: translate(50%, 0) rotate(90deg);
+            }
+            .gate-row { grid-template-columns: 1fr; gap: 8px; }
+            .cli-groups { grid-template-columns: 1fr; }
+            .source-list { grid-template-columns: 1fr; }
+            .deck-controls { bottom: 13px; gap: 3px; max-width: calc(100vw - 120px); }
+            #nav { max-width: 36vw; gap: 4px; }
+            .slide-counter { bottom: 64px; left: 18px; }
+            .key-hint { right: 18px; bottom: 64px; }
+            .panel { padding: 18px; }
         }
-        .gh-logo img { width: 40px; height: 40px; object-fit: contain; display: block; }
 
-        .social-bar {
-            position: fixed; bottom: 16px; left: 18px;
-            display: flex; align-items: center; gap: 12px;
-            z-index: 20; pointer-events: auto;
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
         }
-        .social-bar a { display: grid; place-items: center; transition: transform 0.15s ease; }
-        .social-bar a:hover { transform: scale(1.15); }
-        .social-bar img { width: 44px; height: 44px; object-fit: contain; }
-
-        .qr-corner {
-            position: fixed; top: 14px; right: 14px;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 20; text-decoration: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        .qr-corner:hover { transform: scale(1.04); }
-        .qr-glass {
-            position: relative; padding: 10px; border-radius: 22px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 100%);
-            backdrop-filter: blur(16px) saturate(1.6);
-            -webkit-backdrop-filter: blur(16px) saturate(1.6);
-            border: 1px solid rgba(255,255,255,0.5);
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06),
-                inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(255,255,255,0.15);
-        }
-        .qr-glass::before {
-            content: ''; position: absolute; inset: 0; border-radius: 22px; padding: 1px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
-        }
-        .qr-corner img { width: 130px; height: 130px; border-radius: 14px; display: block; }
-        .qr-label { font-size: 12px; font-weight: 500; color: var(--ink-mute); margin-top: 8px; letter-spacing: 0.02em; }
     </style>
 </head>
 <body>
+<!--
+THESIS: Spec Kit is a set of separate, reviewable agent workflows, not one long prompt.
+OWN-WORLD: GitHub Primer dark colors, system UI type, and code-only monospace; panels and command paths use GitHub's documentation grammar.
+STORY: A new user chooses a job, installs the CLI, runs the right commands in the right place, and checks the results.
+FIRST VIEWPORT: The title and a short product promise occupy the left; a compact three-outcome route map occupies the right.
+FORM: A 12-slide Read-mode command guide with a navigable horizontal deck, one main flowchart, concise references, and official source links.
+-->
+<header class="brand" aria-label="GitHub Spec Kit">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.56.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    GitHub <span>/ Spec Kit</span>
+</header>
 
-<!-- ── Fixed overlays (outside slides) ── -->
-<div class="gh-logo" aria-hidden="true">
-    <img src="https://img.icons8.com/?size=100&id=s6BMuiR0tvY2&format=png" alt="" width="40" height="40" />
-</div>
-
-<div class="social-bar" aria-label="Social links">
-    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener" title="Instagram"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="44" height="44" /></a>
-    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener" title="YouTube"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="44" height="44" /></a>
-    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener" title="WhatsApp"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="44" height="44" /></a>
-    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener" title="LinkedIn"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="44" height="44" /></a>
-</div>
-
-<a class="qr-corner" href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
-    <div class="qr-glass">
-        <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png" alt="Scan to know more" width="130" height="130" />
-    </div>
-    <span class="qr-label">Scan to know more</span>
-</a>
-
-<!-- ── Slide deck ── -->
-<div class="presentation">
-
-    <!-- ════════════════════════════════════════════════
-         01  TITLE
-         ════════════════════════════════════════════════ -->
-    <section class="slide active" data-screen-label="01 Title" data-nav-theme="light">
-        <div class="slide-inner center" style="justify-content:center;gap:22px;">
-            <img src="https://img.icons8.com/?size=200&id=s6BMuiR0tvY2&format=png" alt="GitHub" width="200" height="200" style="display:block;" />
-            <h1 class="h-hero" style="margin-top:4px;">GitHub <span class="serif-em">Spec Kit</span><span class="dot">.</span></h1>
-            <p class="lead" style="max-width:660px;">Define what to build before building it — with any AI coding agent</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         02  COVER
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="02 Cover" data-nav-theme="light">
-        <div class="cover-inner">
-            <p class="eyebrow" style="margin-bottom:16px;">Spec-Driven Development · 2026</p>
-            <h1 class="h-hero" style="max-width:860px;">
-                The spec becomes the <span class="serif-em">source of truth</span><span class="dot">.</span>
-            </h1>
-            <p class="lead" style="margin-top:20px;max-width:660px;">
-                Spec Kit is an open source toolkit that turns a vague idea into a written
-                specification, a technical plan, an ordered task list, and finally working
-                code — each step reviewable before the next one starts.
-            </p>
-            <p class="mono" style="margin-top:30px;">github.com/github/spec-kit &nbsp;·&nbsp; github.github.io/spec-kit &nbsp;·&nbsp; MIT licensed</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         03  AGENDA
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="03 Agenda" data-nav-theme="light">
+<main class="presentation" aria-label="Spec Kit guide">
+    <section class="slide active" aria-label="Title">
         <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">I.</span>
-                <span class="rule-meta">Agenda</span>
-                <span class="page-num">03</span>
-            </div>
-            <h2 class="h-xl" style="margin-bottom:26px;">What we'll <span class="serif-em">cover</span><span class="dot">.</span></h2>
-            <div class="grid-2" style="gap:16px;">
-                <div class="feature-card">
-                    <h3>01 · Why spec-driven</h3>
-                    <p>What breaks without a spec, and what Spec Kit replaces it with</p>
-                </div>
-                <div class="feature-card">
-                    <h3>02 · How Spec Kit works</h3>
-                    <p>The CLI, the slash commands, and the files that land in your repo</p>
-                </div>
-                <div class="feature-card">
-                    <h3>03 · Installing the Specify CLI</h3>
-                    <p>Prerequisites, install routes, <code>specify init</code>, and verification</p>
-                </div>
-                <div class="feature-card">
-                    <h3>04 · Every command</h3>
-                    <p>Core commands, optional quality gates, and when to run each one</p>
-                </div>
-                <div class="feature-card">
-                    <h3>05 · Supported agents</h3>
-                    <p>30+ integrations, how they differ, and managing them per project</p>
-                </div>
-                <div class="feature-card">
-                    <h3>06 · Making it yours</h3>
-                    <p>Extensions, presets, bundles, workflows, and team practices</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         04  DIVIDER — PART I
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="04 Part I" data-nav-theme="light">
-        <div class="divider-inner">
-            <p class="badge">PART I</p>
-            <h2 class="h-hero" style="max-width:840px;">Why <span class="serif-em">spec-driven</span> development<span class="dot">.</span></h2>
-            <p class="lead" style="margin-top:18px;max-width:620px;">
-                The problem Spec Kit was built to solve, and the process it puts in its place.
-            </p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         05  THE PROBLEM
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="05 The problem" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">II.</span>
-                <span class="rule-meta">Why · The problem</span>
-                <span class="page-num">05</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:8px;">One long prompt is not a <span class="serif-em">design</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:18px;max-width:720px;">
-                Asking an agent to "build the thing" in a single prompt hides every decision inside a chat
-                transcript. Spec Kit pulls those decisions out into files you can read, review, and version.
-            </p>
-            <table class="plan-table">
-                <thead>
-                    <tr><th style="width:22%;">Aspect</th><th style="width:39%;">One-shot prompting</th><th style="width:39%;">Spec-driven development</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Source of truth</td><td>The chat history, lost when the session ends</td><td>Files in the repo: spec, plan, tasks</td></tr>
-                    <tr><td>Ambiguity</td><td>The model guesses, and you find out at review time</td><td>Surfaced and resolved before any code is written</td></tr>
-                    <tr><td>Review point</td><td>A large diff, after all the work is done</td><td>Four small checkpoints, each cheap to change</td></tr>
-                    <tr><td>Rework</td><td>Re-prompt and hope the next attempt is closer</td><td>Fix the artifact that owns the problem, re-run</td></tr>
-                    <tr><td>Team scale</td><td>Only the prompter knows what was intended</td><td>Intent is written down and shared in the PR</td></tr>
-                    <tr><td>Agent context</td><td>Rebuilt from scratch every conversation</td><td>Read back from the artifacts on every command</td></tr>
-                </tbody>
-            </table>
-            <p class="res-line"><b>Idea</b> · Specifications become executable — they generate the implementation instead of just describing it</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         06  WHAT IS SPEC-DRIVEN DEVELOPMENT
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="06 What is SDD" data-nav-theme="light">
-        <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">III.</span>
-                <span class="rule-meta">Why · Core philosophy</span>
-                <span class="page-num">06</span>
-            </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Spec-Driven <span class="serif-em">Development</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:22px;max-width:760px;">
-                A structured process where you write down the intent first and let the agent handle the
-                implementation detail. Four ideas hold it together.
-            </p>
-            <div class="grid-2" style="gap:16px;">
-                <div class="feature-card">
-                    <div class="card-icon"><img src="https://img.icons8.com/?size=48&id=88090&format=png&color=ed6f5c" alt="" width="36" height="36" /></div>
-                    <h3>Intent before implementation</h3>
-                    <p>The specification defines the <i>what</i> and <i>why</i>. The tech stack, architecture, and libraries are a separate, later decision.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon"><img src="https://img.icons8.com/?size=48&id=55494&format=png&color=ed6f5c" alt="" width="36" height="36" /></div>
-                    <h3>Guardrails, not vibes</h3>
-                    <p>A project constitution states the principles every later phase is checked against — testing standards, security rules, architecture limits.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon"><img src="https://img.icons8.com/?size=48&id=60688&format=png&color=ed6f5c" alt="" width="36" height="36" /></div>
-                    <h3>Multi-step refinement</h3>
-                    <p>Not one giant generation. Each step produces an artifact you can correct before the next step consumes it.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon"><img src="https://img.icons8.com/?size=48&id=82789&format=png&color=ed6f5c" alt="" width="36" height="36" /></div>
-                    <h3>Works greenfield and brownfield</h3>
-                    <p>Start a new project from requirements, explore parallel implementations, or add features to and modernize an existing codebase.</p>
-                </div>
-            </div>
-            <p class="res-line"><b>Read</b> · github.github.io/spec-kit/concepts/sdd.html &nbsp;·&nbsp; spec-driven.md in the repo</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         07  HOW SPEC KIT WORKS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="07 How it works" data-nav-theme="light">
-        <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">IV.</span>
-                <span class="rule-meta">Why · Two halves</span>
-                <span class="page-num">07</span>
-            </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Two halves, one <span class="serif-em">toolkit</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:20px;max-width:780px;">
-                Spec Kit is a command line tool <i>and</i> a set of prompts. Keeping them apart makes everything else easier to follow.
-            </p>
-            <div class="grid-2" style="gap:20px;">
-                <div class="pt" style="padding:20px;">
-                    <p class="dlabel">Half one · You run this</p>
-                    <h3 class="h-md" style="margin-bottom:8px;">The <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">specify</code> CLI</h3>
-                    <p style="font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin-bottom:10px;">
-                        A Python CLI installed once on your machine. It scaffolds a project, writes the command
-                        files your agent understands, and manages integrations, extensions, presets, and bundles.
-                        It never writes your application code.
-                    </p>
-                    <div class="files-row">
-                        <span class="file-chip">specify init</span>
-                        <span class="file-chip">specify check</span>
-                        <span class="file-chip">specify integration</span>
-                        <span class="file-chip">specify extension</span>
-                    </div>
-                </div>
-                <div class="pt" style="padding:20px;">
-                    <p class="dlabel">Half two · Your agent runs this</p>
-                    <h3 class="h-md" style="margin-bottom:8px;">The <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">/speckit.*</code> commands</h3>
-                    <p style="font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin-bottom:10px;">
-                        Prompt files installed into your coding agent by <code>init</code>. Each one is a scripted
-                        process — read the current artifacts, apply a template, write the next artifact. This is
-                        where the actual work happens.
-                    </p>
-                    <div class="files-row">
-                        <span class="file-chip">/speckit.specify</span>
-                        <span class="file-chip">/speckit.plan</span>
-                        <span class="file-chip">/speckit.tasks</span>
-                        <span class="file-chip">/speckit.implement</span>
-                    </div>
-                </div>
-            </div>
-            <p class="res-line"><b>Note</b> · Spec Kit does not replace your agent. It supplies the process; the agent supplies the intelligence</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         08  WHAT LANDS IN YOUR REPO
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="08 Repo layout" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">V.</span>
-                <span class="rule-meta">Why · Artifacts</span>
-                <span class="page-num">08</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">What lands in your <span class="serif-em">repo</span><span class="dot">.</span></h2>
-            <div class="split">
-                <pre class="tree">my-project/
-├── .specify/
-│   ├── memory/constitution.md
-│   ├── templates/       <span class="c"># spec, plan, tasks</span>
-│   ├── scripts/bash/    <span class="c"># helper scripts</span>
-│   ├── extensions/
-│   ├── presets/
-│   ├── feature.json     <span class="c"># active feature</span>
-│   └── integration.json <span class="c"># agent state</span>
-├── .github/agents/      <span class="c"># Copilot commands</span>
-├── .github/prompts/     <span class="c"># companions</span>
-└── specs/
-    └── <span class="d">001-photo-albums/</span>
-        ├── spec.md
-        ├── plan.md
-        └── tasks.md</pre>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">.specify/ · the toolkit</span>
-                        <p>Templates, helper scripts, and state. <code>constitution.md</code> holds your project principles; <code>feature.json</code> records which feature is active — Spec Kit resolves the feature from that file, not from the checked-out Git branch.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Agent directory · the commands</span>
-                        <p>Written by <code>init</code> for the integration you chose. Copilot gets <code>.github/agents/</code> and <code>.github/prompts/</code>; Claude Code gets <code>.claude/skills/</code>; Gemini gets <code>.gemini/commands/</code>.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">specs/ · the feature work</span>
-                        <p>One numbered directory per feature, holding <code>spec.md</code>, <code>plan.md</code>, <code>tasks.md</code> and any supporting design artifacts. These are the files you review in the pull request.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Scripts</span>
-                        <p>Installed as <code>.specify/scripts/bash/</code>, <code>powershell/</code>, or <code>python/</code> depending on <code>--script</code>.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         09  DIVIDER — PART II
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="09 Part II" data-nav-theme="light">
-        <div class="divider-inner">
-            <p class="badge">PART II</p>
-            <h2 class="h-hero" style="max-width:840px;">Installing the <span class="serif-em">Specify CLI</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-top:18px;max-width:620px;">
-                Prerequisites, the install routes, initializing a project, and confirming it worked.
-            </p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         10  PREREQUISITES
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="10 Prerequisites" data-nav-theme="light">
-        <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">VI.</span>
-                <span class="rule-meta">Install · Prerequisites</span>
-                <span class="page-num">10</span>
-            </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Before you <span class="serif-em">start</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:22px;max-width:740px;">
-                Spec Kit ships as a Python package. Four things need to be in place.
-            </p>
-            <div class="grid-2" style="gap:16px;">
-                <div class="feature-card">
-                    <h3>Python 3.11 or newer</h3>
-                    <p>The Specify CLI is a Python application. Linux, macOS, and Windows are all supported — PowerShell scripts work without WSL.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>uv (recommended) or pipx</h3>
-                    <p><code>uv</code> is the recommended package manager for a persistent install. <code>pipx</code> and plain <code>pip</code> also work.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>A supported AI coding agent</h3>
-                    <p>GitHub Copilot, Claude Code, Gemini CLI, Codex CLI, Cursor and 30+ others. CLI agents must be installed; IDE agents work through the IDE.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Git — optional</h3>
-                    <p>Git is only required once you enable the git extension. Repository init and feature branching are no longer part of the default setup.</p>
-                </div>
-            </div>
-            <p class="res-line"><b>Docs</b> · github.github.io/spec-kit/installation.html &nbsp;·&nbsp; Latest release: 0.14.x</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         11  INSTALL THE CLI
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="11 Install the CLI" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">VII.</span>
-                <span class="rule-meta">Install · Specify CLI</span>
-                <span class="page-num">11</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">Install the <span class="serif-em">Specify CLI</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># From PyPI — simplest</span>
-<span class="code-kw">uv</span> tool install specify-cli
-
-<span class="code-cmt"># Pin an exact version</span>
-<span class="code-kw">uv</span> tool install specify-cli==0.12.11
-
-<span class="code-cmt"># From source, pinned to a release tag</span>
-<span class="code-kw">uv</span> tool install specify-cli --from \
-  git+https://github.com/github/spec-kit.git@vX.Y.Z
-
-<span class="code-cmt"># Alternatives</span>
-<span class="code-kw">pipx</span> install specify-cli
-<span class="code-kw">pip</span>  install specify-cli
-
-<span class="code-cmt"># Confirm it works</span>
-<span class="code-kw">specify</span> version
-<span class="code-kw">specify</span> check</div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">Two official channels</span>
-                        <p>The <code>specify-cli</code> package on PyPI, and the <code>github/spec-kit</code> repository for source installs. Both are maintained by the Spec Kit team; either route is supported.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Pinning</span>
-                        <p>When installing from source, keep the leading <code>v</code> on the tag — <code>v0.12.11</code>, not <code>0.12.11</code>.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">One-time run</span>
-                        <p><code>uvx</code> runs the CLI without installing it. Useful for trying it out, but it does not update the persistent <code>specify</code> on your PATH.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Staying current</span>
-                        <p><code>specify self check</code> reports whether a newer release exists and changes nothing. <code>specify self upgrade</code> performs the upgrade; add <code>--dry-run</code> to preview it or <code>--tag vX.Y.Z</code> to pin.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Air-gapped</span>
-                        <p>Locally built wheels are supported — see the air-gapped installation guide.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         12  SPECIFY INIT
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="12 specify init" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">VIII.</span>
-                <span class="rule-meta">Install · Initialize</span>
-                <span class="page-num">12</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">Initialize a <span class="serif-em">project</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># New directory, GitHub Copilot</span>
-<span class="code-kw">specify</span> init my-project --integration copilot
-
-<span class="code-cmt"># Current directory instead</span>
-<span class="code-kw">specify</span> init --here --integration claude
-
-<span class="code-cmt"># Merge into a non-empty directory</span>
-<span class="code-kw">specify</span> init --here --force
-
-<span class="code-cmt"># PowerShell scripts, plus a preset</span>
-<span class="code-kw">specify</span> init my-project --script ps \
-  --integration copilot --preset compliance
-
-<span class="code-cmt"># Copilot as agent skills, not prompt files</span>
-<span class="code-kw">specify</span> init my-project --integration copilot \
-  --integration-options=<span class="code-str">"--skills"</span></div>
+            <div class="grid-2" style="align-items:center;gap:clamp(28px,6vw,76px);">
                 <div>
-                    <table class="plan-table tight">
-                        <thead><tr><th style="width:44%;">Flag</th><th>What it does</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>--integration &lt;key&gt;</code></td><td>Which coding agent to scaffold for</td></tr>
-                            <tr><td><code>--integration-options</code></td><td>Agent-specific options, e.g. <code>--skills</code></td></tr>
-                            <tr><td><code>--script sh|ps|py</code></td><td>Bash, PowerShell, or Python helpers</td></tr>
-                            <tr><td><code>--here</code></td><td>Use the current directory</td></tr>
-                            <tr><td><code>--force</code></td><td>Merge into an existing directory</td></tr>
-                            <tr><td><code>--ignore-agent-tools</code></td><td>Skip the agent CLI presence check</td></tr>
-                            <tr><td><code>--preset &lt;id&gt;</code></td><td>Install a preset during init</td></tr>
-                        </tbody>
-                    </table>
-                    <p style="font-size:13px;line-height:1.5;color:var(--ink-soft);margin-top:12px;">
-                        Omit <code>--integration</code> and an interactive terminal prompts you to choose. Non-interactive
-                        runs, such as CI, default to GitHub Copilot.
-                    </p>
+                    <h1>Spec Kit</h1>
+                    <p class="lede">A practical guide to choosing a process, setting it up, and working with your coding agent.</p>
+                    <p style="margin-top:26px;color:var(--fg-subtle);font-size:14px;">Build a feature. Fix a bug. Assess an idea.</p>
+                </div>
+                <div class="panel">
+                    <p class="panel-title">Start with the job</p>
+                    <div style="display:grid;gap:10px;">
+                        <div style="padding:13px 15px;border:1px solid var(--border);border-radius:6px;background:var(--canvas);">
+                            <span class="accent" style="font:12px var(--font-mono);">BUILD</span>
+                            <p style="margin:5px 0 0;color:var(--fg);font-size:14px;">Spec-Driven Development</p>
+                        </div>
+                        <div style="padding:13px 15px;border:1px solid var(--border);border-radius:6px;background:var(--canvas);">
+                            <span style="color:var(--danger);font:12px var(--font-mono);">REPAIR</span>
+                            <p style="margin:5px 0 0;color:var(--fg);font-size:14px;">Bug fixing</p>
+                        </div>
+                        <div style="padding:13px 15px;border:1px solid var(--border);border-radius:6px;background:var(--canvas);">
+                            <span class="green" style="font:12px var(--font-mono);">EVALUATE</span>
+                            <p style="margin:5px 0 0;color:var(--fg);font-size:14px;">Idea assessment</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ════════════════════════════════════════════════
-         13  CORE CLI COMMANDS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="13 CLI commands" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">IX.</span>
-                <span class="rule-meta">Install · CLI reference</span>
-                <span class="page-num">13</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">The <span class="serif-em">specify</span> CLI, end to end<span class="dot">.</span></h2>
-            <table class="plan-table">
-                <thead><tr><th style="width:29%;">Command</th><th style="width:33%;">What it does</th><th>When to run it</th></tr></thead>
-                <tbody>
-                    <tr><td><code>specify init</code></td><td>Scaffolds the project and agent command files</td><td>Once, when adopting Spec Kit in a repo</td></tr>
-                    <tr><td><code>specify check</code></td><td>Verifies the CLI-based agents on your machine — offline</td><td>After install, or when a command misbehaves</td></tr>
-                    <tr><td><code>specify version</code></td><td>Version, Python, platform; <code>--features --json</code> for capabilities</td><td>Sanity check, and in scripts or CI</td></tr>
-                    <tr><td><code>specify self check</code></td><td>Reports whether a newer release exists — read-only</td><td>Periodically</td></tr>
-                    <tr><td><code>specify self upgrade</code></td><td>Upgrades in place; <code>--dry-run</code>, <code>--tag vX.Y.Z</code></td><td>When you want the newer release</td></tr>
-                    <tr><td><code>specify integration</code></td><td>Install, switch, upgrade, and inspect agent integrations</td><td>Changing or adding a coding agent</td></tr>
-                    <tr><td><code>specify extension</code></td><td>Add capabilities: new commands and phases</td><td>Adding git, bug triage, external tools</td></tr>
-                    <tr><td><code>specify preset</code></td><td>Override the templates that core and extensions ship</td><td>Enforcing house or regulatory standards</td></tr>
-                    <tr><td><code>specify bundle</code></td><td>Install a curated, versioned set of the above</td><td>Provisioning a whole role or team</td></tr>
-                    <tr><td><code>specify workflow</code></td><td>Run multi-step automated sequences</td><td>Repeating a process across features</td></tr>
-                </tbody>
-            </table>
-            <p class="res-line"><b>Reference</b> · github.github.io/spec-kit/reference/overview.html</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         14  DIVIDER — PART III
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="14 Part III" data-nav-theme="light">
-        <div class="divider-inner">
-            <p class="badge">PART III</p>
-            <h2 class="h-hero" style="max-width:860px;">The <span class="serif-em">/speckit</span> commands<span class="dot">.</span></h2>
-            <p class="lead" style="margin-top:18px;max-width:620px;">
-                Nine commands, the order they run in, and how to decide which ones you actually need.
-            </p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         15  THE LOOP
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="15 The loop" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">X.</span>
-                <span class="rule-meta">Commands · The loop</span>
-                <span class="page-num">15</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:8px;">The <span class="serif-em">process</span>, in order<span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:20px;max-width:800px;">
-                Six commands carry the work forward. Three optional gates slot between them wherever the feature has real ambiguity.
-            </p>
-            <div class="flow" style="margin-bottom:22px;">
-                <div class="flow-node"><p class="fn-num">01</p><h4>constitution</h4><p>Project principles</p></div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-node"><p class="fn-num">02</p><h4>specify</h4><p>What and why</p></div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-node"><p class="fn-num">03</p><h4>plan</h4><p>Tech stack, design</p></div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-node"><p class="fn-num">04</p><h4>tasks</h4><p>Ordered task list</p></div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-node"><p class="fn-num">05</p><h4>implement</h4><p>Write the code</p></div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-node"><p class="fn-num">06</p><h4>converge</h4><p>Close the gaps</p></div>
-            </div>
-            <p class="dlabel" style="margin-bottom:8px;">Optional quality gates</p>
-            <div class="flow">
-                <div class="flow-node gate"><h4>clarify</h4><p>After <code>specify</code>, before <code>plan</code> — resolves ambiguity in the spec</p></div>
-                <div class="flow-arrow">·</div>
-                <div class="flow-node gate"><h4>checklist</h4><p>After <code>plan</code> — tests whether the requirements themselves hold up</p></div>
-                <div class="flow-arrow">·</div>
-                <div class="flow-node gate"><h4>analyze</h4><p>After <code>tasks</code>, before <code>implement</code> — checks the artifacts agree</p></div>
-            </div>
-            <p class="res-line"><b>Rule</b> · Only <code>/speckit.specify</code> is strictly required before <code>/speckit.plan</code> — everything else is a judgement call</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         16  CORE COMMANDS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="16 Core commands" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">XI.</span>
-                <span class="rule-meta">Commands · Core</span>
-                <span class="page-num">16</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">Core <span class="serif-em">commands</span><span class="dot">.</span></h2>
-            <table class="plan-table">
-                <thead><tr><th style="width:25%;">Command</th><th style="width:22%;">When to use it</th><th>What it produces</th></tr></thead>
-                <tbody>
-                    <tr><td><code>/speckit.constitution</code></td><td>Once per project</td><td>Governing principles every later phase is evaluated against. Re-run when the principles change</td></tr>
-                    <tr><td><code>/speckit.specify</code></td><td>Start of a feature</td><td><code>spec.md</code> — requirements and user stories from a plain description. No tech stack here</td></tr>
-                    <tr><td><code>/speckit.plan</code></td><td>After the spec</td><td><code>plan.md</code> and design artifacts. This is where the stack, architecture, and constraints belong</td></tr>
-                    <tr><td><code>/speckit.tasks</code></td><td>After the plan</td><td><code>tasks.md</code> — dependency-ordered phases: Setup, Foundational, one per user story, then Polish</td></tr>
-                    <tr><td><code>/speckit.implement</code></td><td>Build time</td><td>Working code. Executes tasks in dependency order, honouring parallel markers</td></tr>
-                    <tr><td><code>/speckit.converge</code></td><td>After implement</td><td>A findings report. Append-only: either "converged", or new tasks added for the gaps</td></tr>
-                    <tr><td><code>/speckit.taskstoissues</code></td><td>Optional, after tasks</td><td>GitHub issues created from the task list, for tracking and hand-off</td></tr>
-                </tbody>
-            </table>
-            <p class="res-line"><b>Reference</b> · github.github.io/spec-kit/reference/agentic-sdd.html</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         17  OPTIONAL COMMANDS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="17 Quality gates" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">XII.</span>
-                <span class="rule-meta">Commands · Quality gates</span>
-                <span class="page-num">17</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:8px;">Optional <span class="serif-em">quality gates</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:18px;max-width:800px;">
-                None of these write application code. They are there to catch a problem while it is still a
-                paragraph, not a pull request.
-            </p>
-            <table class="plan-table">
-                <thead><tr><th style="width:22%;">Command</th><th style="width:24%;">Run it</th><th>What it does</th></tr></thead>
-                <tbody>
-                    <tr><td><code>/speckit.clarify</code></td><td>Before <code>/speckit.plan</code></td><td>Asks up to five targeted questions about underspecified areas and writes your answers back into <code>spec.md</code>. Run it repeatedly, one area at a time</td></tr>
-                    <tr><td><code>/speckit.checklist</code></td><td>Any time after the spec</td><td>Generates a quality checklist — unit tests for your requirements. Checks the spec for completeness, clarity, and consistency rather than testing code</td></tr>
-                    <tr><td><code>/speckit.analyze</code></td><td>After <code>/speckit.tasks</code>, before implementing</td><td>Read-only consistency analysis across <code>spec.md</code>, <code>plan.md</code>, and <code>tasks.md</code>. Reports conflicts, gaps, and ambiguities. Never edits files</td></tr>
-                </tbody>
-            </table>
-            <p style="font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin-top:16px;max-width:900px;">
-                When a gate flags something, fix it at the source and re-run: requirement problems go back to
-                <code>/speckit.clarify</code> or <code>/speckit.specify</code>, design problems to <code>/speckit.plan</code>,
-                then regenerate with <code>/speckit.tasks</code>.
-            </p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         18  TWO PATHS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="18 Two paths" data-nav-theme="light">
+    <section class="slide" aria-label="Choose a process">
         <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">XIII.</span>
-                <span class="rule-meta">Commands · Choosing a path</span>
-                <span class="page-num">18</span>
+            <div class="slide-heading">
+                <h2>Choose the process that fits the work.</h2>
+                <p>Three separate entry points</p>
             </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">How much <span class="serif-em">process</span><span class="dot">?</span></h2>
-            <p class="lead" style="margin-bottom:22px;max-width:780px;">
-                Two paths are common. Match the ceremony to the risk — a throwaway script does not need
-                three quality gates, and a payments flow does.
-            </p>
-            <div class="grid-2" style="gap:20px;">
-                <div class="pt" style="padding:22px;">
-                    <p class="dlabel">Shorter path</p>
-                    <h3 class="h-md" style="margin-bottom:10px;">Small, low-risk features</h3>
-                    <ul class="tick-list">
-                        <li><code>/speckit.specify</code></li>
-                        <li><code>/speckit.plan</code></li>
-                        <li><code>/speckit.tasks</code></li>
-                        <li><code>/speckit.implement</code></li>
-                        <li><code>/speckit.converge</code></li>
+            <div class="grid-3">
+                <article class="panel route feature">
+                    <div>
+                        <p class="route-key"><span>BUILD</span> · SDD</p>
+                        <h3>Build a feature or application</h3>
+                        <p class="route-use">Use a specification to guide a plan, tasks, implementation, and a final gap check.</p>
+                    </div>
+                    <a class="route-start" href="https://github.github.io/spec-kit/quickstart.html">Start with the SDD quickstart ↗</a>
+                </article>
+                <article class="panel route bug">
+                    <div>
+                        <p class="route-key"><span>REPAIR</span> · BUG EXTENSION</p>
+                        <h3>Diagnose broken behaviour</h3>
+                        <p class="route-use">Assess a report, apply a scoped fix, then verify the reported symptom.</p>
+                    </div>
+                    <a class="route-start" href="https://github.github.io/spec-kit/guides/bugfix.html">Use the bug-fixing guide ↗</a>
+                </article>
+                <article class="panel route idea">
+                    <div>
+                        <p class="route-key"><span>EVALUATE</span> · ASSESS EXTENSION</p>
+                        <h3>Decide whether to invest</h3>
+                        <p class="route-use">Gather evidence and record a go, needs-clarification, or kill decision.</p>
+                    </div>
+                    <a class="route-start" href="https://github.github.io/spec-kit/guides/assessment.html">Use the assessment guide ↗</a>
+                </article>
+            </div>
+            <p class="small" style="margin-top:18px;">SDD is in core. Bug fixing and idea assessment are optional extensions. They are not required steps in one combined pipeline.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Where commands run">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Two command surfaces. Keep them separate.</h2>
+                <p>Terminal setup · agent work</p>
+            </div>
+            <div class="two-surfaces">
+                <div class="surface">
+                    <span class="surface-label">TERMINAL</span>
+                    <h3>Use the Specify CLI</h3>
+                    <p>Install Spec Kit, initialize a project, check your local tools, and manage integrations or extensions.</p>
+                    <pre><code>specify init my-project --integration copilot</code></pre>
+                </div>
+                <div class="surface">
+                    <span class="surface-label">CODING AGENT CHAT</span>
+                    <h3>Run the process skills</h3>
+                    <p>Ask the agent to create or review project artifacts. Run one step at a time and inspect its result before you continue.</p>
+                    <pre><code>/speckit-specify Describe what to build.</code></pre>
+                </div>
+            </div>
+            <p class="small" style="margin-top:20px;">In GitHub Copilot's default skills mode, use the <code>/speckit-…</code> skills shown above. References may show dotted names such as <code>/speckit.specify</code>. Other agents can use <code>$speckit-…</code> or <code>/skill:speckit-…</code>. Use the form your agent exposes; do not enter agent skills in the terminal.</p>
+            <p class="small" style="margin-top:8px;">The files are generated in the project. The agent reads them as context for later steps.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Install and initialize">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Install the CLI. Initialize the project.</h2>
+                <p>Quickstart route: PyPI + uv</p>
+            </div>
+            <div class="install-layout">
+                <div class="terminal">
+                    <div class="terminal-bar"><span>●</span><span>Terminal</span></div>
+                    <pre><code><span class="comment"># Install the CLI</span>
+<span class="prompt">$</span> uv tool install specify-cli
+
+<span class="comment"># Confirm the CLI is available</span>
+<span class="prompt">$</span> specify version
+
+<span class="comment"># Create a project for GitHub Copilot</span>
+<span class="prompt">$</span> specify init my-project --integration copilot
+<span class="prompt">$</span> cd my-project</code></pre>
+                </div>
+                <aside class="panel">
+                    <h3>Before you start</h3>
+                    <ul class="requirements">
+                        <li>Python 3.11 or newer</li>
+                        <li><code>uv</code> is the recommended package manager</li>
+                        <li>A supported AI coding agent</li>
+                        <li>Linux, macOS, or Windows</li>
                     </ul>
-                    <p style="font-size:13px;line-height:1.5;color:var(--ink-mute);margin-top:10px;">
-                        Skips the constitution and all three gates. Good for a well-understood change in a
-                        codebase you know.
-                    </p>
+                    <p class="install-note">Other supported installs include <code>pipx install specify-cli</code> and <code>pip install specify-cli</code>. For a pinned source release, see the <a href="https://github.github.io/spec-kit/installation.html">official install guide</a>.</p>
+                </aside>
+            </div>
+            <p class="small" style="margin-top:18px;">Run the coding agent from <code>my-project</code>. For an existing repository, read the <a href="https://github.github.io/spec-kit/guides/existing-projects.html">existing-project guide</a> before you initialize it. Git is only needed for Git workflows added by the opt-in <code>git</code> extension.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Spec-Driven Development flow">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>The SDD flow, from intent to checked work.</h2>
+                <p>Core process · per feature</p>
+            </div>
+            <div class="once-note"><code>/speckit-constitution</code><span>Set project principles once. Update them when the principles change.</span></div>
+            <div class="flow-window" aria-label="Scroll the command flow horizontally on a narrow screen">
+                <ol class="pipeline">
+                    <li><span class="step-type">START HERE</span><code>/speckit-specify</code></li>
+                    <li class="optional"><span class="step-type">OPTIONAL GATE</span><code>/speckit-clarify</code></li>
+                    <li><span class="step-type">CORE STEP</span><code>/speckit-plan</code></li>
+                    <li class="optional"><span class="step-type">OPTIONAL GATE</span><code>/speckit-checklist</code></li>
+                    <li><span class="step-type">CORE STEP</span><code>/speckit-tasks</code></li>
+                    <li class="optional"><span class="step-type">OPTIONAL GATE</span><code>/speckit-analyze</code></li>
+                    <li><span class="step-type">CORE STEP</span><code>/speckit-implement</code></li>
+                    <li><span class="step-type">CORE STEP</span><code>/speckit-converge</code></li>
+                </ol>
+            </div>
+            <div class="loop-note"><strong>↻ If gaps remain</strong><span>Converge appends tasks. Implement those tasks, then converge again until the result is <code>Converged</code>.</span></div>
+            <p class="small" style="margin-top:16px;">Only <code>/speckit-specify</code> is strictly required before <code>/speckit-plan</code>. Add the dashed gates when ambiguity or risk makes them useful.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="SDD commands and results">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Know what each SDD step changes.</h2>
+                <p>Core command reference</p>
+            </div>
+            <div class="panel table-scroll">
+                <table class="command-table">
+                    <thead><tr><th>Skill</th><th>Purpose and output</th><th>Use it when</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/speckit-specify</code></td><td>Define user needs, behaviour, and scope in <code>spec.md</code>. Keep implementation choices out.</td><td>Starting or changing a feature</td></tr>
+                        <tr><td><code>/speckit-plan</code></td><td>Choose the technology, architecture, and technical constraints in the plan.</td><td>The requirements are clear enough to design</td></tr>
+                        <tr><td><code>/speckit-tasks</code></td><td>Create dependency-ordered work in <code>tasks.md</code>.</td><td>The plan is ready to build</td></tr>
+                        <tr><td><code>/speckit-implement</code></td><td>Execute the tasks. Large changes can be run one phase or user story at a time.</td><td>Tasks are ready and reviewed</td></tr>
+                        <tr><td><code>/speckit-converge</code></td><td>Compare implementation with the spec, plan, and tasks. Append any gaps to the task list.</td><td>After implementation; repeat if tasks were added</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="small" style="margin-top:16px;"><code>/speckit-constitution</code> sets project-wide principles. It is not a per-feature spec or a technology plan.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Optional quality gates">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Add a gate only when it answers a real question.</h2>
+                <p>Optional checks</p>
+            </div>
+            <div class="panel gate-list">
+                <div class="gate-row">
+                    <h3><code>/speckit-clarify</code></h3>
+                    <p>Use before planning when requirements are unclear. It asks up to five focused questions and updates the spec with your answers.</p>
                 </div>
-                <div class="pt" style="padding:22px;">
-                    <p class="dlabel">Full path</p>
-                    <h3 class="h-md" style="margin-bottom:10px;">Production features</h3>
-                    <ul class="tick-list">
-                        <li><code>/speckit.constitution</code> then <code>/speckit.specify</code></li>
-                        <li><code>/speckit.clarify</code> — resolve ambiguity</li>
-                        <li><code>/speckit.plan</code> then <code>/speckit.checklist</code></li>
-                        <li><code>/speckit.tasks</code> then <code>/speckit.analyze</code></li>
-                        <li><code>/speckit.implement</code> then <code>/speckit.converge</code></li>
+                <div class="gate-row">
+                    <h3><code>/speckit-checklist</code></h3>
+                    <p>Use to check whether requirements are complete, clear, and consistent. This reviews requirements; it does not test the implementation.</p>
+                </div>
+                <div class="gate-row">
+                    <h3><code>/speckit-analyze</code></h3>
+                    <p>Use after tasks and before implementation to find conflicts or gaps across the spec, plan, and tasks. It reports findings; it does not edit them.</p>
+                </div>
+            </div>
+            <p class="small" style="margin-top:16px;">For a small, clear feature, use the shorter path. For production work, unclear requirements, or costly changes, add the gates that reduce the risk.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Bug fixing">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Fix a bug without starting an SDD feature.</h2>
+                <p>Opt-in <code>bug</code> extension</p>
+            </div>
+            <div class="process-layout">
+                <div>
+                    <div class="terminal">
+                        <div class="terminal-bar"><span>●</span><span>Terminal · project root</span></div>
+                        <pre><code><span class="prompt">$</span> specify extension add bug</code></pre>
+                    </div>
+                    <div class="process-steps" style="margin-top:14px;">
+                        <div class="process-step"><span class="step-index">01 · ASSESS</span><code>/speckit-bug-assess</code></div>
+                        <div class="process-step"><span class="step-index">02 · FIX</span><code>/speckit-bug-fix</code></div>
+                        <div class="process-step"><span class="step-index">03 · TEST</span><code>/speckit-bug-test</code></div>
+                    </div>
+                </div>
+                <aside class="panel">
+                    <h3>Keep each report with the bug.</h3>
+                    <p>Each command uses the same <code>slug</code>. Its reports are saved under <code>.specify/bugs/&lt;slug&gt;/</code>.</p>
+                    <ul class="outcome-list">
+                        <li><strong>Assess</strong> Read-only triage and proposed fix</li>
+                        <li><strong>Fix</strong> The only bug step that edits source code</li>
+                        <li><strong>Test</strong> Read-only verification report</li>
                     </ul>
-                    <p style="font-size:13px;line-height:1.5;color:var(--ink-mute);margin-top:10px;">
-                        Every artifact is reviewed before the next step consumes it. Use it when the cost of
-                        building the wrong thing is high.
-                    </p>
-                </div>
+                    <p class="small" style="margin-top:12px;">The final verdict is <code>verified</code>, <code>partial</code>, or <code>failed</code>. Only <code>verified</code> confirms the fix.</p>
+                    <p class="small" style="margin-top:10px;">Start assess with a report and slug, for example: <code>/speckit-bug-assess "Login fails" slug=login-fails</code>. Reuse <code>slug=login-fails</code> for fix and test.</p>
+                </aside>
             </div>
         </div>
     </section>
 
-    <!-- ════════════════════════════════════════════════
-         19  CONSTITUTION & SPECIFY
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="19 constitution + specify" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">XIV.</span>
-                <span class="rule-meta">Commands · Set the rules, state the goal</span>
-                <span class="page-num">19</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;"><span class="serif-em">constitution</span> &amp; <span class="serif-em">specify</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># Once per project</span>
-<span class="code-fn">/speckit.constitution</span> This project is
-security-first. All user input is validated at
-the boundary. We use TDD strictly. Prefer
-standard library over new dependencies.
-
-<span class="code-cmt"># Once per feature</span>
-<span class="code-fn">/speckit.specify</span> Build a photo organizer
-where albums are grouped by date and can be
-reordered by drag and drop on the main page.
-Albums are never nested. Inside an album,
-photos are previewed as tiles.</div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">constitution · the guardrails</span>
-                        <p>Writes <code>.specify/memory/constitution.md</code> and keeps the dependent templates in sync. Every later phase is evaluated against it, so this is where testing standards, security rules, and architectural limits belong.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">specify · the goal</span>
-                        <p>Creates or updates <code>spec.md</code> from a natural-language description. Describe user-facing behaviour and outcomes.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Common mistake</span>
-                        <p>Naming your stack here. "Use Postgres and React" belongs in <code>/speckit.plan</code>. Putting it in the spec locks in a design decision before anyone has agreed on the requirement.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Rule of thumb</span>
-                        <p>If a sentence would still be true after switching languages, it belongs in the spec.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         20  CLARIFY, PLAN & CHECKLIST
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="20 clarify + plan" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">XV.</span>
-                <span class="rule-meta">Commands · Remove doubt, choose the stack</span>
-                <span class="page-num">20</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;"><span class="serif-em">clarify</span>, <span class="serif-em">plan</span> &amp; <span class="serif-em">checklist</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># Focus one area at a time; repeat</span>
-<span class="code-fn">/speckit.clarify</span> Focus on the task card:
-status changes, comment limits, and who can
-be assigned.
-
-<span class="code-cmt"># Now the technical decisions</span>
-<span class="code-fn">/speckit.plan</span> Use .NET Aspire with Postgres.
-Blazor Server frontend with drag-and-drop and
-real-time updates. REST APIs for projects,
-tasks, and notifications.
-
-<span class="code-cmt"># Broad pass, or focused</span>
-<span class="code-fn">/speckit.checklist</span>
-<span class="code-fn">/speckit.checklist</span> Focus on board
-interactions and comment permissions.</div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">clarify</span>
-                        <p>Asks up to five targeted questions and folds your answers back into <code>spec.md</code>. Run it as many times as you need, taking a different area each time. Clarifying first stops you designing on top of an assumption.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">plan</span>
-                        <p>Generates <code>plan.md</code> and the supporting design artifacts from the spec. Pass your stack, architecture, and technical constraints as arguments — this is the one step where implementation detail is wanted.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">checklist</span>
-                        <p>Produces a checklist that tests the requirements, not the code: "Are drag-and-drop rules defined for every column?", "What happens when an assigned user is deleted?" If it finds gaps, go back and tighten the spec.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         21  TASKS & ANALYZE
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="21 tasks + analyze" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">XVI.</span>
-                <span class="rule-meta">Commands · Break it down, check it</span>
-                <span class="page-num">21</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;"><span class="serif-em">tasks</span> &amp; <span class="serif-em">analyze</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># No arguments needed</span>
-<span class="code-fn">/speckit.tasks</span>
-
-<span class="code-cmt"># tasks.md comes out phased:</span>
-<span class="code-cmt">#   Setup</span>
-<span class="code-cmt">#   Foundational  (blocking work)</span>
-<span class="code-cmt">#   User story 1  (highest priority)</span>
-<span class="code-cmt">#   User story 2  ...</span>
-<span class="code-cmt">#   Polish        (cross-cutting)</span>
-
-<span class="code-cmt"># Read-only consistency check</span>
-<span class="code-fn">/speckit.analyze</span>
-
-<span class="code-cmt"># Convert the list into GitHub issues</span>
-<span class="code-fn">/speckit.taskstoissues</span></div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">tasks</span>
-                        <p>Turns the design artifacts into an actionable, dependency-ordered <code>tasks.md</code>. Tests are generated inside a user story's phase when you asked for them, and tasks that can run in parallel are marked as such.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">analyze</span>
-                        <p>Cross-checks <code>spec.md</code>, <code>plan.md</code>, and <code>tasks.md</code> against each other — a task with no matching requirement, a plan choice that contradicts the spec. It only reports; it never edits. Re-run until it comes back clean.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">taskstoissues</span>
-                        <p>Optional. Converts the task list into GitHub issues so work can be tracked and distributed. It relies on MCP, so an agent without MCP support cannot run it as intended.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         22  IMPLEMENT & CONVERGE
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="22 implement + converge" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">XVII.</span>
-                <span class="rule-meta">Commands · Build and close out</span>
-                <span class="page-num">22</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;"><span class="serif-em">implement</span> &amp; <span class="serif-em">converge</span><span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># Small feature — build it all</span>
-<span class="code-fn">/speckit.implement</span>
-
-<span class="code-cmt"># Large feature — one stage at a time</span>
-<span class="code-fn">/speckit.implement</span> Only the Setup and
-Foundational phases: scaffolding plus the data
-model with basic CRUD. Stop before the user
-stories.
-
-<span class="code-fn">/speckit.implement</span> Now the Kanban board
-story: drag and drop between columns.
-
-<span class="code-cmt"># Did anything get missed?</span>
-<span class="code-fn">/speckit.converge</span></div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">implement</span>
-                        <p>Executes <code>tasks.md</code> in dependency order. For anything large, scope each run with an argument and verify the result before continuing — this keeps the agent's context focused and the diffs reviewable.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">converge</span>
-                        <p>Assesses the codebase against the spec, plan, and tasks. Append-only — it never edits or deletes code, and its only possible write is adding tasks. Run it only after <code>implement</code> has run on the current task list.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Two outcomes</span>
-                        <p><b>Converged</b> — no gaps, <code>tasks.md</code> untouched, move on to review or a pull request. <b>Tasks appended</b> — gaps were found and added under a Convergence section; run <code>implement</code> again, then converge again. Each pass finds fewer items.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         23  DIVIDER — PART IV
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="23 Part IV" data-nav-theme="light">
-        <div class="divider-inner">
-            <p class="badge">PART IV</p>
-            <h2 class="h-hero" style="max-width:860px;">Agents &amp; <span class="serif-em">extensibility</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-top:18px;max-width:640px;">
-                Which coding agents are supported, how to manage them, and how to bend Spec Kit to your team's process.
-            </p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         24  SUPPORTED AGENTS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="24 Supported agents" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">XVIII.</span>
-                <span class="rule-meta">Agents · Integrations</span>
-                <span class="page-num">24</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:8px;">30+ supported <span class="serif-em">agents</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:16px;max-width:820px;">
-                An integration is the adapter between Spec Kit and one coding agent. These are the keys you
-                pass to <code>--integration</code>.
-            </p>
-            <div class="chip-row" style="margin-bottom:18px;">
-                <span class="chip mono-chip on">copilot</span>
-                <span class="chip mono-chip on">claude</span>
-                <span class="chip mono-chip on">gemini</span>
-                <span class="chip mono-chip on">codex</span>
-                <span class="chip mono-chip on">cursor-agent</span>
-                <span class="chip mono-chip">amp</span>
-                <span class="chip mono-chip">agy</span>
-                <span class="chip mono-chip">auggie</span>
-                <span class="chip mono-chip">bob</span>
-                <span class="chip mono-chip">cline</span>
-                <span class="chip mono-chip">codebuddy</span>
-                <span class="chip mono-chip">devin</span>
-                <span class="chip mono-chip">droid</span>
-                <span class="chip mono-chip">firebender</span>
-                <span class="chip mono-chip">forge</span>
-                <span class="chip mono-chip">goose</span>
-                <span class="chip mono-chip">grok</span>
-                <span class="chip mono-chip">hermes</span>
-                <span class="chip mono-chip">junie</span>
-                <span class="chip mono-chip">kilocode</span>
-                <span class="chip mono-chip">kimi</span>
-                <span class="chip mono-chip">kiro-cli</span>
-                <span class="chip mono-chip">lingma</span>
-                <span class="chip mono-chip">omp</span>
-                <span class="chip mono-chip">opencode</span>
-                <span class="chip mono-chip">pi</span>
-                <span class="chip mono-chip">qodercli</span>
-                <span class="chip mono-chip">qwen</span>
-                <span class="chip mono-chip">rovodev</span>
-                <span class="chip mono-chip">shai</span>
-                <span class="chip mono-chip">tabnine</span>
-                <span class="chip mono-chip">trae</span>
-                <span class="chip mono-chip">vibe</span>
-                <span class="chip mono-chip">zcode</span>
-                <span class="chip mono-chip">zed</span>
-                <span class="chip mono-chip dash">generic</span>
-            </div>
-            <div class="grid-3" style="gap:16px;">
-                <div class="feature-card">
-                    <h3>The invocation differs</h3>
-                    <p>Most agents expose <code>/speckit.command</code>. Skills-based agents use <code>/speckit-command</code>; Codex and ZCode use <code>$speckit-command</code>; Kimi uses <code>/skill:speckit-command</code>.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>CLI or IDE</h3>
-                    <p>CLI agents must be installed on your machine. IDE agents work through the editor. <code>specify integration list</code> shows which is which.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Bring your own</h3>
-                    <p>For an agent that is not listed, use <code>--integration generic --integration-options="--commands-dir &lt;path&gt;"</code>.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         25  COPILOT INTEGRATION
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="25 Copilot integration" data-nav-theme="light">
-        <div class="slide-inner topic">
-            <div class="sec-rule">
-                <span class="roman">XIX.</span>
-                <span class="rule-meta">Agents · GitHub Copilot</span>
-                <span class="page-num">25</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">The <span class="serif-em">Copilot</span> integration<span class="dot">.</span></h2>
-            <div class="split">
-                <div class="code-block ex"><span class="code-cmt"># Default — legacy markdown mode</span>
-<span class="code-kw">specify</span> init my-project --integration copilot
-<span class="code-cmt">#   .github/agents/*.agent.md</span>
-<span class="code-cmt">#   .github/prompts/*.prompt.md</span>
-<span class="code-cmt">#   .vscode/settings.json  (merged)</span>
-
-<span class="code-cmt"># Recommended — agent skills mode</span>
-<span class="code-kw">specify</span> init my-project --integration copilot \
-  --integration-options=<span class="code-str">"--skills"</span>
-<span class="code-cmt">#   .github/skills/speckit-specify/SKILL.md</span>
-<span class="code-cmt">#   invoked as /speckit-specify</span>
-
-<span class="code-cmt"># Move an existing project across</span>
-<span class="code-kw">specify</span> integration upgrade copilot \
-  --integration-options=<span class="code-str">"--skills"</span></div>
-                <div class="dstack">
-                    <div class="drow">
-                        <span class="dlabel">Two layouts</span>
-                        <p>Copilot still defaults to legacy markdown mode, which writes agent files and companion prompt files and merges a VS Code settings block. That default is deprecated and will change in a future release.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Skills mode</span>
-                        <p>Passing <code>--skills</code> scaffolds one skill folder per command under <code>.github/skills/</code>, invoked as <code>/speckit-specify</code>, <code>/speckit-plan</code>, and so on. Install warns if you leave it off.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Non-interactive default</span>
-                        <p>If <code>--integration</code> is omitted in CI or a piped run, Spec Kit picks <code>copilot</code>.</p>
-                    </div>
-                    <div class="drow">
-                        <span class="dlabel">Watch out</span>
-                        <p>Changing between command and skills layouts is blocked while preset artifacts are registered. Remove the presets, upgrade, then reinstall them.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         26  MANAGING INTEGRATIONS
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="26 Managing integrations" data-nav-theme="light">
-        <div class="slide-inner wide">
-            <div class="sec-rule">
-                <span class="roman">XX.</span>
-                <span class="rule-meta">Agents · Management</span>
-                <span class="page-num">26</span>
-            </div>
-            <h2 class="h-lg" style="margin-bottom:16px;">Managing <span class="serif-em">integrations</span><span class="dot">.</span></h2>
-            <table class="plan-table">
-                <thead><tr><th style="width:30%;">Command</th><th>What it does</th></tr></thead>
-                <tbody>
-                    <tr><td><code>specify integration list</code></td><td>Built-in integrations, which is installed, which is the default, CLI or IDE. Add <code>--catalog</code> to browse community ones</td></tr>
-                    <tr><td><code>specify integration info</code></td><td>Catalog detail for one integration — description, author, license, tags, source</td></tr>
-                    <tr><td><code>specify integration install</code></td><td>Adds an integration to the current project. Multiple are allowed when both are declared multi-install safe, otherwise pass <code>--force</code></td></tr>
-                    <tr><td><code>specify integration use</code></td><td>Sets the default integration without uninstalling anything. This is also what re-registers extensions and presets for the new agent</td></tr>
-                    <tr><td><code>specify integration switch</code></td><td>Replaces the current default. If the target is not installed yet, it is an uninstall plus install in one step</td></tr>
-                    <tr><td><code>specify integration upgrade</code></td><td>Reinstalls an integration with refreshed templates after a Spec Kit upgrade. Blocked on locally modified files unless <code>--force</code></td></tr>
-                    <tr><td><code>specify integration uninstall</code></td><td>Removes it. Files you edited are preserved; only untouched files matching their original hash are deleted</td></tr>
-                    <tr><td><code>specify integration status</code></td><td>Reports default, installed set, missing or modified managed files. <code>--json</code> for CI and agents</td></tr>
-                </tbody>
-            </table>
-            <p class="res-line"><b>State</b> · Tracked in <code>.specify/integration.json</code> &nbsp;·&nbsp; every one of these commands requires a project already initialized</p>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════════
-         27  EXTENSIONS, PRESETS, BUNDLES
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="27 Extend and customize" data-nav-theme="light">
+    <section class="slide" aria-label="Idea assessment">
         <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">XXI.</span>
-                <span class="rule-meta">Extensibility · Make it yours</span>
-                <span class="page-num">27</span>
+            <div class="slide-heading">
+                <h2>Test an idea before you commit to building it.</h2>
+                <p>Opt-in <code>assess</code> extension</p>
             </div>
-            <h2 class="h-lg" style="margin-bottom:8px;">Extensions, presets, <span class="serif-em">bundles</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:18px;max-width:820px;">
-                Add capabilities, change how existing ones behave, or install a whole role's setup at once.
-            </p>
-            <div class="grid-3" style="gap:16px;">
-                <div class="feature-card">
-                    <h3>Extensions — add capability</h3>
-                    <p>New commands, phases, and tool integrations. <code>specify extension search</code> then <code>add &lt;name&gt;</code>. The bundled <code>git</code> extension restores branch workflows; <code>bug</code> adds assess, fix, and validate triage under <code>.specify/bugs/</code>.</p>
+            <div class="process-layout">
+                <div>
+                    <div class="terminal">
+                        <div class="terminal-bar"><span>●</span><span>Terminal · initialized project</span></div>
+                        <pre><code><span class="prompt">$</span> specify extension add assess</code></pre>
+                    </div>
+                    <div class="process-steps" style="margin-top:14px;">
+                        <div class="process-step"><span class="step-index">01</span><code>/speckit-assess-intake</code></div>
+                        <div class="process-step"><span class="step-index">02</span><code>/speckit-assess-research</code></div>
+                        <div class="process-step"><span class="step-index">03</span><code>/speckit-assess-define</code></div>
+                        <div class="process-step"><span class="step-index">04</span><code>/speckit-assess-shape</code></div>
+                        <div class="process-step"><span class="step-index">05</span><code>/speckit-assess-decide</code></div>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <h3>Presets — change behaviour</h3>
-                    <p>Override the templates that core and extensions ship, without adding anything new: a compliance spec format, your own terminology, mandatory security gates, test-first task ordering. Stackable with priority.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Bundles — a role in one command</h3>
-                    <p>A versioned manifest that pins a curated set of extensions, presets, workflows, and steps. <code>specify bundle info</code> shows exactly what <code>install</code> will add. Examples ship for PM, BA, security researcher, developer.</p>
-                </div>
+                <aside class="panel">
+                    <h3>Assessment is a decision record.</h3>
+                    <p>It can run without source code. It writes evidence and a decision under <code>.specify/assessments/&lt;slug&gt;/</code>; it does not start implementation.</p>
+                    <ul class="outcome-list">
+                        <li><strong class="green">go</strong> Continue if you choose to</li>
+                        <li><strong class="yellow">needs-clarification</strong> Resolve named unknowns</li>
+                        <li><strong style="color:var(--danger);">kill</strong> Record why you stop</li>
+                    </ul>
+                    <p class="small" style="margin-top:12px;">A <code>go</code> decision can include a handoff to <code>/speckit-specify</code>. It does not force that next step.</p>
+                    <p class="small" style="margin-top:10px;">Start intake with an idea and slug, for example: <code>/speckit-assess-intake "Support offline work" slug=offline-mode</code>. Reuse <code>slug=offline-mode</code> for later stages.</p>
+                </aside>
             </div>
-            <p class="dlabel" style="margin-top:20px;margin-bottom:8px;">Template resolution — first match wins, top down</p>
-            <div class="chip-row">
-                <span class="chip on">1 · Project overrides <code style="background:none;padding:0;color:inherit;">.specify/templates/overrides/</code></span>
-                <span class="chip">2 · Presets</span>
-                <span class="chip">3 · Extensions</span>
-                <span class="chip">4 · Spec Kit core</span>
-            </div>
-            <p class="res-line"><b>Also</b> · <code>specify workflow</code> chains commands, prompts, shell steps, and human checkpoints into a resumable sequence</p>
         </div>
     </section>
 
-    <!-- ════════════════════════════════════════════════
-         28  PRACTICES
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="28 Practices" data-nav-theme="light">
+    <section class="slide" aria-label="Specify CLI command groups">
         <div class="slide-inner">
-            <div class="sec-rule">
-                <span class="roman">XXII.</span>
-                <span class="rule-meta">Practices · Getting value from it</span>
-                <span class="page-num">28</span>
+            <div class="slide-heading">
+                <h2>Explore the CLI by command family.</h2>
+                <p>Run <code>specify</code> commands in the terminal</p>
             </div>
-            <h2 class="h-xl" style="margin-bottom:10px;">Habits that make it <span class="serif-em">work</span><span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:22px;max-width:800px;">
-                The commands are the easy part. These are the habits that decide whether the process actually pays off.
-            </p>
-            <div class="grid-2" style="gap:16px;">
-                <div class="feature-card">
-                    <h3>Read every artifact before moving on</h3>
-                    <p>A spec you skimmed becomes a plan you did not agree to, then tasks nobody asked for. Two minutes at each checkpoint saves the whole run.</p>
+            <div class="cli-groups">
+                <div class="cli-group">
+                    <h3>Set up and verify</h3>
+                    <p><code>init</code>, <code>check</code>, <code>version</code></p>
                 </div>
-                <div class="feature-card">
-                    <h3>Keep the stack out of the spec</h3>
-                    <p>Requirements stay true across languages and frameworks. If a sentence names a library, it belongs in the plan instead.</p>
+                <div class="cli-group">
+                    <h3>Choose an agent</h3>
+                    <p><code>integration list</code>, <code>install</code>, <code>use</code>, <code>switch</code></p>
                 </div>
-                <div class="feature-card">
-                    <h3>Fix problems at their source</h3>
-                    <p>When <code>analyze</code> flags a mismatch, do not patch <code>tasks.md</code> by hand. Correct the spec or the plan and regenerate.</p>
+                <div class="cli-group">
+                    <h3>Add capabilities</h3>
+                    <p><code>extension add</code>, <code>update</code>, <code>remove</code></p>
                 </div>
-                <div class="feature-card">
-                    <h3>Implement in stages</h3>
-                    <p>Scope each <code>/speckit.implement</code> run to a phase or a user story, verify it, then continue. Whole-feature runs overload the agent's context.</p>
+                <div class="cli-group">
+                    <h3>Adapt the process</h3>
+                    <p><code>preset</code> changes templates and commands; <code>workflow</code> and <code>workflow step</code> automate reusable steps.</p>
                 </div>
-                <div class="feature-card">
-                    <h3>Commit the artifacts</h3>
-                    <p>Check <code>specs/</code> and <code>.specify/</code> into version control. The spec is what reviewers should be reading alongside the diff.</p>
+                <div class="cli-group">
+                    <h3>Inspect and discover</h3>
+                    <p><code>artifact</code> inspects what is active. Use <code>&lt;group&gt; search</code> and <code>&lt;group&gt; info</code> to explore catalogs, for example <code>specify extension search</code>.</p>
                 </div>
-                <div class="feature-card">
-                    <h3>Separate tooling and intent changes</h3>
-                    <p>On existing projects, refresh managed files when upgrading Spec Kit; change <code>specs/</code> only when the intended behaviour changes.</p>
+                <div class="cli-group">
+                    <h3>Package and maintain</h3>
+                    <p><code>bundle</code> packages a setup. <code>self check</code> and <code>self upgrade</code> manage the CLI release.</p>
                 </div>
+            </div>
+            <p class="cli-foot">There are more subcommands and options. Run <code>specify --help</code> or <code>specify &lt;group&gt; --help</code> in your installed version. <code>specify mcp</code> is experimental.</p>
+            <p class="small" style="margin-top:12px;">For GitHub issues, install the optional extension with <code>specify extension add github</code>, then use <code>/speckit-github-taskstoissues</code>. It needs a GitHub <code>origin</code> and GitHub MCP access. The core <code>/speckit-taskstoissues</code> command is deprecated.</p>
+        </div>
+    </section>
+
+    <section class="slide" aria-label="Safe use and good practice">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Keep the work clear and reviewable.</h2>
+                <p>Before · during · after</p>
+            </div>
+            <div class="practice-layout">
+                <div>
+                    <h3>Before you initialize an existing repository</h3>
+                    <p>Read the existing-project guide. Review your working tree, and commit or back up local changes first. Use <code>--here</code> to target the current directory. Use <code>--force</code> only when you accept the merge or overwrite warning.</p>
+                    <h3 style="margin-top:22px;">When you upgrade</h3>
+                    <p>Updating the CLI does not update project files. Use <code>specify integration upgrade &lt;key&gt;</code> for agent files and <code>specify extension update</code> for installed extensions. Repeat integration upgrade for each installed key; review local edits before using <code>--force</code>.</p>
+                    <p class="small">To check for a newer CLI release, <code>specify self check</code> is read-only. <code>specify self upgrade</code> changes the installed CLI.</p>
+                    <p class="small">Running <code>uv tool install specify-cli</code> again does not upgrade an existing install.</p>
+                </div>
+                <ol class="practice-list">
+                    <li><span><strong>Review each result.</strong> Correct a spec or plan before generating more work.</span></li>
+                    <li><span><strong>Keep the spec about user needs.</strong> Put technology choices in the plan.</span></li>
+                    <li><span><strong>Implement in stages.</strong> Scope large runs, then verify each stage.</span></li>
+                    <li><span><strong>Keep the artifacts with the code.</strong> Review specs and plans with the implementation.</span></li>
+                </ol>
             </div>
         </div>
     </section>
 
-    <!-- ════════════════════════════════════════════════
-         29  THANK YOU
-         ════════════════════════════════════════════════ -->
-    <section class="slide" data-screen-label="29 Thank you" data-nav-theme="light">
-        <div class="slide-inner center">
-            <h2 class="h-hero">Thank you<span class="dot">.</span></h2>
-            <p class="lead" style="margin-bottom:28px;">github.com/github/spec-kit &nbsp;·&nbsp; github.github.io/spec-kit</p>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
-                <a href="https://sukurcf.github.io/resources/cheatsheets/github-copilot-cheatsheet.html" target="_blank" rel="noopener">
-                    <img src="https://raw.githubusercontent.com/sukurcf/sessions/main/qr-cs.png"
-                         alt="Scan to know more" width="190" height="190" style="border-radius:16px;padding:8px;background:#fff;" />
-                </a>
-                <div style="display:flex;gap:20px;">
-                    <a href="https://www.instagram.com/tec_in_sec/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000" alt="Instagram" width="48" height="48" /></a>
-                    <a href="https://www.youtube.com/@tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=19318&format=png&color=000000" alt="YouTube" width="48" height="48" /></a>
-                    <a href="https://wa.me/?text=tec_in_sec" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=16713&format=png&color=000000" alt="WhatsApp" width="48" height="48" /></a>
-                    <a href="https://www.linkedin.com/in/sukumar-p/" target="_blank" rel="noopener"><img src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000" alt="LinkedIn" width="48" height="48" /></a>
-                </div>
+    <section class="slide" aria-label="Official sources">
+        <div class="slide-inner">
+            <div class="slide-heading">
+                <h2>Use the official docs for the latest detail.</h2>
+                <p>GitHub Spec Kit</p>
             </div>
+            <ul class="source-list">
+                <li><a href="https://github.github.io/spec-kit/installation.html" target="_blank" rel="noopener noreferrer">Installation and prerequisites</a></li>
+                <li><a href="https://github.github.io/spec-kit/quickstart.html" target="_blank" rel="noopener noreferrer">Spec-Driven Development quickstart</a></li>
+                <li><a href="https://github.github.io/spec-kit/reference/agentic-sdd.html" target="_blank" rel="noopener noreferrer">SDD commands and behavior</a></li>
+                <li><a href="https://github.github.io/spec-kit/integrations/cli.html#command-invocation" target="_blank" rel="noopener noreferrer">Agent command invocation</a></li>
+                <li><a href="https://github.github.io/spec-kit/reference/agentic-bugfix.html" target="_blank" rel="noopener noreferrer">Bug-fixing process</a></li>
+                <li><a href="https://github.github.io/spec-kit/reference/agentic-assessment.html" target="_blank" rel="noopener noreferrer">Idea-assessment process</a></li>
+                <li><a href="https://github.github.io/spec-kit/reference/overview.html" target="_blank" rel="noopener noreferrer">CLI and process reference</a></li>
+                <li><a href="https://github.com/github/spec-kit/releases" target="_blank" rel="noopener noreferrer">Releases and source code</a></li>
+            </ul>
+            <p class="checked-date">Official sources reviewed 26 October 2026 · Exact features and options can change between releases.</p>
         </div>
     </section>
+</main>
 
-</div><!-- .presentation -->
+<div class="deck-controls" aria-label="Slide navigation">
+    <button id="prevSlide" type="button" aria-label="Previous slide" disabled>←</button>
+    <div id="nav" role="group" aria-label="Choose a slide"></div>
+    <button id="nextSlide" type="button" aria-label="Next slide">→</button>
+</div>
+<div class="slide-counter" id="slideCounter" aria-live="polite">01 / 12</div>
+<div class="key-hint">← / → · home / end</div>
+<div class="deck-progress" aria-hidden="true"><div class="bar"></div></div>
 
-<!-- ── Navigation UI ── -->
-<div id="nav"></div>
-<div class="slide-counter" id="slideCounter">01 / 29</div>
-<div id="hint">← / → · esc · swipe</div>
-<div class="deck-progress"><div class="bar"></div></div>
-
-<!-- ── Navigation script (do NOT modify) ── -->
 <script>
 (function () {
     var deck = document.querySelector('.presentation');
     if (!deck) return;
+
     var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
     var nav = document.getElementById('nav');
     var bar = document.querySelector('.deck-progress .bar');
     var counter = document.getElementById('slideCounter');
+    var previous = document.getElementById('prevSlide');
+    var next = document.getElementById('nextSlide');
     var total = slides.length;
-    var idx = 0, lock = false;
+    var index = 0;
+    var locked = false;
+    var wheelTotal = 0;
+    var wheelTimer = null;
 
-    /* match deck width to slide count so translateX works */
     deck.style.width = (total * 100) + 'vw';
 
-    /* build dot nav */
-    slides.forEach(function (s, i) {
-        var b = document.createElement('button');
-        b.className = 'dot';
-        b.dataset.i = i;
-        b.setAttribute('aria-label', 'Slide ' + (i + 1));
-        b.onclick = function () { go(i); };
-        nav.appendChild(b);
+    slides.forEach(function (slide, i) {
+        slide.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
+        slide.inert = i !== 0;
+        var dot = document.createElement('button');
+        dot.className = 'dot';
+        dot.type = 'button';
+        dot.dataset.index = String(i);
+        dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        dot.setAttribute('aria-current', i === 0 ? 'step' : 'false');
+        dot.addEventListener('click', function () { go(i); });
+        nav.appendChild(dot);
     });
 
-    function applySlide(n) {
-        idx = Math.max(0, Math.min(total - 1, n));
-        deck.style.transform = 'translateX(' + (-idx * 100) + 'vw)';
-        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
-        nav.querySelectorAll('.dot').forEach(function (d, i) {
-            d.classList.toggle('active', i === idx);
+    function applySlide(number) {
+        index = Math.max(0, Math.min(total - 1, number));
+        deck.style.transform = 'translateX(' + (-index * 100) + 'vw)';
+        slides.forEach(function (slide, i) {
+            var active = i === index;
+            slide.classList.toggle('active', active);
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+            slide.inert = !active;
+            if (active) slide.scrollTop = 0;
         });
-        if (bar) bar.style.width = (((idx + 1) / total) * 100) + '%';
-        if (counter) counter.textContent =
-            String(idx + 1).padStart(2, '0') + ' / ' +
-            String(total).padStart(2, '0');
+        Array.prototype.forEach.call(nav.querySelectorAll('.dot'), function (dot, i) {
+            var active = i === index;
+            dot.classList.toggle('active', active);
+            dot.setAttribute('aria-current', active ? 'step' : 'false');
+        });
+        previous.disabled = index === 0;
+        next.disabled = index === total - 1;
+        if (bar) bar.style.transform = 'scaleX(' + ((index + 1) / total) + ')';
+        if (counter) {
+            counter.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+        }
     }
 
-    function go(n) {
-        if (lock) return;
-        applySlide(n);
-        lock = true;
-        setTimeout(function () { lock = false; }, 700);
+    function go(number) {
+        if (locked) return;
+        applySlide(number);
+        locked = true;
+        window.setTimeout(function () { locked = false; }, 300);
     }
 
-    /* keyboard nav */
-    addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowDown') {
-            e.preventDefault(); go(idx + 1);
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
-            e.preventDefault(); go(idx - 1);
-        } else if (e.key === 'Home') {
-            e.preventDefault(); go(0);
-        } else if (e.key === 'End') {
-            e.preventDefault(); go(total - 1);
+    previous.addEventListener('click', function () { go(index - 1); });
+    next.addEventListener('click', function () { go(index + 1); });
+
+    window.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            go(index + 1);
+        } else if (event.key === 'ArrowLeft' || event.key === 'PageUp' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            go(index - 1);
+        } else if (event.key === 'Home') {
+            event.preventDefault();
+            go(0);
+        } else if (event.key === 'End') {
+            event.preventDefault();
+            go(total - 1);
         }
     });
 
-    /* wheel nav (horizontal + vertical accumulation) */
-    var wheelTO = null, wheelAcc = 0;
-    addEventListener('wheel', function (e) {
-        wheelAcc += e.deltaY + e.deltaX;
-        if (Math.abs(wheelAcc) > 60) {
-            go(idx + (wheelAcc > 0 ? 1 : -1));
-            wheelAcc = 0;
+    window.addEventListener('wheel', function (event) {
+        var activeSlide = slides[index];
+        var canScrollUp = activeSlide.scrollTop > 0;
+        var canScrollDown = activeSlide.scrollTop + activeSlide.clientHeight < activeSlide.scrollHeight - 2;
+        if ((event.deltaY < 0 && canScrollUp) || (event.deltaY > 0 && canScrollDown)) return;
+        wheelTotal += event.deltaY + event.deltaX;
+        if (Math.abs(wheelTotal) > 60) {
+            go(index + (wheelTotal > 0 ? 1 : -1));
+            wheelTotal = 0;
         }
-        clearTimeout(wheelTO);
-        wheelTO = setTimeout(function () { wheelAcc = 0; }, 150);
+        window.clearTimeout(wheelTimer);
+        wheelTimer = window.setTimeout(function () { wheelTotal = 0; }, 150);
     }, { passive: true });
 
-    /* touch nav */
-    var tx = 0, ty = 0;
-    addEventListener('touchstart', function (e) {
-        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+    var touchX = 0;
+    var touchY = 0;
+    window.addEventListener('touchstart', function (event) {
+        touchX = event.touches[0].clientX;
+        touchY = event.touches[0].clientY;
     }, { passive: true });
-    addEventListener('touchend', function (e) {
-        var dx = e.changedTouches[0].clientX - tx;
-        var dy = e.changedTouches[0].clientY - ty;
+    window.addEventListener('touchend', function (event) {
+        var dx = event.changedTouches[0].clientX - touchX;
+        var dy = event.changedTouches[0].clientY - touchY;
         if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-            go(idx + (dx < 0 ? 1 : -1));
+            go(index + (dx < 0 ? 1 : -1));
         }
     }, { passive: true });
 
-    /* Host-driven navigation for Open Design bridge */
-    addEventListener('message', function (e) {
-        var data = e && e.data;
+    window.addEventListener('message', function (event) {
+        var data = event && event.data;
         if (!data || data.type !== 'od:slide') return;
-        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
         if (data.action === 'go' && typeof data.index === 'number') applySlide(data.index);
-        else if (data.action === 'next') applySlide(idx + 1);
-        else if (data.action === 'prev') applySlide(idx - 1);
+        else if (data.action === 'next') applySlide(index + 1);
+        else if (data.action === 'prev') applySlide(index - 1);
         else if (data.action === 'first') applySlide(0);
         else if (data.action === 'last') applySlide(total - 1);
     });
 
     if (typeof MutationObserver !== 'undefined') {
-        var mo = new MutationObserver(function () {
-            for (var i = 0; i < slides.length; i++) {
-                if (slides[i].classList.contains('active') && i !== idx) {
-                    applySlide(i); return;
-                }
-            }
+        var observer = new MutationObserver(function () {
+            slides.forEach(function (slide, i) {
+                if (slide.classList.contains('active') && i !== index) applySlide(i);
+            });
         });
-        slides.forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ['class'] }); });
+        slides.forEach(function (slide) {
+            observer.observe(slide, { attributes: true, attributeFilter: ['class'] });
+        });
     }
 
     applySlide(0);
