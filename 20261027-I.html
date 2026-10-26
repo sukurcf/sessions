@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f8fa">
-  <meta name="description" content="A standalone guide to intermediate GitHub Copilot concepts: instructions, prompts, skills, agents, and MCP.">
-  <title>GitHub Copilot — Intermediate concepts</title>
+  <meta name="description" content="A practical guide to GitHub Copilot instructions, prompt files, agent skills, custom agents, and MCP.">
+  <title>GitHub Copilot setup guide</title>
   <style>
     :root,
     :root[data-theme="light"] {
@@ -689,20 +689,20 @@
 </head>
 <body>
   <a class="skip-link" href="#slide-1">Skip to the first slide</a>
-  <main class="deck" aria-label="GitHub Copilot intermediate concepts">
+  <main class="deck" aria-label="GitHub Copilot setup guide">
     <div class="stage" id="stage" tabindex="-1">
       <div class="progress" aria-hidden="true"><span id="progress"></span></div>
 
-      <section class="slide" id="slide-1" role="group" aria-roledescription="slide" aria-label="Slide 1 of 19: GitHub Copilot intermediate concepts" data-title="GitHub Copilot">
+      <section class="slide" id="slide-1" role="group" aria-roledescription="slide" aria-label="Slide 1 of 14: GitHub Copilot setup" data-title="GitHub Copilot setup">
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">INTERMEDIATE CONCEPTS</span>
+          <span class="chrome-label">COPILOT SETUP</span>
         </header>
         <div class="cover-grid">
           <div class="cover-copy">
             <h1>GitHub<br><span>Copilot</span></h1>
-            <p class="lede">Make your development environment work the way your team works.</p>
-            <p class="cover-note">A practical guide to instructions, prompts, skills, custom agents, and MCP connections.</p>
+            <p class="lede">Set up Copilot to work the way your team works.</p>
+            <p class="cover-note">Learn which feature to use for project rules, repeatable tasks, agent roles, and connected tools.</p>
             <div class="topic-line" aria-label="Topics">
               <span>Project guidance</span><span>Reusable workflows</span><span>Connected tools</span>
             </div>
@@ -721,160 +721,41 @@
         </div>
       </section>
 
-      <section class="slide" id="slide-2" role="group" aria-roledescription="slide" aria-label="Slide 2 of 19: Copilot topics overview" data-title="Copilot topics overview" hidden>
+      <section class="slide" id="slide-2" role="group" aria-roledescription="slide" aria-label="Slide 2 of 14: Repository instructions" data-title="Repository instructions" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">TOPICS</span>
+          <span class="chrome-label">REPOSITORY INSTRUCTIONS</span>
         </header>
         <div class="slide-main">
-          <h2>Copilot customization topics</h2>
-          <p class="lede">Each topic has its own slides on what it is, how it works, and where to configure it.</p>
-          <table class="decision-table">
-            <thead><tr><th scope="col">Topic</th><th scope="col">Files or feature</th><th scope="col">Coverage</th></tr></thead>
-            <tbody>
-              <tr><th class="need" scope="row">Instructions</th><td class="surface"><code>AGENTS.md</code>, custom, and path-specific instructions</td><td>File types, scope, and discovery.</td></tr>
-              <tr><th class="need" scope="row">Custom prompt files</th><td class="surface"><code>.prompt.md</code></td><td>Reusable user-started tasks.</td></tr>
-              <tr><th class="need" scope="row">Agent skills</th><td class="surface"><code>SKILL.md</code> and supporting files</td><td>Reusable procedures and discovery.</td></tr>
-              <tr><th class="need" scope="row">Custom agents</th><td class="surface"><code>.agent.md</code></td><td>Agent roles, file structure, and testing.</td></tr>
-              <tr><th class="need" scope="row">MCP</th><td class="surface">Servers, tools, and toolsets</td><td>Connections and available actions.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="slide" id="slide-3" role="group" aria-roledescription="slide" aria-label="Slide 3 of 19: Instructions, AGENTS.md, and path-specific instructions" data-title="Instructions and AGENTS.md" hidden>
-        <header class="slide-chrome">
-          <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">INSTRUCTIONS</span>
-        </header>
-        <div class="slide-main">
-          <h2>Instructions: file types and scope</h2>
-          <p class="lede">Use instruction files for rules that should guide Copilot across tasks. The file type and location determine where guidance applies.</p>
-          <div class="split">
-            <div class="code-window">
-              <div class="code-head">.github/instructions/api.instructions.md</div>
-              <pre><code><span class="meta">---</span>
-<span class="key">applyTo:</span> <span class="string">"src/api/**"</span>
-<span class="meta">---</span>
-<span class="bullet">-</span> Follow the existing response helpers.
-<span class="bullet">-</span> Add or update focused API tests.</code></pre>
-            </div>
-            <ul class="scope-list">
-              <li><strong><code>AGENTS.md</code></strong>Markdown guidance in a directory. Nested files can add rules for their own area.</li>
-              <li><strong><code>.github/copilot-instructions.md</code></strong>Repository-wide Copilot guidance in clients that support this file.</li>
-              <li><strong>Path-specific instructions</strong>Use <code>.instructions.md</code> with an <code>applyTo</code> glob to target matching files.</li>
-            </ul>
-          </div>
-          <p class="availability-note">File names, discovery rules, and support can vary by Copilot client and version. Check your client documentation.</p>
-        </div>
-      </section>
-
-      <section class="slide" id="slide-4" role="group" aria-roledescription="slide" aria-label="Slide 4 of 19: Custom prompt files and agent skills overview" data-title="Prompt files and skills overview" hidden>
-        <header class="slide-chrome">
-          <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">PROMPTS &amp; SKILLS</span>
-        </header>
-        <div class="slide-main">
-          <h2>Custom prompt files and agent skills</h2>
-          <p class="lede">Both support repeatable work, but they serve different purposes.</p>
-          <div class="guidance-grid">
-            <section class="guidance-pane" aria-label="Prompt file">
-              <span class="format-label">Custom prompt file</span>
-              <h3>Reusable task</h3>
-              <p>A user starts a saved request when they need that task.</p>
-            </section>
-            <section class="guidance-pane skill" aria-label="Skill">
-              <span class="format-label">Agent skill</span>
-              <h3>Reusable procedure</h3>
-              <p>A supported agent can use a procedure and its related files.</p>
-            </section>
-          </div>
-          <p class="availability-note">The following slides explain each feature and its files.</p>
-        </div>
-      </section>
-
-      <section class="slide" id="slide-5" role="group" aria-roledescription="slide" aria-label="Slide 5 of 19: Custom agents what they are and how they work" data-title="Custom agents" hidden>
-        <header class="slide-chrome">
-          <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM AGENTS</span>
-        </header>
-        <div class="slide-main">
-          <h2>Custom agents: what they are and how they work</h2>
-          <p class="lede">A custom agent has a named role and instructions. Supported clients can also configure its tools or model.</p>
-          <div class="agent-layout">
-            <div class="agent-code">
-              <div class="code-head">.github/agents/test-author.agent.md</div>
-              <pre><code><span class="meta">---</span>
-<span class="yaml">name:</span> <span class="string">test-author</span>
-<span class="yaml">description:</span> <span class="string">Writes focused tests</span>
-<span class="meta">---</span>
-<span class="md"># Mission</span>
-Add focused tests.
-Follow project patterns.</code></pre>
-            </div>
-            <ul class="agent-points">
-              <li><strong>Frontmatter</strong><span>Identifies the agent.</span></li>
-              <li><strong>Markdown body</strong><span>Defines its role and boundaries.</span></li>
-              <li><strong>Optional settings</strong><span>Can limit tools or select a model where supported.</span></li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="slide" id="slide-6" role="group" aria-roledescription="slide" aria-label="Slide 6 of 19: MCP what it is and how it works" data-title="MCP" hidden>
-        <header class="slide-chrome">
-          <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">MCP</span>
-        </header>
-        <div class="slide-main">
-          <h2>MCP: what it is and how it works</h2>
-          <p class="lede">Model Context Protocol (MCP) defines a way for a client to communicate with a server that offers capabilities.</p>
-          <div class="mcp-flow" aria-label="MCP connection flow">
-            <div class="flow-node agent"><span class="node-type">Client</span><strong>Copilot client</strong><span>Connects to a configured server.</span></div>
-            <span class="flow-arrow" aria-hidden="true">→</span>
-            <div class="flow-node server"><span class="node-type">Protocol</span><strong>MCP server</strong><span>Offers supported capabilities.</span></div>
-            <span class="flow-arrow" aria-hidden="true">→</span>
-            <div class="flow-node tools"><span class="node-type">Service</span><strong>External system</strong><span>Returns data or performs an action.</span></div>
-          </div>
-          <p class="availability-note">The client discovers server capabilities, sends a request, and receives a result. Later slides cover servers, tools, and toolsets.</p>
-        </div>
-      </section>
-
-      <section class="slide" id="slide-7" role="group" aria-roledescription="slide" aria-label="Slide 7 of 19: Custom instructions what they are and how they work" data-title="Custom instructions" hidden>
-        <header class="slide-chrome">
-          <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM INSTRUCTIONS</span>
-        </header>
-        <div class="slide-main">
-          <h2>Custom instructions: what they are and how they work</h2>
-          <p class="lede">Custom instructions are persistent guidance for Copilot. A supported client includes relevant rules with a task.</p>
+          <h2>Repository instructions</h2>
+          <p class="lede">Use this file for project conventions that should guide Copilot across tasks.</p>
           <div class="split">
             <div class="code-window">
               <div class="code-head">.github/copilot-instructions.md</div>
               <pre><code><span class="heading"># Project conventions</span>
-Use existing validation helpers.
-Follow the current folder structure.
-Add focused tests for behavior changes.
-Run the relevant test command.</code></pre>
+Use the shared validation helpers.
+Follow existing naming patterns.
+Add focused tests for behavior changes.</code></pre>
             </div>
             <ul class="scope-list">
-              <li><strong>Use for</strong>Stable project conventions, coding style, and test expectations.</li>
-              <li><strong>Keep them concise</strong>Specific rules are easier for Copilot to apply correctly.</li>
-              <li><strong>Check client support</strong>Supported instruction files differ between clients and versions.</li>
+              <li><strong>Write stable rules</strong>Include conventions that apply to many tasks.</li>
+              <li><strong>Keep rules actionable</strong>Say what to do, not only what to avoid.</li>
+              <li><strong>Avoid duplication</strong>Put local rules in a file with a narrower scope.</li>
             </ul>
           </div>
-          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Instructions guide a task. They do not replace the task request or grant access to files and tools.</span></div>
+          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Instructions guide the work. They do not grant access to files or tools.</span></div>
+          <p class="availability-note">Check that your Copilot client supports this file and loads it for the repository.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-8" role="group" aria-roledescription="slide" aria-label="Slide 8 of 19: AGENTS.md what it is and how it works" data-title="AGENTS.md" hidden>
+      <section class="slide" id="slide-3" role="group" aria-roledescription="slide" aria-label="Slide 3 of 14: AGENTS.md" data-title="AGENTS.md" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">AGENTS.MD</span>
+          <span class="chrome-label">DIRECTORY GUIDANCE</span>
         </header>
         <div class="slide-main">
-          <h2>AGENTS.md: what it is and how it works</h2>
-          <p class="lede"><code>AGENTS.md</code> is a Markdown file for agent guidance in a repository or directory tree.</p>
+          <h2>AGENTS.md</h2>
+          <p class="lede">Use <code>AGENTS.md</code> to keep guidance beside the code it describes.</p>
           <div class="split">
             <div class="file-tree" aria-label="Example AGENTS.md locations"><code><span class="folder">repo/</span>
 ├── <span class="file">AGENTS.md</span> <span class="comment"># repository guidance</span>
@@ -883,216 +764,219 @@ Run the relevant test command.</code></pre>
     └── <span class="folder">api/</span>
         └── <span class="file">AGENTS.md</span> <span class="comment"># API guidance</span></code></div>
             <ul class="scope-list">
-              <li><strong>Root file</strong>Provides guidance from the repository root when the client supports it.</li>
-              <li><strong>Nested file</strong>Adds local guidance for its directory and relevant descendants.</li>
-              <li><strong>Plain Markdown</strong>Write short rules, patterns, and commands. No special frontmatter is required for the basic format.</li>
+              <li><strong>Root file</strong>Sets guidance for the repository when the client supports it.</li>
+              <li><strong>Nested file</strong>Adds rules for its directory and relevant descendants.</li>
+              <li><strong>Markdown</strong>Write short rules and commands. Basic use needs no frontmatter.</li>
             </ul>
           </div>
-          <p class="availability-note">Clients differ in how they discover and combine <code>AGENTS.md</code> files. Check the relevant Copilot documentation.</p>
+          <p class="availability-note">Discovery and rule combination depend on the Copilot client.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-9" role="group" aria-roledescription="slide" aria-label="Slide 9 of 19: Path-specific instructions what they are and how they work" data-title="Path-specific instructions" hidden>
+      <section class="slide" id="slide-4" role="group" aria-roledescription="slide" aria-label="Slide 4 of 14: Path-specific instructions" data-title="Path-specific instructions" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">PATH-SPECIFIC INSTRUCTIONS</span>
+          <span class="chrome-label">FILE-PATTERN RULES</span>
         </header>
         <div class="slide-main">
-          <h2>Path-specific instructions: what they are and how they work</h2>
-          <p class="lede">Use an <code>.instructions.md</code> file and an <code>applyTo</code> glob for rules that apply to matching files.</p>
+          <h2>Path-specific instructions</h2>
+          <p class="lede">Use <code>applyTo</code> to attach rules to matching file paths.</p>
           <div class="split">
             <div class="code-window">
-              <div class="code-head">.github/instructions/api.instructions.md</div>
+              <div class="code-head">.github/instructions/components.instructions.md</div>
               <pre><code><span class="meta">---</span>
-<span class="key">applyTo:</span> <span class="string">"src/api/**"</span>
+<span class="key">applyTo:</span> <span class="string">"src/components/**"</span>
 <span class="meta">---</span>
-<span class="heading"># API rules</span>
-Use the shared response helpers.
-Add tests for validation changes.</code></pre>
+<span class="heading"># Component rules</span>
+Use shared design tokens.
+Keep keyboard navigation working.
+Update component tests.</code></pre>
             </div>
             <ul class="scope-list">
-              <li><strong>Match</strong>The glob identifies which file paths receive the guidance.</li>
-              <li><strong>Separate</strong>Use separate files for different parts of the codebase.</li>
-              <li><strong>Verify</strong>Open a matching file and confirm that your client applies the instruction.</li>
+              <li><strong>Match</strong>The glob selects the paths that receive these rules.</li>
+              <li><strong>Separate</strong>Use a different file for each distinct area.</li>
+              <li><strong>Verify</strong>Check that a matching file receives the guidance.</li>
             </ul>
           </div>
-          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Path patterns and support vary by client. Keep the example pattern aligned with the files in your repository.</span></div>
+          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Use a glob that matches the paths in your repository. Pattern support can vary by client.</span></div>
         </div>
       </section>
 
-      <section class="slide" id="slide-10" role="group" aria-roledescription="slide" aria-label="Slide 10 of 19: Custom prompt files what they are and how they work" data-title="Custom prompt files" hidden>
+      <section class="slide" id="slide-5" role="group" aria-roledescription="slide" aria-label="Slide 5 of 14: Prompt files" data-title="Prompt files" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM PROMPT FILES</span>
+          <span class="chrome-label">PROMPT FILES</span>
         </header>
         <div class="slide-main">
-          <h2>Custom prompt files: what they are and how they work</h2>
-          <p class="lede">A prompt file stores a reusable task that a developer starts when they need it.</p>
+          <h2>Prompt files</h2>
+          <p class="lede">Save a task you want to start on demand.</p>
           <div class="split">
             <div class="code-window">
-              <div class="code-head">.github/prompts/review-api.prompt.md</div>
-              <pre><code><span class="heading"># Review API changes</span>
-Review the changed API files.
-Check validation and error handling.
-Return findings with file and line.
+              <div class="code-head">.github/prompts/explain-test.prompt.md</div>
+              <pre><code><span class="heading"># Explain a failing test</span>
+Read the test and its error output.
+Identify the likely cause.
+Suggest a next step.
 Do not edit files.</code></pre>
             </div>
             <ol class="workflow">
-              <li><span class="step-mark">A</span><span><strong>Create</strong><span>Save a <code>.prompt.md</code> file in a supported prompt folder.</span></span></li>
-              <li><span class="step-mark">B</span><span><strong>Start</strong><span>Choose the prompt from the supported command or prompt picker.</span></span></li>
-              <li><span class="step-mark">C</span><span><strong>Review</strong><span>Check the response against the task and source files.</span></span></li>
+              <li><span class="step-mark">A</span><span><strong>Write</strong><span>Describe one clear task in a <code>.prompt.md</code> file.</span></span></li>
+              <li><span class="step-mark">B</span><span><strong>Run</strong><span>Select it from a prompt picker or command supported by your client.</span></span></li>
+              <li><span class="step-mark">C</span><span><strong>Check</strong><span>Review the result against the request and source files.</span></span></li>
             </ol>
           </div>
-          <p class="availability-note">Prompt file discovery and invocation depend on the Copilot client.</p>
+          <p class="availability-note">File locations and launch methods depend on the Copilot client.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-11" role="group" aria-roledescription="slide" aria-label="Slide 11 of 19: Agent skills what they are and how they work" data-title="Agent skills" hidden>
+      <section class="slide" id="slide-6" role="group" aria-roledescription="slide" aria-label="Slide 6 of 14: Agent skills" data-title="Agent skills" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">AGENT SKILLS</span>
+          <span class="chrome-label">SKILLS</span>
         </header>
         <div class="slide-main">
-          <h2>Agent skills: what they are and how they work</h2>
-          <p class="lede">An agent skill packages instructions for a repeatable type of work. It can include supporting references and scripts.</p>
+          <h2>Agent skills</h2>
+          <p class="lede">A skill gives a supported agent a reusable procedure and any needed reference files.</p>
           <div class="split">
             <div class="map-window">
               <div class="window-bar"><span>skill discovery</span><span>SKILL.md</span></div>
               <div class="map-body">
-                <p class="map-title">SUPPORTED AGENT PROCESS</p>
-                <div class="map-row"><span class="map-from">Task arrives</span><span class="map-arrow">→</span><span class="map-to">Match description</span></div>
-                <div class="map-row"><span class="map-from">Skill selected</span><span class="map-arrow">→</span><span class="map-to">Read instructions</span></div>
-                <div class="map-row"><span class="map-from">Work starts</span><span class="map-arrow">→</span><span class="map-to">Use relevant files</span></div>
+                <p class="map-title">SKILL USE</p>
+                <div class="map-row"><span class="map-from">Task arrives</span><span class="map-arrow">→</span><span class="map-to">Find relevant skill</span></div>
+                <div class="map-row"><span class="map-from">Skill loads</span><span class="map-arrow">→</span><span class="map-to">Read procedure</span></div>
+                <div class="map-row"><span class="map-from">Work starts</span><span class="map-arrow">→</span><span class="map-to">Follow its steps</span></div>
               </div>
             </div>
             <ul class="scope-list">
-              <li><strong>Skill description</strong>Helps supported agents identify when a skill is relevant.</li>
-              <li><strong>Skill instructions</strong><code>SKILL.md</code> describes the procedure to follow.</li>
-              <li><strong>Supporting files</strong>References and scripts can provide additional task-specific detail.</li>
+              <li><strong>Description</strong>Helps a supported agent decide when a skill applies.</li>
+              <li><strong>Procedure</strong><code>SKILL.md</code> contains the steps to follow.</li>
+              <li><strong>References</strong>Optional files hold details needed for specific tasks.</li>
             </ul>
           </div>
-          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>A prompt file is usually started by a user. A skill is a reusable procedure that supported agents can discover when relevant.</span></div>
+          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>A skill is a procedure, not a saved user request. Use it when the method needs to be reused.</span></div>
         </div>
       </section>
 
-      <section class="slide" id="slide-12" role="group" aria-roledescription="slide" aria-label="Slide 12 of 19: Agent skills file structure and creation" data-title="Agent skills file structure" hidden>
+      <section class="slide" id="slide-7" role="group" aria-roledescription="slide" aria-label="Slide 7 of 14: Skill files" data-title="Skill files" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">AGENT SKILL FILES</span>
+          <span class="chrome-label">SKILL FILES</span>
         </header>
         <div class="slide-main">
-          <h2>Agent skills: file structure and creation</h2>
-          <p class="lede">Put a <code>SKILL.md</code> file in a named skill folder. Add references or scripts only when they support the procedure.</p>
+          <h2>Skill files</h2>
+          <p class="lede">Put <code>SKILL.md</code> in a named folder. Add supporting files only when the procedure needs them.</p>
           <div class="split">
-            <div class="file-tree" aria-label="Example agent skill folder"><code><span class="folder">.github/skills/api-review/</span>
+            <div class="file-tree" aria-label="Example agent skill folder"><code><span class="folder">.github/skills/dependency-update/</span>
 ├── <span class="file">SKILL.md</span>
 ├── <span class="folder">references/</span>
-│   └── <span class="file">api-conventions.md</span>
+│   └── <span class="file">upgrade-policy.md</span>
 └── <span class="folder">scripts/</span>
-    └── <span class="file">check-api.sh</span></code></div>
+    └── <span class="file">check-lockfile.sh</span></code></div>
             <div class="code-window">
               <div class="code-head">SKILL.md</div>
               <pre><code><span class="meta">---</span>
-<span class="key">name:</span> <span class="string">api-review</span>
-<span class="key">description:</span> <span class="string">Review API changes</span>
+<span class="key">name:</span> <span class="string">dependency-update</span>
+<span class="key">description:</span> <span class="string">Prepare dependency updates</span>
 <span class="meta">---</span>
-<span class="heading"># Review procedure</span>
-Read the changed route and its tests.
-Check the API conventions.
-Report findings with file and line.</code></pre>
+<span class="heading"># Update procedure</span>
+Read the package and upgrade policy.
+Check the release notes for breaking changes.
+Run the project checks.</code></pre>
             </div>
           </div>
-          <p class="availability-note">Use the skill folder location and metadata supported by your Copilot client. Review any script before you include or run it.</p>
+          <p class="availability-note">Use a folder location and metadata supported by your Copilot client. Review scripts before use.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-13" role="group" aria-roledescription="slide" aria-label="Slide 13 of 19: Custom agents what they are and how they work" data-title="Custom agents" hidden>
+      <section class="slide" id="slide-8" role="group" aria-roledescription="slide" aria-label="Slide 8 of 14: Custom agents" data-title="Custom agents" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM AGENTS</span>
+          <span class="chrome-label">AGENT ROLES</span>
         </header>
         <div class="slide-main">
-          <h2>Custom agents: what they are and how they work</h2>
-          <p class="lede">A custom agent is a named assistant profile with a focused purpose and its own instructions.</p>
+          <h2>Custom agents</h2>
+          <p class="lede">Create a named agent for work that needs a consistent role and clear boundaries.</p>
           <div class="split">
             <ul class="scope-list">
-              <li><strong>Identity</strong>A name and description help people choose the right agent.</li>
-              <li><strong>Instructions</strong>The Markdown body defines its role and limits.</li>
-              <li><strong>Use</strong>Select it in a supported client, then give it a task.</li>
+              <li><strong>Role</strong>Give the agent one clear purpose.</li>
+              <li><strong>Boundaries</strong>State what it should and should not do.</li>
+              <li><strong>Selection</strong>Choose it in a client that supports custom agents.</li>
             </ul>
             <div class="context-stack">
-              <h3>Optional configuration</h3>
-              <p>Supported clients can set a model or limit the tools available to an agent.</p>
+              <h3>When to use one</h3>
+              <p>Use a custom agent when a task needs its own role, settings, or tool access. Use a skill when you only need reusable steps.</p>
             </div>
           </div>
-          <p class="availability-note">Agent selection, metadata, and tool controls depend on the Copilot client.</p>
+          <p class="availability-note">Agent selection and settings depend on the Copilot client.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-14" role="group" aria-roledescription="slide" aria-label="Slide 14 of 19: Custom agent file structure" data-title="Custom agent file structure" hidden>
+      <section class="slide" id="slide-9" role="group" aria-roledescription="slide" aria-label="Slide 9 of 14: Agent files" data-title="Agent files" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM AGENT FILES</span>
+          <span class="chrome-label">AGENT FILE</span>
         </header>
         <div class="slide-main">
-          <h2>Custom agent files: structure</h2>
-          <p class="lede">A custom agent file combines YAML frontmatter with a Markdown instruction body.</p>
+          <h2>Agent files</h2>
+          <p class="lede">An agent file combines its identity with instructions for its role.</p>
           <div class="agent-layout">
             <div class="agent-code">
-              <div class="code-head">.github/agents/test-author.agent.md</div>
+              <div class="code-head">.github/agents/docs-editor.agent.md</div>
               <pre><code><span class="meta">---</span>
-<span class="yaml">name:</span> <span class="string">test-author</span>
-<span class="yaml">description:</span> <span class="string">Writes focused tests</span>
+<span class="yaml">name:</span> <span class="string">docs-editor</span>
+<span class="yaml">description:</span> <span class="string">Improves project documentation</span>
 <span class="meta">---</span>
 <span class="md"># Mission</span>
-Add focused tests for the requested change.
+Make project documentation clear and concise.
 <span class="md"># Rules</span>
-<span class="rule">-</span> Inspect nearby tests; follow patterns.
-<span class="rule">-</span> Do not change production code.
-<span class="rule">-</span> Report the test command and result.</code></pre>
+<span class="rule">-</span> Keep the technical meaning.
+<span class="rule">-</span> Do not change source code.
+<span class="rule">-</span> List the files you changed.</code></pre>
             </div>
             <ul class="agent-points">
-              <li><strong>Frontmatter</strong><span>Use the required identity fields. Add optional metadata only when your client supports it.</span></li>
-              <li><strong>Instruction body</strong><span>Write a clear mission, steps, boundaries, and handoff format.</span></li>
-              <li><strong>Tools and model</strong><span>Use client-supported settings to limit access to what the role needs.</span></li>
+              <li><strong>Frontmatter</strong><span>Set the name and description. Add only supported fields.</span></li>
+              <li><strong>Instructions</strong><span>State the mission, boundaries, and expected result.</span></li>
+              <li><strong>Tool access</strong><span>Limit the agent to tools needed for its role.</span></li>
             </ul>
           </div>
-          <p class="availability-note">File name, folder, metadata fields, and accepted tool names vary by client.</p>
+          <p class="availability-note">File location, metadata, and tool settings vary by client.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-15" role="group" aria-roledescription="slide" aria-label="Slide 15 of 19: Custom agent files creation and testing" data-title="Custom agent creation and testing" hidden>
+      <section class="slide" id="slide-10" role="group" aria-roledescription="slide" aria-label="Slide 10 of 14: Create and test an agent" data-title="Create and test an agent" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">CUSTOM AGENT FILES</span>
+          <span class="chrome-label">AGENT WORKFLOW</span>
         </header>
         <div class="slide-main">
-          <h2>Custom agent files: creation and testing</h2>
-          <p class="lede">Build one focused role, check that your client discovers it, then test it on a real task.</p>
-          <div class="workflow">
-            <div class="task-card">
-              <span class="file-label">EXAMPLE ROLE</span>
-              <p>Test author: inspect existing tests, add focused coverage, run the relevant command, and report the result.</p>
-            </div>
-            <ol class="workflow-steps">
-              <li><b>Write</b><span>Describe the role, task boundaries, and expected output.</span></li>
-              <li><b>Limit</b><span>Enable only the tools and permissions that the role needs.</span></li>
-              <li><b>Discover</b><span>Confirm the client lists or accepts the new agent.</span></li>
-              <li><b>Test</b><span>Check its actions, results, and handoff; refine the file.</span></li>
+          <h2>Create and test an agent</h2>
+          <p class="lede">Start with a narrow role, then verify the result in your Copilot client.</p>
+          <div class="layout-grid">
+            <div class="file-tree"><code><span class="comment">Example role</span>
+<span class="folder">test-author</span>
+├── Inspect nearby tests
+├── Add focused coverage
+├── Run the relevant command
+└── Report the result</code></div>
+            <ol class="workflow">
+              <li><span class="step-mark">A</span><span><strong>Define</strong><span>Write the role and its boundaries.</span></span></li>
+              <li><span class="step-mark">B</span><span><strong>Limit</strong><span>Enable only the tools it needs.</span></span></li>
+              <li><span class="step-mark">C</span><span><strong>Discover</strong><span>Confirm the client can select the agent.</span></span></li>
+              <li><span class="step-mark">D</span><span><strong>Test</strong><span>Check its work and refine the instructions.</span></span></li>
             </ol>
           </div>
-          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Keep user review in the workflow. A custom agent is configuration, not proof that its output is correct.</span></div>
+          <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><span>Review the agent's output. Its configuration does not guarantee correct results.</span></div>
         </div>
       </section>
 
-      <section class="slide" id="slide-16" role="group" aria-roledescription="slide" aria-label="Slide 16 of 19: MCP servers what they are and how they work" data-title="MCP servers" hidden>
+      <section class="slide" id="slide-11" role="group" aria-roledescription="slide" aria-label="Slide 11 of 14: MCP servers" data-title="MCP servers" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
           <span class="chrome-label">MCP SERVERS</span>
         </header>
         <div class="slide-main">
-          <h2>MCP servers: what they are and how they work</h2>
-          <p class="lede">An MCP server is a program or service that exposes capabilities to a compatible client through Model Context Protocol.</p>
+          <h2>MCP servers</h2>
+          <p class="lede">An MCP server exposes capabilities to a compatible client through Model Context Protocol.</p>
           <div class="mcp-flow" aria-label="MCP server request flow">
             <div class="flow-node agent"><span class="node-type">Client</span><strong>Copilot client</strong><span>Connects to a configured server.</span></div>
             <span class="flow-arrow" aria-hidden="true">→</span>
@@ -1105,85 +989,81 @@ Add focused tests for the requested change.
             <p><strong>Discover</strong>The server reports the capabilities it offers.</p>
             <p><strong>Request</strong>The client calls a capability and receives its result.</p>
           </div>
-          <p class="availability-note">A server may expose tools, resources, or prompts. The client determines which capabilities are available to the agent.</p>
+          <p class="availability-note">A server can offer tools, resources, or prompts. The client controls which capabilities are available.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-17" role="group" aria-roledescription="slide" aria-label="Slide 17 of 19: MCP tools what they are and how they work" data-title="MCP tools" hidden>
+      <section class="slide" id="slide-12" role="group" aria-roledescription="slide" aria-label="Slide 12 of 14: MCP tools" data-title="MCP tools" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
           <span class="chrome-label">MCP TOOLS</span>
         </header>
         <div class="slide-main">
-          <h2>MCP tools: what they are and how they work</h2>
-          <p class="lede">An MCP tool is a named action that a server makes available to a connected client.</p>
+          <h2>MCP tools</h2>
+          <p class="lede">A tool is a named action that an MCP server makes available to a client.</p>
           <div class="split">
             <div class="code-window">
               <div class="code-head">Example tool descriptions</div>
-              <pre><code><span class="key">search_issues</span>
-Input: query · reads matching issues
+              <pre><code><span class="key">search_docs</span>
+Input: query · returns matching documents
 
-<span class="key">create_issue</span>
-Input: title, body · creates an issue</code></pre>
+<span class="key">update_record</span>
+Input: id, fields · changes a record</code></pre>
             </div>
             <ul class="scope-list">
-              <li><strong>Definition</strong>A name, description, and input schema.</li>
-              <li><strong>Call and result</strong>The client sends arguments to the server and receives the result.</li>
-              <li><strong>Side effects</strong>Check write actions, arguments, and approval settings.</li>
+              <li><strong>Inputs</strong>The schema defines which arguments the tool accepts.</li>
+              <li><strong>Results</strong>The server returns data or a status to the client.</li>
+              <li><strong>Effects</strong>Check whether the tool reads data or changes it.</li>
             </ul>
           </div>
-          <p class="availability-note">Enable only tools that fit the task and your access policy.</p>
+          <p class="availability-note">Make only task-relevant tools available. Review write actions before use.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-18" role="group" aria-roledescription="slide" aria-label="Slide 18 of 19: MCP toolsets what they are and how they work" data-title="MCP toolsets" hidden>
+      <section class="slide" id="slide-13" role="group" aria-roledescription="slide" aria-label="Slide 13 of 14: Toolsets" data-title="Toolsets" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">MCP TOOLSETS</span>
+          <span class="chrome-label">TOOLSETS</span>
         </header>
         <div class="slide-main">
-          <h2>MCP toolsets: what they are and how they work</h2>
-          <p class="lede">Some Copilot clients use toolsets to group or select the tools an agent can use.</p>
+          <h2>Toolsets</h2>
+          <p class="lede">Some clients group MCP tools into sets that can be enabled for a task.</p>
           <div class="mcp-details">
-            <p><strong>Group</strong>Put related tools together, such as search and read actions for an issue tracker.</p>
-            <p><strong>Select</strong>Make a supported toolset available to a session, agent, or task.</p>
-            <p><strong>Limit</strong>Keep unrelated or write-capable tools out of the available set.</p>
+            <p><strong>Group</strong>Keep related tools together.</p>
+            <p><strong>Select</strong>Enable the tools needed for the task.</p>
+            <p><strong>Limit</strong>Leave unrelated or write-capable tools out.</p>
           </div>
           <div class="context-stack" style="margin-top:2cqw">
-            <h3>Important distinction</h3>
-            <p>Toolsets are a client-level grouping or selection feature. They are not a separate MCP server or a core MCP protocol capability.</p>
+            <h3>Client feature</h3>
+            <p>Toolsets are a client feature. They are not a separate server or a core MCP protocol capability.</p>
           </div>
-          <p class="availability-note">Toolset names, behavior, and configuration depend on the Copilot client.</p>
+          <p class="availability-note">Toolset names and behavior depend on the Copilot client.</p>
         </div>
       </section>
 
-      <section class="slide" id="slide-19" role="group" aria-roledescription="slide" aria-label="Slide 19 of 19: API review workspace example" data-title="API review workspace example" hidden>
+      <section class="slide" id="slide-14" role="group" aria-roledescription="slide" aria-label="Slide 14 of 14: API review example" data-title="API review example" hidden>
         <header class="slide-chrome">
           <span class="brand"><span class="brand-mark" aria-hidden="true">G</span> GitHub Copilot</span>
-          <span class="chrome-label">API REVIEW EXAMPLE</span>
+          <span class="chrome-label">EXAMPLE</span>
         </header>
         <div class="slide-main">
-          <h2>Example: API review workspace</h2>
-          <p class="lede">For an API review workflow, add only the guidance and capabilities that solve a real repeat problem.</p>
+          <h2>API review example</h2>
+          <p class="lede">Add a feature only when it solves a specific part of the workflow.</p>
           <div class="layout-grid">
             <div class="file-tree" aria-label="Example Copilot workspace layout"><code><span class="folder">repo/</span>
-├── <span class="file">AGENTS.md</span> <span class="comment"># shared practices</span>
 └── <span class="folder">.github/</span>
-    ├── <span class="file">copilot-instructions.md</span>
     ├── <span class="file">instructions/api.instructions.md</span>
-    ├── <span class="file">prompts/review-api.prompt.md</span>
-    ├── <span class="file">agents/test-author.agent.md</span>
-    └── <span class="file">skills/api-review/SKILL.md</span>
+    └── <span class="file">prompts/review-api.prompt.md</span>
 
-<span class="comment">MCP config depends on the client.</span></code></div>
+<span class="comment">Add other features only when needed.</span></code></div>
             <ol class="workflow">
-              <li><span class="step-mark">A</span><span><strong>Name the repeated problem</strong><span>Rules, task steps, role, or external action?</span></span></li>
-              <li><span class="step-mark">B</span><span><strong>Choose one extension point</strong><span>Avoid duplicate instructions.</span></span></li>
-              <li><span class="step-mark">C</span><span><strong>Test in the target client</strong><span>Check discovery, scope, output, and tool access.</span></span></li>
-              <li><span class="step-mark">D</span><span><strong>Review and refine</strong><span>Keep what works; remove unclear rules.</span></span></li>
+              <li><span class="step-mark">A</span><span><strong>Set API rules</strong><span>Use one path-specific instruction file.</span></span></li>
+              <li><span class="step-mark">B</span><span><strong>Save review steps</strong><span>Start them from a prompt file when needed.</span></span></li>
+              <li><span class="step-mark">C</span><span><strong>Add a skill</strong><span>Use one if the procedure needs reusable references.</span></span></li>
+              <li><span class="step-mark">D</span><span><strong>Connect only as needed</strong><span>Add an agent role or MCP tool for a real need.</span></span></li>
             </ol>
           </div>
-          <p class="closing-line">The best setup is the smallest one that makes a useful behavior repeatable.</p>
+          <p class="closing-line">Start small. Add only what improves the workflow.</p>
         </div>
       </section>
     </div>
@@ -1191,7 +1071,7 @@ Input: title, body · creates an issue</code></pre>
 
   <div class="controls" role="toolbar" aria-label="Slide controls">
     <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
-    <span class="count" id="count" aria-live="polite">01 / 19</span>
+    <span class="count" id="count" aria-live="polite">01 / 14</span>
     <button id="next" type="button" aria-label="Next slide" title="Next slide">→</button>
     <span class="key-help">Use ← → or Home / End</span>
     <button id="theme" type="button" aria-label="Switch to dark theme" title="Switch theme">Dark</button>
