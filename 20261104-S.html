@@ -151,6 +151,13 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       display: grid;
       align-content: center;
       padding: 7.2cqw 8.1cqw 6.4cqw;
+      --type-display: clamp(3rem, 6.7cqw, 6rem);
+      --type-heading: clamp(2rem, 4.15cqw, 4.25rem);
+      --type-subheading: clamp(1.2rem, 1.9cqw, 1.8rem);
+      --type-body: clamp(1rem, 1.38cqw, 1.35rem);
+      --type-lead: clamp(1.1rem, 1.7cqw, 1.6rem);
+      --type-support: clamp(.9rem, 1.1cqw, 1.05rem);
+      --type-code: clamp(.8rem, 1cqw, 1.05rem);
       opacity: 0;
       visibility: hidden;
       transform: translateX(1.5cqw);
@@ -175,7 +182,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
     h1 {
       max-width: 8ch;
       margin-bottom: 1.5cqw;
-      font-size: clamp(3rem, 6.7cqw, 6rem);
+      font-size: var(--type-display);
       font-weight: 760;
       letter-spacing: -.065em;
       line-height: .94;
@@ -184,7 +191,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
     h2 {
       max-width: 19ch;
       margin-bottom: 1.2cqw;
-      font-size: clamp(2rem, 4.15cqw, 4.25rem);
+      font-size: var(--type-heading);
       font-weight: 720;
       letter-spacing: -.055em;
       line-height: 1.02;
@@ -192,14 +199,14 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
 
     h3 {
       margin-bottom: .7cqw;
-      font-size: clamp(1.2rem, 1.9cqw, 1.8rem);
+      font-size: var(--type-subheading);
       font-weight: 650;
       letter-spacing: -.035em;
       line-height: 1.12;
     }
 
     p, li {
-      font-size: clamp(1rem, 1.38cqw, 1.35rem);
+      font-size: var(--type-body);
       line-height: 1.48;
     }
 
@@ -209,13 +216,13 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       max-width: 60ch;
       margin-bottom: 1.8cqw;
       color: var(--muted);
-      font-size: clamp(1.1rem, 1.7cqw, 1.6rem);
+      font-size: var(--type-lead);
       line-height: 1.45;
     }
 
     .accent { color: var(--blue); }
     .muted { color: var(--muted); }
-    .small { font-size: clamp(.9rem, 1.1cqw, 1.05rem); color: var(--muted); }
+    .small { font-size: var(--type-support); color: var(--muted); }
     .mono { font-family: var(--font-mono); }
 
     .title-layout {
@@ -420,7 +427,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       text-transform: uppercase;
     }
 
-    .surface-title strong { color: var(--fg); font: 650 1.1cqw/1.2 var(--font-sans); letter-spacing: -.02em; text-transform: none; }
+    .surface-title strong { color: var(--fg); font: 650 var(--type-subheading)/1.2 var(--font-sans); letter-spacing: -.02em; text-transform: none; }
 
     .bullet-list { margin: 0; padding: 0; list-style: none; }
     .bullet-list li { position: relative; margin: 0 0 .72cqw; padding-left: 1.25cqw; }
@@ -535,10 +542,10 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
     }
 
     .comment-pane h3 { margin: 0; }
-    .comment-pane p { margin: 0; font-size: 1.02cqw; }
+    .comment-pane p { margin: 0; font-size: var(--type-support); }
 
     .setting-list { display: grid; grid-template-columns: 1.05fr 1.45fr; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .65cqw; }
-    .setting-list > div { padding: .75cqw 1cqw; border-bottom: 1px solid var(--line); background: var(--panel); font-size: .97cqw; line-height: 1.4; }
+    .setting-list > div { padding: .75cqw 1cqw; border-bottom: 1px solid var(--line); background: var(--panel); font-size: var(--type-support); line-height: 1.4; }
     .setting-list > div:nth-last-child(-n+2) { border-bottom: 0; }
     .setting-list .setting-label { background: var(--panel-raised); color: var(--fg); font-weight: 650; }
     .setting-list .setting-value { color: var(--muted); }
@@ -554,7 +561,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       background: var(--panel);
     }
 
-    .callout p { margin: 0; font-size: .98cqw; }
+    .callout p { margin: 0; font-size: var(--type-support); }
     .callout strong { color: var(--fg); }
     .callout--warning { border-color: rgba(210, 153, 34, .45); background: var(--yellow-soft); }
     .callout--success { border-color: rgba(63, 185, 80, .42); background: var(--green-soft); }
@@ -575,8 +582,8 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       background: var(--panel);
     }
 
-    .decision-step strong { display: block; margin-bottom: .4cqw; font-size: 1cqw; }
-    .decision-step span { color: var(--muted); font-size: .82cqw; line-height: 1.4; }
+    .decision-step strong { display: block; margin-bottom: .4cqw; font-size: var(--type-subheading); }
+    .decision-step span { color: var(--muted); font-size: var(--type-body); line-height: 1.4; }
     .decision-arrow { color: var(--blue); font: 1.4cqw/1 var(--font-mono); }
 
     .file-tree {
@@ -586,7 +593,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       border-radius: .6cqw;
       background: var(--canvas);
       color: var(--fg);
-      font: 500 .91cqw/1.8 var(--font-mono);
+      font: 500 var(--type-code)/1.5 var(--font-mono);
       white-space: pre-wrap;
     }
 
@@ -625,7 +632,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       border-radius: .65cqw;
       background: var(--canvas);
       color: var(--fg);
-      font: 500 .82cqw/1.55 var(--font-mono);
+      font: 500 var(--type-code)/1.5 var(--font-mono);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
@@ -669,16 +676,12 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
 
     .closing {
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
+      grid-template-columns: 1.25fr .75fr;
       gap: 3cqw;
       align-items: center;
     }
 
-    .closing h2 {
-      max-width: none;
-      font-size: clamp(1.2rem, 3.5cqw, 2.85rem);
-      line-height: 1.08;
-    }
+    .closing h2 { max-width: none; }
 
     .closing h2 span { display: block; white-space: nowrap; }
 
@@ -695,6 +698,49 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
 
     .closing-quote span { color: var(--blue); }
 
+    .slide--compact {
+      padding: 5.2cqw 7.2cqw 4.8cqw;
+    }
+
+    .slide--compact.slide--dense {
+      padding-top: 4.2cqw;
+      padding-bottom: 2.4cqw;
+    }
+
+    .slide--compact h2 {
+      margin-bottom: .7cqw;
+    }
+
+    .slide--compact .lead {
+      margin-bottom: .9cqw;
+    }
+
+    .slide--compact .surface,
+    .slide--compact .sequence article {
+      padding: 1cqw 1.1cqw;
+    }
+
+    .slide--compact .surface h3,
+    .slide--compact .sequence h3 {
+      margin-bottom: .45cqw;
+    }
+
+    .slide--compact .surface-title {
+      margin-bottom: .6cqw;
+      padding-bottom: .45cqw;
+    }
+
+    .slide--compact .bullet-list li { margin-bottom: .42cqw; padding-left: 1cqw; }
+    .slide--compact .bullet-list li::before { left: .15cqw; width: .3cqw; height: .3cqw; }
+    .slide--compact .setting-list > div { padding: .48cqw .75cqw; }
+    .slide--compact .callout { gap: .6cqw; margin-top: .65cqw; padding: .62cqw .8cqw; }
+    .slide--compact .sequence article::before { width: 1.8cqw; height: 1.8cqw; margin-bottom: .6cqw; }
+    .slide--compact pre { padding: .6cqw .9cqw; }
+    .slide--compact .source-list { gap: .25cqw 1.3cqw; margin-top: .65cqw; }
+    .slide--compact .source-list li { padding: .35cqw 0; }
+    .slide--compact .source-list span { margin-top: .1cqw; }
+    .slide--compact .closing-quote { padding: 1.2cqw; }
+
     @media (max-width: 760px) {
       html, body { height: 100%; }
       .deck { display: block; }
@@ -704,12 +750,33 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       .brand-mark svg { width: 14px; height: 14px; }
       .slide { overflow-y: auto; align-content: start; padding: 90px 22px 90px; }
       .slide-inner { max-height: none; }
-      h1 { max-width: 10ch; margin-bottom: 18px; font-size: clamp(3rem, 15vw, 5.5rem); }
-      h2 { margin-bottom: 14px; font-size: clamp(2rem, 9vw, 3rem); }
-      h3 { margin-bottom: 9px; font-size: 1.22rem; }
-      p, li { font-size: 1rem; }
+      .slide {
+        --type-display: clamp(3rem, 15vw, 5.5rem);
+        --type-heading: clamp(1.35rem, 7vw, 3rem);
+        --type-subheading: 1.22rem;
+        --type-body: 1rem;
+        --type-lead: 1.1rem;
+        --type-support: .92rem;
+        --type-code: 10px;
+      }
+      h1 { max-width: 10ch; margin-bottom: 18px; }
+      h2 { margin-bottom: 14px; }
+      .slide.slide--compact { padding: 90px 22px 90px; }
+      .slide.slide--compact h2 { margin-bottom: 14px; }
+      .slide.slide--compact .surface, .slide.slide--compact .sequence article { padding: 16px; }
+      .slide.slide--compact .surface-title { margin-bottom: 12px; padding-bottom: 9px; }
+      .slide.slide--compact .bullet-list li { margin-bottom: 9px; padding-left: 17px; }
+      .slide.slide--compact .bullet-list li::before { left: 3px; width: 5px; height: 5px; }
+      .slide.slide--compact .setting-list > div { padding: 10px 12px; }
+      .slide.slide--compact .callout { gap: 9px; margin-top: 12px; padding: 11px; }
+      .slide.slide--compact .sequence article::before { width: 27px; height: 27px; margin-bottom: 12px; }
+      .slide.slide--compact pre { padding: 12px; }
+      .slide.slide--compact .source-list { gap: 12px; margin-top: 12px; }
+      .slide.slide--compact .source-list li { padding: 8px 0; }
+      .slide.slide--compact .source-list span { margin-top: 4px; }
+      h3 { margin-bottom: 9px; }
       p { margin-bottom: 12px; }
-      .lead { margin-bottom: 20px; font-size: 1.1rem; }
+      .lead { margin-bottom: 20px; }
       .title-layout, .pull-request, .two-column-code, .closing { grid-template-columns: 1fr; gap: 22px; }
       .title-meta { margin-top: 18px; font-size: 10px; }
       .title-meta::before { width: 24px; }
@@ -727,8 +794,6 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       .grid-2, .grid-3, .sequence, .source-list { grid-template-columns: 1fr; gap: 12px; }
       .surface, .sequence article { padding: 16px; border-radius: 10px; }
       .surface-title { margin-bottom: 12px; padding-bottom: 9px; font-size: 9px; }
-      .surface-title strong { font-size: 1rem; }
-      .small { font-size: .92rem; }
       .bullet-list li { margin-bottom: 9px; padding-left: 17px; }
       .bullet-list li::before { left: 3px; width: 5px; height: 5px; }
       .tag { font-size: 9px; }
@@ -740,22 +805,21 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       .comment-pane { gap: 10px; padding: 14px; }
       .comment-pane p { font-size: .95rem; }
       .setting-list { grid-template-columns: 1fr; }
-      .setting-list > div { padding: 10px 12px; font-size: .92rem; }
+      .setting-list > div { padding: 10px 12px; }
       .setting-list > div:nth-last-child(2) { border-bottom: 1px solid var(--line); }
       .callout { gap: 9px; margin-top: 12px; padding: 11px; }
-      .callout p { font-size: .92rem; }
       .decision-map, .mcp-flow { grid-template-columns: 1fr; gap: 8px; }
       .decision-step { min-height: 0; padding: 12px; }
-      .decision-step strong, .mcp-node strong { font-size: 1rem; }
-      .decision-step span, .mcp-node span { font-size: .86rem; }
+      .mcp-node strong { font-size: 1rem; }
+      .mcp-node span { font-size: .86rem; }
+      .decision-step span { font-size: var(--type-body); }
       .decision-arrow, .mcp-arrow { justify-self: center; transform: rotate(90deg); font-size: 1.2rem; }
       .mcp-node { min-height: 0; padding: 13px; }
-      .file-tree { padding: 12px; font-size: 10px; }
-      pre { padding: 12px; font-size: 10px; line-height: 1.5; }
+      .file-tree, pre { padding: 12px; font-size: var(--type-code); line-height: 1.5; }
       .source-list li { padding: 8px 0; font-size: .9rem; }
       .source-list span { font-size: .78rem; }
-      .closing-quote { padding: 18px; font-size: 1.45rem; }
-      .closing h2 { max-width: none; font-size: clamp(1.2rem, 6.2vw, 2.5rem); }
+      .closing-quote { padding: 18px; }
+      .closing h2 { max-width: none; }
       .controls { right: 12px; bottom: 12px; gap: 3px; padding: 3px; }
       .controls button { min-width: 36px; min-height: 36px; padding: 6px 9px; font-size: 12px; }
       .controls .count { min-width: 3.9em; font-size: 10px; }
@@ -793,7 +857,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
       </header>
 
       <div class="slides" id="slides">
-        <section class="slide slide--title is-active" aria-label="Slide 1 of 14">
+        <section class="slide slide--title is-active" aria-label="Slide 1 of 22">
           <div class="slide-inner title-layout">
             <div>
               <h1>Copilot code review</h1>
@@ -826,7 +890,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 2 of 14">
+        <section class="slide slide--compact" aria-label="Slide 2 of 22">
           <div class="slide-inner">
             <h2>One review habit. Two places to use it.</h2>
             <p class="lead">Review a selection or working changes in VS Code. Ask Copilot to review a pull request on GitHub.com.</p>
@@ -857,7 +921,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 3 of 14">
+        <section class="slide" aria-label="Slide 3 of 22">
           <div class="slide-inner">
             <h2>Run a local review in VS Code</h2>
             <p class="lead">Use it before you push, or review only the code that needs another look.</p>
@@ -882,7 +946,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 4 of 14">
+        <section class="slide" aria-label="Slide 4 of 22">
           <div class="slide-inner">
             <h2>Assign Copilot to a pull request</h2>
             <p class="lead">A review request works like a request to a teammate. Copilot usually returns a review in less than a minute.</p>
@@ -911,7 +975,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 5 of 14">
+        <section class="slide" aria-label="Slide 5 of 22">
           <div class="slide-inner">
             <h2>What a Copilot review does — and does not do</h2>
             <p class="lead">The review summary gives context. Inline comments point to specific changes.</p>
@@ -942,7 +1006,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 6 of 14">
+        <section class="slide" aria-label="Slide 6 of 22">
           <div class="slide-inner">
             <h2>Repository settings set the review rules</h2>
             <p class="lead">Repository administrators can set defaults. Rulesets decide when Copilot reviews automatically.</p>
@@ -961,7 +1025,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 7 of 14">
+        <section class="slide" aria-label="Slide 7 of 22">
           <div class="slide-inner">
             <h2>Approvals need explicit policy</h2>
             <p class="lead">An approval assessment is not the same as an approving review.</p>
@@ -980,7 +1044,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 8 of 14">
+        <section class="slide" aria-label="Slide 8 of 22">
           <div class="slide-inner">
             <h2>Give Copilot instructions it can use</h2>
             <p class="lead">Put durable review expectations in repository files. Keep instructions specific, testable, and easy to maintain.</p>
@@ -1005,7 +1069,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 9 of 14">
+        <section class="slide slide--compact slide--dense" aria-label="Slide 9 of 22">
           <div class="slide-inner">
             <h2>MCP adds repository review context</h2>
             <p class="lead">Connect Copilot code review to read-only data from tools such as issue trackers, SonarQube, or Wiz.</p>
@@ -1039,7 +1103,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 10 of 14">
+        <section class="slide slide--compact" aria-label="Slide 10 of 22">
           <div class="slide-inner">
             <h2>Use SonarQube findings in a review</h2>
             <p class="lead">Run Sonar analysis first. Then let Copilot query relevant quality and security findings through MCP.</p>
@@ -1077,7 +1141,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 11 of 14">
+        <section class="slide slide--compact slide--dense" aria-label="Slide 11 of 22">
           <div class="slide-inner">
             <h2>Use Wiz context without giving write access</h2>
             <p class="lead">Use the same repository MCP settings for Wiz. Choose the transport and authentication that your Wiz deployment supports.</p>
@@ -1119,7 +1183,7 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 12 of 14">
+        <section class="slide" aria-label="Slide 12 of 22">
           <div class="slide-inner">
             <h2>Batch related fixes, then hand them back</h2>
             <p class="lead">Use one clear work request for a related set of findings. Keep unrelated changes separate.</p>
@@ -1145,7 +1209,217 @@ FORM: A standalone 16:9 slide deck that extends this repository's existing HTML 
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 13 of 14">
+        <section class="slide slide--compact" aria-label="Slide 13 of 22">
+          <div class="slide-inner">
+            <h2>Agree on the pilot scope</h2>
+            <p class="lead">Start with a small, shared question. Do not judge a tool before the team agrees on what a useful result means.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>Objective</strong><span>What will we learn?</span></div>
+                <p>Test whether Copilot review gives developers useful feedback on draft and open pull requests, and whether the hand-off can help with fixes.</p>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Team and repository</strong><span>What is in scope?</span></div>
+                <p>Name the pilot repository, participating developers, review types, and any paths or pull requests that are out of scope.</p>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Success measures</strong><span>How will we judge it?</span></div>
+                <p>Agree targets for verified findings, false positives, useful fixes, time to review, and developer feedback before you start.</p>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Operating principle</strong><span>Who decides?</span></div>
+                <p>Copilot suggests. Developers verify. CI checks. The people responsible for the repository decide what can merge.</p>
+              </article>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Output</span>
+              <p><strong>Agreed scope:</strong> one objective, one repository, named participants, and team-approved measures.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 14 of 22">
+          <div class="slide-inner">
+            <h2>Set the review rules before the PR</h2>
+            <p class="lead">Use this checklist to explain why a review runs, which context it uses, and what authority it has.</p>
+            <div class="setting-list">
+              <div class="setting-label">Review trigger</div><div class="setting-value">Manual request in the UI or API, personal automatic review, or an organization/repository ruleset. These sources work independently.</div>
+              <div class="setting-label">Draft pull requests</div><div class="setting-value">Enable <strong>Review draft pull requests</strong> in the applicable automatic-review setting or ruleset to get feedback before publication.</div>
+              <div class="setting-label">New pushes</div><div class="setting-value">Enable <strong>Review new pushes</strong> to request a new review after each push. Otherwise, request a re-review manually.</div>
+              <div class="setting-label">Review effort</div><div class="setting-value"><strong>Balanced</strong> is the current default. Select <strong>Lite</strong> for targeted, routine feedback or <strong>Balanced</strong> for complex or sensitive changes.</div>
+              <div class="setting-label">Repository instructions</div><div class="setting-value">Check <code>.github/copilot-instructions.md</code>, path-specific instructions, and <code>AGENTS.md</code>. Review instructions come from the PR head branch.</div>
+              <div class="setting-label">Approvals</div><div class="setting-value">A normal review is a comment. Count Copilot approvals toward merge requirements only when policy explicitly allows it.</div>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Output</span>
+              <p><strong>Configuration checklist:</strong> confirm the trigger, draft/push behavior, review effort, instruction files, and approval policy.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 15 of 22">
+          <div class="slide-inner">
+            <h2>Check the runner and the review scope</h2>
+            <p class="lead">The runner powers extra review context. Some files are excluded, so make sure your demo uses code Copilot can review.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>Runner</strong><span>GitHub Actions</span></div>
+                <ul class="bullet-list">
+                  <li>Copilot uses a standard GitHub-hosted runner by default for agentic context gathering.</li>
+                  <li>Larger GitHub-hosted runners can improve performance and use more Actions minutes.</li>
+                  <li>Use self-hosted runners only through ARC-managed scale sets on Ubuntu x64 Linux.</li>
+                  <li>If GitHub-hosted runners are disabled, the review can fall back to a more limited experience.</li>
+                </ul>
+                <p class="small">Use <code>.github/workflows/copilot-code-review.yml</code> for a separate review environment. Without it, Copilot can use <code>copilot-setup-steps.yml</code>.</p>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Review scope</strong><span>Files and context</span></div>
+                <ul class="bullet-list">
+                  <li>Default exclusions include dependency files, lock files, logs, and SVG files.</li>
+                  <li>Generated, vendored, built, and bundled files are also commonly excluded.</li>
+                  <li>Organization content-exclusion rules can hide additional paths from Copilot.</li>
+                  <li>Instructions and skills used for a review must be on the pull request's head branch.</li>
+                </ul>
+                <p class="small">Do not use a lock file or generated file as the only example in a live review.</p>
+              </article>
+            </div>
+            <div class="callout callout--warning">
+              <span class="tag tag--yellow">Safety note</span>
+              <p>GitHub documents ARC as the only supported self-hosting option for Copilot code review. Do not use a general-purpose self-hosted runner.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 16 of 22">
+          <div class="slide-inner">
+            <h2>Review a draft PR early</h2>
+            <p class="lead">Use a seeded draft pull request to show how review feedback can arrive before the author publishes the change.</p>
+            <div class="sequence">
+              <article>
+                <h3>Prepare</h3>
+                <p>Enable draft reviews for the pilot repository or its ruleset. Pick a small pull request with reviewable source files.</p>
+              </article>
+              <article>
+                <h3>Request</h3>
+                <p>Use the configured draft-review trigger. If automatic draft reviews are not enabled, request Copilot manually where the UI allows it.</p>
+              </article>
+              <article>
+                <h3>Inspect</h3>
+                <p>Open the overview and comments. Ask whether the findings help the author improve the draft before human review.</p>
+              </article>
+            </div>
+            <div class="callout callout--warning">
+              <span class="tag tag--yellow">0:15 checkpoint</span>
+              <p>Reviews usually take less than 30 seconds, but this is not a service guarantee. Show the result if it is ready; otherwise explain the state and use a completed review. Capture the summary, useful comments, and any issue Copilot missed.</p>
+            </div>
+            <p class="small"><strong>Output:</strong> a draft review result with early feedback before the author publishes the pull request.</p>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 17 of 22">
+          <div class="slide-inner">
+            <h2>Choose Lite or Balanced</h2>
+            <p class="lead">Use one routine pull request and one complex pull request to explain the choice of review effort.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>Lite</strong><span class="tag tag--blue">Routine PR</span></div>
+                <p>Use for a smaller, lower-risk change when fast, targeted feedback is enough.</p>
+                <ul class="bullet-list">
+                  <li>Look for common bugs, security issues, and style problems.</li>
+                  <li>Record what was useful and what it missed.</li>
+                </ul>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Balanced</strong><span class="tag tag--purple">Complex PR</span></div>
+                <p>Use for complex logic, security-sensitive code, or changes across services.</p>
+                <ul class="bullet-list">
+                  <li>Expect deeper analysis and higher AI-credit use than Lite.</li>
+                  <li>Record the effort shown in the review overview.</li>
+                </ul>
+              </article>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Compare</span>
+              <p>Show the effort in each overview comment and the review sequence in the PR timeline. Record time, AI credits, Actions minutes, and verified findings when available. Different PRs are a demonstration, not a controlled benchmark.</p>
+            </div>
+            <p class="small">Balanced is the default since September 28, 2026. Effort can be set per request. Large pull requests no longer have the former 300-file or 20,000-line limit, but Copilot may still miss findings. Automatic reviews of bot-authored PRs require the organization policy for members without a Copilot license and paid AI credits; usage is billed to the organization.</p>
+            <div class="callout">
+              <span class="tag tag--blue">Output</span>
+              <p><strong>Effort-level comparison:</strong> example reviews, effort labels, and notes about findings, time, and usage.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 18 of 22">
+          <div class="slide-inner">
+            <h2>Review each comment in context</h2>
+            <p class="lead">Severity and grouped suggestions help with triage. They do not confirm that a finding is correct.</p>
+            <div class="grid-2">
+              <article class="surface">
+                <div class="surface-title"><strong>Read the review</strong><span>Overview + inline</span></div>
+                <ul class="bullet-list">
+                  <li>Use <strong>High</strong>, <strong>Medium</strong>, and <strong>Low</strong> labels to prioritise comments.</li>
+                  <li>Copilot groups similar suggestions to reduce repeated comments.</li>
+                  <li>The overview groups findings as open, resolved since last review, or previously missed.</li>
+                  <li>Follow a comment link to check the actual code and evidence.</li>
+                </ul>
+              </article>
+              <article class="surface">
+                <div class="surface-title"><strong>Make a decision</strong><span>Human check</span></div>
+                <ul class="bullet-list">
+                  <li>Verify the issue in context and run the relevant tests.</li>
+                  <li>Accept or reject a suggested change. Batch compatible suggestions when it helps.</li>
+                  <li>Resolve with a reason: <strong>Addressed</strong>, <strong>Won't fix</strong>, or <strong>Incorrect</strong>.</li>
+                  <li>Replies are visible to people on the PR; Copilot does not read or answer them.</li>
+                </ul>
+              </article>
+            </div>
+            <div class="callout callout--success">
+              <span class="tag tag--green">Output</span>
+              <p><strong>Comment-quality sample:</strong> one verified finding, one useful suggestion, and one decision with a clear resolution reason.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 19 of 22">
+          <div class="slide-inner">
+            <h2>Decide who can approve and what counts</h2>
+            <p class="lead">Copilot's approval assessment is information. Approval authority is a separate policy choice.</p>
+            <div class="setting-list">
+              <div class="setting-label">Enterprise</div><div class="setting-value">Policy can allow or block Copilot approval across organizations.</div>
+              <div class="setting-label">Organization</div><div class="setting-value">Owners can enable it everywhere, for selected repositories, or let repositories decide.</div>
+              <div class="setting-label">Repository and paths</div><div class="setting-value">When policy allows it, admins can enable approval and limit qualifying changes by file path.</div>
+            </div>
+            <div class="callout callout--warning">
+              <span class="tag tag--yellow">Preview</span>
+              <p>Copilot normally submits a comment review; the approval assessment does not count by default. Copilot approvals are in public preview. New commits dismiss an approval, so request another review.</p>
+            </div>
+            <p class="small"><strong>Output:</strong> document who can enable approval and whether it can satisfy a merge rule.</p>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 20 of 22">
+          <div class="slide-inner">
+            <h2>Score the pilot. Then choose the next step.</h2>
+            <p class="lead">Set targets before the pilot. Review evidence with developers and the sponsor; do not score from comment count alone.</p>
+            <div class="setting-list">
+              <div class="setting-label">Finding quality</div><div class="setting-value">Verified findings, missed known issues, and noisy or repeated comments. Target: <code>[team]</code> · Result: <code>[record]</code></div>
+              <div class="setting-label">Developer experience</div><div class="setting-value">Actionability, review time, and developer/sponsor feedback. Target: <code>[team]</code> · Result: <code>[record]</code></div>
+              <div class="setting-label">Cost and policy</div><div class="setting-value">AI credits, Actions minutes, access, and policy fit. Target: <code>[team]</code> · Result: <code>[record]</code></div>
+            </div>
+            <div class="grid-3" style="margin-top:.8cqw">
+              <article class="surface"><h3>Stop</h3><p class="small">Targets missed or a safety/policy issue remains.</p></article>
+              <article class="surface"><h3>Extend</h3><p class="small">Evidence is mixed or the sample is too small.</p></article>
+              <article class="surface"><h3>Scale</h3><p class="small">Targets met; governance and owner are clear.</p></article>
+            </div>
+            <div class="callout">
+              <span class="tag tag--blue">Decision and actions</span>
+              <p>Choose stop, extend, or scale. Owner: <code>[name]</code> · Due date: <code>[date]</code> · Next check: <code>[date]</code>.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide slide--compact" aria-label="Slide 21 of 22">
           <div class="slide-inner">
             <h2>Make style checks repeatable in GitHub</h2>
             <p class="lead">Run Markdownlint and Codespell as pull request checks. Let CI report deterministic issues; let Copilot explain code context.</p>
@@ -1183,7 +1457,7 @@ jobs:
           </div>
         </section>
 
-        <section class="slide" aria-label="Slide 14 of 14">
+        <section class="slide slide--compact" aria-label="Slide 22 of 22">
           <div class="slide-inner closing">
             <div>
               <h2><span>Review the change.</span><span>Keep the decision human.</span></h2>
@@ -1201,6 +1475,12 @@ jobs:
                 <li><a href="https://docs.wiz.io/">Wiz documentation</a><span>Confirm MCP setup for your tenant</span></li>
                 <li><a href="https://github.com/DavidAnson/markdownlint-cli2-action">markdownlint-cli2 Action</a><span>Markdown lint workflow</span></li>
                 <li><a href="https://github.com/codespell-project/actions-codespell">Codespell Action</a><span>Spelling checks in pull requests</span></li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-runners">Configure review runners</a><span>GitHub-hosted, larger, and ARC runners</span></li>
+                <li><a href="https://docs.github.com/en/copilot/reference/review-excluded-files">Files excluded from review</a><span>Default file and path exclusions</span></li>
+                <li><a href="https://github.blog/changelog/2026-05-12-copilot-code-review-comment-experience-improvements/">Grouped comments and severity</a><span>Comment scanning and prioritisation</span></li>
+                <li><a href="https://github.blog/changelog/2026-08-27-copilot-code-review-resolution-reasons-and-expanded-capabilities/">Resolution reasons and expanded reviews</a><span>Addressed, Won't fix, Incorrect, large and bot PRs</span></li>
+                <li><a href="https://github.blog/changelog/2026-09-18-copilot-code-review-an-improved-review-experience/">Review overview and batch suggestions</a><span>Finding status and smart commit messages</span></li>
+                <li><a href="https://github.blog/changelog/2026-10-02-copilot-code-review-api-support-and-new-default-effort-level/">API requests and Balanced default</a><span>Current review effort default</span></li>
               </ul>
             </div>
           </div>
