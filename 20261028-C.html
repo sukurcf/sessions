@@ -1,0 +1,1204 @@
+<!doctype html>
+<!--
+THESIS: Teach developers to choose the smallest Copilot surface that can finish a task, not to turn every request into an agent run.
+OWN-WORLD: GitHub's dark Primer palette, system UI and code fonts, crisp borders, terminal panels, and status colors.
+STORY: Follow one illustrative endpoint task from a first suggestion through planning, customization, tools, execution, and review.
+FIRST VIEWPORT: A large two-line "GitHub Copilot" title fills the left half; a compact run trace on the right shows one task moving from editor to GitHub.com.
+FORM: Full-screen run log, candidate 4 of 7 grounded structures; state-trace staging; seed 8a17dd91.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="A practical starter guide to GitHub Copilot for developers.">
+  <title>GitHub Copilot: starter guide</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --canvas-subtle: #161b22;
+      --canvas-inset: #010409;
+      --canvas-overlay: #1c2128;
+      --border: #30363d;
+      --border-muted: #21262d;
+      --fg: #f0f6fc;
+      --fg-muted: #9198a1;
+      --fg-subtle: #8b949e;
+      --accent: #58a6ff;
+      --accent-strong: #1f6feb;
+      --success: #3fb950;
+      --attention: #d29922;
+      --danger: #f85149;
+      --purple: #bc8cff;
+      --cyan: #39c5cf;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, "Liberation Mono", monospace;
+      font-family: var(--font-sans);
+      background: var(--canvas);
+      color: var(--fg);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--canvas);
+    }
+
+    body {
+      color: var(--fg);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, a { font: inherit; }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: #79c0ff; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+    .deck-chrome {
+      position: fixed;
+      z-index: 20;
+      top: 0;
+      right: 0;
+      left: 0;
+      display: flex;
+      height: 62px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--border-muted);
+      background: var(--canvas);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--fg);
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: -.01em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--accent);
+      font: 700 13px/1 var(--font-mono);
+    }
+
+    .brand-sub { color: var(--fg-muted); font-weight: 450; }
+
+    .chrome-meta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-left: auto;
+      margin-right: 275px;
+      color: var(--fg-muted);
+      font: 12px/1 var(--font-mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .chrome-phase { color: var(--success); }
+    #chrome-count { display: none; }
+
+    .progress-track {
+      position: fixed;
+      z-index: 21;
+      top: 61px;
+      right: 0;
+      left: 0;
+      height: 2px;
+      background: var(--border-muted);
+    }
+
+    .progress-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--success);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 360ms ease;
+    }
+
+    #deck {
+      position: fixed;
+      inset: 0 auto 0 0;
+      display: flex;
+      width: 100vw;
+      height: 100svh;
+      will-change: transform;
+      transition: transform 480ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .slide {
+      display: flex;
+      flex: 0 0 100vw;
+      width: 100vw;
+      min-width: 0;
+      height: 100svh;
+      min-height: 100svh;
+      flex-direction: column;
+      gap: clamp(14px, 1.8vh, 22px);
+      padding: 76px 5vw 28px;
+      overflow: hidden;
+      overscroll-behavior: none;
+      scrollbar-color: var(--border) var(--canvas);
+      background: var(--canvas);
+    }
+
+    .slide[aria-hidden="true"] { pointer-events: none; }
+    .slide-inner { display: flex; width: 100%; min-height: 0; flex: 1; flex-direction: column; justify-content: center; gap: clamp(14px, 2vh, 24px); }
+    .slide-inner.wide { justify-content: space-between; }
+    h1, h2, h3, h4, p { margin: 0; }
+    h1, h2, h3, h4 { color: var(--fg); }
+    h1 {
+      max-width: 1040px;
+      font-size: clamp(64px, 7vw, 96px);
+      font-weight: 730;
+      letter-spacing: -.04em;
+      line-height: .96;
+    }
+    h2 {
+      max-width: 1240px;
+      font-size: clamp(42px, 5vw, 76px);
+      font-weight: 690;
+      letter-spacing: -.04em;
+      line-height: 1.02;
+    }
+    h3 {
+      font-size: clamp(22px, 2vw, 29px);
+      font-weight: 650;
+      letter-spacing: -.025em;
+      line-height: 1.2;
+    }
+    h4 { font-size: 18px; font-weight: 650; }
+    p { color: var(--fg-muted); font-size: 18px; line-height: 1.55; }
+    .lead { max-width: 760px; font-size: clamp(21px, 2.2vw, 27px); line-height: 1.45; }
+    .body-copy { max-width: 72ch; font-size: clamp(18px, 1.5vw, 22px); line-height: 1.6; }
+    .small { font-size: 16px; line-height: 1.55; }
+    .micro { color: var(--fg-subtle); font: 12px/1.5 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+    .accent { color: var(--accent); }
+    .green { color: var(--success); }
+    .purple { color: var(--purple); }
+    .yellow { color: var(--attention); }
+    .cyan { color: var(--cyan); }
+    .muted { color: var(--fg-muted); }
+    .mono, code, pre, kbd { font-family: var(--font-mono); }
+    code {
+      padding: 2px 6px;
+      border: 1px solid var(--border-muted);
+      border-radius: 5px;
+      background: var(--canvas-inset);
+      color: var(--fg);
+      font-size: .88em;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      margin: 0;
+      color: var(--fg);
+      font-size: clamp(14px, 1.15vw, 17px);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .slide-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .slide-heading h2 { max-width: 1120px; }
+    .heading-note { flex: 0 0 auto; padding-bottom: 5px; color: var(--fg-subtle); font: 13px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+    .slide-content { display: flex; min-height: 0; flex: 1; flex-direction: column; justify-content: flex-start; gap: clamp(12px, 1.7vh, 20px); }
+    .slide-foot {
+      display: flex;
+      min-height: 20px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-right: 0;
+      color: var(--fg-subtle);
+      font: 12px/1.45 var(--font-mono);
+      letter-spacing: .03em;
+    }
+    .slide-foot a { color: var(--fg-subtle); }
+    .slide-foot a:hover { color: var(--accent); }
+    .case-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-muted); font: 13px var(--font-mono); }
+    .case-tag::before { width: 7px; height: 7px; border-radius: 50%; background: var(--attention); content: ""; }
+
+    .hero-grid { display: grid; min-height: 0; flex: 1; grid-template-columns: minmax(0, 1.12fr) minmax(330px, .88fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
+    .hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(16px, 2.5vh, 28px); }
+    .hero-copy h1 span { color: var(--success); }
+    .hero-copy .lead { max-width: 650px; }
+    .hero-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .pill {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--fg-muted);
+      font-size: 14px;
+    }
+    .terminal {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--canvas-inset);
+    }
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-muted);
+      color: var(--fg-subtle);
+      font: 12px var(--font-mono);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .terminal-head strong { color: var(--success); font-weight: 600; }
+    .terminal-body { padding: clamp(18px, 2.3vw, 30px); }
+    .prompt-line { display: flex; gap: 12px; align-items: flex-start; }
+    .prompt-symbol { color: var(--success); font: 700 17px var(--font-mono); }
+    .prompt-text { color: var(--fg); font: 16px/1.6 var(--font-mono); }
+    .trace-steps { display: grid; gap: 0; margin-top: 24px; }
+    .trace-step { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; min-height: 46px; border-top: 1px solid var(--border-muted); }
+    .trace-num { color: var(--fg-subtle); font: 13px var(--font-mono); }
+    .trace-name { color: var(--fg); font-size: 15px; }
+    .trace-result { color: var(--fg-subtle); font: 12px var(--font-mono); text-transform: uppercase; }
+    .trace-step.active .trace-name, .trace-step.active .trace-result { color: var(--success); }
+
+    .path-line { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; align-items: stretch; }
+    .path-stop { position: relative; display: flex; min-height: 112px; flex-direction: column; justify-content: space-between; padding: 16px 20px; border-top: 2px solid var(--border); border-bottom: 1px solid var(--border); }
+    .path-stop + .path-stop { border-left: 1px solid var(--border); }
+    .path-stop::before { position: absolute; top: -6px; left: 23px; width: 10px; height: 10px; border: 2px solid var(--canvas); border-radius: 50%; background: var(--accent); content: ""; }
+    .path-stop:nth-child(2)::before { background: var(--purple); }
+    .path-stop:nth-child(3)::before { background: var(--attention); }
+    .path-stop:nth-child(4)::before { background: var(--success); }
+    .path-stop strong { font-size: clamp(20px, 1.8vw, 25px); }
+    .path-stop p { max-width: 31ch; font-size: 15px; }
+    .path-stop .path-kind { color: var(--fg-subtle); font: 12px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+    .decision-strip { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: center; padding: 18px 22px; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-subtle); }
+    .decision-strip strong { color: var(--fg); font-size: 16px; }
+    .decision-strip span { color: var(--fg-muted); font-size: 15px; }
+    .decision-arrow { color: var(--fg-subtle); font: 18px var(--font-mono); }
+    .customization-map { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); }
+    .customization-map > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+
+    .two-col, .three-col { display: grid; gap: clamp(16px, 2vw, 28px); align-items: stretch; }
+    .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel {
+      min-width: 0;
+      padding: clamp(18px, 2.3vw, 30px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--canvas-subtle);
+    }
+    .panel.inset { background: var(--canvas-inset); }
+    .panel h3 { margin-bottom: 12px; }
+    .panel p:last-child { margin-bottom: 0; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+    .panel-title span { color: var(--fg-subtle); font: 12px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; }
+    .label {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--fg-muted);
+      font: 12px/1.35 var(--font-mono);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .label.blue { border-color: #1f6feb; color: #79c0ff; }
+    .label.green { border-color: #238636; color: #56d364; }
+    .label.purple { border-color: #8957e5; color: #d2a8ff; }
+    .label.yellow { border-color: #9e6a03; color: #e3b341; }
+    .list { display: grid; gap: 10px; margin: 16px 0 0; padding: 0; list-style: none; }
+    .list li { position: relative; padding-left: 18px; color: var(--fg-muted); font-size: 16px; line-height: 1.5; }
+    .list li::before { position: absolute; top: .65em; left: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--success); content: ""; }
+    .list.compact { gap: 7px; }
+    .list.compact li { font-size: 15px; }
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--canvas-subtle);
+      color: var(--fg-muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .callout strong { color: var(--fg); }
+    .callout .dot { flex: 0 0 auto; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--attention); }
+    .callout.success .dot { background: var(--success); }
+    .callout.warning .dot { background: var(--danger); }
+
+    .suggestion-layout { display: grid; grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr); gap: clamp(20px, 3vw, 42px); align-items: stretch; }
+    .editor {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--canvas-inset);
+    }
+    .editor-bar { display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-bottom: 1px solid var(--border-muted); color: var(--fg-subtle); font: 12px var(--font-mono); }
+    .editor-body { padding: 20px; color: var(--fg-muted); font: clamp(14px, 1.15vw, 17px)/1.8 var(--font-mono); }
+    .line-no { display: inline-block; width: 32px; color: #6e7681; user-select: none; }
+    .ghost { color: #79c0ff; opacity: .8; }
+    .next-edit { display: flex; gap: 14px; align-items: flex-start; padding: 14px; border: 1px dashed #1f6feb; border-radius: 6px; background: rgba(31, 111, 235, .09); }
+    .next-edit .arrow { color: var(--accent); font: 700 18px var(--font-mono); }
+    .next-edit p { color: var(--fg-muted); font-size: 15px; }
+    .key {
+      display: inline-grid;
+      min-width: 27px;
+      height: 25px;
+      place-items: center;
+      padding: 0 7px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: var(--canvas);
+      color: var(--fg);
+      font: 13px var(--font-mono);
+    }
+
+    .mode-panel { display: flex; min-height: 0; flex-direction: column; justify-content: flex-start; gap: 14px; }
+    .mode-panel.ask { border-top: 2px solid var(--accent); }
+    .mode-panel.plan { border-top: 2px solid var(--purple); }
+    .mode-panel.agent { border-top: 2px solid var(--success); }
+    .mode-tag { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+    .mode-panel .question { color: var(--fg); font-size: clamp(18px, 1.7vw, 23px); font-weight: 600; }
+    .mode-panel .mode-action { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border-muted); color: var(--fg-subtle); font: 13px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+
+    .agent-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(22px, 4vw, 64px); align-items: center; }
+    .code-card { overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-inset); }
+    .code-card .terminal-head { background: var(--canvas-subtle); }
+    .code-card pre { padding: clamp(16px, 2.2vw, 28px); font-size: clamp(14px, 1.2vw, 17px); }
+    .code-key { color: #79c0ff; }
+    .code-string { color: #a5d6ff; }
+    .code-comment { color: var(--fg-subtle); }
+    .code-list { display: grid; gap: 16px; }
+    .code-list-item { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; }
+    .code-list-item .index { color: var(--success); font: 13px var(--font-mono); }
+    .code-list-item strong { display: block; margin-bottom: 4px; color: var(--fg); font-size: 16px; }
+    .code-list-item p { font-size: 15px; }
+
+    .scope-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(22px, 4vw, 56px); align-items: center; }
+    .file-tree { display: grid; gap: 12px; padding: 22px; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-subtle); font: 15px/1.65 var(--font-mono); }
+    .tree-line { color: var(--fg-muted); }
+    .tree-file { color: var(--accent); }
+    .tree-match { color: var(--success); }
+    .scope-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .scope-item { padding: 13px 15px; border: 1px solid var(--border-muted); border-radius: 6px; }
+    .scope-item strong { display: block; margin-bottom: 5px; color: var(--fg); font-size: 16px; }
+    .scope-item p { font-size: 15px; }
+
+    .prompt-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(22px, 4vw, 60px); align-items: center; }
+    .prompt-flow { display: grid; gap: 0; }
+    .prompt-step { display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--border); }
+    .prompt-step:first-child { border-top: 0; }
+    .prompt-step .step-id { color: var(--accent); font: 13px var(--font-mono); }
+    .prompt-step strong { display: block; margin-bottom: 4px; color: var(--fg); font-size: 16px; }
+    .prompt-step p { font-size: 15px; }
+
+    .skill-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(22px, 4vw, 54px); align-items: center; }
+    .folder-tree { padding: 18px 22px; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-inset); color: var(--fg-muted); font: 15px/1.75 var(--font-mono); }
+    .folder-tree .file-name { color: var(--success); }
+    .skill-steps { display: grid; gap: 0; }
+    .skill-step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 13px 0; border-top: 1px solid var(--border-muted); }
+    .skill-step:first-child { border-top: 0; }
+    .skill-step .n { color: var(--success); font: 13px var(--font-mono); }
+    .skill-step strong { display: block; color: var(--fg); font-size: 16px; }
+    .skill-step p { margin-top: 3px; font-size: 15px; }
+
+    .debug-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: clamp(20px, 3vw, 42px); align-items: stretch; }
+    .event-table { width: 100%; border-collapse: collapse; }
+    .event-table th, .event-table td { padding: 13px 12px; border-bottom: 1px solid var(--border-muted); text-align: left; vertical-align: top; }
+    .event-table th { color: var(--fg-subtle); font: 12px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; }
+    .event-table td { color: var(--fg-muted); font-size: 15px; }
+    .event-table td:first-child { color: var(--fg); font-family: var(--font-mono); font-size: 13px; }
+    .event-table tr:last-child td { border-bottom: 0; }
+    .diagnostic-steps { display: grid; gap: 10px; margin-top: 16px; }
+    .diagnostic-step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; color: var(--fg-muted); font-size: 15px; line-height: 1.5; }
+    .diagnostic-step b { color: var(--accent); font: 13px var(--font-mono); }
+
+    .cache-flow { display: grid; gap: 12px; }
+    .request-row { display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center; }
+    .request-label { color: var(--fg-subtle); font: 12px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+    .request-track { display: flex; min-height: 48px; align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas-inset); }
+    .request-segment { display: flex; flex: 1; align-items: center; justify-content: center; padding: 8px 10px; border-right: 1px solid var(--border-muted); color: var(--fg-muted); font: 12px/1.4 var(--font-mono); text-align: center; }
+    .request-segment.shared { background: rgba(63, 185, 80, .1); color: #56d364; }
+    .request-segment.diverge { border-right: 2px solid var(--attention); background: rgba(210, 153, 34, .12); color: #e3b341; }
+    .request-segment:last-child { border-right: 0; }
+    .divergence-label { display: flex; align-items: center; gap: 8px; margin: 4px 0 0 136px; color: var(--attention); font: 12px var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+    .divergence-label::before { width: 18px; height: 1px; background: var(--attention); content: ""; }
+
+    .model-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(22px, 4vw, 58px); align-items: center; }
+    .model-ladder { display: grid; gap: 0; border-top: 1px solid var(--border); }
+    .model-row { display: grid; grid-template-columns: 135px 1fr; gap: 20px; padding: 15px 0; border-bottom: 1px solid var(--border); }
+    .model-row strong { color: var(--fg); font-size: 16px; }
+    .model-row p { font-size: 15px; }
+    .model-row .model-kind { color: var(--accent); font: 12px var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+    .model-pick { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: center; padding: 18px 0; border-top: 1px solid var(--border); }
+    .model-pick:first-child { border-top: 0; }
+    .model-pick .glyph { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent); font: 14px var(--font-mono); }
+    .model-pick strong { display: block; margin-bottom: 4px; color: var(--fg); font-size: 16px; }
+    .model-pick p { font-size: 15px; }
+
+    .orchestration { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .orchestration article { min-width: 0; padding: 22px; background: var(--canvas-subtle); }
+    .orchestration article + article { border-left: 1px solid var(--border); }
+    .pattern-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .pattern-head span { color: var(--fg-subtle); font: 12px var(--font-mono); text-transform: uppercase; }
+    .pattern-flow { display: flex; min-height: 54px; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .flow-node { padding: 8px 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--canvas); color: var(--fg); font-size: 14px; }
+    .flow-link { color: var(--fg-subtle); font: 14px var(--font-mono); }
+    .orchestration p { font-size: 15px; }
+
+    .cli-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 42px); align-items: stretch; }
+    .cli-panel { display: flex; min-height: 0; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-subtle); }
+    .cli-panel h3 { margin: 0; }
+    .cli-panel p { max-width: 60ch; font-size: 15px; }
+    .shell-line { padding: 14px 16px; border: 1px solid var(--border-muted); border-radius: 6px; background: var(--canvas-inset); color: var(--fg); font: 14px/1.65 var(--font-mono); overflow-wrap: anywhere; }
+    .shell-line .dollar { color: var(--success); }
+    .cli-commands { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cli-commands code { color: #79c0ff; }
+
+    .cloud-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(22px, 4vw, 56px); align-items: center; }
+    .cloud-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .cloud-step { position: relative; min-height: 0; padding: 16px 14px; }
+    .cloud-step + .cloud-step { border-left: 1px solid var(--border); }
+    .cloud-step .step-label { color: var(--success); font: 12px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; }
+    .cloud-step strong { display: block; margin: 12px 0 7px; color: var(--fg); font-size: 17px; }
+    .cloud-step p { font-size: 15px; }
+    .cloud-callout { padding: 16px 18px; border: 1px solid var(--border); border-radius: 7px; background: var(--canvas-subtle); color: var(--fg-muted); font-size: 16px; line-height: 1.5; }
+
+    .mcp-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(22px, 4vw, 58px); align-items: center; }
+    .mcp-flow { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr) 44px minmax(0, 1fr); align-items: center; }
+    .mcp-node { min-height: 125px; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 17px; border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-subtle); }
+    .mcp-node strong { color: var(--fg); font-size: 16px; }
+    .mcp-node span { color: var(--fg-muted); font-size: 15px; line-height: 1.4; }
+    .mcp-arrow { color: var(--accent); font: 20px var(--font-mono); text-align: center; }
+    .setup-list { display: grid; gap: 0; border-top: 1px solid var(--border); }
+    .setup-row { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .setup-row b { color: var(--success); font: 13px var(--font-mono); }
+    .setup-row p { font-size: 15px; }
+
+    .ecosystem-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); }
+    .ecosystem-block { display: flex; min-height: 0; flex-direction: column; justify-content: space-between; gap: 18px; padding: clamp(20px, 2.5vw, 30px); border: 1px solid var(--border); border-radius: 8px; background: var(--canvas-subtle); }
+    .ecosystem-block h3 { font-size: clamp(22px, 2.3vw, 32px); }
+    .ecosystem-block .repo { display: inline-block; margin: 14px 0; color: var(--accent); font: 15px var(--font-mono); }
+    .ecosystem-block p { max-width: 58ch; font-size: 16px; }
+    .ecosystem-block .repo-mark { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 18px; border-top: 1px solid var(--border-muted); color: var(--fg-subtle); font: 12px var(--font-mono); text-transform: uppercase; }
+
+    .run-table { width: 100%; border-collapse: collapse; }
+    .run-table th, .run-table td { padding: 13px 14px; border-bottom: 1px solid var(--border-muted); text-align: left; vertical-align: top; }
+    .run-table th { color: var(--fg-subtle); font: 12px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; }
+    .run-table td { color: var(--fg-muted); font-size: 15px; }
+    .run-table td:first-child { width: 190px; color: var(--fg); font-weight: 600; }
+    .run-table tr:last-child td { border-bottom: 0; }
+    .run-table .tool-cell { color: var(--accent); font-family: var(--font-mono); font-size: 13px; }
+    .run-close { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .run-close strong { color: var(--success); font-size: clamp(18px, 2vw, 26px); letter-spacing: -.025em; }
+    .run-close p { max-width: 55ch; font-size: 16px; }
+
+    .resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 20px; }
+    .resource-link { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-muted); color: var(--fg); text-decoration: none; }
+    .resource-link:hover { color: var(--accent); }
+    .resource-link strong { display: block; margin-bottom: 3px; font-size: 16px; font-weight: 600; }
+    .resource-link span { display: block; color: var(--fg-muted); font-size: 14px; line-height: 1.45; }
+    .resource-link .external { color: var(--fg-subtle); font: 14px var(--font-mono); }
+    .source-note { color: var(--fg-subtle); font-size: 13px; line-height: 1.5; }
+
+    #nav {
+      position: fixed;
+      z-index: 30;
+      right: 22px;
+      top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--canvas-overlay);
+    }
+    #nav button {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--canvas-subtle);
+      color: var(--fg);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #nav button:hover:not(:disabled) { border-color: var(--accent); background: #21262d; }
+    #nav button:disabled { color: var(--fg-subtle); cursor: not-allowed; opacity: .55; }
+    #slide-status { min-width: 56px; color: var(--fg-muted); font: 12px var(--font-mono); text-align: center; }
+
+    @media (max-width: 900px) {
+      .slide { padding-right: 4vw; padding-left: 4vw; }
+      .hero-grid, .agent-layout, .scope-layout, .prompt-layout, .skill-layout, .debug-layout, .model-layout, .cloud-layout, .mcp-layout { grid-template-columns: minmax(0, 1fr); }
+      .slide-inner { min-height: 0; flex: 0 0 auto; }
+      .hero-grid { min-height: 0; flex: 0 0 auto; gap: 22px; }
+      .hero-console { max-width: 760px; }
+      .hero-console .trace-step { min-height: 34px; }
+      .hero-console .trace-steps { margin-top: 16px; }
+      .hero-copy { gap: 18px; }
+      .hero-copy h1 { font-size: clamp(54px, 9vw, 88px); }
+      .panel { padding: 20px; }
+      .slide-content { min-height: auto; flex: 0 0 auto; justify-content: flex-start; }
+      .debug-layout { align-items: start; }
+      .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+      .resource-link { display: block; padding: 9px 0; }
+      .resource-link span { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      .deck-chrome { height: 54px; padding: 0 16px; }
+      .progress-track { top: 53px; }
+      .brand { gap: 7px; font-size: 12px; }
+      .brand-mark { width: 22px; height: 22px; }
+      .brand-sub { display: none; }
+      .chrome-meta { display: none; }
+      .slide { gap: 10px; padding: 64px 20px 20px; }
+      .slide-heading { align-items: flex-start; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+      .heading-note { padding-bottom: 0; }
+      .slide-heading h2 { font-size: clamp(36px, 10vw, 50px); }
+      .slide-foot { padding-right: 0; font-size: 12px; }
+      .hero-grid { min-height: 0; grid-template-columns: 1fr; gap: 14px; }
+      .hero-copy h1 { font-size: clamp(50px, 14vw, 76px); }
+      .hero-copy .lead { font-size: 18px; }
+      .terminal-body { padding: 16px; }
+      .three-col, .two-col, .path-line, .cli-layout, .ecosystem-layout { grid-template-columns: minmax(0, 1fr); }
+      .resource-grid { gap: 4px 12px; }
+      .path-stop { min-height: 0; gap: 5px; padding: 12px 12px 12px 30px; }
+      .path-stop p { max-width: none; font-size: 15px; }
+      .path-stop + .path-stop { border-left: 0; border-top: 0; }
+      .path-stop::before { top: 18px; left: 7px; }
+      .path-stop { padding: 18px 16px 18px 34px; }
+      .decision-strip { grid-template-columns: 1fr; gap: 9px; }
+      .decision-arrow { transform: rotate(90deg); width: 18px; }
+      .suggestion-layout { grid-template-columns: 1fr; }
+      .mode-panel { min-height: 0; gap: 10px; padding: 15px; }
+      .scope-pair { grid-template-columns: 1fr; }
+      .request-row { grid-template-columns: 1fr; gap: 7px; }
+      .request-track { min-height: 60px; }
+      .request-segment { padding: 6px 5px; font-size: 11px; }
+      .divergence-label { margin-left: 0; }
+      .model-row { grid-template-columns: 105px 1fr; gap: 10px; }
+      .orchestration { grid-template-columns: 1fr; }
+      .orchestration article + article { border-top: 1px solid var(--border); border-left: 0; }
+      .orchestration article { padding: 14px 16px; }
+      .orchestration .pattern-flow { display: none; }
+      .pattern-head { margin-bottom: 6px; }
+      .orchestration p { font-size: 15px; }
+      .cli-panel { gap: 8px; padding: 14px; }
+      .cloud-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cloud-step { min-height: 0; padding: 12px 10px; }
+      .cloud-step:nth-child(3) { border-left: 0; border-top: 1px solid var(--border); }
+      .cloud-step:nth-child(4) { border-top: 1px solid var(--border); }
+      .mcp-flow { grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr); gap: 4px; }
+      .mcp-node { min-height: 82px; padding: 10px 8px; }
+      .mcp-node strong { font-size: 14px; }
+      .mcp-node span { font-size: 13px; }
+      .mcp-arrow { font-size: 15px; }
+      .run-table th, .run-table td { padding: 10px 7px; }
+      .run-table td:first-child { width: 120px; }
+      .run-close { align-items: flex-start; flex-direction: column; }
+      .ecosystem-block { gap: 10px; padding: 14px; }
+      #nav { top: 4px; right: 12px; gap: 4px; padding: 4px; }
+      #nav button { min-height: 34px; padding: 0 8px; font-size: 12px; }
+      #slide-status { min-width: 48px; font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+
+    @media print {
+      html, body { height: auto; overflow: visible; background: #fff; color: #111; }
+      .deck-chrome, .progress-track, #nav { display: none !important; }
+      #deck { position: static; display: block; width: auto; height: auto; transform: none !important; }
+      .slide, .slide[aria-hidden="true"] {
+        display: flex !important;
+        width: 100%;
+        height: 100vh;
+        min-height: 100vh;
+        break-after: page;
+        overflow: hidden;
+        padding: 28px;
+        background: #0d1117 !important;
+        color: #f0f6fc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="deck-chrome">
+    <a class="brand" href="#start" aria-label="GitHub Copilot field guide, first slide">
+      <span class="brand-mark" aria-hidden="true">GH</span>
+      <span>GitHub Copilot <span class="brand-sub">/ field guide</span></span>
+    </a>
+    <div class="chrome-meta">
+      <span id="phase" class="chrome-phase">ORIENT</span>
+      <span id="chrome-count">01 / 18</span>
+    </div>
+  </header>
+  <div class="progress-track" aria-hidden="true"><div id="progress" class="progress-fill"></div></div>
+
+  <main id="deck" aria-label="GitHub Copilot training slides">
+    <section class="slide" id="start" data-phase="ORIENT" data-title="GitHub Copilot" aria-roledescription="slide" aria-label="Slide 1 of 18: GitHub Copilot">
+      <div class="slide-inner">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <h1>GitHub<br><span>Copilot</span></h1>
+            <p class="lead">A practical starter guide for developers new to GitHub Copilot.</p>
+            <div class="hero-bottom">
+              <span class="pill">Concepts + examples</span>
+              <span class="pill">IDE · CLI · GitHub.com</span>
+              <span class="pill">One illustrative task</span>
+            </div>
+          </div>
+          <aside class="terminal hero-console" aria-label="Illustrative task trace">
+            <div class="terminal-head"><strong>RUN TRACE</strong><span>Example task · not a real repository</span></div>
+            <div class="terminal-body">
+              <div class="micro" style="margin-bottom:10px;">Input</div>
+              <div class="prompt-line">
+                <span class="prompt-symbol">&gt;</span>
+                <p class="prompt-text">Add a <code>GET /health</code> endpoint and tests. Follow this repository's API conventions.</p>
+              </div>
+              <div class="trace-steps" aria-hidden="true">
+                <div class="trace-step active"><span class="trace-num">01</span><span class="trace-name">Understand the task</span><span class="trace-result">Ask</span></div>
+                <div class="trace-step"><span class="trace-num">02</span><span class="trace-name">Agree on the steps</span><span class="trace-result">Plan</span></div>
+                <div class="trace-step"><span class="trace-num">03</span><span class="trace-name">Make and check changes</span><span class="trace-result">Agent</span></div>
+                <div class="trace-step"><span class="trace-num">04</span><span class="trace-name">Review the result</span><span class="trace-result">You</span></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Start with the task. Pick the smallest tool. Review the result.</span></footer>
+    </section>
+
+    <section class="slide" data-phase="ORIENT" data-title="Copilot surfaces" aria-roledescription="slide" aria-label="Slide 2 of 18: Copilot surfaces" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Copilot surfaces</h2>
+        <span class="heading-note">EDITOR · CHAT · AGENT · CLOUD</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Use suggestions for quick edits, chat for questions, and agents for multi-step work.</p>
+        <div class="path-line">
+          <article class="path-stop"><span class="path-kind">Editor</span><strong>Suggestions</strong><p>Complete code at your cursor.</p></article>
+          <article class="path-stop"><span class="path-kind">Copilot Chat</span><strong>Ask or Plan</strong><p>Learn about code or agree on steps.</p></article>
+          <article class="path-stop"><span class="path-kind">Agent mode</span><strong>Change code</strong><p>Edit files and run approved tools.</p></article>
+          <article class="path-stop"><span class="path-kind">GitHub.com</span><strong>Cloud Agent</strong><p>Delegate work to a cloud environment.</p></article>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Availability varies by client, version, plan, and organization policy.</span><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github" target="_blank" rel="noopener noreferrer">Copilot surfaces</a></footer>
+    </section>
+
+    <section class="slide" data-phase="ASSIST" data-title="Inline suggestions and NES" aria-roledescription="slide" aria-label="Slide 3 of 18: Inline suggestions and NES" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Inline suggestions and NES</h2>
+        <span class="heading-note">IN THE EDITOR</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Inline suggestions complete code as you type. NES predicts the next place to edit.</p>
+        <div class="suggestion-layout">
+          <div class="editor" aria-label="Illustrative editor showing an inline suggestion">
+            <div class="editor-bar"><span class="green">●</span><span>health.ts</span><span style="margin-left:auto;">INLINE SUGGESTION</span></div>
+            <div class="editor-body">
+              <div><span class="line-no">12</span>export function health() {</div>
+              <div><span class="line-no">13</span>  return { status: <span class="ghost">"ok"</span> };</div>
+              <div><span class="line-no">14</span>}</div>
+            </div>
+          </div>
+          <div class="suggestion-detail">
+            <div class="panel">
+              <h3>Next Edit Suggestions</h3>
+              <p>Use NES in the editor for related code changes. Press <span class="key">Tab</span> twice to move to and accept the suggested edit.</p>
+            </div>
+            <div class="next-edit">
+              <span class="arrow" aria-hidden="true">&rarr;</span>
+              <div><strong style="display:block;margin-bottom:5px;color:var(--fg);font-size:16px;">Benefit</strong><p>Find and review a related edit without searching for it by hand.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Example code is illustrative.</span><a href="https://code.visualstudio.com/docs/editing/ai-powered-suggestions" target="_blank" rel="noopener noreferrer">Inline and next edit suggestions</a></footer>
+    </section>
+
+    <section class="slide" data-phase="CHOOSE" data-title="Ask, Plan, and Agent modes" aria-roledescription="slide" aria-label="Slide 4 of 18: Ask, Plan, and Agent modes" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Ask, Plan, and Agent modes</h2>
+        <span class="heading-note">COPILOT CHAT</span>
+      </div>
+      <div class="slide-content">
+        <div class="three-col">
+          <article class="panel mode-panel ask">
+            <div class="mode-tag"><span class="label blue">Ask</span><span class="micro">Questions</span></div>
+            <p class="question">Explain this route.</p>
+            <p class="small">Use in chat to understand code. Benefit: get an answer without changing files.</p>
+          </article>
+          <article class="panel mode-panel plan">
+            <div class="mode-tag"><span class="label purple">Plan</span><span class="micro">Steps</span></div>
+            <p class="question">Plan the endpoint and tests.</p>
+            <p class="small">Use before broad changes. Benefit: agree on scope before edits.</p>
+          </article>
+          <article class="panel mode-panel agent">
+            <div class="mode-tag"><span class="label green">Agent</span><span class="micro">Changes</span></div>
+            <p class="question">Implement the reviewed plan.</p>
+            <p class="small">Use for multi-file work. Benefit: complete several steps in one session.</p>
+          </article>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Mode availability can vary by client.</span><a href="https://docs.github.com/en/copilot/how-tos/copilot-in-your-ide/use-copilot-agents/use-plan-mode" target="_blank" rel="noopener noreferrer">Plan mode</a></footer>
+    </section>
+
+    <section class="slide" data-phase="CUSTOMIZE" data-title="Custom agents" aria-roledescription="slide" aria-label="Slide 5 of 18: Custom agents" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Custom agents</h2>
+        <span class="heading-note">REUSABLE ROLES</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">A custom agent is a saved role with instructions and tools. Use it for repeat work that needs a specialist.</p>
+        <div class="agent-layout">
+          <div class="code-card">
+            <div class="terminal-head"><strong>PROFILE</strong><span>.github/agents/api-reviewer.agent.md</span></div>
+            <pre>---
+description: Review API changes and tests.
+tools: ["read", "search"]
+---
+
+Check behavior and test coverage.
+Report findings with file paths.</pre>
+          </div>
+          <div class="code-list">
+            <div class="code-list-item"><span class="index">01</span><div><strong>Where</strong><p><code>.github/agents/name.agent.md</code></p></div></div>
+            <div class="code-list-item"><span class="index">02</span><div><strong>How</strong><p>Add a description, instructions, and only the tools it needs.</p></div></div>
+            <div class="code-list-item"><span class="index">03</span><div><strong>Benefit</strong><p>Select the saved role instead of repeating directions.</p></div></div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Example profile; tool names and supported fields can vary.</span><a href="https://docs.github.com/en/copilot/concepts/customizations/custom-agents" target="_blank" rel="noopener noreferrer">Custom agents</a></footer>
+    </section>
+
+    <section class="slide" data-phase="CUSTOMIZE" data-title="Custom instructions" aria-roledescription="slide" aria-label="Slide 6 of 18: Custom instructions" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Custom instructions</h2>
+        <span class="heading-note">REPOSITORY + PATH</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Custom instructions give Copilot project rules automatically. Use repository-wide rules for all files or path rules for a matching folder.</p>
+        <div class="scope-layout">
+          <div class="file-tree" aria-label="Instruction file examples">
+            <div class="tree-line"><span class="tree-file">.github/</span></div>
+            <div class="tree-line">&nbsp;&nbsp;copilot-instructions.md <span class="code-comment"># all files</span></div>
+            <div class="tree-line">&nbsp;&nbsp;instructions/api.instructions.md</div>
+            <div class="tree-line tree-match">&nbsp;&nbsp;&nbsp;&nbsp;applyTo: "src/api/**"</div>
+          </div>
+          <div>
+            <h3>How to use them</h3>
+            <p class="body-copy">Write short rules in the file for the right scope. Set <code>applyTo</code> for path-specific rules.</p>
+            <div class="callout success" style="margin-top:14px;"><span class="dot"></span><span><strong>Benefit:</strong> Copilot gets the right conventions without a repeated prompt.</span></div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Do not repeat a rule in several files if one scope is enough.</span><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/custom-instructions" target="_blank" rel="noopener noreferrer">Custom instructions</a></footer>
+    </section>
+
+    <section class="slide" data-phase="CUSTOMIZE" data-title="Prompt files" aria-roledescription="slide" aria-label="Slide 7 of 18: Prompt files" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Prompt files</h2>
+        <span class="heading-note">TASK TEMPLATES</span>
+      </div>
+      <div class="slide-content">
+        <div class="prompt-layout">
+          <div class="code-card">
+            <div class="terminal-head"><strong>TASK TEMPLATE</strong><span>.github/prompts/review-endpoint.prompt.md</span></div>
+            <pre># review-endpoint.prompt.md
+
+Review API inputs, errors, and tests.
+Return findings with file paths.
+Do not edit files.</pre>
+          </div>
+          <div>
+            <p class="lead">A prompt file stores a task you select in chat. Benefit: repeat a review without retyping it.</p>
+            <div class="prompt-flow" style="margin-top:18px;">
+              <div class="prompt-step"><span class="step-id">WHERE</span><div><p><code>.github/prompts/name.prompt.md</code></p></div></div>
+              <div class="prompt-step"><span class="step-id">HOW</span><div><p>Write the goal and expected result, then select the file in chat.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Instructions are applied by scope; prompt files are selected for a task.</span><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-files" target="_blank" rel="noopener noreferrer">Prompt files</a></footer>
+    </section>
+
+    <section class="slide" data-phase="CUSTOMIZE" data-title="Agent skills" aria-roledescription="slide" aria-label="Slide 8 of 18: Agent skills" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Agent skills</h2>
+        <span class="heading-note">REPEATABLE WORKFLOWS</span>
+      </div>
+      <div class="slide-content">
+        <div class="skill-layout">
+          <div>
+            <p class="lead">An agent skill packages instructions and optional resources for a repeatable workflow.</p>
+                <div class="folder-tree" style="margin-top:18px;">
+                  .github/skills/api-smoke-test/<br>
+                  &nbsp;&nbsp;<span class="file-name">SKILL.md</span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-title"><h3 style="margin:0;">How to use it</h3></div>
+                <div class="skill-steps">
+                  <div class="skill-step"><span class="n">01</span><div><strong>Where</strong><p>Save it under <code>.github/skills/name/</code>.</p></div></div>
+                  <div class="skill-step"><span class="n">02</span><div><strong>How</strong><p>Write the skill name, when to use it, and its steps.</p></div></div>
+                  <div class="skill-step"><span class="n">03</span><div><strong>Benefit</strong><p>Reuse the workflow and helper files when it fits.</p></div></div>
+                </div>
+              </div>
+            </div>
+      </div>
+      <footer class="slide-foot"><span>Benefit: reuse the workflow and helper files when the task fits.</span><a href="https://docs.github.com/en/copilot/concepts/customizations/agent-skills" target="_blank" rel="noopener noreferrer">Agent skills</a></footer>
+    </section>
+
+    <section class="slide" data-phase="INSPECT" data-title="Agent debug logs" aria-roledescription="slide" aria-label="Slide 9 of 18: Agent debug logs" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Agent debug logs</h2>
+        <span class="heading-note">VS CODE DIAGNOSTICS</span>
+      </div>
+      <div class="slide-content">
+        <div class="debug-layout">
+          <div class="panel" style="padding:0;overflow:hidden;">
+            <div class="terminal-head"><strong>SESSION EVIDENCE</strong><span>Enable capture before you reproduce</span></div>
+            <table class="event-table">
+              <thead><tr><th>View</th><th>Use it to answer</th></tr></thead>
+              <tbody>
+                <tr><td>Logs</td><td>What happened, and in what order?</td></tr>
+                <tr><td>Summary</td><td>How long, how many tokens, and which errors?</td></tr>
+                <tr><td>Flow / Chat Debug</td><td>Which agents, prompt, context, and tools were used?</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Debug steps</h3>
+            <div class="diagnostic-steps">
+              <div class="diagnostic-step"><b>01</b><span>Enable logging, then reproduce the issue.</span></div>
+              <div class="diagnostic-step"><b>02</b><span>Check context, tools, and errors.</span></div>
+              <div class="diagnostic-step"><b>03</b><span>Change one cause and repeat.</span></div>
+            </div>
+            <div class="callout warning" style="margin-top:12px;"><span class="dot"></span><span>Logs can contain private code and prompts. Review them before sharing.</span></div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Command Palette: <code>Developer: Open Agent Debug Logs</code>.</span><a href="https://code.visualstudio.com/docs/agents/agent-troubleshooting/chat-debug-view" target="_blank" rel="noopener noreferrer">VS Code debug guide</a></footer>
+    </section>
+
+    <section class="slide" data-phase="INSPECT" data-title="Cache Explorer" aria-roledescription="slide" aria-label="Slide 10 of 18: Cache Explorer" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Cache Explorer</h2>
+        <span class="heading-note">PROMPT-CACHE DIAGNOSTICS</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Cache Explorer compares prompts and shows where they first differ. Use it to find a change in prompt-cache reuse.</p>
+        <div class="panel">
+          <div class="cache-flow" aria-label="Illustration of two requests that share a prefix and then differ">
+            <div class="request-row"><span class="request-label">Request A</span><div class="request-track"><span class="request-segment shared">System + instructions</span><span class="request-segment shared">Project context</span><span class="request-segment diverge">Task A</span><span class="request-segment">Response</span></div></div>
+            <div class="request-row"><span class="request-label">Request B</span><div class="request-track"><span class="request-segment shared">System + instructions</span><span class="request-segment shared">Project context</span><span class="request-segment diverge">Task B</span><span class="request-segment">Response</span></div></div>
+            <div class="divergence-label">First difference</div>
+          </div>
+        </div>
+        <div class="callout"><span class="dot"></span><span>Open it from a session's Summary view. It checks prompt-cache reuse, not a code cache.</span></div>
+      </div>
+      <footer class="slide-foot"><span>Open it from a session's Summary view in Agent Debug Logs.</span><a href="https://code.visualstudio.com/docs/agents/agent-troubleshooting/cache-explorer" target="_blank" rel="noopener noreferrer">Cache Explorer guide</a></footer>
+    </section>
+
+    <section class="slide" data-phase="TUNE" data-title="Model selection" aria-roledescription="slide" aria-label="Slide 11 of 18: Model selection" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Model selection</h2>
+        <span class="heading-note">MODEL PICKER</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">A model generates Copilot's responses. Choose one to balance speed, context size, and reasoning for the task.</p>
+        <div class="model-ladder">
+          <div class="model-row"><span class="model-kind">General</span><div><strong>Auto</strong><p>Let the client choose.</p></div></div>
+          <div class="model-row"><span class="model-kind">Small task</span><div><strong>Fast model</strong><p>Use for quick answers and simple edits.</p></div></div>
+          <div class="model-row"><span class="model-kind">Complex task</span><div><strong>Reasoning model</strong><p>Use for difficult debugging or planning.</p></div></div>
+          <div class="model-row"><span class="model-kind">Many files</span><div><strong>Check context size</strong><p>Choose a model that can handle the required files.</p></div></div>
+        </div>
+        <div class="callout"><span class="dot"></span><span>Use the model picker. Access depends on plan and policy. In VS Code, chat and completions may use separate models.</span></div>
+      </div>
+      <footer class="slide-foot"><span>Model names and access change over time.</span><a href="https://docs.github.com/en/copilot/reference/ai-models/supported-models" target="_blank" rel="noopener noreferrer">Supported models</a></footer>
+    </section>
+
+    <section class="slide" data-phase="DELEGATE" data-title="Multi-agent orchestration" aria-roledescription="slide" aria-label="Slide 12 of 18: Multi-agent orchestration" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Multi-agent orchestration</h2>
+        <span class="heading-note">DELEGATION PATTERNS</span>
+      </div>
+      <div class="slide-content">
+        <div class="orchestration">
+          <article>
+            <div class="pattern-head"><h3>Sequential</h3><span>One depends on the last</span></div>
+            <div class="pattern-flow"><span class="flow-node">Explore</span><span class="flow-link">&rarr;</span><span class="flow-node">Plan</span><span class="flow-link">&rarr;</span><span class="flow-node">Implement</span></div>
+            <p>Use when each step needs the last result.</p>
+          </article>
+          <article>
+            <div class="pattern-head"><h3>Parallel</h3><span>Independent work</span></div>
+            <div class="pattern-flow"><span class="flow-node">Tests</span><span class="flow-link">+</span><span class="flow-node">Docs</span><span class="flow-link">+</span><span class="flow-node">Review</span></div>
+            <p>Run independent tests, docs, or review work.</p>
+          </article>
+          <article>
+            <div class="pattern-head"><h3>Orchestrated</h3><span>One owner</span></div>
+            <div class="pattern-flow"><span class="flow-node">Coordinator</span><span class="flow-link">&rarr;</span><span class="flow-node">Specialists</span><span class="flow-link">&rarr;</span><span class="flow-node">Review</span></div>
+            <p>One agent assigns work and checks the results.</p>
+          </article>
+        </div>
+        <div class="callout warning"><span class="dot"></span><span>Separate tasks by files. Avoid overlapping edits. Review every result.</span></div>
+      </div>
+      <footer class="slide-foot"><span>Parallel work is useful when tasks are independent and boundaries are clear.</span><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/choosing-and-delegating-agent-work/delegating-and-parallelizing-work-with-agents" target="_blank" rel="noopener noreferrer">Delegation patterns</a></footer>
+    </section>
+
+    <section class="slide" data-phase="USE ANYWHERE" data-title="Copilot CLI" aria-roledescription="slide" aria-label="Slide 13 of 18: Copilot CLI" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Copilot CLI</h2>
+        <span class="heading-note">TERMINAL</span>
+      </div>
+      <div class="slide-content">
+        <div class="cli-layout">
+          <section class="cli-panel">
+            <div><span class="label green">Interactive</span><h3 style="margin-top:12px;">Start a working session</h3></div>
+            <div class="shell-line"><span class="dollar">$ </span>copilot<br><span class="code-comment"># Shift+Tab cycles between modes</span></div>
+            <p>Ask, plan, edit, and review code in the terminal.</p>
+            <div class="cli-commands"><code>copilot help</code><code>copilot help commands</code></div>
+          </section>
+          <section class="cli-panel">
+            <div><span class="label blue">One prompt</span><h3 style="margin-top:12px;">Run a focused request</h3></div>
+            <div class="shell-line"><span class="dollar">$ </span>copilot -p "Summarize this repo" --allow-tool='shell(git)'</div>
+            <p>Use <code>-p</code> for a one-shot prompt. Limit tools; approval can allow shell access.</p>
+            <div class="cli-commands"><code>copilot mcp</code><code>copilot skill</code><code>copilot instruction list</code></div>
+          </section>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Use <code>copilot help</code> for the current command list.</span><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference" target="_blank" rel="noopener noreferrer">CLI command reference</a></footer>
+    </section>
+
+    <section class="slide" data-phase="DELEGATE" data-title="GitHub.com and Cloud Agent" aria-roledescription="slide" aria-label="Slide 14 of 18: GitHub.com and Cloud Agent" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>GitHub.com and Cloud Agent</h2>
+        <span class="heading-note">REMOTE WORK</span>
+      </div>
+      <div class="slide-content">
+        <div class="cloud-layout">
+          <div>
+            <p class="lead">Copilot Chat answers questions. Cloud Agent changes code in a separate GitHub environment.</p>
+          </div>
+          <div>
+            <div class="cloud-flow">
+              <div class="cloud-step"><span class="step-label">01 · Start</span><strong>Issue or prompt</strong><p>Start from an issue or the Agents page.</p></div>
+              <div class="cloud-step"><span class="step-label">02 · Work</span><strong>Cloud</strong><p>Research and edit code remotely.</p></div>
+              <div class="cloud-step"><span class="step-label">03 · Inspect</span><strong>Review</strong><p>Check the diff, tests, and logs.</p></div>
+              <div class="cloud-step"><span class="step-label">04 · Iterate</span><strong>Respond</strong><p>Give feedback or open a PR.</p></div>
+            </div>
+            <div class="callout success" style="margin-top:10px;"><span class="dot"></span><span>Issue assignment opens a pull request. A prompt starts on a branch you can review first.</span></div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Cloud agent access depends on repository, account, and organization settings.</span><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task" target="_blank" rel="noopener noreferrer">Start a cloud agent task</a></footer>
+    </section>
+
+    <section class="slide" data-phase="EXTEND" data-title="MCP servers" aria-roledescription="slide" aria-label="Slide 15 of 18: MCP servers" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>MCP servers</h2>
+        <span class="heading-note">TOOLS AND CONTEXT</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">MCP connects Copilot to tools or data outside the chat.</p>
+        <div class="mcp-layout">
+          <div class="mcp-flow" aria-label="MCP connection flow">
+            <div class="mcp-node"><strong>Copilot client</strong><span>IDE, CLI, app, or cloud agent</span></div>
+            <span class="mcp-arrow" aria-hidden="true">&rarr;</span>
+            <div class="mcp-node"><strong>MCP server</strong><span>Connection + approved tools</span></div>
+            <span class="mcp-arrow" aria-hidden="true">&rarr;</span>
+            <div class="mcp-node"><strong>Tool or data</strong><span>Issues, tests, service data</span></div>
+          </div>
+          <div>
+            <div class="setup-list">
+              <div class="setup-row"><b>01</b><p>Choose a server for the task.</p></div>
+              <div class="setup-row"><b>02</b><p>Install with VS Code <code>MCP: Add Server</code>, CLI <code>copilot mcp</code>, or repository settings.</p></div>
+              <div class="setup-row"><b>03</b><p>Allow only needed tools. Cloud Agent may use them without asking.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Do not assume the same config file works in every client.</span><a href="https://docs.github.com/en/copilot/concepts/customizations/mcp" target="_blank" rel="noopener noreferrer">MCP for Copilot</a></footer>
+    </section>
+
+    <section class="slide" data-phase="EXTEND" data-title="Awesome Copilot and Spec Kit" aria-roledescription="slide" aria-label="Slide 16 of 18: Awesome Copilot and Spec Kit" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>Awesome Copilot and Spec Kit</h2>
+        <span class="heading-note">RESOURCES</span>
+      </div>
+      <div class="slide-content">
+        <div class="ecosystem-layout">
+          <article class="ecosystem-block">
+            <div><h3>Awesome Copilot</h3><a class="repo" href="https://awesome-copilot.github.com/" target="_blank" rel="noopener noreferrer">Open website &nearr;</a><p>Find examples of agents, instructions, skills, prompts, and workflows.</p></div>
+            <div class="repo-mark"><a href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer">Source repository &nearr;</a></div>
+          </article>
+          <article class="ecosystem-block">
+            <div><h3>Spec Kit</h3><a class="repo" href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">Open repository &nearr;</a><p>Use it to write a feature specification, plan the work, and create task steps.</p></div>
+          </article>
+        </div>
+      </div>
+      <footer class="slide-foot"><span>Community and open-source projects can change. Check each repository for current instructions.</span><span>Links open in a new tab.</span></footer>
+    </section>
+
+    <section class="slide" data-phase="RUN" data-title="End-to-end example" aria-roledescription="slide" aria-label="Slide 17 of 18: End-to-end example" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>End-to-end example</h2>
+        <span class="heading-note">ADD <code>GET /health</code></span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Use this sequence for a small feature. Start with the simplest tool.</p>
+        <div class="panel" style="padding:0;overflow:hidden;">
+          <table class="run-table">
+            <thead><tr><th>Stage</th><th>Copilot surface</th><th>What you check</th></tr></thead>
+            <tbody>
+              <tr><td>Understand</td><td class="tool-cell">Ask</td><td>Find the route and conventions.</td></tr>
+              <tr><td>Plan</td><td class="tool-cell">Plan</td><td>Review steps before edits.</td></tr>
+              <tr><td>Set context</td><td class="tool-cell">Instructions + agent</td><td>Apply project rules.</td></tr>
+              <tr><td>Build and check</td><td class="tool-cell">Agent or CLI</td><td>Review tool use, diff, and tests.</td></tr>
+              <tr><td>Inspect or delegate</td><td class="tool-cell">Logs or Cloud Agent</td><td>Trace issues or review a remote branch.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="run-close"><strong>Start small. Add capability when the task needs it.</strong><p>You own the requirements, permissions, review, tests, and decision to merge.</p></div>
+      </div>
+      <footer class="slide-foot"><span>Sample task and outcome are illustrative; adapt to your codebase.</span><span>End of run</span></footer>
+    </section>
+
+    <section class="slide" data-phase="REFERENCE" data-title="References" aria-roledescription="slide" aria-label="Slide 18 of 18: References" aria-hidden="true" inert>
+      <div class="slide-heading">
+        <h2>References</h2>
+        <span class="heading-note">OFFICIAL DOCS AND PROJECTS</span>
+      </div>
+      <div class="slide-content">
+        <p class="lead">Check the current documentation for setup steps and feature support in your Copilot client.</p>
+        <div class="resource-grid">
+          <a class="resource-link" href="https://code.visualstudio.com/docs/editing/ai-powered-suggestions" target="_blank" rel="noopener noreferrer"><div><strong>Inline and next edit suggestions</strong><span>VS Code documentation</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/customizations/custom-agents" target="_blank" rel="noopener noreferrer"><div><strong>Custom agents</strong><span>Profiles, roles, and tools</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/prompting-and-context/custom-instructions" target="_blank" rel="noopener noreferrer"><div><strong>Custom instructions</strong><span>Repository and path scopes</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-files" target="_blank" rel="noopener noreferrer"><div><strong>Prompt files</strong><span>Reusable task templates</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/customizations/agent-skills" target="_blank" rel="noopener noreferrer"><div><strong>Agent skills</strong><span>Instructions, resources, and scripts</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://code.visualstudio.com/docs/agents/agent-troubleshooting/chat-debug-view" target="_blank" rel="noopener noreferrer"><div><strong>Agent Debug Logs</strong><span>Logs, Summary, flow, and Cache Explorer</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/reference/ai-models/supported-models" target="_blank" rel="noopener noreferrer"><div><strong>Supported models</strong><span>Current availability and features</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/agent-capabilities/choosing-and-delegating-agent-work/delegating-and-parallelizing-work-with-agents" target="_blank" rel="noopener noreferrer"><div><strong>Delegate and parallelize</strong><span>Patterns, benefits, and trade-offs</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference" target="_blank" rel="noopener noreferrer"><div><strong>Copilot CLI commands</strong><span>Current command reference</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github" target="_blank" rel="noopener noreferrer"><div><strong>Copilot on GitHub.com</strong><span>Chat, cloud agent, and code review</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://docs.github.com/en/copilot/concepts/customizations/mcp" target="_blank" rel="noopener noreferrer"><div><strong>MCP for Copilot</strong><span>Surfaces, configuration, and policy</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer"><div><strong>Awesome Copilot</strong><span>Community customization examples</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://awesome-copilot.github.com/" target="_blank" rel="noopener noreferrer"><div><strong>Awesome Copilot website</strong><span>Browse skills and customization examples</span></div><span class="external">&nearr;</span></a>
+          <a class="resource-link" href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer"><div><strong>Spec Kit</strong><span>Spec-driven development toolkit</span></div><span class="external">&nearr;</span></a>
+        </div>
+        <p class="source-note">Feature availability and names can change. Confirm the instructions for your editor, Copilot plan, repository, and organization.</p>
+      </div>
+      <footer class="slide-foot"><span>GitHub Copilot field guide</span><span>Use the top-right controls or arrow keys to navigate.</span></footer>
+    </section>
+  </main>
+
+  <nav id="nav" aria-label="Slide navigation">
+    <button id="previous" type="button" aria-label="Previous slide">&larr; Previous</button>
+    <span id="slide-status" aria-live="polite">01 / 18</span>
+    <button id="next" type="button" aria-label="Next slide">Next &rarr;</button>
+  </nav>
+
+  <script>
+    (() => {
+      const deck = document.getElementById("deck");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const phase = document.getElementById("phase");
+      const chromeCount = document.getElementById("chrome-count");
+      const status = document.getElementById("slide-status");
+      const progress = document.getElementById("progress");
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const brand = document.querySelector(".brand");
+      let active = 0;
+
+      function showSlide(index) {
+        active = Math.max(0, Math.min(index, slides.length - 1));
+        deck.style.transform = `translate3d(-${active * 100}vw, 0, 0)`;
+        slides.forEach((slide, slideIndex) => {
+          const current = slideIndex === active;
+          slide.setAttribute("aria-hidden", String(!current));
+          slide.inert = !current;
+          if (current) slide.scrollTop = 0;
+        });
+        const number = String(active + 1).padStart(2, "0");
+        const total = String(slides.length).padStart(2, "0");
+        phase.textContent = slides[active].dataset.phase;
+        chromeCount.textContent = `${number} / ${total}`;
+        status.textContent = `${number} / ${total}`;
+        progress.style.transform = `scaleX(${(active + 1) / slides.length})`;
+        previous.disabled = active === 0;
+        next.disabled = active === slides.length - 1;
+        document.title = `${slides[active].dataset.title} · GitHub Copilot field guide`;
+      }
+
+      previous.addEventListener("click", () => showSlide(active - 1));
+      next.addEventListener("click", () => showSlide(active + 1));
+      brand.addEventListener("click", (event) => {
+        event.preventDefault();
+        showSlide(0);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target instanceof HTMLElement && event.target.isContentEditable) return;
+        if (/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(event.target.tagName)) return;
+        if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          showSlide(active + 1);
+        } else if (["ArrowLeft", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          showSlide(active - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          showSlide(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          showSlide(slides.length - 1);
+        }
+      });
+
+      showSlide(0);
+    })();
+  </script>
+</body>
+</html>
