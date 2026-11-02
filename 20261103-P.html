@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="Nine practical slides: introduction, three GitHub Agentic Workflows slides, and five clear MCP slides with diagrams, setup, and a worked example.">
+  <title>GitHub Agentic Workflows and MCP</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #0d1117;
+      --panel: #161b22;
+      --fg: #e6edf3;
+      --soft: #b1bac4;
+      --muted: #8b949e;
+      --line: #30363d;
+      --green: #3fb950;
+      --blue: #79c0ff;
+      --purple: #bc8cff;
+      --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+      --body: clamp(14px, min(1.75vw, 2.8dvh), 30px);
+      --gap: clamp(12px, min(2vw, 3dvh), 36px);
+      --pad: clamp(20px, min(3.5vw, 5dvh), 64px);
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: var(--bg); color: var(--fg); }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { font: inherit; }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+    .logo-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .deck { position: relative; width: 100%; height: 100dvh; }
+    .slide { position: absolute; inset: 0; padding: var(--pad); overflow: hidden; }
+    .slide[hidden] { display: none; }
+    .inner { display: flex; flex-direction: column; width: 100%; height: 100%; gap: var(--gap); }
+    .chrome { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: clamp(12px, 1.15vw, 20px); font-weight: 650; color: var(--soft); }
+    .brand::before { content: ""; width: 9px; height: 9px; flex-shrink: 0; border-radius: 3px; background: var(--green); }
+    .paypal { display: block; width: clamp(112px, 12vw, 200px); height: auto; aspect-ratio: 190 / 48; flex-shrink: 0; fill: #fff; }
+    .content { display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; justify-content: center; gap: var(--gap); }
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { letter-spacing: -.03em; }
+    h1 { font-size: clamp(40px, min(7.7vw, 12dvh), 122px); line-height: 1.02; max-width: 13ch; }
+    h2 { font-size: clamp(28px, min(4.5vw, 7dvh), 72px); line-height: 1.08; }
+    h3 { font-size: clamp(17px, min(2vw, 3.2dvh), 34px); line-height: 1.18; }
+    p { color: var(--soft); font-size: var(--body); line-height: 1.4; }
+    .intro { max-width: 70ch; }
+    .green { color: var(--green); }
+    .purple { color: var(--purple); }
+    code { font: .88em/1.5 var(--mono); color: var(--blue); overflow-wrap: anywhere; }
+    .cover { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 5vw; }
+    .cover-copy { display: flex; flex-direction: column; gap: var(--gap); }
+    .agenda { padding: clamp(18px, 3vw, 48px); border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .agenda h2 { margin-bottom: var(--gap); font-size: clamp(23px, 2.8vw, 42px); }
+    .agenda-row { display: grid; grid-template-columns: 30px 1fr; gap: 16px; padding: clamp(12px, 2vw, 28px) 0; border-top: 1px solid var(--line); }
+    .agenda-row b { color: var(--green); font: 600 var(--body) var(--mono); }
+    .agenda-row span { font-size: var(--body); font-weight: 600; line-height: 1.4; }
+    .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
+    .flow-item { display: flex; flex-direction: column; gap: 14px; padding: clamp(16px, 2vw, 32px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+    .flow-item b { font-size: clamp(17px, 1.9vw, 30px); color: var(--green); }
+    .flow-item p { font-size: calc(var(--body) * .9); }
+    .notes { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--gap) * 1.5); }
+    .note { border-top: 1px solid var(--line); padding-top: 14px; }
+    .note h3 { margin-bottom: 8px; }
+    .note p { font-size: calc(var(--body) * .88); }
+    .steps { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+    .step { display: grid; grid-template-columns: 32px 1fr; gap: 16px; padding: clamp(14px, 1.8vw, 30px); border: 1px solid var(--line); background: var(--panel); border-radius: 8px; }
+    .step-number { color: var(--green); font: 650 clamp(20px, 2vw, 32px)/1.1 var(--mono); }
+    .step h3 { margin-bottom: 10px; }
+    .step p { font-size: calc(var(--body) * .88); }
+    .takeaway { padding-top: 14px; border-top: 1px solid var(--line); font-size: calc(var(--body) * .85); }
+    .connection { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: var(--gap); align-items: center; }
+    .node { display: flex; flex-direction: column; gap: 12px; padding: clamp(16px, 2.2vw, 36px); border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .node h3 { color: var(--purple); }
+    .node p { font-size: calc(var(--body) * .9); }
+    .arrow { color: var(--muted); font-size: clamp(24px, 3vw, 44px); }
+    .capabilities { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+    .capabilities .note p { font-size: calc(var(--body) * .9); }
+    .example-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--gap); align-items: stretch; min-width: 0; }
+    .code-panel { min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: #010409; }
+    .code-title { padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--soft); font: 500 clamp(11px, 1vw, 16px)/1.3 var(--mono); overflow-wrap: anywhere; }
+    pre { margin: 0; padding: clamp(12px, 1.5vw, 24px); white-space: pre-wrap; overflow-wrap: anywhere; }
+    pre code { color: var(--fg); font-size: clamp(12px, min(1.3vw, 2.2dvh), 21px); line-height: 1.4; }
+    .syntax-key { color: var(--blue); }
+    .syntax-value { color: #a5d6ff; }
+    .syntax-comment { color: var(--muted); }
+    .example-guide { display: flex; flex-direction: column; justify-content: center; gap: var(--gap); min-width: 0; }
+    .example-guide h3 { margin-bottom: 6px; }
+    .example-guide p { font-size: calc(var(--body) * .85); }
+    .terminal { margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 5px; background: #010409; }
+    .terminal code { display: block; font-size: clamp(11px, 1.15vw, 18px); }
+    .diagram-icon { width: clamp(30px, 3.2vw, 52px); height: clamp(30px, 3.2vw, 52px); color: var(--green); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .flow-item { position: relative; }
+    .flow-item:not(:last-child)::after { content: "\2192"; position: absolute; right: calc(var(--gap) * -.5); top: 50%; transform: translate(50%, -50%); color: var(--muted); font-size: 24px; }
+    .mcp .diagram-icon { color: var(--purple); }
+    .request { border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; background: var(--panel); font-size: calc(var(--body) * .85); color: var(--fg); }
+    .dense { --gap: clamp(10px, min(1.4vw, 1.8dvh), 24px); --pad: clamp(18px, min(3vw, 3dvh), 48px); }
+    .dense h2 { font-size: clamp(28px, min(3.9vw, 6dvh), 64px); }
+    .dense .content { justify-content: space-evenly; }
+    .dense .intro { font-size: calc(var(--body) * .95); }
+    .dense .example-guide h3 { font-size: clamp(17px, 1.65vw, 27px); }
+    .dense .example-guide p { font-size: calc(var(--body) * .85); }
+    .dense .example-grid { grid-template-columns: 1.1fr 1fr; }
+    .dense .example-grid pre, .dense .example-grid pre code { font-size: clamp(12px, min(1.35vw, 2.15dvh), 22px); line-height: 1.35; }
+    .sample-ui { min-width: 0; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .sample-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); color: var(--soft); font-size: clamp(11px, 1vw, 16px); }
+    .sample-body { display: flex; flex-direction: column; gap: 14px; padding: clamp(14px, 2vw, 32px); }
+    .sample-body h3 { font-size: clamp(19px, 2vw, 30px); }
+    .sample-body p { font-size: calc(var(--body) * .85); }
+    .status { color: var(--green); white-space: nowrap; font-weight: 650; }
+    .result-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line); color: var(--soft); font-size: calc(var(--body) * .85); }
+    .result-row b { color: var(--fg); }
+    .mini-syntax { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; color: var(--soft); font-size: calc(var(--body) * .82); }
+    .mini-syntax code { padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; }
+    .chat-prompt { color: var(--fg); font-weight: 500; }
+    .tool-label { color: var(--purple); font: 600 clamp(12px, 1.2vw, 19px)/1.4 var(--mono); }
+    .mcp .brand::before { background: var(--purple); }
+    .mcp .step-number { color: var(--purple); }
+    .source { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; gap: 6px 24px; padding-right: 110px; min-height: 28px; color: var(--muted); font-size: clamp(10px, .9vw, 14px); line-height: 1.3; }
+    .controls {
+      position: fixed; right: 12px; bottom: 12px; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between;
+      width: 200px; height: 56px; padding: 8px; gap: 8px;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+      transform: scale(.5); transform-origin: bottom right;
+    }
+    .controls button { width: 44px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); font-size: 22px; cursor: pointer; }
+    .controls button:hover:not(:disabled) { background: #30363d; }
+    .controls button:disabled { opacity: .35; cursor: default; }
+    .count { color: var(--soft); font: 600 14px var(--mono); white-space: nowrap; }
+    .progress { position: fixed; z-index: 4; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--line); }
+    .progress span { display: block; width: 100%; height: 100%; transform: scaleX(.2); transform-origin: left; background: var(--green); }
+    @media (max-width: 800px) {
+      :root { --body: clamp(14px, 2.5vw, 20px); --gap: clamp(12px, 2.2dvh, 20px); --pad: clamp(18px, 3.5vw, 28px); }
+      .cover { grid-template-columns: 1fr; gap: 28px; }
+      h1 { font-size: clamp(38px, 8vw, 65px); max-width: 16ch; }
+      h2 { font-size: clamp(26px, 4.8vw, 38px); }
+      h3 { font-size: clamp(16px, 2.7vw, 21px); }
+      .flow { grid-template-columns: 1fr 1fr; }
+      .flow-item { gap: 8px; padding: 14px; }
+      .flow-item b { font-size: 18px; }
+      .step { grid-template-columns: 22px 1fr; gap: 10px; padding: 14px; }
+      .step h3 { margin-bottom: 6px; }
+      .agenda { padding: 18px; }
+      .agenda-row { padding: 14px 0; }
+      .connection { gap: 10px; }
+      .node { padding: 14px; gap: 8px; }
+      .example-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .code-title { padding: 8px 10px; font-size: 10px; }
+      pre { padding: 10px; }
+      pre code { font-size: 11px; }
+      .example-guide { gap: 14px; }
+      .example-guide h3 { font-size: 16px; }
+      .example-guide p { font-size: 13px; }
+      .terminal { padding: 8px; }
+      .terminal code { font-size: 10px; }
+      .flow-item::after { display: none; }
+      .dense .example-grid { grid-template-columns: 1fr 1fr; }
+      .dense .example-guide h3 { font-size: 16px; }
+      .dense .example-guide p { font-size: 13px; }
+      .dense .example-grid pre, .dense .example-grid pre code { font-size: 11px; }
+      .sample-head { padding: 10px 12px; font-size: 10px; }
+      .sample-body { padding: 14px; gap: 10px; }
+      .sample-body h3 { font-size: 20px; }
+    }
+    @media (max-width: 450px) {
+      :root { --body: 14px; --gap: 10px; --pad: 16px; }
+      .brand { font-size: 11px; gap: 6px; }
+      .brand::before { width: 7px; height: 7px; }
+      .paypal { width: 104px; }
+      h1 { font-size: 42px; }
+      h2 { font-size: 28px; }
+      .cover { gap: 26px; }
+      .step { padding: 12px; gap: 7px; grid-template-columns: 18px 1fr; }
+      .step-number { font-size: 19px; }
+      .step h3 { font-size: 15px; }
+      .step p { font-size: 12px; }
+      .notes { gap: 14px; }
+      .note h3 { font-size: 16px; }
+      .connection { gap: 6px; }
+      .node { padding: 10px 8px; }
+      .node h3 { font-size: 15px; }
+      .node p { font-size: 12px; }
+      .arrow { font-size: 18px; }
+      .capabilities { gap: 12px; }
+      .capabilities .note p { font-size: 12px; }
+      .source { gap: 5px 12px; padding-right: 90px; font-size: 9px; }
+      .example-grid { grid-template-columns: 1fr; gap: 12px; }
+      pre code { font-size: 11px; line-height: 1.25; }
+      .example-guide { gap: 10px; }
+      .example-guide h3 { font-size: 14px; margin-bottom: 3px; }
+      .example-guide p { font-size: 12px; }
+      .example-guide .terminal { margin-top: 4px; padding: 6px 8px; }
+      .request { padding: 10px 12px; font-size: 12px; }
+      .diagram-icon { width: 26px; height: 26px; }
+      .flow-item { gap: 6px; padding: 10px; }
+      .example-guide { gap: 8px; }
+      .example-guide p { line-height: 1.3; }
+      .dense h2 { font-size: 27px; }
+      .dense { --gap: 8px; --pad: 14px; }
+      .dense .content { justify-content: center; }
+      .dense .example-grid { grid-template-columns: 1fr; gap: 10px; }
+      .dense .example-grid pre, .dense .example-grid pre code { font-size: 10px; line-height: 1.2; }
+      .dense .example-guide { gap: 7px; }
+      .dense .example-guide h3 { font-size: 14px; }
+      .dense .example-guide p { font-size: 12px; line-height: 1.25; }
+      .sample-body { gap: 6px; padding: 10px; }
+      .sample-body h3 { font-size: 17px; }
+      .sample-body p, .result-row { font-size: 12px; line-height: 1.3; }
+      .result-row { padding-bottom: 6px; }
+      .mini-syntax { font-size: 11px; gap: 6px; }
+      .mini-syntax code { padding: 4px 6px; }
+    }
+    @media (max-height: 500px) and (min-width: 700px) {
+      :root { --body: 13px; --gap: 6px; --pad: 16px; }
+      h1 { font-size: 54px; }
+      h2 { font-size: 26px; }
+      h3 { font-size: 18px; }
+      .flow-item, .step, .node { padding: 10px; gap: 6px; }
+      .step h3 { margin-bottom: 4px; }
+      .note { padding-top: 8px; }
+      .note h3 { margin-bottom: 4px; }
+      pre { padding: 8px; }
+      pre code { font-size: 10px; line-height: 1.2; }
+      .code-title { padding: 6px 10px; font-size: 10px; }
+      .example-guide { gap: 8px; }
+      .example-guide h3 { font-size: 16px; }
+      .example-guide p { font-size: 11px; line-height: 1.3; }
+      .example-guide .terminal { margin-top: 4px; padding: 6px 8px; }
+      .terminal code { font-size: 10px; }
+      .diagram-icon { width: 20px; height: 20px; }
+      .request { padding: 8px 12px; }
+      .dense h2 { font-size: 26px; }
+      .dense { --gap: 4px; --pad: 14px; }
+      .dense .content { justify-content: center; }
+      .dense .example-grid pre, .dense .example-grid pre code { font-size: 10px; line-height: 1.15; }
+      .dense .takeaway { padding-top: 6px; }
+      .dense .example-guide h3 { font-size: 15px; }
+      .dense .example-guide p { font-size: 11px; }
+      .sample-head { padding: 4px 10px; font-size: 10px; }
+      .sample-body { padding: 8px 12px; gap: 4px; }
+      .sample-body h3 { font-size: 17px; }
+      .sample-body p, .result-row { font-size: 11px; }
+      .result-row { padding-bottom: 5px; }
+    }
+    @media print {
+      @page { size: 13.333in 7.5in; margin: 0; }
+      html, body { width: auto; height: auto; overflow: visible; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .deck { height: auto; }
+      .slide, .slide[hidden] { position: relative; display: block !important; width: 13.333in; height: 7.5in; break-after: page; }
+      .controls, .progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="logo-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="paypal-text" viewBox="0 0 135 48">
+      <path d="M133 2.02v32.83h-7.47V2.02H133zM122.78 13.1v21.81h-6.64v-1.88c-.84.82-1.8 1.44-2.86 1.88-1.07.46-2.23.7-3.47.7-1.56 0-3.01-.29-4.34-.87-1.33-.61-2.49-1.44-3.47-2.48-.99-1.05-1.77-2.27-2.35-3.66-.55-1.42-.82-2.95-.82-4.58s.27-3.14.82-4.53c.58-1.42 1.36-2.66 2.35-3.71a10.45 10.45 0 0 1 3.47-2.44c1.33-.61 2.78-.92 4.34-.92 1.24 0 2.4.23 3.47.7 1.07.44 2.03 1.06 2.86 1.88v-1.88h6.64v-.02zm-11.77 15.87c1.36 0 2.47-.46 3.34-1.4.9-.93 1.35-2.12 1.35-3.57 0-1.45-.45-2.65-1.35-3.57-.87-.93-1.99-1.4-3.34-1.4-1.35 0-2.49.46-3.39 1.4-.87.93-1.31 2.12-1.31 3.57 0 1.45.44 2.65 1.31 3.57.9.93 2.03 1.4 3.39 1.4zM88.17 2.02c1.97 0 3.65.28 5.04.83 1.39.55 2.56 1.32 3.52 2.31.98 1.02 1.75 2.18 2.3 3.49.55 1.31.82 2.72.82 4.23 0 1.51-.27 2.92-.82 4.23a11.15 11.15 0 0 1-2.3 3.49c-.95.99-2.13 1.76-3.52 2.31-1.39.55-3.07.83-5.04.83h-3.6V34.9h-7.6V2.02h11.2zm-1.09 14.96c1.02 0 1.79-.1 2.35-.31.58-.23 1.06-.53 1.43-.87.78-.73 1.17-1.7 1.17-2.92s-.39-2.19-1.17-2.92c-.38-.35-.85-.63-1.43-.83-.55-.23-1.33-.35-2.35-.35h-2.52v8.2h2.52zM48.97 13.1h8.25l5.6 10.46h.09L67.9 13.1h7.64L59.17 45.98h-7.6l7.47-15.04L48.97 13.1zm-1.47 0v21.81h-6.64v-1.88c-.84.82-1.8 1.44-2.86 1.88-1.07.46-2.23.7-3.47.7-1.56 0-3.01-.29-4.34-.87-1.33-.61-2.49-1.44-3.47-2.48-.99-1.05-1.77-2.27-2.35-3.66-.55-1.42-.82-2.95-.82-4.58s.27-3.14.82-4.53c.58-1.42 1.36-2.66 2.35-3.71a10.35 10.35 0 0 1 3.47-2.44c1.33-.61 2.78-.92 4.34-.92 1.24 0 2.4.23 3.47.7 1.07.44 2.03 1.06 2.86 1.88v-1.88h6.64v-.02zM35.73 28.97c1.36 0 2.47-.46 3.35-1.4.9-.93 1.35-2.12 1.35-3.57 0-1.45-.45-2.65-1.35-3.57-.87-.93-1.99-1.4-3.35-1.4s-2.49.46-3.39 1.4c-.87.93-1.3 2.12-1.3 3.57 0 1.45.44 2.65 1.3 3.57.9.93 2.03 1.4 3.39 1.4zM13.2 2.02c1.97 0 3.65.28 5.04.83 1.39.55 2.56 1.32 3.52 2.31.98 1.02 1.75 2.18 2.3 3.49.55 1.31.82 2.72.82 4.23 0 1.51-.27 2.92-.82 4.23a11.15 11.15 0 0 1-2.3 3.49c-.95.99-2.13 1.76-3.52 2.31-1.39.55-3.07.83-5.04.83H9.6V34.9H2V2.02h11.2zm-1.08 14.96c1.02 0 1.79-.1 2.35-.31.58-.23 1.06-.53 1.43-.87.78-.73 1.17-1.7 1.17-2.92s-.39-2.19-1.17-2.92c-.38-.35-.85-.63-1.43-.83-.55-.23-1.33-.35-2.35-.35H9.6v8.2h2.52z"/>
+    </symbol>
+    <symbol id="paypal-wordmark" viewBox="0 0 190 48">
+      <svg x="0" y="0" width="42" height="48" viewBox="0 0 52 60">
+        <path fill="#27346a" d="M18.9539394,15.6763636 C19.0757576,14.9024242 19.5721212,14.2690909 20.2406061,13.9484848 C20.5448485,13.8030303 20.8842424,13.7218182 21.24,13.7218182 L35.7363636,13.7218182 C37.4539394,13.7218182 39.0551515,13.8345455 40.5193939,14.070303 C40.9375758,14.1375758 41.3442424,14.2151515 41.74,14.3030303 C42.1357576,14.3909091 42.5193939,14.4884848 42.8909091,14.5975758 C43.0769697,14.6515152 43.2593939,14.7084848 43.4393939,14.7684848 C44.1581818,15.0072727 44.8272727,15.2884848 45.4430303,15.6145455 C46.1690909,10.9860606 45.4381818,7.83636364 42.9345455,4.98363636 C40.1781818,1.8430303 35.1987879,0.497575758 28.8278788,0.497575758 L10.3339394,0.497575758 C9.03212121,0.497575758 7.92363636,1.44484848 7.72060606,2.73090909 L0.02,51.5630303 C-0.132121212,52.5266667 0.612727273,53.3975758 1.58787879,53.3975758 L13.0048485,53.3975758 L18.9539394,15.6763636"/>
+        <path fill="#2790c3" d="M45.4430303,15.6145455 C45.3878788,15.9678788 45.3266667,16.3272727 45.2539394,16.6975758 C42.8157576,29.2193939 34.4715152,33.5484848 23.8145455,33.5484848 L18.3878788,33.5484848 C17.0860606,33.5484848 15.9866667,34.4963636 15.7836364,35.7824242 L12.2169697,58.3951515 C12.0842424,59.2375758 12.7357576,60 13.5884848,60 L23.2121212,60 C24.3509091,60 25.3206061,59.1715152 25.4981818,58.0460606 L25.5927273,57.5569697 L27.4054545,46.0612121 L27.5224242,45.4260606 C27.7,44.3006061 28.669697,43.4721212 29.8084848,43.4721212 L31.2478788,43.4721212 C40.5709091,43.4721212 47.8709091,39.6842424 50.0042424,28.730303 C50.8951515,24.1533333 50.4345455,20.3327273 48.0775758,17.6466667 C47.3648485,16.8345455 46.4775758,16.1624242 45.4430303,15.6145455"/>
+        <path fill="#1f264f" d="M42.8909091,14.5975758 C42.5193939,14.4884848 42.1357576,14.3909091 41.74,14.3030303 C41.3442424,14.2151515 40.9375758,14.1375758 40.5193939,14.070303 C39.0551515,13.8345455 37.4539394,13.7218182 35.7363636,13.7218182 L21.24,13.7218182 C20.8842424,13.7218182 20.5448485,13.8030303 20.2406061,13.9484848 C19.5721212,14.2690909 19.0757576,14.9024242 18.9539394,15.6763636 L15.8727273,35.2121212 L15.7836364,35.7824242 C15.9866667,34.4963636 17.0860606,33.5484848 18.3878788,33.5484848 L23.8145455,33.5484848 C34.4715152,33.5484848 42.8157576,29.2193939 45.2539394,16.6975758 C45.3266667,16.3272727 45.3878788,15.9678788 45.4430303,15.6145455 C44.8272727,15.2884848 44.1581818,15.0072727 43.4393939,14.7684848 C43.2593939,14.7084848 43.0769697,14.6515152 42.8909091,14.5975758"/>
+      </svg>
+      <use href="#paypal-text" x="55" y="0" width="135" height="48"/>
+    </symbol>
+    <symbol id="icon-trigger" viewBox="0 0 40 40"><circle cx="20" cy="21" r="13"/><path d="M20 13v8l6 4M15 4h10M20 4v4M30 9l3-3"/></symbol>
+    <symbol id="icon-run" viewBox="0 0 40 40"><rect x="4" y="6" width="32" height="27" rx="3"/><path d="M4 13h32M10 10h1m4 0h1m4 0h1M16 19l10 5-10 5z"/></symbol>
+    <symbol id="icon-agent" viewBox="0 0 40 40"><rect x="7" y="11" width="26" height="23" rx="5"/><path d="M20 5v6M4 19h3m26 0h3M14 26h12"/><circle cx="14" cy="19" r="1.5"/><circle cx="26" cy="19" r="1.5"/></symbol>
+    <symbol id="icon-review" viewBox="0 0 40 40"><path d="M25 35H8V5h17l7 7v8M25 5v8h7M13 18h10M13 24h6M24 28l4 4 8-10"/></symbol>
+    <symbol id="icon-connect" viewBox="0 0 40 40"><path d="M14 13l-4 4a8 8 0 0 0 11 11l4-4M26 27l4-4a8 8 0 0 0-11-11l-4 4M14 26l12-12"/></symbol>
+  </svg>
+  <main class="deck" aria-label="GitHub Agentic Workflows and MCP">
+    <section class="slide" aria-label="Slide 1 of 9: Introduction" aria-roledescription="slide" role="group" data-title="Introduction">
+      <div class="inner">
+        <header class="chrome"><span class="brand">GitHub</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content cover">
+          <div class="cover-copy"><h1>Agentic workflows <span class="green">&amp;</span> MCP</h1><p>What they are. How they work.<br>How to use them.</p></div>
+          <div class="agenda"><h2>Agenda</h2><div class="agenda-row"><b>01</b><span>GitHub Agentic Workflows<br><small>Concepts, workflow syntax, commands and results</small></span></div><div class="agenda-row"><b>02</b><span>Model Context Protocol (MCP)<br><small>Architecture, configuration and tool calls</small></span></div></div>
+        </div>
+        <footer class="source"><span>A practical introduction</span></footer>
+      </div>
+    </section>
+    <section class="slide dense" aria-label="Slide 2 of 9: GitHub Agentic Workflows" aria-roledescription="slide" role="group" data-title="GitHub Agentic Workflows" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">GitHub Agentic Workflows</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>GitHub Agentic Workflows</h2>
+          <p class="intro">Repository automation with an AI agent. Write the task in Markdown; <code>gh aw</code> compiles it into a GitHub Actions workflow.</p>
+          <div class="flow" aria-label="Workflow sequence">
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-trigger"/></svg><b>1. Trigger</b><p>An issue, schedule, or manual run starts the task.</p></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-run"/></svg><b>2. Execute</b><p>Actions runs the agent using your Markdown instructions.</p></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-agent"/></svg><b>3. Analyse</b><p>The agent reads issues or code with allowed tools.</p></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-review"/></svg><b>4. Publish</b><p>A separate safe-output job applies permitted changes.</p></div>
+          </div>
+          <div class="notes"><div class="note"><h3>Use it for</h3><p>Issue triage, daily activity reports, documentation checks, and draft reviews. Reduce repeated analysis.</p></div><div class="note"><h3>Keep the boundaries</h3><p>Limit tools and permissions. Review published results. Keep predictable builds and tests in standard Actions.</p></div></div>
+          <div class="mini-syntax"><code>on: workflow_dispatch</code><span>Run manually</span><code>on: issues</code><span>Run on issue events</span></div>
+        </div>
+        <footer class="source"><a href="https://github.github.com/gh-aw/introduction/how-they-work/" target="_blank" rel="noreferrer">How Agentic Workflows work</a></footer>
+      </div>
+    </section>
+    <section class="slide dense" aria-label="Slide 3 of 9: Workflow syntax" aria-roledescription="slide" role="group" data-title="Workflow syntax" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">GitHub Agentic Workflows</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>Workflow syntax</h2>
+          <p class="intro">Example: read open issues and create one report issue.</p>
+          <div class="example-grid">
+            <div class="code-panel"><div class="code-title">.github/workflows/issue-report.md</div><pre><code>---
+<span class="syntax-key">on:</span> workflow_dispatch
+<span class="syntax-key">permissions:</span>
+  <span class="syntax-key">contents:</span> read
+  <span class="syntax-key">issues:</span> read
+<span class="syntax-key">tools:</span>
+  <span class="syntax-key">github:</span>
+    <span class="syntax-key">toolsets:</span> [issues]
+<span class="syntax-key">safe-outputs:</span>
+  <span class="syntax-key">create-issue:</span>
+    <span class="syntax-key">max:</span> 1
+---
+<span class="syntax-value"># Issue report</span>
+Read open issues.
+Group by label and list blockers.
+Create one report issue
+with links to the source issues.</code></pre></div>
+            <div class="example-guide">
+              <div><h3>Trigger</h3><p><code>workflow_dispatch</code> adds a manual run option in Actions.</p></div>
+              <div><h3>Read access and tools</h3><p>The agent can read issues. The <code>issues</code> toolset provides relevant GitHub tools.</p></div>
+              <div><h3>Controlled output</h3><p><code>create-issue</code> permits one report. A separate job handles the write.</p></div>
+              <div><h3>Plain-language task</h3><p>The Markdown body states what to analyse and what to produce. Configure AI authentication separately.</p></div>
+            </div>
+          </div>
+        </div>
+        <footer class="source"><a href="https://github.github.com/gh-aw/setup/creating-workflows/" target="_blank" rel="noreferrer">Workflow structure</a><a href="https://github.github.com/gh-aw/reference/safe-outputs/" target="_blank" rel="noreferrer">Safe outputs</a></footer>
+      </div>
+    </section>
+    <section class="slide dense" aria-label="Slide 4 of 9: Run a workflow" aria-roledescription="slide" role="group" data-title="Run a workflow" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">GitHub Agentic Workflows</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>Run a workflow</h2>
+          <p class="intro">You need GitHub CLI, repository write access, Actions enabled, and a configured AI engine.</p>
+          <div class="example-grid">
+            <div class="code-panel"><div class="code-title">Terminal · run from the repository</div><pre><code><span class="syntax-comment"># Sign in and install</span>
+gh auth login
+gh extension install github/gh-aw
+<span class="syntax-comment"># Compile the Markdown source</span>
+gh aw compile
+<span class="syntax-comment"># After publishing both files</span>
+gh aw run issue-report
+<span class="syntax-comment"># Inspect workflow state and runs</span>
+gh aw status
+gh aw logs</code></pre></div>
+            <div class="sample-ui">
+              <div class="sample-head"><span>Actions and Issues</span><span>Illustrative result</span></div>
+              <div class="sample-body">
+                <h3>Issue report</h3>
+                <div class="result-row"><span>Agent analysis</span><b class="status">Complete</b></div>
+                <div class="result-row"><span>Safe-output job</span><b class="status">Report created</b></div>
+                <p><strong>Open issues: 12</strong><br>5 bugs · 4 enhancements · 3 documentation tasks</p>
+                <p><strong>Blocker:</strong> two bugs need reproduction steps.</p>
+                <p>The real report must link to source issues. Counts here are sample data.</p>
+              </div>
+            </div>
+          </div>
+          <p class="takeaway">Publish <code>issue-report.md</code> and <code>issue-report.lock.yml</code> to the default branch before the first run. If it fails, check authentication, permissions, and Actions logs.</p>
+        </div>
+        <footer class="source"><a href="https://github.github.com/gh-aw/setup/quick-start/" target="_blank" rel="noreferrer">Setup and authentication</a><a href="https://github.github.com/gh-aw/setup/creating-workflows/" target="_blank" rel="noreferrer">Compile and publish</a></footer>
+      </div>
+    </section>
+    <section class="slide mcp dense" aria-label="Slide 5 of 9: What MCP does" aria-roledescription="slide" role="group" data-title="What MCP does" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">Model Context Protocol</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>What MCP does</h2>
+          <p class="intro"><strong>Model Context Protocol (MCP)</strong> is a standard way for an AI app to request data or actions from other software.</p>
+          <p class="request">Example task: "Read this GitHub issue and tell me what information is missing."</p>
+          <div class="notes">
+            <div class="note"><h3>Without a connected tool</h3><p>You open the issue, copy its text, and paste it into the chat. The model cannot read a private issue from a link alone.</p></div>
+            <div class="note"><h3>With GitHub MCP</h3><p>The app can request the issue through a GitHub tool. It gets the data that your account is allowed to read.</p></div>
+          </div>
+          <div class="connection" aria-label="You ask a question. The AI app reads GitHub through MCP. You receive an answer.">
+            <div class="node"><h3>You ask</h3><p>"Read issue 42."</p></div><span class="arrow" aria-hidden="true">&#8594;</span>
+            <div class="node"><h3>App gets data</h3><p>Uses GitHub MCP.</p></div><span class="arrow" aria-hidden="true">&#8594;</span>
+            <div class="node"><h3>You get an answer</h3><p>Based on the issue.</p></div>
+          </div>
+          <p class="takeaway">Use MCP to work with issues, files, or business data from a chat. MCP connects software; it is not an AI model and does not give extra access rights.</p>
+        </div>
+        <footer class="source"><a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank" rel="noreferrer">What is MCP?</a><a href="https://modelcontextprotocol.io/docs/learn/architecture" target="_blank" rel="noreferrer">MCP architecture</a></footer>
+      </div>
+    </section>
+    <section class="slide mcp dense" aria-label="Slide 6 of 9: MCP parts" aria-roledescription="slide" role="group" data-title="MCP parts" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">Model Context Protocol</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>MCP parts</h2>
+          <p class="intro">The AI app, the MCP server, and the service have different jobs.</p>
+          <div class="connection" aria-label="The AI app contains an MCP client. The client talks to the MCP server. The server calls the GitHub API. Results return along the same path.">
+            <div class="node"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-agent"/></svg><h3>AI app</h3><p><strong>Host:</strong> VS Code with Copilot.<br><strong>Client:</strong> the connection part inside it.</p></div><span class="arrow" aria-hidden="true">&#8596;</span>
+            <div class="node"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-connect"/></svg><h3>MCP server</h3><p>Offers GitHub tools. Turns a tool request into a GitHub API call.</p></div><span class="arrow" aria-hidden="true">&#8596;</span>
+            <div class="node"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-run"/></svg><h3>GitHub</h3><p>Stores the issues. Checks access and returns the issue data.</p></div>
+          </div>
+          <div class="capabilities">
+            <div class="note"><h3>Tools: do a task</h3><p>A function the app can call.<br>Example: read an issue.</p></div>
+            <div class="note"><h3>Resources: read data</h3><p>Data the app can load.<br>Example: a document.</p></div>
+            <div class="note"><h3>Prompts: reuse instructions</h3><p>A prepared task template.<br>Example: review a change.</p></div>
+          </div>
+          <p class="takeaway">A server can offer some or all of these. Our GitHub example uses a <strong>tool</strong>. Servers can run on your computer or at a remote URL.</p>
+        </div>
+        <footer class="source"><a href="https://modelcontextprotocol.io/docs/learn/architecture" target="_blank" rel="noreferrer">MCP architecture and capabilities</a></footer>
+      </div>
+    </section>
+    <section class="slide mcp dense" aria-label="Slide 7 of 9: How a request works" aria-roledescription="slide" role="group" data-title="How a request works" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">Model Context Protocol</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>How a request works</h2>
+          <p class="request">You ask: "Read issue 42 in OWNER/REPO. List the problem and missing details."</p>
+          <div class="flow" aria-label="Four steps from tool discovery to an answer">
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-connect"/></svg><b>1. Find tools</b><p>The app asks the connected server for its tool list.</p><code>tools/list</code></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-agent"/></svg><b>2. Select a tool</b><p>The model selects issue-read and supplies the repository and issue number.</p></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-run"/></svg><b>3. Get the data</b><p>The app checks policy and required approval, then calls the server.</p><code>tools/call</code></div>
+            <div class="flow-item"><svg class="diagram-icon" aria-hidden="true"><use href="#icon-review"/></svg><b>4. Give an answer</b><p>The server returns issue data. The model uses it to write the answer.</p></div>
+          </div>
+          <p class="intro">You write the task. The app manages the connection and tool messages. You review the answer.</p>
+          <p class="takeaway">Source data does not guarantee a correct answer. If a call fails, check sign-in and repository access. Do not treat a failed call as an empty issue.</p>
+        </div>
+        <footer class="source"><a href="https://modelcontextprotocol.io/docs/learn/architecture" target="_blank" rel="noreferrer">Request flow</a><a href="https://code.visualstudio.com/docs/agent-customization/mcp-servers" target="_blank" rel="noreferrer">Tool approval in VS Code</a></footer>
+      </div>
+    </section>
+    <section class="slide mcp dense" aria-label="Slide 8 of 9: Connect GitHub MCP" aria-roledescription="slide" role="group" data-title="Connect GitHub MCP" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">Model Context Protocol</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>Connect GitHub MCP</h2>
+          <p class="intro">In VS Code with Copilot, add the GitHub server. Start with read-only tools.</p>
+          <div class="example-grid">
+            <div class="code-panel"><div class="code-title">.vscode/mcp.json · VS Code format</div><pre><code>{
+  <span class="syntax-key">"servers"</span>: {
+    <span class="syntax-key">"github"</span>: {
+      <span class="syntax-key">"type"</span>: <span class="syntax-value">"http"</span>,
+      <span class="syntax-key">"url"</span>:
+        <span class="syntax-value">"https://api.githubcopilot.com/mcp/readonly"</span>
+    }
+  }
+}</code></pre></div>
+            <div class="example-guide">
+              <div><h3>1. Save the settings</h3><p>Create <code>.vscode/mcp.json</code> in your workspace and paste this JSON. The URL is the server address.</p></div>
+              <div><h3>2. Start and sign in</h3><p>Use <strong>MCP: List Servers</strong> in the Command Palette. Select GitHub and start it. Review trust and sign in when asked.</p></div>
+              <div><h3>3. Check the tools</h3><p>Open Copilot Chat in agent mode. Open the tool picker and check that GitHub read tools are enabled.</p></div>
+            </div>
+          </div>
+          <p class="takeaway"><code>/readonly</code> provides no write tools. Keep tokens out of this file. Your account and organisation policy still control access. Other AI apps can use a different settings format.</p>
+        </div>
+        <footer class="source"><a href="https://github.com/github/github-mcp-server#remote-github-mcp-server" target="_blank" rel="noreferrer">GitHub MCP setup</a><a href="https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md" target="_blank" rel="noreferrer">Read-only endpoint</a><a href="https://code.visualstudio.com/docs/agents/reference/mcp-configuration" target="_blank" rel="noreferrer">VS Code format</a></footer>
+      </div>
+    </section>
+    <section class="slide mcp dense" aria-label="Slide 9 of 9: Use GitHub MCP" aria-roledescription="slide" role="group" data-title="Use GitHub MCP" hidden>
+      <div class="inner">
+        <header class="chrome"><span class="brand">Model Context Protocol</span><svg class="paypal" role="img" aria-label="PayPal"><use href="#paypal-wordmark"/></svg></header>
+        <div class="content">
+          <h2>Use GitHub MCP</h2>
+          <p class="request">Type in chat: "Use GitHub MCP to read issue 42 in OWNER/REPO. List the problem, labels, and missing details. Link the issue. Make no changes."</p>
+          <div class="example-grid">
+            <div class="code-panel"><div class="code-title">Behind the chat: tool-call parameters</div><pre><code>{
+  <span class="syntax-key">"name"</span>: <span class="syntax-value">"issue_read"</span>,
+  <span class="syntax-key">"arguments"</span>: {
+    <span class="syntax-key">"method"</span>: <span class="syntax-value">"get"</span>,
+    <span class="syntax-key">"owner"</span>: <span class="syntax-value">"OWNER"</span>,
+    <span class="syntax-key">"repo"</span>: <span class="syntax-value">"REPO"</span>,
+    <span class="syntax-key">"issue_number"</span>: 42
+  }
+}</code></pre></div>
+            <div class="sample-ui">
+              <div class="sample-head"><span>Agent chat</span><span>Illustrative result</span></div>
+              <div class="sample-body">
+                <span class="tool-label">Data returned &#8594; answer</span>
+                <h3>Checkout fails on retry</h3>
+                <p><strong>Problem:</strong> a second attempt returns an error.</p>
+                <p><strong>Labels:</strong> bug, checkout.<br><strong>Missing:</strong> browser version and reproduction steps.</p>
+                <p><strong>Source:</strong> issue 42.<br>The real answer must include its GitHub link.</p>
+              </div>
+            </div>
+          </div>
+          <p class="takeaway">Replace <code>OWNER/REPO</code> and <code>42</code> with your target. The app builds the JSON. Expand the tool call to check its target and data. Compare the answer with the issue.</p>
+        </div>
+        <footer class="source"><a href="https://github.com/github/github-mcp-server#tools" target="_blank" rel="noreferrer">GitHub MCP tool reference</a><a href="https://code.visualstudio.com/docs/agent-customization/mcp-servers" target="_blank" rel="noreferrer">Verify tool calls</a><span>Sample data, not a live run</span></footer>
+      </div>
+    </section>
+  </main>
+  <nav class="controls" aria-label="Slide navigation">
+    <button id="previous" type="button" aria-label="Previous slide" title="Previous slide (Left arrow)">&#8592;</button>
+    <span class="count" id="count" aria-live="polite">01 / 09</span>
+    <button id="next" type="button" aria-label="Next slide" title="Next slide (Right arrow)">&#8594;</button>
+  </nav>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll(".slide")];
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const count = document.getElementById("count");
+      const progress = document.getElementById("progress");
+      let current = 0;
+      function showSlide(index) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach((slide, position) => {
+          slide.hidden = position !== current;
+          if (position === current) slide.setAttribute("aria-current", "true");
+          else slide.removeAttribute("aria-current");
+        });
+        count.textContent = `${String(current + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        progress.style.transform = `scaleX(${(current + 1) / slides.length})`;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        document.title = `${slides[current].dataset.title} - GitHub Agentic Workflows and MCP`;
+      }
+      previous.addEventListener("click", () => showSlide(current - 1));
+      next.addEventListener("click", () => showSlide(current + 1));
+      document.addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.target.isContentEditable) return;
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
+        if (["ArrowRight", "PageDown", "ArrowLeft", "PageUp", "Home", "End"].includes(event.key)) event.preventDefault();
+        if (event.key === "ArrowRight" || event.key === "PageDown") showSlide(current + 1);
+        else if (event.key === "ArrowLeft" || event.key === "PageUp") showSlide(current - 1);
+        else if (event.key === "Home") showSlide(0);
+        else if (event.key === "End") showSlide(slides.length - 1);
+      });
+      showSlide(0);
+    })();
+  </script>
+</body>
+</html>
