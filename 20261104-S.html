@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="GitHub Copilot code review: settings, MCP, GHEC and GHES availability, dated preview labels, official sources, and GitHub Universe 2026 resource links.">
+  <meta name="description" content="GitHub Copilot code review: settings, MCP, standalone Copilot and data-resident GHEC, dated preview labels, official sources, and GitHub Universe 2026 resource links.">
   <title>GitHub Copilot code review</title>
   <style>
     :root {
@@ -379,21 +379,20 @@
 
     <section class="slide">
       <div class="slide-inner">
-        <h2>GitHub hosting</h2>
-        <p class="lead">Check the host, Copilot entitlement, and administrator policy before you use a feature.</p>
+        <h2>Copilot standalone vs data-resident GHEC</h2>
+        <p class="lead">For Siemens, the move to data-resident GHEC changes when cloud-side code review becomes available.</p>
         <div class="columns">
           <article class="panel">
-            <h3>GHEC</h3>
-            <p><strong>GitHub Enterprise Cloud</strong> runs on GitHub.com or a data-resident cloud.</p>
-            <p>Copilot PR review and cloud agent features require an eligible account and allowed policies.</p>
+            <h3>Copilot standalone · today</h3>
+            <p>Most Siemens users currently use GitHub Copilot standalone.</p>
+            <p>Cloud-side agentic features, including Copilot Code Review on pull requests, are not available in this setup.</p>
           </article>
           <article class="panel">
-            <h3>GHES</h3>
-            <p><strong>GitHub Enterprise Server</strong> is self-hosted. Copilot is not an integrated GHES service.</p>
-            <p>Local IDE use with a separate Copilot account does not add Copilot PR review to GHES.</p>
+            <h3>GHEC with data residency · after migration</h3>
+            <p>Siemens plans to move its code, Actions, and related work to <code>siemens.ghe.com</code>.</p>
+            <p>After migration, teams can use Copilot Code Review. Access still depends on Copilot entitlements and policies.</p>
           </article>
         </div>
-        <p class="note">A standalone GHEC account is still GHEC. <strong>Copilot Standalone</strong> is a billing option for users without a GHEC license, not a GHES integration.</p>
       </div>
     </section>
 
@@ -1004,11 +1003,12 @@ jobs:
       const wizDocs = "https://www.wiz.io/blog/introducing-wiz-mcp";
       const recap = "https://github.com/events/universe/recap";
       const maxAnnouncement = blog + "2026-10-28-copilot-code-review-merge-with-confidence-with-max-and-approvals/";
+      const codeReviewAvailability = "Copilot standalone: No cloud PR review | GHEC with data residency: Available after migration";
       const sourceMap = {
-        "Copilotcode review": { doc: reviewDocs, scope: "GHEC: eligible | GHES: no PR integration" },
-        "GitHub hosting": { doc: docs + "copilot/get-started/plans", scope: "GHEC and GHES: compare hosting limits" },
-        "Review process": { doc: useDocs },
-        "VS Code": { doc: useDocs, scope: "Local IDE: separate Copilot account | GHES: no PR integration" },
+        "Copilotcode review": { doc: reviewDocs },
+        "Copilot standalone vs data-resident GHEC": { doc: docs + "copilot/get-started/plans", availability: "Standalone: No cloud PR review | GHEC with data residency: Available after migration, subject to entitlement and policy" },
+        "Review process": { doc: useDocs, availability: "Standalone: Local review only | GHEC with data residency: Local and PR review after migration" },
+        "VS Code": { doc: useDocs, availability: "Standalone: IDE review available | GHEC with data residency: IDE and PR review after migration" },
         "Pull request review": { doc: useDocs },
         "Review comments": { doc: useDocs },
         "Settings map": { doc: configureDocs },
@@ -1024,20 +1024,20 @@ jobs:
         "Instructions and skills": { doc: docs + "copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions", extra: docs + "copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills" },
         "Memory": { doc: docs + "copilot/how-tos/use-copilot-agents/copilot-memory/manage-as-administrator", extra: memoryDocs },
         "MCP settings": { doc: mcpDocs },
-        "SonarQube": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
-        "SonarQube findings": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
-        "SonarQube quality": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
-        "SonarQube review": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
-        "Wiz": { doc: mcpDocs, extra: wizDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
-        "Wiz MCP configuration": { doc: mcpDocs, extra: wizDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "SonarQube": { doc: mcpDocs, extra: sonarDocs },
+        "SonarQube findings": { doc: mcpDocs, extra: sonarDocs },
+        "SonarQube quality": { doc: mcpDocs, extra: sonarDocs },
+        "SonarQube review": { doc: mcpDocs, extra: sonarDocs },
+        "Wiz": { doc: mcpDocs, extra: wizDocs },
+        "Wiz MCP configuration": { doc: mcpDocs, extra: wizDocs },
         "Runners": { doc: docs + "copilot/how-tos/copilot-on-github/set-up-copilot/configure-runners" },
         "Internet access": { doc: docs + "copilot/how-tos/copilot-on-github/customize-copilot/customize-the-firewall" },
         "Review limits": { doc: reviewDocs, extra: docs + "copilot/reference/review-excluded-files" },
         "Fixes with cloud agent": { doc: useDocs, preview: "Handoff" },
-        "CI checks": { doc: docs + "actions", scope: "CI tools: both hosts | GHES: self-hosted runner required" },
+        "CI checks": { doc: docs + "actions", availability: "Standalone: GitHub Actions checks available | GHEC with data residency: GitHub Actions checks available" },
         "Settings references": { doc: configureDocs },
         "Context and tool references": { doc: mcpDocs },
-        "Universe resources": { doc: recap, scope: "Resources: both audiences | Check feature availability in each source" }
+        "Universe resources": { doc: recap, availability: "Resources: available to both | Copilot PR review: GHEC after migration" }
       };
       slides.forEach(function (slide) {
         const title = slide.querySelector("h1, h2").textContent.trim();
@@ -1047,7 +1047,7 @@ jobs:
         caption.className = "slide-caption";
         const scope = document.createElement("span");
         scope.className = "caption-scope";
-        scope.textContent = sources.scope || "GHEC: eligible | GHES: not available";
+        scope.textContent = sources.availability || codeReviewAvailability;
         caption.append(scope);
         if (sources.preview) {
           const preview = document.createElement("span");
