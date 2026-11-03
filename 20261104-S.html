@@ -1,12 +1,12 @@
 <!doctype html>
-<!-- Standalone deck. GitHub documentation checked on 02 November 2026.
+<!-- Standalone deck. GitHub documentation checked on 03 November 2026.
      Shared type, spacing, and layout rules apply to every slide. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="GitHub Copilot code review: use, enterprise policies, organization and repository settings, review effort, approvals, MCP, runners, and a practical pilot.">
+  <meta name="description" content="GitHub Copilot code review: settings, MCP, GHEC and GHES availability, dated preview labels, official sources, and GitHub Universe 2026 resource links.">
   <title>GitHub Copilot code review</title>
   <style>
     :root {
@@ -69,8 +69,8 @@
     .brand svg { width: 1.3em; height: 1.3em; color: var(--blue); flex-shrink: 0; }
     .topbar > span { color: var(--muted); }
     .slide {
-      position: absolute; inset: max(8dvh, 42px) 0 54px;
-      display: none; padding: 3dvh 3vw; overflow: hidden;
+      position: absolute; inset: max(8dvh, 42px) 0 60px;
+      display: none; padding: 2.7dvh 3vw; overflow: hidden;
     }
     .slide.is-active { display: flex; }
     .slide-inner {
@@ -188,8 +188,15 @@
     .sources li { margin: 0; padding: .7em 0; border-bottom: 1px solid var(--line); }
     .sources a { display: block; font-weight: 600; }
     .sources span { display: block; margin-top: .3em; color: var(--muted); font-size: var(--small); }
-    .footer { position: absolute; bottom: 0; left: 3vw; right: 3vw; height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    .hint { font-size: 12px; color: var(--muted); }
+    .universe-resources a { display: inline; font-weight: 500; }
+    .footer { position: absolute; bottom: 0; left: 3vw; right: 3vw; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .slide-caption { display: none; }
+    .slide-details { flex: 1; min-width: 0; font-size: 11px; line-height: 1.4; color: var(--muted); }
+    .slide-details .slide-caption { display: block; }
+    .caption-scope, .caption-preview, .caption-links { display: block; }
+    .caption-preview { color: var(--yellow); }
+    .caption-links { display: flex; flex-wrap: wrap; gap: 0 1em; }
+    .controls { flex-shrink: 0; }
     .controls { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
     .controls button { width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--fg); font-size: 12px; cursor: pointer; }
     .controls button:hover:not(:disabled) { background: var(--raised); }
@@ -209,7 +216,7 @@
       }
       .topbar { height: 48px; padding: 0 5vw; font-size: 12px; }
       .topbar > span { display: none; }
-      .slide { inset: 48px 0 50px; padding: 2dvh 5vw; }
+      .slide { inset: 48px 0 86px; padding: 2dvh 5vw; }
       .columns, .columns.three, .hero { grid-template-columns: 1fr; gap: var(--gap); }
       .columns.three .panel { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.8fr); gap: .4em .8em; }
       .columns.three .panel h3 { grid-column: 1; grid-row: 1 / span 4; }
@@ -256,11 +263,16 @@
       .mcp-graph > .terminal > :not(.icon) { grid-column: 2; }
       .sources { grid-template-columns: 1fr; }
       .sources li { padding: .55em 0; }
-      .footer { left: 5vw; right: 5vw; justify-content: flex-end; height: 46px; }
-      .hint { display: none; }
+      .footer { left: 5vw; right: 5vw; height: 82px; gap: 10px; }
+      .slide-details { font-size: 10px; }
       .controls button { width: 28px; height: 28px; }
     }
     @media (max-width: 520px) {
+      .slide { padding-top: 6px; padding-bottom: 6px; }
+      .slide-inner { gap: 8px; }
+      .panel, pre { padding: 8px; }
+      .panel > * + * { margin-top: .45em; }
+      .sources li { padding: .4em 0; }
       .logic { grid-template-columns: minmax(0, 1.15fr) 3em minmax(0, .85fr); padding: .8em; }
       .logic-inputs .source { flex-direction: column; align-items: flex-start; }
     }
@@ -273,12 +285,17 @@
       .note { padding: .65em .8em; }
       .settings > div { padding: .45em 0; }
     }
+    @media (max-width: 520px) and (max-height: 700px) {
+      .slide { padding-top: 6px; padding-bottom: 6px; }
+      .slide-inner { gap: 6px; }
+      .panel > * + * { margin-top: .45em; }
+    }
     @media (max-height: 650px) and (min-aspect-ratio: 6/5) {
       :root { --body: min(1.7vw, 2.8dvh); --title: 6.5dvh; --heading: 4.4dvh; --gap: 1.5dvh; --pad: 1.5dvh; }
       .topbar { height: 28px; min-height: 0; font-size: 10px; }
-      .slide { inset: 28px 0 36px; padding: 2dvh 3vw; }
-      .footer { height: 34px; }
-      .hint { font-size: 10px; }
+      .slide { inset: 28px 0 56px; padding: 2dvh 3vw; }
+      .footer { height: 52px; }
+      .slide-details { font-size: 10px; }
       .settings > div { padding: .4em 0; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
@@ -306,6 +323,8 @@
       .tool-sources { grid-template-columns: 1fr; }
       .tool-filter, .mcp-graph > .terminal { display: flex; flex-direction: column; align-items: center; text-align: center; }
       .sources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .slide > .slide-caption { display: block; position: absolute; bottom: 14px; left: 60px; right: 60px; font-size: 12px; color: var(--muted); }
+      .slide > .slide-caption .caption-links { gap: 0 2em; }
     }
   </style>
 </head>
@@ -334,7 +353,7 @@
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="4" stroke="currentColor" stroke-width="1.5"/><path d="M7 10h3m4 0h3M8 15h8M9 2v3m6-3v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span>GitHub Copilot / Code review</span>
       </div>
-      <span>04 November 2026 · Sources checked 02 November</span>
+      <span>04 November 2026 · Sources checked 03 November</span>
     </header>
 
     <section class="slide is-active">
@@ -342,7 +361,7 @@
         <div>
           <h1>Copilot<br><span class="accent">code review</span></h1>
           <p class="lead">Review code, configure the agent, and use feedback to make safe changes.</p>
-          <p>Local review · Pull requests · Settings · MCP · Pilot</p>
+          <p>Local review · Pull requests · Settings · MCP · Resources</p>
         </div>
         <figure class="review">
           <figcaption class="review-head"><span>Example pull request · payment.ts</span><span class="tag green">Open</span></figcaption>
@@ -355,6 +374,26 @@
             <p class="small">Illustration, not a live GitHub review.</p>
           </div>
         </figure>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>GitHub hosting</h2>
+        <p class="lead">Check the host, Copilot entitlement, and administrator policy before you use a feature.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>GHEC</h3>
+            <p><strong>GitHub Enterprise Cloud</strong> runs on GitHub.com or a data-resident cloud.</p>
+            <p>Copilot PR review and cloud agent features require an eligible account and allowed policies.</p>
+          </article>
+          <article class="panel">
+            <h3>GHES</h3>
+            <p><strong>GitHub Enterprise Server</strong> is self-hosted. Copilot is not an integrated GHES service.</p>
+            <p>Local IDE use with a separate Copilot account does not add Copilot PR review to GHES.</p>
+          </article>
+        </div>
+        <p class="note">A standalone GHEC account is still GHEC. <strong>Copilot Standalone</strong> is a billing option for users without a GHEC license, not a GHES integration.</p>
       </div>
     </section>
 
@@ -526,7 +565,7 @@
     <section class="slide">
       <div class="slide-inner">
         <h2>Review effort</h2>
-        <p class="lead">Choose the depth of review, not a model. Copilot manages its review models.</p>
+        <p class="lead">Choose review depth, not a model. Lite and Balanced are generally available. Max is in public preview.</p>
         <figure class="graphic">
           <div class="effort-comparison">
             <div class="effort-option"><div class="effort-name"><h3>Lite</h3><span class="tag">Routine</span></div><div class="effort-models"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><strong>Targeted review</strong></div><p>Common bugs, security issues, and style. Lowest estimated AI-credit use.</p></div>
@@ -559,7 +598,7 @@
     <section class="slide">
       <div class="slide-inner">
         <h2>Approvals</h2>
-        <p class="lead">Three separate controls determine whether a Copilot review can satisfy a merge requirement.</p>
+        <p class="lead">Approvals are generally available. Three controls decide whether an approval counts toward merge requirements.</p>
         <figure class="graphic">
           <div class="rail">
             <div class="node gate"><svg class="icon" aria-hidden="true"><use href="#i-enterprise"/></svg><h3>Policy allows</h3><p>Enterprise and organization allow approvals here.</p></div>
@@ -638,7 +677,7 @@ Do not flag intentional retry patterns.</code></pre>
             <p class="small">Keep the user's <strong>Use custom instructions</strong> preference enabled when these rules should apply.</p>
           </article>
         </div>
-        <p class="small">The current guide also lists CLAUDE.md, GEMINI.md, and REVIEW.md as review instruction sources.</p>
+        <p class="small">Also supported: CLAUDE.md, GEMINI.md, and REVIEW.md.</p>
       </div>
     </section>
 
@@ -671,7 +710,7 @@ Do not flag intentional retry patterns.</code></pre>
           <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
           <div class="terminal"><svg class="icon" aria-hidden="true"><use href="#i-pr"/></svg><h3>PR review</h3><p>Uses returned evidence with the code changes.</p></div>
         </figure>
-        <p class="note"><strong>Allow Copilot to use MCP tools when reviewing pull requests</strong> is on by default. Turn it off to leave repository MCP available to cloud agent but not code review.</p>
+        <p class="note"><strong>Allow Copilot to use MCP tools when reviewing pull requests</strong> is on by default. Turn it off to disable review tools only, not cloud-agent MCP.</p>
         <p class="small">MCP JSON is shared with cloud agent. GitHub and Playwright servers are on by default. Use <code>COPILOT_MCP_*</code> Agents secrets or variables. Tools only; no prompts, resources, remote OAuth, or per-call approval prompt. Check <strong>View session</strong> for setup and tool calls.</p>
       </div>
     </section>
@@ -742,10 +781,10 @@ Do not flag intentional retry patterns.</code></pre>
         <ol class="flow">
           <li><h3>Provide scope</h3><p>Give the SonarQube project key, analyzed PR key, current commit, and files to inspect. Wait for CI analysis.</p></li>
           <li><h3>Request review</h3><p>Request Copilot under Reviewers. The agent can select relevant, available read-only MCP tools.</p></li>
-          <li><h3>Check evidence</h3><p>Open <strong>View session</strong>. Confirm tool calls and analysis scope. Inspect each finding, fix the code, rerun CI, and request review again.</p></li>
+          <li><h3>Check evidence</h3><p>Open <strong>View session</strong>. Check tool calls and analysis scope. Verify findings, fix code, rerun CI, and request review again.</p></li>
         </ol>
         <p class="note"><strong>Example review task:</strong> “Use SonarQube project <code>payments-api</code>, analysis PR <code>42</code>. Compare open issues and uncovered branches with this diff. Explain relevant rules. Report only supported findings with file, line, and issue ID. Do not change issue status.”</p>
-        <p class="small">Example identifiers only. Instructions guide tool selection; they do not guarantee a call. IDE-bridge analysis tools need a running IDE and are not assumed available in a GitHub-hosted review.</p>
+        <p class="small">Example IDs only; tool calls are not guaranteed. IDE-bridge tools need a running IDE, which GitHub-hosted review does not provide.</p>
       </div>
     </section>
 
@@ -849,7 +888,7 @@ Do not flag intentional retry patterns.</code></pre>
     <section class="slide">
       <div class="slide-inner">
         <h2>CI checks</h2>
-        <p class="lead">Use repeatable tools for lint and spelling checks. Use Copilot to explain issues that need code context.</p>
+        <p class="lead">Lint and spelling tools can run on both hosts. Copilot PR review remains a cloud feature.</p>
         <div class="columns">
           <pre aria-label="Example content-check workflow"><code>name: Content checks
 on: [pull_request]
@@ -870,7 +909,7 @@ jobs:
               <li>Set Codespell rules in <code>.codespellrc</code> or <code>pyproject.toml</code>.</li>
               <li>Require the check in a branch ruleset.</li>
             </ul>
-            <p class="small">For production, pin third-party actions to reviewed commit SHAs. Keep intentional exceptions in tool configuration.</p>
+            <p class="small">On GHES, use a self-hosted runner and action versions supported by your server. Pin production actions to reviewed commit SHAs.</p>
           </article>
         </div>
       </div>
@@ -879,7 +918,7 @@ jobs:
     <section class="slide">
       <div class="slide-inner">
         <h2>Settings references</h2>
-        <p class="lead">Official sources checked on 02 November 2026. Features and labels can change.</p>
+        <p class="lead">Official sources checked on 03 November 2026. Features and labels can change.</p>
         <ul class="sources">
           <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review">Configure code review</a><span>Repository, organization, enterprise, limits, billing, approvals, and rulesets.</span></li>
           <li><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">Code review concepts</a><span>Effort order, models, access, cost attribution, context, and limitations.</span></li>
@@ -910,8 +949,25 @@ jobs:
       </div>
     </section>
 
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Universe resources</h2>
+        <p class="lead">Official GitHub Universe 2026 blogs and announcements. Follow each link for details and availability.</p>
+        <ul class="sources universe-resources">
+          <li><strong>Event</strong><span><a href="https://github.com/events/universe/recap">Universe recap</a> · <a href="https://github.blog/news-insights/company-news/github-universe-2026-evolving-every-layer-of-the-stack/">Main announcement</a></span></li>
+          <li><strong>App and models</strong><span><a href="https://github.blog/changelog/2026-10-28-github-copilot-app-universe-releases/">App and Projects</a> · <a href="https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/">Fusion</a></span></li>
+          <li><strong>Context and automation</strong><span><a href="https://github.blog/changelog/2026-10-28-connect-your-tools-to-copilot-without-all-the-setup/">Connectors</a> · <a href="https://github.blog/changelog/2026-10-28-new-tools-triggers-and-cost-controls-for-copilot-automations/">Automations</a> · <a href="https://github.blog/changelog/2026-10-28-copilot-automations-now-learn-from-outcomes-and-self-improve/">Learning from outcomes</a></span></li>
+          <li><strong>Cloud and platform</strong><span><a href="https://github.blog/changelog/2026-10-28-work-from-anywhere-with-a-new-connected-copilot-cloud-experience/">Cloud Sandboxes</a> · <a href="https://github.blog/engineering/architecture-optimization/building-git-infrastructure-for-agent-scale-development/">Agent-scale Git</a> · <a href="https://github.blog/changelog/2026-10-28-github-enterprise-now-includes-access-to-github-copilot/">Copilot Access</a></span></li>
+          <li><strong>Supply chain</strong><span><a href="https://github.blog/changelog/2026-10-20-github-package-firewall-in-public-preview/">Package firewall</a> · <a href="https://github.blog/changelog/2026-10-28-prioritize-dependabot-alerts-with-reachability-analysis/">Dependabot reachability</a></span></li>
+          <li><strong>Security scanning</strong><span><a href="https://github.blog/changelog/2026-10-28-ai-scan-for-repositories-in-public-preview/">Repository AI Scan</a> · <a href="https://github.blog/changelog/2026-10-28-code-scanning-for-ai-applications-in-public-preview/">AI application scanning</a></span></li>
+          <li><strong>Secret protection</strong><span><a href="https://github.blog/changelog/2026-10-28-push-protection-beyond-predefined-secret-patterns/">AI-detected secrets</a> · <a href="https://github.blog/changelog/2026-10-28-public-monitoring-for-enterprises-generally-available/">Public monitoring</a></span></li>
+          <li><strong>Review and fixes</strong><span><a href="https://github.blog/changelog/2026-10-28-copilot-code-review-merge-with-confidence-with-max-and-approvals/">Max and approvals</a> · <a href="https://github.blog/changelog/2026-10-28-security-extension-for-the-github-copilot-app/">Security extension</a> · <a href="https://github.blog/changelog/2026-10-15-agentic-autofix-for-code-scanning-alerts-general-availability/">Agentic Autofix</a></span></li>
+        </ul>
+      </div>
+    </section>
+
     <footer class="footer">
-      <span class="hint">← → Slides · Home / End · T Theme · F Full screen · P Print</span>
+      <div class="slide-details" id="slide-details" aria-label="Availability and official sources"></div>
       <nav class="controls" aria-label="Slide controls">
         <button type="button" id="prev" aria-label="Previous slide" title="Previous slide">←</button>
         <span class="count" id="count" aria-live="polite"></span>
@@ -935,6 +991,84 @@ jobs:
       const theme = document.getElementById("theme");
       const fullscreen = document.getElementById("fullscreen");
       const status = document.getElementById("status");
+      const details = document.getElementById("slide-details");
+      const checkedDate = "03 November 2026";
+      const docs = "https://docs.github.com/en/";
+      const blog = "https://github.blog/changelog/";
+      const reviewDocs = docs + "copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review";
+      const configureDocs = docs + "copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review";
+      const useDocs = docs + "copilot/how-tos/use-copilot-agents/use-code-review";
+      const mcpDocs = docs + "copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers";
+      const memoryDocs = docs + "copilot/concepts/prompting-and-context/copilot-memory";
+      const sonarDocs = "https://github.com/SonarSource/sonarqube-mcp-server#tools";
+      const wizDocs = "https://www.wiz.io/blog/introducing-wiz-mcp";
+      const recap = "https://github.com/events/universe/recap";
+      const maxAnnouncement = blog + "2026-10-28-copilot-code-review-merge-with-confidence-with-max-and-approvals/";
+      const sourceMap = {
+        "Copilotcode review": { doc: reviewDocs, scope: "GHEC: eligible | GHES: no PR integration" },
+        "GitHub hosting": { doc: docs + "copilot/get-started/plans", scope: "GHEC and GHES: compare hosting limits" },
+        "Review process": { doc: useDocs },
+        "VS Code": { doc: useDocs, scope: "Local IDE: separate Copilot account | GHES: no PR integration" },
+        "Pull request review": { doc: useDocs },
+        "Review comments": { doc: useDocs },
+        "Settings map": { doc: configureDocs },
+        "Enterprise settings": { doc: configureDocs, announcement: maxAnnouncement, preview: "Max" },
+        "Organization settings": { doc: configureDocs, announcement: maxAnnouncement, preview: "Max" },
+        "Repository settings": { doc: configureDocs, announcement: maxAnnouncement, preview: "Max" },
+        "Automatic reviews": { doc: configureDocs },
+        "Review effort": { doc: reviewDocs, announcement: maxAnnouncement, preview: "Max" },
+        "Effort selection and limits": { doc: configureDocs, announcement: maxAnnouncement, preview: "Max" },
+        "Approvals": { doc: configureDocs, announcement: maxAnnouncement },
+        "Approval paths": { doc: configureDocs, announcement: maxAnnouncement },
+        "Access and billing": { doc: reviewDocs, extra: docs + "copilot/get-started/whats-changing-with-github-enterprise-and-copilot" },
+        "Instructions and skills": { doc: docs + "copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions", extra: docs + "copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills" },
+        "Memory": { doc: docs + "copilot/how-tos/use-copilot-agents/copilot-memory/manage-as-administrator", extra: memoryDocs },
+        "MCP settings": { doc: mcpDocs },
+        "SonarQube": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "SonarQube findings": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "SonarQube quality": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "SonarQube review": { doc: mcpDocs, extra: sonarDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "Wiz": { doc: mcpDocs, extra: wizDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "Wiz MCP configuration": { doc: mcpDocs, extra: wizDocs, scope: "GHEC: MCP review | GHES: no Copilot PR integration" },
+        "Runners": { doc: docs + "copilot/how-tos/copilot-on-github/set-up-copilot/configure-runners" },
+        "Internet access": { doc: docs + "copilot/how-tos/copilot-on-github/customize-copilot/customize-the-firewall" },
+        "Review limits": { doc: reviewDocs, extra: docs + "copilot/reference/review-excluded-files" },
+        "Fixes with cloud agent": { doc: useDocs, preview: "Handoff" },
+        "CI checks": { doc: docs + "actions", scope: "CI tools: both hosts | GHES: self-hosted runner required" },
+        "Settings references": { doc: configureDocs },
+        "Context and tool references": { doc: mcpDocs },
+        "Universe resources": { doc: recap, scope: "Resources: both audiences | Check feature availability in each source" }
+      };
+      slides.forEach(function (slide) {
+        const title = slide.querySelector("h1, h2").textContent.trim();
+        const sources = sourceMap[title];
+        if (!sources) throw new Error("Missing slide sources: " + title);
+        const caption = document.createElement("div");
+        caption.className = "slide-caption";
+        const scope = document.createElement("span");
+        scope.className = "caption-scope";
+        scope.textContent = sources.scope || "GHEC: eligible | GHES: not available";
+        caption.append(scope);
+        if (sources.preview) {
+          const preview = document.createElement("span");
+          preview.className = "caption-preview";
+          preview.textContent = (typeof sources.preview === "string" ? sources.preview + ": " : "") + "previw as of " + checkedDate;
+          caption.append(preview);
+        }
+        const links = document.createElement("span");
+        links.className = "caption-links";
+        [[sources.doc, "Source"], [sources.announcement, "Release"], [sources.extra, "More"]].forEach(function (entry) {
+          if (!entry[0]) return;
+          const link = document.createElement("a");
+          link.href = entry[0];
+          link.textContent = entry[1];
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          links.append(link);
+        });
+        caption.append(links);
+        slide.append(caption);
+      });
       let current = 0;
       function indexFromHash() {
         const match = /^#(\d+)$/.exec(location.hash);
@@ -951,6 +1085,7 @@ jobs:
           slide.setAttribute("aria-label", "Slide " + (i + 1) + " of " + slides.length + ": " + slide.querySelector("h1, h2").textContent);
         });
         count.textContent = (current + 1) + " / " + slides.length;
+        details.replaceChildren(slides[current].querySelector(".slide-caption").cloneNode(true));
         previous.disabled = current === 0;
         next.disabled = current === slides.length - 1;
         progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
