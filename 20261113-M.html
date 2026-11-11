@@ -1,0 +1,728 @@
+<!doctype html>
+<!-- Standalone deck for a 60-minute HP session, 11 November 2026.
+     GitHub theme. All slides use the same type, spacing, and layout rules. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="What is new in GitHub Copilot, the GitHub platform, and GitHub security.">
+  <title>What is new in GitHub Copilot and GitHub security</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --panel: #151b23;
+      --raised: #212830;
+      --line: #3d444d;
+      --fg: #f0f6fc;
+      --muted: #b1bac4;
+      --blue: #79c0ff;
+      --blue-bg: #122a46;
+      --green: #7ee787;
+      --green-bg: #122c20;
+      --yellow: #f2cc60;
+      --yellow-bg: #332b15;
+      --red: #ffa198;
+      --red-bg: #3c2022;
+      --purple: #d2a8ff;
+      --purple-bg: #2b1f45;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --radius: 8px;
+      --body: clamp(14px, min(1.55vw, 2.6dvh), 34px);
+      --title: clamp(30px, min(3.4vw, 6dvh), 72px);
+      --heading: clamp(18px, min(2vw, 3.4dvh), 44px);
+      --small: calc(var(--body) * .82);
+      --gap: clamp(12px, min(1.6vw, 2.3dvh), 32px);
+      --pad: clamp(14px, min(1.6vw, 2.5dvh), 34px);
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --canvas: #ffffff;
+      --panel: #f6f8fa;
+      --raised: #eaeef2;
+      --line: #b8c0c8;
+      --fg: #1f2328;
+      --muted: #59636e;
+      --blue: #0969da;
+      --blue-bg: #ddf4ff;
+      --green: #116329;
+      --green-bg: #dafbe1;
+      --yellow: #7d4e00;
+      --yellow-bg: #fff8c5;
+      --red: #a40e26;
+      --red-bg: #ffebe9;
+      --purple: #6639ba;
+      --purple-bg: #fbefff;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: var(--canvas); color: var(--fg); font-family: var(--sans); font-size: var(--body); line-height: 1.38; }
+    button { font: inherit; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .stage { position: relative; width: 100vw; height: 100dvh; overflow: hidden; }
+    .topbar {
+      position: absolute; inset: 0 0 auto; height: 6.5dvh; min-height: 36px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5vw; border-bottom: 1px solid var(--line); font-size: var(--small);
+    }
+    .brand { display: flex; align-items: center; gap: .6em; font-weight: 650; }
+    .brand svg { width: 1.3em; height: 1.3em; color: var(--fg); }
+    .topbar > span { color: var(--muted); }
+    .slide { position: absolute; inset: max(6.5dvh, 36px) 0 44px; display: none; padding: 2dvh 2.5vw; overflow: hidden; }
+    .slide.is-active { display: flex; }
+    .slide-inner { width: 100%; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: var(--gap); justify-content: safe center; }
+    .slide-inner > * { flex-shrink: 0; }
+    h1, h2, h3, p, ul, ol, figure, dl, dt, dd { margin: 0; }
+    h1, h2, h3 { font-weight: 650; line-height: 1.18; letter-spacing: -.02em; text-wrap: balance; }
+    h1 { font-size: clamp(40px, min(5.4vw, 9.5dvh), 104px); }
+    h2 { font-size: var(--title); }
+    h3 { font-size: var(--heading); }
+    .lead { color: var(--muted); font-size: calc(var(--body) * 1.12); max-width: 92ch; }
+    .small { font-size: var(--small); color: var(--muted); }
+    .accent { color: var(--blue); }
+    .muted { color: var(--muted); }
+    strong { font-weight: 650; }
+    ul, ol { padding-left: 1.2em; }
+    li + li { margin-top: .4em; }
+    li::marker { color: var(--blue); }
+    .title-row { display: flex; align-items: center; gap: .55em; flex-wrap: wrap; }
+    .title-row .icon { width: 1.15em; height: 1.15em; font-size: var(--title); }
+    .title-row .tag { margin-left: .3em; }
+    .columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+    .columns.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: var(--pad); background: var(--panel); }
+    .panel > * + * { margin-top: .6em; }
+    .panel h3 { display: flex; align-items: center; gap: .45em; }
+    .panel h3 .icon { width: 1.1em; height: 1.1em; }
+    .panel.where { border-top: 3px solid var(--purple); }
+    .panel.how { border-top: 3px solid var(--blue); }
+    .panel.benefit { border-top: 3px solid var(--green); }
+    .panel.where h3 { color: var(--purple); }
+    .panel.how h3 { color: var(--blue); }
+    .panel.benefit h3 { color: var(--green); }
+    .what { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .3em 1em; align-items: baseline; padding: .75em 1em; border: 1px solid color-mix(in srgb, var(--blue) 40%, transparent); border-radius: var(--radius); background: var(--blue-bg); }
+    .what > span { font-size: var(--small); font-weight: 650; color: var(--blue); text-transform: uppercase; letter-spacing: .06em; }
+    .what > p { font-size: calc(var(--body) * 1.08); }
+    .note { padding: .7em 1em; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .note.warning { background: var(--yellow-bg); color: var(--yellow); border-color: color-mix(in srgb, var(--yellow) 35%, transparent); }
+    .note.success { background: var(--green-bg); color: var(--green); border-color: color-mix(in srgb, var(--green) 35%, transparent); }
+    .tag { display: inline-block; padding: .1em .55em; border: 1px solid var(--line); border-radius: 2em; color: var(--blue); background: var(--blue-bg); font-size: var(--small); font-weight: 600; vertical-align: middle; letter-spacing: 0; white-space: nowrap; }
+    .tag.green { color: var(--green); background: var(--green-bg); }
+    .tag.yellow { color: var(--yellow); background: var(--yellow-bg); }
+    .tag.purple { color: var(--purple); background: var(--purple-bg); }
+    code { font-family: var(--mono); font-size: .9em; color: var(--blue); }
+    .symbol-library { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .icon { display: block; width: 2.2em; height: 2.2em; color: var(--blue); fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+    /* Title slide */
+    .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: calc(var(--gap) * 2); align-items: center; }
+    .hero > div > * + * { margin-top: var(--gap); }
+    .pillars { display: grid; gap: var(--gap); }
+    .pillar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1em; align-items: center; padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .pillar p { color: var(--muted); font-size: var(--small); margin-top: .25em; }
+    .pillar .count { font: 600 calc(var(--body) * 1.6)/1 var(--mono); color: var(--blue); }
+
+    /* Agenda */
+    .agenda { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); list-style: none; padding: 0; counter-reset: part; }
+    .agenda li { margin: 0; padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); counter-increment: part; display: flex; flex-direction: column; gap: .6em; }
+    .agenda li::before { content: "Part " counter(part); font: 600 var(--small) var(--mono); color: var(--blue); }
+    .agenda .time { margin-top: auto; padding-top: .6em; border-top: 1px solid var(--line); font: 600 var(--small) var(--mono); color: var(--muted); }
+    .agenda p { color: var(--muted); }
+
+    /* Overview cards */
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
+    .card { min-width: 0; display: flex; flex-direction: column; gap: .5em; padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .card .icon { width: 1.9em; height: 1.9em; }
+    .card p { color: var(--muted); font-size: var(--small); }
+    .card.span2 { grid-column: span 2; }
+
+    /* Flow with numbers */
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); list-style: none; padding: 0; counter-reset: flow; }
+    .flow > li { margin: 0; display: grid; grid-template-columns: 1.5em minmax(0, 1fr); align-content: start; gap: .4em .6em; padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); counter-increment: flow; }
+    .flow > li::before { content: counter(flow); grid-row: 1 / span 2; color: var(--blue); font: 600 1.1em/1.2 var(--mono); }
+    .flow > li > p { color: var(--muted); }
+    .flow > li > .tag { grid-column: 2; justify-self: start; }
+
+    /* Lifecycle rail */
+    .rail { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5em; }
+    .stage-col { display: flex; flex-direction: column; gap: .5em; min-width: 0; }
+    .stage-head { position: relative; padding: .55em .7em; border-radius: var(--radius); background: var(--blue-bg); color: var(--blue); font-weight: 650; text-align: center; clip-path: polygon(0 0, calc(100% - .8em) 0, 100% 50%, calc(100% - .8em) 100%, 0 100%, .8em 50%); }
+    .stage-col:first-child .stage-head { clip-path: polygon(0 0, calc(100% - .8em) 0, 100% 50%, calc(100% - .8em) 100%, 0 100%); }
+    .stage-q { text-align: center; color: var(--muted); font-size: var(--small); min-height: 2.6em; }
+    .chip { padding: .6em .7em; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); font-size: var(--small); }
+    .chip strong { display: block; color: var(--fg); font-size: var(--body); }
+    .chip .tag { margin-top: .45em; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: .5em .7em; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: var(--small); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    td:first-child { font-weight: 650; }
+    td.muted { color: var(--muted); }
+
+    /* Scenario */
+    .scenario { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5em; align-items: stretch; }
+    .step { display: flex; flex-direction: column; gap: .45em; padding: .8em; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); position: relative; min-width: 0; }
+    .step .icon { width: 1.7em; height: 1.7em; }
+    .step h3 { font-size: var(--body); color: var(--blue); }
+    .step p { font-size: var(--small); color: var(--muted); }
+    .step .num { position: absolute; top: .6em; right: .7em; font: 600 var(--small) var(--mono); color: var(--muted); }
+
+    .big-quote { font-size: calc(var(--title) * .82); font-weight: 650; line-height: 1.2; letter-spacing: -.02em; }
+    .section-slide .slide-inner { justify-content: center; }
+    .section-num { font: 600 var(--heading) var(--mono); color: var(--blue); }
+
+    .footer { position: absolute; bottom: 0; left: 2.5vw; right: 2.5vw; height: 44px; display: flex; align-items: center; justify-content: flex-end; }
+    .controls { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .controls button { width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--fg); font-size: 12px; cursor: pointer; }
+    .controls button:hover:not(:disabled) { background: var(--raised); }
+    .controls button:disabled { opacity: .4; cursor: default; }
+    .count { min-width: 47px; font-size: 11px; text-align: center; color: var(--muted); }
+    .progress { position: absolute; inset: auto 0 0; height: 3px; background: var(--line); }
+    .progress span { display: block; width: 100%; height: 100%; background: var(--blue); transform: scaleX(0); transform-origin: left; transition: transform .18s ease-out; }
+    .status { position: absolute; right: 2.5vw; bottom: 48px; padding: .5em; border-radius: var(--radius); color: var(--yellow); background: var(--canvas); font-size: 14px; }
+    .status:empty { display: none; }
+
+    @media (max-aspect-ratio: 6/5) {
+      :root {
+        --body: clamp(12px, min(3.6vw, 1.75dvh), 22px);
+        --title: clamp(22px, min(7vw, 3.8dvh), 44px);
+        --heading: clamp(15px, min(4.4vw, 2.4dvh), 28px);
+        --gap: clamp(8px, 1.3dvh, 20px);
+        --pad: clamp(8px, 1.3dvh, 20px);
+      }
+      .topbar > span { display: none; }
+      .slide { padding: 1.5dvh 4vw; }
+      .hero, .columns, .columns.three, .flow { grid-template-columns: 1fr; }
+      .agenda, .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .card.span2 { grid-column: span 2; }
+      .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .scenario { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .what { grid-template-columns: 1fr; }
+      .stage-head { clip-path: none !important; }
+      .stage-q { min-height: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+    @media print {
+      @page { size: 1600px 900px; margin: 0; }
+      :root { --body: 24px; --title: 54px; --heading: 30px; --gap: 22px; --pad: 22px; --small: 20px; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      html, body, .stage { width: auto; height: auto; overflow: visible; }
+      .topbar, .footer, .progress, .status { display: none; }
+      .slide, .slide.is-active { position: relative; inset: auto; display: flex; width: 1600px; height: 900px; padding: 48px; break-after: page; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="symbol-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-app" viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="22" rx="3"/><path d="M3 11h26M8 8h.01M11 8h.01M9 17l3 3-3 3M15 23h7"/></symbol>
+    <symbol id="i-fusion" viewBox="0 0 32 32"><circle cx="8" cy="8" r="4"/><circle cx="24" cy="8" r="4"/><circle cx="16" cy="25" r="4"/><path d="M11 10l3 11M21 10l-3 11M12 8h8"/></symbol>
+    <symbol id="i-project" viewBox="0 0 32 32"><rect x="3" y="4" width="10" height="10" rx="2"/><rect x="19" y="4" width="10" height="10" rx="2"/><rect x="11" y="20" width="10" height="9" rx="2"/><path d="M8 14v3h16v-3M16 17v3"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 32 32"><path d="M11 3v7M21 3v7M7 10h18v5a9 9 0 0 1-18 0Zm9 14v6"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 32 32"><path d="M27 11a12 12 0 0 0-21-3L3 12m0-7v7h7M5 21a12 12 0 0 0 21 3l3-4m0 7v-7h-7"/></symbol>
+    <symbol id="i-memory" viewBox="0 0 32 32"><path d="M12 4a6 6 0 0 0-6 6 5 5 0 0 0-2 9 6 6 0 0 0 8 8V4Zm8 0a6 6 0 0 1 6 6 5 5 0 0 1 2 9 6 6 0 0 1-8 8V4ZM12 12H9m11 0h3m-11 7H9m11 0h3"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 32 32"><path d="M9 25h16a6 6 0 0 0 1-12 10 10 0 0 0-19-2 7 7 0 0 0 2 14Z"/><path d="M13 17l-2 2 2 2m6-4 2 2-2 2"/></symbol>
+    <symbol id="i-git" viewBox="0 0 32 32"><circle cx="8" cy="7" r="3"/><circle cx="8" cy="25" r="3"/><circle cx="24" cy="13" r="3"/><path d="M8 10v12M24 16c0 5-6 4-13 7"/></symbol>
+    <symbol id="i-enterprise" viewBox="0 0 32 32"><path d="M5 28V4h15v24M20 12h7v16M2 28h28M9 9h3m3 0h1M9 14h3m3 0h1M9 19h3m3 0h1M11 28v-4h4v4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 32 32"><path d="m16 2 12 5v8c0 7-6 12-12 15C10 27 4 22 4 15V7Zm-6 13 4 4 8-9"/></symbol>
+    <symbol id="i-box" viewBox="0 0 32 32"><path d="M16 3 28 9v14l-12 6-12-6V9Zm0 0v26M4 9l12 6 12-6"/></symbol>
+    <symbol id="i-key" viewBox="0 0 32 32"><circle cx="10" cy="16" r="6"/><path d="M16 16h13m-4 0v5m-4-5v4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 32 32"><circle cx="14" cy="14" r="9"/><path d="m21 21 7 7"/></symbol>
+    <symbol id="i-ai" viewBox="0 0 32 32"><rect x="7" y="7" width="18" height="18" rx="3"/><path d="M12 2v5m8-5v5M12 25v5m8-5v5M2 12h5m-5 8h5m18-8h5m-5 8h5M12 20l2.5-8h3L20 20m-7-3h6"/></symbol>
+    <symbol id="i-path" viewBox="0 0 32 32"><circle cx="6" cy="6" r="3"/><circle cx="26" cy="26" r="3"/><circle cx="26" cy="6" r="3"/><path d="M9 6h14M26 9v14M8 8l15 15"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 32 32"><path d="M13 4h6v4a2 2 0 0 0 4 0V4h5v9h-4a2 2 0 0 0 0 4h4v11H4V17h4a2 2 0 0 0 0-4H4V4h9Z"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 32 32"><path d="M20 4a7 7 0 0 0-6 10L4 24l4 4 10-10a7 7 0 0 0 10-6l-4 4-4-1-1-4 4-4Z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M4 16h24M16 4c4 4 5 8 5 12s-1 8-5 12c-4-4-5-8-5-12s1-8 5-12Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="m10 16 4 4 8-8"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 32 32"><path d="M16 2v4m0 20v4M2 16h4m20 0h4"/><circle cx="16" cy="16" r="8"/><circle cx="16" cy="16" r="2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 32 32"><circle cx="16" cy="10" r="6"/><path d="M5 28v-4a11 11 0 0 1 22 0v4Z"/></symbol>
+    <symbol id="i-bug" viewBox="0 0 32 32"><rect x="9" y="9" width="14" height="18" rx="7"/><path d="M12 9a4 4 0 0 1 8 0M3 15h6m14 0h6M4 24l5-2m19 2-5-2M4 7l5 4m19-4-5 4M16 13v14"/></symbol>
+  </svg>
+
+  <main class="stage" id="stage" aria-label="What is new in GitHub Copilot and GitHub security">
+    <header class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+        <span>GitHub Copilot and GitHub security · What is new</span>
+      </div>
+      <span>HP · 11 November 2026</span>
+    </header>
+
+    <!-- 1. Title -->
+    <section class="slide is-active">
+      <div class="slide-inner hero">
+        <div>
+          <p class="tag">HP session · 60 minutes</p>
+          <h1>What is new in<br><span class="accent">GitHub Copilot</span><br>and GitHub security</h1>
+          <p class="lead">Agents that plan, build, and fix across your projects. A platform built for agent scale. Security that protects code from install to production.</p>
+        </div>
+        <div class="pillars" aria-label="Three parts of this session">
+          <div class="pillar"><svg class="icon" aria-hidden="true"><use href="#i-app"/></svg><div><h3>Agent platform</h3><p>App · Fusion · Projects · Connectors · Automations · Memory · Sandboxes</p></div><span class="count">7</span></div>
+          <div class="pillar"><svg class="icon" aria-hidden="true"><use href="#i-git"/></svg><div><h3>Platform and access</h3><p>Agent-scale Git · Copilot with GitHub Enterprise</p></div><span class="count">2</span></div>
+          <div class="pillar"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><div><h3>Security</h3><p>Supply chain · Secrets · Code scanning · Fixes · Monitoring</p></div><span class="count">8</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Agenda -->
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Agenda</h2>
+        <p class="lead">For each topic, we show what it is, where to use it, how to use it, and its benefits.</p>
+        <ol class="agenda">
+          <li><h3>Agent platform</h3><p>How Copilot agents work across tools, models, repositories, and environments.</p><span class="time">≈ 25 min</span></li>
+          <li><h3>Platform and access</h3><p>Git infrastructure for agent workloads. Copilot access with GitHub Enterprise.</p><span class="time">≈ 5 min</span></li>
+          <li><h3>Security</h3><p>Eight updates that prevent, find, prioritize, fix, and monitor risk.</p><span class="time">≈ 20 min</span></li>
+          <li><h3>Recap and Q&amp;A</h3><p>Availability, key points, and next steps for HP teams.</p><span class="time">≈ 10 min</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 3. Section: agent platform -->
+    <section class="slide section-slide">
+      <div class="slide-inner">
+        <span class="section-num">Part 1</span>
+        <h2>Agent platform</h2>
+        <p class="lead">Seven parts that work together. Each part solves one problem in agent-based development.</p>
+        <div class="cards">
+          <div class="card span2"><svg class="icon" aria-hidden="true"><use href="#i-app"/></svg><h3>GitHub Copilot app</h3><p>The place where you start, run, and review agent work.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-fusion"/></svg><h3>Copilot Fusion</h3><p>Selects the correct models for each task.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-project"/></svg><h3>Copilot Projects</h3><p>Coordinates work across many repositories.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg><h3>Copilot Connectors</h3><p>Brings business context from other tools.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg><h3>Copilot Automations</h3><p>Runs agent work on demand, by event, or on schedule.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-memory"/></svg><h3>Copilot Memory</h3><p>Keeps useful facts and preferences across tasks.</p></div>
+          <div class="card"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><h3>Cloud Sandboxes</h3><p>Runs agents in isolated GitHub-hosted environments.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Copilot app -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-app"/></svg><h2>GitHub Copilot app</h2></div>
+        <div class="what"><span>What it is</span><p>An <strong>agent-first</strong> experience. It connects agents and tools across your projects. It supports all steps of the work: <strong>specs and design → implementation</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Start a feature from a spec or a design.</li><li>Run many agent tasks at the same time.</li><li>Review all agent work in one place.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Add a repository or a folder.</li><li>Start a session. Tell the agent the task.</li><li>Examine the plan and the changes.</li><li>Run tests. Then commit or open a pull request.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>One place for agents, tools, and sessions.</li><li>Less switching between tools.</li><li>Developers stay in control of each change.</li></ul></div>
+        </div>
+        <p class="note">The app is the base for the next six topics. You use Fusion, Projects, Connectors, Automations, Memory, and Cloud Sandboxes from it.</p>
+      </div>
+    </section>
+
+    <!-- 5. Fusion -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-fusion"/></svg><h2>Copilot Fusion</h2></div>
+        <div class="what"><span>What it is</span><p><strong>Multi-model orchestration.</strong> Fusion selects one model or more models for each task. It balances <strong>quality, speed, and cost</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Work with different task types: small edits, refactoring, deep analysis.</li><li>Teams that do not want to select a model for each task.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Select <strong>Auto</strong> in the model picker.</li><li>Give a clear task with a clear result.</li><li>Fusion selects the models. You examine the result.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>A fast model for simple steps. A strong model for hard steps.</li><li>Good quality at a lower cost.</li><li>Fewer manual decisions.</li></ul></div>
+        </div>
+        <div class="columns three" aria-label="Example routing">
+          <div class="note"><span class="tag">Simple</span> Rename a variable → <strong>fast model</strong></div>
+          <div class="note"><span class="tag purple">Complex</span> Refactor a module → <strong>strong model</strong></div>
+          <div class="note"><span class="tag green">Critical</span> Design and review → <strong>more than one model</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Projects -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-project"/></svg><h2>Copilot Projects</h2></div>
+        <div class="what"><span>What it is</span><p>Coordinates <strong>parallel agent work across many repositories</strong>. It keeps the goals, the progress, and the decisions together in one place.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>A change in many repositories: API, client, and documentation.</li><li>Migrations and upgrades across services.</li><li>A large feature in smaller parts.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Create a project. Write the goal.</li><li>Add the related repositories.</li><li>Agents do the parts in parallel sessions.</li><li>Monitor progress and decisions in the project.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>One view of work across repositories.</li><li>Parallel work finishes faster.</li><li>Decisions are recorded. Context is not lost.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Connectors -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg><h2>Copilot Connectors</h2></div>
+        <div class="what"><span>What it is</span><p>Brings <strong>business context</strong> into development. Connect <strong>Slack, Work IQ, Atlassian Rovo, and Sentry</strong> through <strong>GitHub-verified MCP servers</strong>. GitHub does the configuration and the authentication.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li><strong>Sentry:</strong> fix an error with its real stack trace.</li><li><strong>Atlassian Rovo:</strong> build from a Jira issue.</li><li><strong>Slack:</strong> use decisions from a team thread.</li><li><strong>Work IQ:</strong> use Microsoft 365 work context.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Find the connector in the catalog.</li><li>Connect it and sign in.</li><li>Tell Copilot which context to use in the task.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>No copy and paste between tools.</li><li>Verified servers. No manual MCP setup.</li><li>Agents use the correct business context.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Automations -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg><h2>Copilot Automations</h2></div>
+        <div class="what"><span>What it is</span><p><strong>AI-powered workflows.</strong> They run <strong>on demand, by event, or on a schedule</strong>. They learn from the results to make future runs better.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Each day: sort and label new issues.</li><li>Each week: examine dependency updates.</li><li>On an event: investigate a failed CI run.</li><li>Recurring status reports.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Write a prompt with a clear goal.</li><li>Select the trigger: manual, event, or schedule.</li><li>Select the repository and the environment.</li><li>Examine the results. Adjust the prompt.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Repeated work is done for you.</li><li>The same steps each time.</li><li>Results become better over time.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Memory -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-memory"/></svg><h2>Copilot Memory</h2></div>
+        <div class="what"><span>What it is</span><p>Keeps <strong>useful knowledge across tasks</strong>. It remembers <strong>repository facts</strong>, such as architecture conventions and test commands. It also remembers <strong>your stated coding preferences</strong> across repositories.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Repositories with special build or test commands.</li><li>Team conventions, for example folder structure.</li><li>Personal preferences, for example “use pnpm”.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Tell Copilot a preference in clear words.</li><li>Copilot keeps verified repository facts.</li><li>Later tasks use this knowledge.</li><li>Remove old memories in settings.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>You do not repeat the same instructions.</li><li>More consistent results.</li><li>Agents learn a repository faster.</li></ul></div>
+        </div>
+        <div class="columns">
+          <div class="note"><strong>Repository memory:</strong> facts for all contributors of that repository.</div>
+          <div class="note"><strong>User memory:</strong> your preferences. They apply only to you.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Cloud Sandboxes -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><h2>Cloud Sandboxes</h2></div>
+        <div class="what"><span>What it is</span><p>Sends agent work to <strong>isolated, GitHub-hosted Linux environments</strong>. Copilot clones repositories, changes code, and runs commands and tests there. It <strong>does not use your local computer</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Long or heavy tasks, for example full test suites.</li><li>Many tasks in parallel.</li><li>Start work on one device. Continue on a different device.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Select <strong>Cloud</strong> as the place to run.</li><li>Give the task.</li><li>The agent works in the sandbox.</li><li>Resume from any client. Examine the result.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Your laptop stays free.</li><li>Isolation protects your local machine.</li><li>Parallel sessions. Work is kept.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Together -->
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Agent platform example</h2>
+        <p class="lead">Example: a production error affects two services. The seven parts work together.</p>
+        <div class="scenario">
+          <div class="step"><span class="num">1</span><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg><h3>Connectors</h3><p>Sentry gives the error. Rovo gives the Jira issue.</p></div>
+          <div class="step"><span class="num">2</span><svg class="icon" aria-hidden="true"><use href="#i-project"/></svg><h3>Projects</h3><p>One goal. Two repositories. Decisions in one place.</p></div>
+          <div class="step"><span class="num">3</span><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><h3>Cloud Sandboxes</h3><p>Two agents work in parallel and run tests.</p></div>
+          <div class="step"><span class="num">4</span><svg class="icon" aria-hidden="true"><use href="#i-fusion"/></svg><h3>Fusion</h3><p>Selects the correct model for each step.</p></div>
+          <div class="step"><span class="num">5</span><svg class="icon" aria-hidden="true"><use href="#i-memory"/></svg><h3>Memory</h3><p>Uses the team conventions and test commands.</p></div>
+          <div class="step"><span class="num">6</span><svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg><h3>Automations</h3><p>Monitors new errors each day after the fix.</p></div>
+        </div>
+        <p class="note success">The developer uses the <strong>Copilot app</strong> to examine the result and approve each pull request.</p>
+      </div>
+    </section>
+
+    <!-- 12. Section: platform and access -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="section-num">Part 2</span>
+        <h2>Platform and access</h2>
+        <div class="columns">
+          <div class="panel">
+            <h3><svg class="icon" aria-hidden="true"><use href="#i-git"/></svg>Agent-scale Git infrastructure</h3>
+            <p><strong>What it is:</strong> GitHub is changing the architecture of its platform. The goal is the speed and reliability that agent-scale development needs.</p>
+            <p><strong>Why:</strong> Agents make many more branches, commits, pull requests, and CI runs than people do.</p>
+            <p><strong>How to use:</strong> No action is necessary. The change is on the GitHub side.</p>
+            <p class="note success"><strong>Benefit:</strong> GitHub stays fast and reliable when agent use increases.</p>
+          </div>
+          <div class="panel">
+            <h3><svg class="icon" aria-hidden="true"><use href="#i-enterprise"/></svg>Copilot access with GitHub Enterprise</h3>
+            <p><strong>What it is:</strong> GitHub Enterprise customers can now use GitHub Copilot. A separate Copilot subscription is not necessary.</p>
+            <p><strong>Where to use:</strong> Enterprise teams that want to start with Copilot.</p>
+            <p><strong>How to use:</strong> Enterprise admins set the Copilot policies. Confirm the included features and limits with your GitHub account team.</p>
+            <p class="note success"><strong>Benefit:</strong> An easier start with Copilot for all GitHub Enterprise users.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Section: security overview -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="section-num">Part 3</span>
+        <h2>Security across the lifecycle</h2>
+        <p class="lead">Eight updates. Each update protects a different step, from package install to public exposure.</p>
+        <div class="rail">
+          <div class="stage-col"><div class="stage-head">Install</div><p class="stage-q">Is this package safe?</p><div class="chip"><strong>Package firewall</strong><span class="tag yellow">Preview</span></div></div>
+          <div class="stage-col"><div class="stage-head">Push</div><p class="stage-q">Is there a secret in the code?</p><div class="chip"><strong>AI-detected secrets</strong><span class="tag yellow">Preview</span></div></div>
+          <div class="stage-col"><div class="stage-head">Pull request</div><p class="stage-q">Is the AI data flow safe?</p><div class="chip"><strong>Code scanning for AI apps</strong><span class="tag yellow">Preview</span></div></div>
+          <div class="stage-col"><div class="stage-head">Find and sort</div><p class="stage-q">What risk is there? What is first?</p><div class="chip"><strong>AI Scan</strong><span class="tag yellow">Preview</span></div><div class="chip"><strong>Dependabot reachability</strong><span class="tag yellow">Preview</span></div></div>
+          <div class="stage-col"><div class="stage-head">Fix</div><p class="stage-q">How do we fix it fast?</p><div class="chip"><strong>Security extension</strong><span class="tag yellow">Preview</span></div><div class="chip"><strong>Agentic Autofix</strong><span class="tag green">GA</span></div></div>
+          <div class="stage-col"><div class="stage-head">Monitor</div><p class="stage-q">Did a secret leak in public?</p><div class="chip"><strong>Public monitoring</strong><span class="tag green">GA</span></div></div>
+        </div>
+        <p class="small"><span class="tag yellow">Preview</span> public preview: features can change. <span class="tag green">GA</span> generally available.</p>
+      </div>
+    </section>
+
+    <!-- 14. Package firewall -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-box"/></svg><h2>GitHub package firewall</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p>An <strong>install-time policy gate for npm dependencies</strong>. It applies to <strong>developers, CI runners, and AI agents</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>What it blocks</h3><ul><li>Known malware.</li><li>Vulnerable versions.</li><li>New install scripts.</li><li>Packages that do not meet age or provenance policies.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Set the policy: age, provenance, and install scripts.</li><li>Apply it to developer, CI, and agent installs.</li><li>Examine blocked installs. Select a safe version.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Stops a bad package <strong>before</strong> it runs.</li><li>The same rules for people and agents.</li><li>Protection from supply chain attacks.</li></ul></div>
+        </div>
+        <p class="note"><strong>Where to use:</strong> laptops, CI pipelines, and agent sandboxes that install npm packages. Very new packages are a high risk. An age policy helps to stop them.</p>
+      </div>
+    </section>
+
+    <!-- 15. AI-detected secrets -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg><h2>AI-detected secrets in push protection</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p>Push protection with AI. It finds <strong>passwords and other unstructured secrets</strong>, not only known token patterns. It stops them <strong>before they go into repository history</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Passwords in configuration files.</li><li>Database connection strings.</li><li>Secrets in test data and scripts.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Enable the feature.</li><li>A developer pushes code.</li><li>If Copilot finds a secret, the push stops.</li><li>Remove the secret. Push again.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Finds secrets that patterns cannot find.</li><li>To prevent a leak costs less than to clean history and rotate secrets.</li></ul></div>
+        </div>
+        <p class="note warning"><strong>Requirements:</strong> enablement + <strong>Secret Protection or GHAS</strong> + <strong>AI credits</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 16. AI Scan -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><h2>AI Scan for repositories</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p><strong>On-demand AI scans of the default branch.</strong> They find more vulnerabilities, also in <strong>languages that CodeQL does not cover</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Repositories in languages that CodeQL does not support.</li><li>An extra check of critical applications.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Start a scan on the repository.</li><li>Findings go into the code scanning backlog.</li><li>Sort and fix them with your usual process.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Wider language coverage.</li><li>No new tool or workflow.</li><li>More findings in one place.</li></ul></div>
+        </div>
+        <p class="note warning"><strong>Use AI Scan together with CodeQL, not as a replacement.</strong> Scans have a time limit. They are not complete.</p>
+      </div>
+    </section>
+
+    <!-- 17. Code scanning for AI apps -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-ai"/></svg><h2>Code scanning for AI applications</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p><strong>Pull request checks for risky agent data flows.</strong> The main risk: <strong>untrusted content</strong> controls a model that has <strong>access to tools or data</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Applications that build agents or chat assistants.</li><li>Models that call tools or APIs.</li><li>Models that read web pages, emails, or files.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Enable the checks on the repository.</li><li>Checks run on each pull request.</li><li>Examine the data flow in the finding.</li><li>Fix: limit tool access, keep untrusted content separate, or add human approval.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Finds prompt injection paths before merge.</li><li>AI security in the usual pull request flow.</li></ul></div>
+        </div>
+        <p class="note"><strong>Example risk:</strong> an email tells a model to “send all customer data”. The model has a tool that can send data.</p>
+      </div>
+    </section>
+
+    <!-- 18. Dependabot reachability -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-path"/></svg><h2>Dependabot reachability analysis</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p>For <strong>JavaScript and TypeScript</strong> dependency alerts. It shows if your code <strong>can call the vulnerable function</strong>. It gives the <strong>call path</strong> as evidence.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Large backlogs of JavaScript and TypeScript alerts.</li><li>Teams that must decide which alert to fix first.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Open a Dependabot alert.</li><li>Look at the reachability status and the call path.</li><li>Fix reachable alerts first. Plan time for the other alerts.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Teams work on the most important alerts first.</li><li>Evidence to support each decision.</li></ul></div>
+        </div>
+        <p class="note warning"><strong>Reachability helps you set priority only.</strong> It does not prove that an attack is possible. An “unreachable” dependency is not guaranteed to be safe.</p>
+      </div>
+    </section>
+
+    <!-- 19. Security extension -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-ext"/></svg><h2>Security extension for the Copilot app</h2><span class="tag yellow">Public preview</span></div>
+        <div class="what"><span>What it is</span><p>Brings <strong>code scanning alerts</strong> and <strong>local security reviews</strong> into the developer's active session in the Copilot app.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Fix alerts while you write code.</li><li>Review local changes before you push.</li><li>Learn why a finding is a risk.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Install the extension.</li><li>Ask Copilot to explain an alert.</li><li>Ask for a local fix.</li><li>Examine the change, test it, and commit it yourself.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>No switch to a different tool.</li><li>Developers learn secure coding.</li><li>The developer controls each change.</li></ul></div>
+        </div>
+        <p class="note">The extension <strong>does not</strong> commit, push, or open a pull request automatically.</p>
+      </div>
+    </section>
+
+    <!-- 20. Agentic Autofix -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg><h2>Agentic Autofix</h2><span class="tag green">Generally available</span></div>
+        <div class="what"><span>What it is</span><p>Teams <strong>give code scanning fixes to Copilot</strong>. Copilot examines the codebase, makes possible fixes, does supported validation, and <strong>opens a draft pull request</strong>.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>Large backlogs of code scanning alerts.</li><li>The same type of issue in many places.</li><li>Teams with few security specialists.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Select an alert.</li><li>Assign the fix to Copilot.</li><li>Examine and test the draft pull request.</li><li>Merge after approval.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Faster fixes. Smaller backlog.</li><li>Fixes use the context of the codebase.</li><li>A draft pull request keeps human review.</li></ul></div>
+        </div>
+        <p class="note warning"><strong>Human review and tests are necessary.</strong> Autofix uses <strong>AI credits</strong> and <strong>Actions minutes</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 21. Public monitoring -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="title-row"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><h2>Public monitoring for enterprises</h2><span class="tag green">Generally available</span></div>
+        <div class="what"><span>What it is</span><p>Finds <strong>enterprise secrets that are public on GitHub</strong>. This includes <strong>repositories that the enterprise does not own</strong>, comments, and gists.</p></div>
+        <div class="columns three">
+          <div class="panel where"><h3>Where to use</h3><ul><li>An employee pushes work code to a personal public repository.</li><li>A secret is in an issue comment.</li><li>A contractor shares a gist.</li></ul></div>
+          <div class="panel how"><h3>How to use</h3><ol><li>Enable it for the enterprise.</li><li>Verify your domains.</li><li>Examine the alerts.</li><li>Revoke and rotate the secret. Investigate.</li></ol></div>
+          <div class="panel benefit"><h3>Benefits</h3><ul><li>Find leaks outside your own repositories.</li><li>Enterprise membership and verified domains link a leak to your company.</li><li>Faster response.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 22. Availability -->
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Security availability</h2>
+        <table>
+          <thead><tr><th>Feature</th><th>Status</th><th>Scope and requirements</th></tr></thead>
+          <tbody>
+            <tr><td>Package firewall</td><td><span class="tag yellow">Preview</span></td><td class="muted">npm dependencies · developers, CI runners, and AI agents</td></tr>
+            <tr><td>AI-detected secrets in push protection</td><td><span class="tag yellow">Preview</span></td><td class="muted">Enablement · Secret Protection or GHAS · AI credits</td></tr>
+            <tr><td>AI Scan for repositories</td><td><span class="tag yellow">Preview</span></td><td class="muted">On demand · default branch · time-limited · use with CodeQL</td></tr>
+            <tr><td>Code scanning for AI applications</td><td><span class="tag yellow">Preview</span></td><td class="muted">Checks at pull request level</td></tr>
+            <tr><td>Dependabot reachability analysis</td><td><span class="tag yellow">Preview</span></td><td class="muted">JavaScript and TypeScript · helps set priority only</td></tr>
+            <tr><td>Security extension for the Copilot app</td><td><span class="tag yellow">Preview</span></td><td class="muted">Local fixes only · no automatic commit, push, or pull request</td></tr>
+            <tr><td>Agentic Autofix</td><td><span class="tag green">GA</span></td><td class="muted">Draft pull request · AI credits · Actions minutes</td></tr>
+            <tr><td>Public monitoring for enterprises</td><td><span class="tag green">GA</span></td><td class="muted">Enterprise membership · verified domains</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 23. Key points -->
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Key points</h2>
+        <div class="columns">
+          <div class="panel how"><h3><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>People stay in control</h3><p>Agents make drafts and suggestions. People examine, test, and approve each change before merge.</p></div>
+          <div class="panel how"><h3><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>AI adds to existing tools</h3><p>AI Scan adds to CodeQL. Reachability helps priority. Neither one gives a guarantee of safety.</p></div>
+          <div class="panel how"><h3><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Plan for usage costs</h3><p>Some features use AI credits or Actions minutes. Monitor usage during a pilot.</p></div>
+          <div class="panel how"><h3><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Previews can change</h3><p>Test preview features with one team first. Then decide on a wider rollout.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24. Next steps -->
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Next steps for HP</h2>
+        <p class="lead">Start small. Measure the results. Then expand.</p>
+        <ol class="flow">
+          <li><h3>Pilot the agent platform</h3><p>One team uses the Copilot app, Cloud Sandboxes, and Memory on real tasks.</p><span class="tag">Weeks 1–4</span></li>
+          <li><h3>Connect business context</h3><p>Connect the tools the team uses, for example Atlassian Rovo, Slack, and Sentry.</p><span class="tag">Weeks 2–4</span></li>
+          <li><h3>Prevent leaks</h3><p>Enable public monitoring and AI-detected secrets in push protection.</p><span class="tag green">Quick win</span></li>
+          <li><h3>Protect the supply chain</h3><p>Test the package firewall on one npm CI pipeline.</p><span class="tag yellow">Preview</span></li>
+          <li><h3>Reduce the backlog</h3><p>Use Dependabot reachability to set priority. Use Agentic Autofix to make fixes.</p><span class="tag green">Measurable</span></li>
+          <li><h3>Automate repeated work</h3><p>Make one automation for a weekly task, for example issue triage.</p><span class="tag purple">Expand</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 25. Q&A -->
+    <section class="slide section-slide">
+      <div class="slide-inner">
+        <h1>Questions?</h1>
+        <p class="big-quote">Agents do more of the work.<br><span class="accent">People make the decisions.</span><br>Security protects each step.</p>
+        <p class="lead">Thank you, HP.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <nav class="controls" aria-label="Slide navigation">
+        <button id="prev" type="button" aria-label="Previous slide">←</button>
+        <span class="count" id="count" aria-live="polite">1 / 1</span>
+        <button id="next" type="button" aria-label="Next slide">→</button>
+        <button id="theme" type="button" aria-label="Switch to light theme">◐</button>
+        <button id="fullscreen" type="button" aria-label="Enter full screen">⛶</button>
+      </nav>
+    </footer>
+    <p class="status" id="status" role="status"></p>
+    <div class="progress" aria-hidden="true"><span></span></div>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      const root = document.documentElement;
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("prev");
+      const next = document.getElementById("next");
+      const count = document.getElementById("count");
+      const progress = document.querySelector(".progress span");
+      const theme = document.getElementById("theme");
+      const fullscreen = document.getElementById("fullscreen");
+      const status = document.getElementById("status");
+      let current = 0;
+      function indexFromHash() {
+        const match = /^#(\d+)$/.exec(location.hash);
+        const value = match ? Number(match[1]) : 1;
+        return value >= 1 && value <= slides.length ? value - 1 : 0;
+      }
+      function show(index, updateHash) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach(function (slide, i) {
+          const active = i === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", String(!active));
+          slide.inert = !active;
+          slide.setAttribute("aria-label", "Slide " + (i + 1) + " of " + slides.length + ": " + slide.querySelector("h1, h2").textContent);
+        });
+        count.textContent = (current + 1) + " / " + slides.length;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
+        status.textContent = "";
+        if (updateHash !== false) history.replaceState(null, "", "#" + (current + 1));
+      }
+      function toggleTheme() {
+        const light = root.dataset.theme !== "light";
+        root.dataset.theme = light ? "light" : "dark";
+        theme.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+        document.querySelector('meta[name="theme-color"]').content = light ? "#ffffff" : "#0d1117";
+      }
+      async function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (root.requestFullscreen) await root.requestFullscreen();
+          else status.textContent = "Full screen is not available in this browser.";
+        } catch (error) {
+          status.textContent = "Full screen could not start. Use the browser full-screen command.";
+        }
+      }
+      previous.addEventListener("click", function () { show(current - 1); });
+      next.addEventListener("click", function () { show(current + 1); });
+      theme.addEventListener("click", toggleTheme);
+      fullscreen.addEventListener("click", toggleFullscreen);
+      document.addEventListener("fullscreenchange", function () {
+        fullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Enter full screen");
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        const onControl = event.target.closest("a, button");
+        switch (event.key) {
+          case "ArrowRight": case "ArrowDown": case "PageDown": event.preventDefault(); show(current + 1); break;
+          case "ArrowLeft": case "ArrowUp": case "PageUp": event.preventDefault(); show(current - 1); break;
+          case " ": if (!onControl) { event.preventDefault(); show(current + (event.shiftKey ? -1 : 1)); } break;
+          case "Home": event.preventDefault(); show(0); break;
+          case "End": event.preventDefault(); show(slides.length - 1); break;
+          case "t": case "T": if (!onControl) toggleTheme(); break;
+          case "f": case "F": if (!onControl) toggleFullscreen(); break;
+        }
+      });
+      let touchStart = null;
+      document.addEventListener("touchstart", function (event) {
+        if (event.touches.length !== 1 || event.target.closest("a, button")) { touchStart = null; return; }
+        touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+      }, { passive: true });
+      document.addEventListener("touchend", function (event) {
+        if (!touchStart) return;
+        const dx = event.changedTouches[0].clientX - touchStart.x;
+        const dy = event.changedTouches[0].clientY - touchStart.y;
+        touchStart = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+      window.addEventListener("hashchange", function () { show(indexFromHash(), false); });
+      show(indexFromHash(), false);
+    })();
+  </script>
+</body>
+</html>
