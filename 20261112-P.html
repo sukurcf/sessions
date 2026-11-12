@@ -1,0 +1,1022 @@
+<!doctype html>
+<!-- Standalone deck. GitHub documentation checked on 03 November 2026.
+     Shared type, spacing, and layout rules apply to every slide. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="GitHub Copilot code review: settings, MCP, review workflows, and official sources.">
+  <title>GitHub Copilot code review</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --panel: #151b23;
+      --raised: #212830;
+      --line: #3d444d;
+      --fg: #f0f6fc;
+      --muted: #b1bac4;
+      --blue: #79c0ff;
+      --blue-bg: #122a46;
+      --green: #7ee787;
+      --green-bg: #122c20;
+      --yellow: #f2cc60;
+      --yellow-bg: #332b15;
+      --red: #ffa198;
+      --red-bg: #3c2022;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --radius: 8px;
+      --body: clamp(14px, min(1.7vw, 2.7dvh), 36px);
+      --title: clamp(34px, min(4vw, 6.8dvh), 80px);
+      --heading: clamp(22px, min(2.2vw, 3.6dvh), 44px);
+      --small: calc(var(--body) * .8);
+      --gap: clamp(14px, min(2vw, 2.7dvh), 36px);
+      --pad: clamp(18px, min(2vw, 3dvh), 40px);
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --canvas: #ffffff;
+      --panel: #f6f8fa;
+      --raised: #eaeef2;
+      --line: #b8c0c8;
+      --fg: #1f2328;
+      --muted: #59636e;
+      --blue: #0969da;
+      --blue-bg: #ddf4ff;
+      --green: #116329;
+      --green-bg: #dafbe1;
+      --yellow: #7d4e00;
+      --yellow-bg: #fff8c5;
+      --red: #a40e26;
+      --red-bg: #ffebe9;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: var(--canvas); color: var(--fg); font-family: var(--sans); font-size: var(--body); line-height: 1.4; }
+    button, select { font: inherit; }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: .15em; }
+    button, select, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .stage { position: relative; width: 100vw; height: 100dvh; overflow: hidden; }
+    .topbar {
+      position: absolute; inset: 0 0 auto; height: 8dvh; min-height: 42px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 3vw; border-bottom: 1px solid var(--line); font-size: var(--small);
+    }
+    .brand { display: flex; align-items: center; gap: .65em; font-weight: 650; min-width: 0; }
+    .brand svg { width: 1.3em; height: 1.3em; color: var(--blue); flex-shrink: 0; }
+    .topbar > span { color: var(--muted); }
+    .slide {
+      position: absolute; inset: max(8dvh, 42px) 0 60px;
+      display: none; padding: 2.7dvh 3vw; overflow: hidden;
+    }
+    .slide.is-active { display: flex; }
+    .slide-inner {
+      width: 100%; min-width: 0; min-height: 0; display: flex; flex-direction: column;
+      gap: var(--gap); justify-content: safe center;
+    }
+    .slide-inner > * { flex-shrink: 0; }
+    h1, h2, h3, p, ul, ol, figure, pre, dl, dt, dd { margin: 0; }
+    h1, h2, h3 { font-weight: 650; line-height: 1.2; letter-spacing: -.025em; text-wrap: balance; }
+    h1 { font-size: clamp(44px, min(6vw, 10dvh), 96px); }
+    h2 { font-size: var(--title); }
+    h3 { font-size: var(--heading); }
+    p, li, dd, dt, td, th { font-size: var(--body); }
+    .lead { color: var(--muted); max-width: 78ch; }
+    .small, figcaption { font-size: var(--small); color: var(--muted); }
+    .accent { color: var(--blue); }
+    .columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); align-items: stretch; }
+    .columns.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: var(--pad); background: var(--panel); }
+    .panel > * + * { margin-top: .8em; }
+    .panel > h3 + * { margin-top: .6em; }
+    ul, ol { padding-left: 1.25em; }
+    li + li { margin-top: .5em; }
+    li::marker { color: var(--blue); }
+    strong { font-weight: 650; }
+    .note { padding: .8em 1em; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .note.warning { background: var(--yellow-bg); color: var(--yellow); }
+    .note.success { background: var(--green-bg); color: var(--green); }
+    .tag { display: inline-block; padding: .12em .55em; border: 1px solid var(--line); border-radius: var(--radius); color: var(--blue); background: var(--blue-bg); font-size: var(--small); font-weight: 600; vertical-align: middle; }
+    .tag.green { color: var(--green); background: var(--green-bg); }
+    .tag.yellow { color: var(--yellow); background: var(--yellow-bg); }
+    .tag.red { color: var(--red); background: var(--red-bg); }
+    code { font-family: var(--mono); overflow-wrap: anywhere; }
+    :not(pre) > code { font-size: .9em; color: var(--blue); }
+    pre {
+      min-width: 0; padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--panel); font: .85em/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    pre code { color: var(--fg); }
+    .settings { border-top: 1px solid var(--line); }
+    .settings > div { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.9fr); gap: var(--gap); padding: .55em 0; border-bottom: 1px solid var(--line); }
+    .settings dt { font-weight: 650; }
+    .settings dd { color: var(--muted); }
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); list-style: none; padding: 0; counter-reset: flow; }
+    .flow > li { display: grid; grid-template-columns: 1.4em minmax(0, 1fr); align-content: start; gap: .55em .65em; min-width: 0; padding: var(--pad); margin: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); counter-increment: flow; }
+    .flow > li::before { content: counter(flow); grid-column: 1; grid-row: 1 / span 2; color: var(--blue); font: 600 1em/1.3 var(--mono); }
+    .flow h3 { grid-column: 2; }
+    .flow p { grid-column: 2; color: var(--muted); }
+    .flow.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--gap) * 2); align-items: center; }
+    .hero > div > * + * { margin-top: var(--gap); }
+    .review { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+    .review-head { padding: .8em 1em; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 1em; font-size: var(--small); }
+    .diff { border: 0; border-radius: var(--radius); background: var(--canvas); }
+    .diff .added { display: block; border-radius: var(--radius); color: var(--green); background: var(--green-bg); }
+    .review-body { padding: var(--pad); border-top: 1px solid var(--line); }
+    .review-body > * + * { margin-top: .65em; }
+    .symbol-library { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .icon { display: block; width: 2.4em; height: 2.4em; color: var(--blue); fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .graphic { padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .graphic figcaption { margin-top: 1em; }
+    .rail { display: grid; grid-template-columns: minmax(0, 1fr) 1.8em minmax(0, 1fr) 1.8em minmax(0, 1fr); align-items: stretch; gap: .4em; }
+    .rail.four { grid-template-columns: minmax(0, 1fr) 1.5em minmax(0, 1fr) 1.5em minmax(0, 1fr) 1.5em minmax(0, 1fr); }
+    .node { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: .6em; padding: .5em; }
+    .node p { color: var(--muted); }
+    .connector { display: grid; place-items: center; color: var(--blue); }
+    .connector svg { display: block; width: 100%; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 1.5; }
+    .return-path { display: flex; gap: .6em; align-items: center; justify-content: center; border: 1px solid var(--line); border-top: 0; border-radius: var(--radius); padding: .6em; margin-top: .8em; color: var(--muted); }
+    .return-path svg { width: 1.2em; height: 1.2em; }
+    .policy-map { display: grid; gap: .45em; }
+    .policy-level { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.5fr); align-items: center; gap: 1em; padding: .75em; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .policy-level h3 { display: flex; align-items: center; gap: .55em; }
+    .policy-level .icon { width: 1.4em; height: 1.4em; }
+    .policy-level p { color: var(--muted); }
+    .policy-level.organization { margin-left: 2em; }
+    .policy-level.repository { margin-left: 4em; border-color: var(--blue); }
+    .inheritance { margin-left: 1.1em; color: var(--blue); font-size: var(--small); }
+    .logic { display: grid; grid-template-columns: minmax(0, 1.25fr) 5em minmax(0, 1fr); gap: .5em; align-items: center; }
+    .logic-inputs { display: grid; gap: .75em; min-width: 0; }
+    .source { display: flex; align-items: center; gap: .75em; padding: .75em; border: 1px solid var(--line); border-radius: var(--radius); }
+    .source > div { min-width: 0; }
+    .source p { margin-top: .4em; color: var(--muted); }
+    .junction { width: 100%; height: 10em; color: var(--blue); }
+    .junction path, .junction circle { fill: none; stroke: currentColor; stroke-width: 1.5; }
+    .junction circle { fill: var(--panel); }
+    .junction text { fill: var(--blue); font: 600 16px var(--sans); text-anchor: middle; dominant-baseline: central; }
+    .terminal { display: grid; justify-items: center; text-align: center; gap: .6em; padding: 1em; border: 1px solid var(--green); border-radius: var(--radius); }
+    .terminal .icon { color: var(--green); }
+    .terminal p { color: var(--muted); }
+    .effort-comparison { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+    .effort-option { min-width: 0; display: flex; flex-direction: column; gap: .65em; padding: .75em; border-bottom: 1px solid var(--blue); }
+    .effort-option > p { color: var(--muted); }
+    .effort-name { display: flex; align-items: center; flex-wrap: wrap; gap: .5em; }
+    .effort-models { display: flex; align-items: center; gap: .5em; min-height: 3em; }
+    .effort-models .icon { width: 2.4em; height: 2.4em; }
+    .effort-direction { display: flex; align-items: center; gap: 1em; padding-top: .7em; color: var(--muted); }
+    .effort-direction .connector { flex: 1; }
+    .priority-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5em 2em; padding-left: 1.5em; }
+    .priority-list li { margin: 0; padding: .45em; border-bottom: 1px solid var(--line); }
+    .limit-example { display: flex; align-items: center; flex-wrap: wrap; gap: .6em; padding: .7em; border: 1px solid var(--yellow); border-radius: var(--radius); }
+    .limit-example strong { color: var(--yellow); }
+    .limit-example .tag { margin-left: auto; }
+    .gate { border: 1px solid var(--line); border-radius: var(--radius); }
+    .gate .icon { color: var(--green); }
+    .path-tests { display: grid; gap: .45em; }
+    .path-test { display: flex; flex-wrap: wrap; align-items: center; gap: .5em; }
+    .path-test .tag { margin-left: auto; }
+    .tool-sources { display: grid; gap: .5em; }
+    .tool-sources .source { padding: .6em; }
+    .tool-sources .icon { width: 1.6em; height: 1.6em; }
+    .tool-filter { display: grid; gap: .55em; align-content: center; justify-items: center; text-align: center; padding: .8em; border: 1px solid var(--blue); border-radius: var(--radius); }
+    .tool-filter > p { color: var(--muted); }
+    .mcp-graph { display: grid; grid-template-columns: minmax(0, 1fr) 2em minmax(0, 1.2fr) 2em minmax(0, 1fr); gap: .4em; align-items: stretch; }
+    .sources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap); list-style: none; padding: 0; }
+    .sources li { margin: 0; padding: .7em 0; border-bottom: 1px solid var(--line); }
+    .sources a { display: block; font-weight: 600; }
+    .sources span { display: block; margin-top: .3em; color: var(--muted); font-size: var(--small); }
+    .footer { position: absolute; bottom: 0; left: 3vw; right: 3vw; height: 60px; display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
+    .controls { flex-shrink: 0; }
+    .controls { display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .controls button { width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--fg); font-size: 12px; cursor: pointer; }
+    .controls button:hover:not(:disabled) { background: var(--raised); }
+    .controls button:disabled { opacity: .4; cursor: default; }
+    .count { min-width: 47px; font-size: 11px; text-align: center; color: var(--muted); }
+    .progress { position: absolute; inset: auto 0 0; height: 3px; background: var(--line); }
+    .progress span { display: block; width: 100%; height: 100%; background: var(--blue); transform: scaleX(0); transform-origin: left; transition: transform .18s ease-out; }
+    .status { position: absolute; right: 3vw; bottom: 56px; padding: .5em; border-radius: var(--radius); color: var(--yellow); background: var(--canvas); font-size: 14px; }
+    .status:empty { display: none; }
+    @media (max-aspect-ratio: 6/5) {
+      :root {
+        --body: clamp(12px, min(3.75vw, 1.85dvh), 24px);
+        --title: clamp(24px, min(7.5vw, 4.2dvh), 48px);
+        --heading: clamp(17px, min(4.9vw, 3dvh), 32px);
+        --gap: clamp(12px, 1.7dvh, 24px);
+        --pad: clamp(12px, 1.7dvh, 24px);
+      }
+      .topbar { height: 48px; padding: 0 5vw; font-size: 12px; }
+      .topbar > span { display: none; }
+      .slide { inset: 48px 0 86px; padding: 2dvh 5vw; }
+      .columns, .columns.three, .hero { grid-template-columns: 1fr; gap: var(--gap); }
+      .columns.three .panel { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.8fr); gap: .4em .8em; }
+      .columns.three .panel h3 { grid-column: 1; grid-row: 1 / span 4; }
+      .columns.three .panel > :not(h3) { grid-column: 2; margin: 0; }
+      .hero h1 { font-size: clamp(38px, 10vw, 68px); }
+      .flow, .flow.four { grid-template-columns: 1fr; gap: 10px; }
+      .flow > li { display: grid; grid-template-columns: 1.2em minmax(0, 1fr); gap: 0 .7em; padding: 12px; }
+      .flow > li::before { grid-row: span 2; margin: .15em 0 0; }
+      .flow h3 { margin-bottom: .25em; }
+      .settings > div { grid-template-columns: 1fr; gap: .25em; padding: .55em 0; }
+      .rail, .rail.four { grid-template-columns: 1fr; gap: .3em; }
+      .node { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: .3em .75em; padding: .5em; }
+      .node > .icon { grid-column: 1; grid-row: 1 / span 2; width: 2em; height: 2em; }
+      .node > h3, .node > p { grid-column: 2; }
+      .rail > .connector { height: 1em; }
+      .rail > .connector svg { width: 1em; transform: rotate(90deg); }
+      .policy-level { grid-template-columns: 1fr; gap: .5em; }
+      .policy-level.organization { margin-left: 1em; }
+      .policy-level.repository { margin-left: 2em; }
+      .logic { grid-template-columns: minmax(0, 1.25fr) 3.5em minmax(0, 1fr); }
+      .source { gap: .5em; padding: .6em; }
+      .source .icon { width: 1.8em; height: 1.8em; }
+      .source h3, .terminal h3 { font-size: var(--body); }
+      .junction { height: 12em; }
+      .terminal { padding: .65em; }
+      .effort-comparison { grid-template-columns: 1fr; gap: .65em; }
+      .effort-option { display: grid; grid-template-columns: minmax(0, .65fr) minmax(0, 1.5fr); gap: .4em .8em; padding: .5em; }
+      .effort-name { grid-column: 1; grid-row: 1 / span 2; flex-direction: column; align-items: flex-start; align-self: center; }
+      .effort-models { grid-column: 2; min-height: 0; }
+      .effort-models .icon { width: 1.6em; height: 1.6em; }
+      .effort-option > p { grid-column: 2; }
+      .priority-list { grid-template-columns: 1fr; gap: .2em; }
+      .priority-list li { padding: .3em; }
+      .mcp-graph { grid-template-columns: 1fr; gap: .3em; }
+      .tool-sources { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4em; }
+      .tool-sources .source { flex-direction: column; text-align: center; font-size: var(--small); }
+      .mcp-graph > .connector { height: 1em; }
+      .mcp-graph > .connector svg { width: 1em; transform: rotate(90deg); }
+      .tool-filter { grid-template-columns: 2em minmax(0, 1fr); justify-items: start; text-align: left; gap: .35em .6em; }
+      .tool-filter > .icon { grid-row: 1 / span 3; width: 2em; height: 2em; }
+      .tool-filter > :not(.icon) { grid-column: 2; }
+      .mcp-graph > .terminal { grid-template-columns: 2em minmax(0, 1fr); justify-items: start; text-align: left; gap: .3em .6em; }
+      .mcp-graph > .terminal > .icon { grid-row: 1 / span 2; width: 2em; height: 2em; }
+      .mcp-graph > .terminal > :not(.icon) { grid-column: 2; }
+      .sources { grid-template-columns: 1fr; }
+      .sources li { padding: .55em 0; }
+      .footer { left: 5vw; right: 5vw; height: 82px; }
+      .controls button { width: 28px; height: 28px; }
+    }
+    @media (max-width: 520px) {
+      .slide { padding-top: 6px; padding-bottom: 6px; }
+      .slide-inner { gap: 8px; }
+      .panel, pre { padding: 8px; }
+      .panel > * + * { margin-top: .45em; }
+      .sources li { padding: .4em 0; }
+      .logic { grid-template-columns: minmax(0, 1.15fr) 3em minmax(0, .85fr); padding: .8em; }
+      .logic-inputs .source { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-height: 700px) and (max-aspect-ratio: 6/5) {
+      :root { --gap: 8px; --pad: 10px; }
+      .slide { line-height: 1.28; }
+      .panel > * + * { margin-top: .55em; }
+      .slide { padding-top: 10px; padding-bottom: 10px; }
+      .flow > li { padding: 10px; }
+      .note { padding: .65em .8em; }
+      .settings > div { padding: .45em 0; }
+    }
+    @media (max-width: 520px) and (max-height: 700px) {
+      .slide { padding-top: 6px; padding-bottom: 6px; }
+      .slide-inner { gap: 6px; }
+      .panel > * + * { margin-top: .45em; }
+    }
+    @media (max-height: 650px) and (min-aspect-ratio: 6/5) {
+      :root { --body: min(1.7vw, 2.8dvh); --title: 6.5dvh; --heading: 4.4dvh; --gap: 1.5dvh; --pad: 1.5dvh; }
+      .topbar { height: 28px; min-height: 0; font-size: 10px; }
+      .slide { inset: 28px 0 56px; padding: 2dvh 3vw; }
+      .footer { height: 52px; }
+      .settings > div { padding: .4em 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+    @media print {
+      @page { size: 1600px 900px; margin: 0; }
+      :root { --body: 26px; --title: 60px; --heading: 34px; --gap: 26px; --pad: 26px; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      html, body, .stage { width: auto; height: auto; overflow: visible; }
+      .topbar, .footer, .progress, .status { display: none; }
+      .slide, .slide.is-active { position: relative; inset: auto; display: flex; width: 1600px; height: 900px; padding: 60px; break-after: page; }
+      .slide:last-child { break-after: auto; }
+      .columns, .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .columns.three, .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .flow.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .flow > li { display: grid; }
+      .rail { grid-template-columns: minmax(0, 1fr) 1.8em minmax(0, 1fr) 1.8em minmax(0, 1fr); }
+      .rail.four { grid-template-columns: minmax(0, 1fr) 1.5em minmax(0, 1fr) 1.5em minmax(0, 1fr) 1.5em minmax(0, 1fr); }
+      .node { display: flex; }
+      .rail > .connector svg { width: 100%; transform: none; }
+      .effort-comparison { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .effort-option { display: flex; }
+      .effort-name { flex-direction: row; align-self: auto; }
+      .mcp-graph { grid-template-columns: minmax(0, 1fr) 2em minmax(0, 1.2fr) 2em minmax(0, 1fr); }
+      .mcp-graph > .connector svg { width: 100%; transform: none; }
+      .tool-sources { grid-template-columns: 1fr; }
+      .tool-filter, .mcp-graph > .terminal { display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .sources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <svg class="symbol-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-pr" viewBox="0 0 32 32"><circle cx="9" cy="7" r="3"/><circle cx="9" cy="25" r="3"/><circle cx="24" cy="25" r="3"/><path d="M9 10v12M24 22V12a5 5 0 0 0-5-5h-3m3-3-3 3 3 3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 32 32"><circle cx="14" cy="14" r="9"/><path d="m21 21 7 7M10 14h8m-8-4h5m-5 8h5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 32 32"><path d="M24 19v9H4V8h13M12 19l-1 5 5-1L29 10l-4-4-13 13ZM22 9l4 4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="m9 16 5 5 9-10"/></symbol>
+    <symbol id="i-enterprise" viewBox="0 0 32 32"><path d="M5 28V4h15v24M20 12h7v16M2 28h28M9 9h3m3 0h1M9 14h3m3 0h1M9 19h3m3 0h1M11 28v-4h4v4M23 17h1m-1 5h1"/></symbol>
+    <symbol id="i-org" viewBox="0 0 32 32"><rect x="11" y="3" width="10" height="7" rx="1"/><rect x="2" y="22" width="10" height="7" rx="1"/><rect x="20" y="22" width="10" height="7" rx="1"/><path d="M16 10v6H7v6m9-6h9v6"/></symbol>
+    <symbol id="i-repo" viewBox="0 0 32 32"><path d="M7 3h20v26H7a4 4 0 0 1 0-8h20M7 3a4 4 0 0 0-4 4v18M10 25h10M10 7v9l3-2 3 2V7"/></symbol>
+    <symbol id="i-user" viewBox="0 0 32 32"><circle cx="16" cy="10" r="6"/><path d="M5 28v-4a11 11 0 0 1 22 0v4Z"/></symbol>
+    <symbol id="i-rule" viewBox="0 0 32 32"><rect x="5" y="3" width="22" height="26" rx="2"/><path d="m9 10 2 2 3-4m3 2h6M9 18h14M9 23h10"/></symbol>
+    <symbol id="i-model" viewBox="0 0 32 32"><rect x="7" y="7" width="18" height="18" rx="3"/><path d="M12 2v5m8-5v5M12 25v5m8-5v5M2 12h5m-5 8h5m18-8h5m-5 8h5M12 12h8v8h-8Z"/></symbol>
+    <symbol id="i-multi" viewBox="0 0 32 32"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M11 21v8h18V11h-8M8 8h8v8H8M21 16h3v8h-8v-3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 32 32"><path d="m16 2 12 5v8c0 7-6 12-12 15C10 27 4 22 4 15V7Zm-6 13 4 4 8-9"/></symbol>
+    <symbol id="i-data" viewBox="0 0 32 32"><ellipse cx="16" cy="7" rx="11" ry="4"/><path d="M5 7v18c0 5 22 5 22 0V7M5 16c0 5 22 5 22 0"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 32 32"><path d="M9 25h16a6 6 0 0 0 1-12 10 10 0 0 0-19-2 7 7 0 0 0 2 14Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 32 20"><path d="M1 10h28m-7-7 7 7-7 7"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 32 32"><path d="M27 11a12 12 0 0 0-21-3L3 12m0-7v7h7M5 21a12 12 0 0 0 21 3l3-4m0 7v-7h-7"/></symbol>
+  </svg>
+  <main class="stage" id="stage" aria-label="GitHub Copilot code review slide deck">
+    <header class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="4" stroke="currentColor" stroke-width="1.5"/><path d="M7 10h3m4 0h3M8 15h8M9 2v3m6-3v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span>GitHub Copilot / Code review</span>
+      </div>
+      <span>04 November 2026 · Sources checked 03 November</span>
+    </header>
+
+    <section class="slide is-active">
+      <div class="slide-inner hero">
+        <div>
+          <h1>Copilot<br><span class="accent">code review</span></h1>
+          <p class="lead">Review code, configure the agent, and use feedback to make safe changes.</p>
+          <p>Local review · Pull requests · Settings · MCP · Resources</p>
+        </div>
+        <figure class="review">
+          <figcaption class="review-head"><span>Example pull request · payment.ts</span><span class="tag green">Open</span></figcaption>
+          <pre class="diff"><code>async function charge(order) {
+  const result = await pay(order);
+<span class="added">+ return { ok: true };</span>}</code></pre>
+          <div class="review-body">
+            <p><strong>Copilot</strong> <span class="tag red">High</span></p>
+            <p>Check the payment result before you return success. A rejected payment can reach this line.</p>
+            <p class="small">Illustration, not a live GitHub review.</p>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Review process</h2>
+        <p class="lead">Copilot finds possible issues and suggests changes. A developer checks the findings.</p>
+        <figure class="graphic" aria-label="Review cycle: request, inspect, fix, verify, then repeat after changes">
+          <div class="rail four">
+            <div class="node"><svg class="icon" aria-hidden="true"><use href="#i-pr"/></svg><h3>Request</h3><p>Review local code or a pull request.</p></div>
+            <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            <div class="node"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><h3>Inspect</h3><p>Check each finding against the code.</p></div>
+            <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            <div class="node"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg><h3>Fix</h3><p>Apply edits or assign cloud agent.</p></div>
+            <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            <div class="node"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><h3>Verify</h3><p>Run tests and follow merge policy.</p></div>
+          </div>
+          <figcaption class="return-path"><svg class="icon" aria-hidden="true"><use href="#i-repeat"/></svg><span>New changes → Request another review</span></figcaption>
+        </figure>
+        <p class="note">Use local review for early feedback. Use pull request review for shared feedback and repository context.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>VS Code</h2>
+        <p class="lead">Review code before you push. You can review a selection or uncommitted changes.</p>
+        <ol class="flow">
+          <li><h3>Select</h3><p>Select code. Open the context menu and choose <strong>Review</strong>.</p></li>
+          <li><h3>Review changes</h3><p>In Source Control, use <strong>Copilot Code Review - Uncommitted Changes</strong> for your working changes.</p></li>
+          <li><h3>Apply</h3><p>Read inline comments and the Comments or Problems view. Apply or discard each suggestion.</p></li>
+        </ol>
+        <p class="note success">Applied edits are not committed automatically. Inspect the diff and run the relevant tests before you commit.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Pull request review</h2>
+        <p class="lead">On GitHub.com, open a pull request. Under <strong>Reviewers</strong>, select the effort level and request Copilot.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>GitHub.com</h3>
+            <ol>
+              <li>Find Copilot under <strong>Reviewers</strong>.</li>
+              <li>Select <strong>Request</strong>.</li>
+              <li>Read the overview and inline comments.</li>
+              <li>After changes, select <strong>Re-request review</strong>, unless new pushes trigger it.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>REST API</h3>
+            <p>Request the code review bot, not the cloud agent.</p>
+            <pre><code>POST /repos/OWNER/REPO/pulls/NUMBER/requested_reviewers
+
+{
+  "reviewers": [
+    "copilot-pull-request-reviewer[bot]"
+  ]
+}</code></pre>
+          </article>
+        </div>
+        <p class="small">Review time varies. Do not promise a fixed completion time for a live demonstration.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Review comments</h2>
+        <p class="lead">Use severity to decide what to inspect first. Severity does not prove that the finding is correct.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>Read the result</h3>
+            <ul>
+              <li>Read the overview, effort label, and finding status.</li>
+              <li>Inspect <strong>High</strong>, <strong>Medium</strong>, and <strong>Low</strong> comments.</li>
+              <li>Check grouped suggestions against the actual code.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Record the decision</h3>
+            <ul>
+              <li>Confirm the issue and check the proposed change.</li>
+              <li>Use a resolution reason: <strong>Addressed</strong>, <strong>Won't fix</strong>, or <strong>Incorrect</strong>.</li>
+              <li>Replies are not a chat with Copilot. A reply to leave an issue open can prevent auto-resolution.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="note warning">A normal review is a <strong>Comment</strong> review. An approval assessment in the overview is not, by itself, an approving review.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Settings map</h2>
+        <p class="lead">Separate access, review triggers, effort, context, and merge authority. They are different controls.</p>
+        <figure class="policy-map" aria-label="Policy hierarchy: enterprise limits apply to organizations, then repositories">
+          <div class="policy-level"><h3><svg class="icon" aria-hidden="true"><use href="#i-enterprise"/></svg>Enterprise</h3><p>Policy, effort, billing, and approval scope.<br><strong>AI controls → Available Agents → Copilot code review</strong></p></div>
+          <div class="inheritance">↓ Sets limits for organizations</div>
+          <div class="policy-level organization"><h3><svg class="icon" aria-hidden="true"><use href="#i-org"/></svg>Organization</h3><p>Defaults, limits, billing, approval scope, and authorized users.<br><strong>Settings → Copilot → Code review</strong></p></div>
+          <div class="inheritance">↓ Sets limits for repositories</div>
+          <div class="policy-level repository"><h3><svg class="icon" aria-hidden="true"><use href="#i-repo"/></svg>Repository</h3><p>Local effort, approvals, and path controls.<br><strong>Settings → Copilot → Code review</strong></p></div>
+        </figure>
+        <p class="small"><strong>Separate pages:</strong> automatic review rulesets, access policies, paid usage, budgets, Runner type, Internet access, MCP servers, and Memory.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Enterprise settings</h2>
+        <p class="lead"><strong>AI controls → Available Agents → Copilot code review</strong> sets enterprise-wide controls.</p>
+        <dl class="settings">
+          <div><dt>Copilot code review</dt><dd>Select the access policy. Then select the code review features allowed in the enterprise.</dd></div>
+          <div><dt>Default review effort level</dt><dd>Set the default. Organizations and repositories can override this default.</dd></div>
+          <div><dt>Maximum review effort</dt><dd><strong>No limit / Lite / Balanced / Max.</strong> Organizations and repositories cannot exceed this limit.</dd></div>
+          <div><dt>Paid-member billing</dt><dd><strong>Member / Organization / Let organizations decide.</strong> Organization billing requires AI credits paid usage.</dd></div>
+          <div><dt>Allow Copilot to approve pull requests</dt><dd><strong>Let organizations decide / Enable for selected organizations / Disabled everywhere.</strong> Disabled everywhere is the default.</dd></div>
+        </dl>
+        <p class="small">For enterprise automatic reviews, create an enterprise branch ruleset and target the required organizations, repositories, and branches.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Organization settings</h2>
+        <p class="lead"><strong>Settings → Copilot → Code review.</strong> Enterprise restrictions still apply.</p>
+        <dl class="settings">
+          <div><dt>Default review effort level</dt><dd>Choose <strong>Lite, Balanced, or Max</strong> for automatic reviews. Repositories can override the default.</dd></div>
+          <div><dt>Maximum review effort</dt><dd><strong>No limit / Lite / Balanced / Max.</strong> Each repository can use this level or a lower level.</dd></div>
+          <div><dt>Choose how members with a Copilot license are billed</dt><dd><strong>Member</strong> uses the member's entitlement by default. <strong>Organization</strong> bills the organization.</dd></div>
+          <div><dt>Count Copilot approvals toward merge requirements</dt><dd><strong>Enabled everywhere / Let repositories decide / Enable for selected repositories / Disabled everywhere.</strong></dd></div>
+          <div><dt>Only allow Copilot code review to be triggered by authorized users</dt><dd>Restrict review requests that use external Copilot licenses. Repositories cannot turn off this organization restriction.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Repository settings</h2>
+        <p class="lead"><strong>Settings → Copilot → Code review.</strong> Repository administrators configure these controls within policy limits.</p>
+        <dl class="settings">
+          <div><dt>Review effort level</dt><dd>Set the effort for automatic reviews: <strong>Lite, Balanced, or Max</strong>.</dd></div>
+          <div><dt>Maximum review effort</dt><dd><strong>No limit / Lite / Balanced / Max.</strong> A local limit cannot relax an organization or enterprise limit.</dd></div>
+          <div><dt>Auto-approval</dt><dd>Set <strong>Allow Copilot to approve pull requests</strong> and, separately, <strong>Allow Copilot approvals to count toward merge requirements</strong>.</dd></div>
+          <div><dt>File paths</dt><dd>Limit which approvals count. Use up to <strong>15 globs</strong>, one per line. Every changed file must match an allowed glob.</dd></div>
+          <div><dt>Authorized users</dt><dd>Enable the authorized-user restriction locally, or inherit it when the organization requires it.</dd></div>
+        </dl>
+        <p class="small">Automatic reviews use rulesets, not the effort control. The authorized-user restriction blocks unauthorized personal triggers, but ruleset reviews still run.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Automatic reviews</h2>
+        <p class="lead">A personal setting and an applicable ruleset are independent sources. Either can start a review.</p>
+        <figure class="graphic logic" aria-label="Personal automatic review OR an applicable active ruleset produces one Copilot review">
+          <div class="logic-inputs">
+            <div class="source"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><div><h3>Personal setting</h3><p>Copilot settings → Code review → <strong>Automatic Copilot code review</strong>.</p></div></div>
+            <div class="source"><svg class="icon" aria-hidden="true"><use href="#i-rule"/></svg><div><h3>Active ruleset</h3><p>Enable <strong>Automatically request Copilot code review</strong>.</p></div></div>
+          </div>
+          <svg class="junction" viewBox="0 0 100 200" aria-hidden="true"><path d="M0 35H20Q30 35 30 55v30Q30 100 45 100M0 165H20Q30 165 30 145v-30Q30 100 45 100M75 100h23m-8-7 8 7-8 7"/><circle cx="55" cy="100" r="21"/><text x="55" y="100">OR</text></svg>
+          <div class="terminal"><svg class="icon" aria-hidden="true"><use href="#i-pr"/></svg><h3>One review</h3><p>Both sources can apply. No duplicate reviews.</p></div>
+        </figure>
+        <p class="note"><strong>Review new pushes:</strong> review each push. <strong>Review draft pull requests:</strong> review early drafts. Each option applies if either source enables it.</p>
+        <p class="small">Personal automatic review needs an eligible paid plan and is unavailable for managed user accounts. Organization and enterprise rulesets also select their target repositories or organizations.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Review effort</h2>
+        <p class="lead">Choose review depth, not a model. Lite and Balanced are generally available. Max is in public preview.</p>
+        <figure class="graphic">
+          <div class="effort-comparison">
+            <div class="effort-option"><div class="effort-name"><h3>Lite</h3><span class="tag">Routine</span></div><div class="effort-models"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><strong>Targeted review</strong></div><p>Common bugs, security issues, and style. Lowest estimated AI-credit use.</p></div>
+            <div class="effort-option"><div class="effort-name"><h3>Balanced</h3><span class="tag">Default</span></div><div class="effort-models"><svg class="icon" aria-hidden="true"><use href="#i-model"/></svg><strong>Deeper analysis</strong></div><p>Complex logic and changes across services. More credits than Lite; may use more Actions minutes.</p></div>
+            <div class="effort-option"><div class="effort-name"><h3>Max</h3><span class="tag yellow">Preview</span></div><div class="effort-models"><svg class="icon" aria-hidden="true"><use href="#i-multi"/></svg><strong>Multiple models</strong></div><p>High-risk changes. Multiple high-reasoning models; highest estimated AI-credit use.</p></div>
+          </div>
+          <figcaption class="effort-direction"><span>Less effort</span><span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span><span>More effort</span></figcaption>
+        </figure>
+        <p class="note">Select effort under <strong>Reviewers</strong> before a request, or set a default. Check the overview to see the effort used for each run.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Effort selection and limits</h2>
+        <p class="lead">Copilot uses the first applicable effort choice. A maximum is a limit, not a default.</p>
+        <ol class="priority-list">
+          <li>Effort selected for this request</li>
+          <li>Effort previously used on this pull request</li>
+          <li>Requestor's personal effort preference</li>
+          <li>Repository default</li>
+          <li>Organization or owner preference</li>
+          <li>Built-in fallback: <strong>Balanced</strong></li>
+        </ol>
+        <div class="limit-example" aria-label="A Balanced enterprise maximum limits the repository to Lite or Balanced"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><span><strong>Enterprise maximum: Balanced</strong><br>Organization and repository: Lite or Balanced only.</span><span class="tag yellow">Max blocked</span></div>
+        <p class="small">Enterprise defaults can be overridden, but limits cannot. For a new PR, the requestor is the author. Manual reviews also use effort. Turning off automatic review does not clear a personal effort preference.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Approvals</h2>
+        <p class="lead">Approvals are generally available. Three controls decide whether an approval counts toward merge requirements.</p>
+        <figure class="graphic">
+          <div class="rail">
+            <div class="node gate"><svg class="icon" aria-hidden="true"><use href="#i-enterprise"/></svg><h3>Policy allows</h3><p>Enterprise and organization allow approvals here.</p></div>
+            <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            <div class="node gate"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><h3>Review approves</h3><p>Enable approving reviews. An overview assessment is not enough.</p></div>
+            <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            <div class="node gate"><svg class="icon" aria-hidden="true"><use href="#i-rule"/></svg><h3>Approval counts</h3><p>Enable counting. Every changed file must match any configured path list.</p></div>
+          </div>
+          <figcaption class="small"><strong>All three gates must pass</strong> before the approval can satisfy a merge requirement.</figcaption>
+        </figure>
+        <p class="note warning"><strong>New commit:</strong> the Copilot approval is dismissed. Request another review. Human review and required checks remain important.</p>
+        <p class="small">Approvals are off by default. Configure path restrictions separately when approvals must count only for selected files.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Approval paths</h2>
+        <p class="lead">Every changed file must match an allowed path. One unmatched file prevents the approval from counting.</p>
+        <div class="note"><strong>Example allowed paths:</strong> <code>docs/**</code> and <code>*.md</code></div>
+        <div class="columns">
+          <article class="panel path-tests">
+            <h3>Documentation only</h3>
+            <div class="path-test"><code>docs/setup.md</code><span class="tag green">Match</span></div>
+            <div class="path-test"><code>README.md</code><span class="tag green">Match</span></div>
+            <p><strong>All files match:</strong> the approval can count.</p>
+          </article>
+          <article class="panel path-tests">
+            <h3>Mixed changes</h3>
+            <div class="path-test"><code>docs/setup.md</code><span class="tag green">Match</span></div>
+            <div class="path-test"><code>src/pay.ts</code><span class="tag red">No match</span></div>
+            <p><strong>One file fails:</strong> the approval cannot count.</p>
+          </article>
+        </div>
+        <p class="note">Use up to <strong>15 globs</strong>, one per line. Leave the list blank to allow counting approvals for all file paths.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Access and billing</h2>
+        <p class="lead">Access policy and billing source are separate. Changing the payer does not grant review access.</p>
+        <dl class="settings">
+          <div><dt>Licensed members</dt><dd>Choose <strong>Member</strong> or <strong>Organization</strong> billing. Enterprise policy can let organizations decide. Organization billing needs paid AI-credit usage.</dd></div>
+          <div><dt>Members without a license</dt><dd>Enable <strong>AI credits paid usage</strong>, then <strong>Allow members without a Copilot license to use Copilot code review in GitHub.com</strong> (off by default). Enterprise-set policy locks organization control. Not IDE access.</dd></div>
+          <div><dt>Automatic and manual</dt><dd>Automatic usage normally goes to the PR author. A manual request normally goes to the requestor, subject to billing policy.</dd></div>
+          <div><dt>Bots and cloud agent</dt><dd>Other bot usage is billed to the organization. Cloud-agent PRs first use the human co-author's billing, then the organization if needed.</dd></div>
+          <div><dt>Budgets</dt><dd>AI credits and Actions compute are separate cost components. Applicable budget or spending limits can block review. A budget is optional for organization billing.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Instructions and skills</h2>
+        <p class="lead">Use clear, testable rules. Copilot reads review instructions and skills from the PR's <strong>head branch</strong>.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>Choose the right file</h3>
+            <ul>
+              <li><code>.github/copilot-instructions.md</code>: repository-wide Copilot rules.</li>
+              <li><code>.github/instructions/*.instructions.md</code>: path-specific rules with <code>applyTo</code>.</li>
+              <li><code>AGENTS.md</code>: shared rules for agents.</li>
+              <li><code>.github/skills/code-review/SKILL.md</code>: a review workflow used when relevant.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Path-specific example</h3>
+            <pre><code>---
+applyTo: "src/api/**/*.ts"
+---
+Check authorization on new routes.
+Check error handling for service calls.
+Check tests for rejected requests.
+Do not flag intentional retry patterns.</code></pre>
+            <p class="small">Keep the user's <strong>Use custom instructions</strong> preference enabled when these rules should apply.</p>
+          </article>
+        </div>
+        <p class="small">Also supported: CLAUDE.md, GEMINI.md, and REVIEW.md.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Memory</h2>
+        <p class="lead">Code review uses <strong>repository facts</strong>, not user-level preferences. Their controls are separate.</p>
+        <dl class="settings">
+          <div><dt>Organization repository access</dt><dd>Choose <strong>All repositories</strong> (default), <strong>Selected repositories</strong>, or <strong>No repositories</strong>, subject to enterprise restrictions.</dd></div>
+          <div><dt>Repository switch</dt><dd><strong>Settings → Copilot → Memory → Allow Copilot to store and retrieve repository facts.</strong> Turn off to stop creation and use; existing facts are not deleted.</dd></div>
+          <div><dt>Retention</dt><dd>Enterprise and organization owners can set repository-fact retention to <strong>7–180 days</strong>. The shorter policy applies. Default: 90 days since creation or last upvote.</dd></div>
+          <div><dt>Personal-memory policy</dt><dd>The enterprise and organization <strong>Copilot Memory</strong> policy controls user preferences. Turning it off alone does not disable repository facts.</dd></div>
+        </dl>
+        <p class="note">Use instruction files for rules that must be provided consistently. Check and remove incorrect stored facts from repository Memory settings.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>MCP settings</h2>
+        <p class="lead">MCP provides external evidence. Open <strong>Settings → Copilot → MCP servers</strong>.</p>
+        <figure class="graphic mcp-graph" aria-label="External sources pass through an allowlisted read-only MCP tool into the pull request review">
+          <div class="tool-sources">
+            <div class="source"><svg class="icon" aria-hidden="true"><use href="#i-repo"/></svg><strong>GitHub context</strong></div>
+            <div class="source"><svg class="icon" aria-hidden="true"><use href="#i-data"/></svg><strong>SonarQube findings</strong></div>
+            <div class="source"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><strong>Wiz risk data</strong></div>
+          </div>
+          <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+          <div class="tool-filter"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><h3>Read-only MCP</h3><p>Allowlist required tools.</p><code>annotations.readOnlyHint:<br>true</code></div>
+          <span class="connector" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+          <div class="terminal"><svg class="icon" aria-hidden="true"><use href="#i-pr"/></svg><h3>PR review</h3><p>Uses returned evidence with the code changes.</p></div>
+        </figure>
+        <p class="note"><strong>Allow Copilot to use MCP tools when reviewing pull requests</strong> is on by default. Turn it off to disable review tools only, not cloud-agent MCP.</p>
+        <p class="small">MCP JSON is shared with cloud agent. GitHub and Playwright servers are on by default. Use <code>COPILOT_MCP_*</code> Agents secrets or variables. Tools only; no prompts, resources, remote OAuth, or per-call approval prompt. Check <strong>View session</strong> for setup and tool calls.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>SonarQube</h2>
+        <p class="lead">Use code quality and security evidence. Run CI analysis for the current PR commit first.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>Setup</h3>
+            <ol>
+              <li>Run SonarQube Server or Cloud analysis.</li>
+              <li>Deploy the official MCP server with <code>SONARQUBE_READ_ONLY=true</code>.</li>
+              <li>Allowlist required tools marked <code>readOnlyHint: true</code>.</li>
+              <li>Provide the project key and analyzed PR or branch.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>HTTP configuration shape</h3>
+            <pre><code>{"mcpServers": {
+  "sonarqube": {
+    "type": "http",
+    "url": "$COPILOT_MCP_SONAR_URL",
+    "headers": {"Authorization":
+      "$COPILOT_MCP_SONAR_AUTH"},
+    "tools": ["&lt;read-only-tool&gt;"]
+  }
+}}</code></pre>
+          </article>
+        </div>
+        <p class="small">Template only. Use your MCP endpoint and auth header. Tool availability depends on version, toolsets, permissions, and entitlements. <a href="https://github.com/SonarSource/sonarqube-mcp-server#tools">Official tool catalog</a>.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>SonarQube findings</h2>
+        <p class="lead">Use these official read tools to check whether a reported issue is relevant to the PR.</p>
+        <dl class="settings">
+          <div><dt>Find the analyzed PR</dt><dd><code>search_my_sonarqube_projects</code> and <code>list_pull_requests</code>: find the project and analysis PR key. Use <code>list_branches</code> for branch analysis.</dd></div>
+          <div><dt>Read issues</dt><dd><code>search_sonar_issues_in_projects</code>: filter by project, PR or branch, severity, and issue status. Compare the returned file and line with the diff.</dd></div>
+          <div><dt>Explain the rule</dt><dd><code>show_rule</code>: retrieve the rule explanation. Check why the pattern is unsafe before accepting a proposed fix.</dd></div>
+          <div><dt>Inspect security hotspots</dt><dd><code>search_security_hotspots</code> and <code>show_security_hotspot</code>: retrieve code context, flows, and rule details. A hotspot needs review; it is not proof of a vulnerability.</dd></div>
+        </dl>
+        <p class="note warning">Keep write tools out of the review allowlist. Examples: <code>change_sonar_issue_status</code> and <code>change_security_hotspot_status</code>. A review must not silently accept or close findings.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>SonarQube quality</h2>
+        <p class="lead">Use measured results to focus review effort. MCP retrieves evidence; it does not replace CI checks.</p>
+        <dl class="settings">
+          <div><dt>Quality gate</dt><dd><code>get_project_quality_gate_status</code>: inspect the analyzed PR's gate result. <code>get_component_measures</code>: read coverage, complexity, or other selected metrics.</dd></div>
+          <div><dt>Test coverage</dt><dd><code>search_files_by_coverage</code> and <code>get_file_coverage_details</code>: identify uncovered lines and partially covered branches. Compare them with changed error and authorization paths.</dd></div>
+          <div><dt>Dependency risks</dt><dd><code>search_dependency_risks</code>: inspect SCA findings linked to the analyzed project. Requires Advanced Security; Server requires 2025.4 Enterprise or later.</dd></div>
+          <div><dt>Duplicated code</dt><dd><code>search_duplicated_files</code> and <code>get_duplications</code>: locate repeated code and compare a changed implementation with its related copies.</dd></div>
+        </dl>
+        <p class="note">Select the PR or branch where the tool supports it. Check analysis freshness. A passing gate does not prove that the PR has no defects.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>SonarQube review</h2>
+        <p class="lead">Put the review task in the PR description and reusable rules in head-branch review instructions.</p>
+        <ol class="flow">
+          <li><h3>Provide scope</h3><p>Give the SonarQube project key, analyzed PR key, current commit, and files to inspect. Wait for CI analysis.</p></li>
+          <li><h3>Request review</h3><p>Request Copilot under Reviewers. The agent can select relevant, available read-only MCP tools.</p></li>
+          <li><h3>Check evidence</h3><p>Open <strong>View session</strong>. Check tool calls and analysis scope. Verify findings, fix code, rerun CI, and request review again.</p></li>
+        </ol>
+        <p class="note"><strong>Example review task:</strong> “Use SonarQube project <code>payments-api</code>, analysis PR <code>42</code>. Compare open issues and uncovered branches with this diff. Explain relevant rules. Report only supported findings with file, line, and issue ID. Do not change issue status.”</p>
+        <p class="small">Example IDs only; tool calls are not guaranteed. IDE-bridge tools need a running IDE, which GitHub-hosted review does not provide.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Wiz</h2>
+        <p class="lead">The official Wiz MCP exposes cloud security context. Use its read capabilities to assess the production risk behind a change.</p>
+        <dl class="settings">
+          <div><dt>Issues and findings</dt><dd>Retrieve security issues, vulnerabilities, and affected resources. Compare a linked finding or CVE with a dependency, container, or code change.</dd></div>
+          <div><dt>Inventory and exposure</dt><dd>Query cloud resources and configurations. Check whether a Terraform change relates to an internet-facing resource or sensitive data.</dd></div>
+          <div><dt>Security Graph</dt><dd>Read relationships, attack paths, identities, and ownership. Assess whether exposure and permissions combine into a higher-risk path.</dd></div>
+          <div><dt>Agent analysis</dt><dd>Where available, retrieve Wiz agent analysis and remediation guidance, including Green Agent recommendations. Compare the proposed fix with the affected code.</dd></div>
+        </dl>
+        <p class="small">These are verified capability groups, not exact tool identifiers. Confirm your tenant's tool schemas, permissions, entitlements, and <code>readOnlyHint</code> annotations. <a href="https://www.wiz.io/blog/introducing-wiz-mcp">Official Wiz MCP overview</a>.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Wiz MCP configuration</h2>
+        <pre aria-label="Wiz remote MCP configuration example"><code>{
+  "mcpServers": {"wiz": {
+    "type": "http",
+    "url": "$COPILOT_MCP_WIZ_URL",
+    "headers": {"Authorization": "$COPILOT_MCP_WIZ_AUTHORIZATION"},
+    "tools": ["&lt;verified-read-only-tool&gt;"]
+  }}
+}</code></pre>
+        <p class="note warning">Example shape only. Replace the URL, auth header, and tool name with values from your Wiz tenant. Put credentials in <code>COPILOT_MCP_*</code> secrets. Remote OAuth is unsupported. Every enabled tool must have <code>readOnlyHint: true</code>; calls run without approval. See the <a href="https://docs.wiz.io/docs/set-up-wiz-mcp-server">Wiz setup guide</a>.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Runners</h2>
+        <p class="lead">Actions runners provide project context and tool use. The organization runner default is shared with cloud agent.</p>
+        <dl class="settings">
+          <div><dt>Organization default</dt><dd><strong>Settings → Copilot → Runner type.</strong> Choose <strong>Standard GitHub runner</strong> or <strong>Labeled runner</strong>.</dd></div>
+          <div><dt>Repository override</dt><dd><strong>Allow repositories to customize the runner type</strong> controls whether repository workflow files can override the organization default.</dd></div>
+          <div><dt>Repository workflow</dt><dd>Use <code>.github/workflows/copilot-code-review.yml</code>. Without it, review uses <code>copilot-setup-steps.yml</code>. Set <code>jobs.copilot-setup-steps.runs-on</code>.</dd></div>
+          <div><dt>Runner choices</dt><dd>Standard GitHub-hosted is the default. Larger runners cost more per minute. Self-hosted review supports only <strong>ARC-managed Ubuntu x64 Linux</strong> runners.</dd></div>
+          <div><dt>Network and fallback</dt><dd>Restrict network access and allow required GitHub hosts. If runner capabilities are unavailable or fail, review can continue with fewer features.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Internet access</h2>
+        <p class="lead">Open <strong>Settings → Copilot → Internet access</strong> at organization or repository level. Use the <strong>Copilot code review</strong> section, not the cloud-agent section.</p>
+        <dl class="settings">
+          <div><dt>Enable firewall</dt><dd>Organization: <strong>Enabled / Disabled / Let repositories decide</strong>. A repository can change its switch only when policy lets it decide.</dd></div>
+          <div><dt>Recommended allowlist</dt><dd>The same three organization choices apply. The recommended list allows common dependency and browser-download hosts.</dd></div>
+          <div><dt>Allow repository custom rules</dt><dd>Organization: <strong>Enabled</strong> by default, or <strong>Disabled</strong>. This controls whether repositories can add allowlist entries.</dd></div>
+          <div><dt>Custom allowlists</dt><dd>Organization and repository entries are combined. Repositories cannot remove organization entries. Add a domain or a URL scoped to a path.</dd></div>
+        </dl>
+        <p class="note warning">The firewall does not directly cover MCP server processes or setup steps. Use runner network controls as well.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Review limits</h2>
+        <p class="lead">A review is useful feedback, not proof that the change is correct or secure.</p>
+        <div class="columns">
+          <article class="panel">
+            <h3>Files and context</h3>
+            <ul>
+              <li>Dependency management files, logs, and SVG files are excluded.</li>
+              <li>Generated, vendored, and bundled paths can also be excluded.</li>
+              <li>Check applicable content-exclusion policy before a demonstration.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Analysis and policy</h3>
+            <ul>
+              <li>Copilot can miss issues or report an incorrect finding.</li>
+              <li>Review model selection is not supported. Chat model policy does not select review models.</li>
+              <li>Use tests, required checks, and human review with Copilot feedback.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="note warning">Use a small source-code change with a known issue for a demo. Do not use a lock file or generated file as the only example.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Fixes with cloud agent</h2>
+        <p class="lead">Use a code suggestion for a small edit. Use cloud agent for a task that needs coordinated changes.</p>
+        <ol class="flow">
+          <li><h3>Collect</h3><p>Group related findings. Record the affected code, expected behavior, and relevant tests.</p></li>
+          <li><h3>Delegate</h3><p>Select <strong>Fix with Copilot</strong> on a Copilot comment. Edit the draft request to include the related findings.</p></li>
+          <li><h3>Check</h3><p>Choose a commit to the same PR or a new PR against its branch. Inspect the changes, run checks, and request review again.</p></li>
+        </ol>
+        <p class="note">Both code review and cloud agent must be enabled. For simple compatible suggestions, you can also apply a group in one commit.</p>
+        <p class="small">The handoff to cloud agent is in public preview. Do not include unrelated changes in the fix request.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>CI checks</h2>
+        <p class="lead">Lint and spelling tools can run on both hosts. Copilot PR review remains a cloud feature.</p>
+        <div class="columns">
+          <pre aria-label="Example content-check workflow"><code>name: Content checks
+on: [pull_request]
+permissions: { contents: read }
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DavidAnson/markdownlint-cli2-action@v24
+        with: { globs: '**/*.md' }
+      - uses: codespell-project/actions-codespell@v2</code></pre>
+          <article class="panel">
+            <h3>Merge policy</h3>
+            <ul>
+              <li>Save the workflow in <code>.github/workflows/</code>.</li>
+              <li>Set Markdownlint rules in <code>.markdownlint-cli2.jsonc</code>.</li>
+              <li>Set Codespell rules in <code>.codespellrc</code> or <code>pyproject.toml</code>.</li>
+              <li>Require the check in a branch ruleset.</li>
+            </ul>
+            <p class="small">On GHES, use a self-hosted runner and action versions supported by your server. Pin production actions to reviewed commit SHAs.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Settings references</h2>
+        <p class="lead">Official sources checked on 03 November 2026. Features and labels can change.</p>
+        <ul class="sources">
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review">Configure code review</a><span>Repository, organization, enterprise, limits, billing, approvals, and rulesets.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">Code review concepts</a><span>Effort order, models, access, cost attribution, context, and limitations.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-code-review">Use code review</a><span>Requests, comments, REST bot, approvals, and Fix with Copilot.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-the-firewall">Internet access and firewall</a><span>Separate review settings, allowlists, inherited rules, and coverage limits.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/set-up-copilot/configure-runners">Review runners</a><span>Organization runner defaults, override controls, larger runners, and ARC.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/copilot-memory/manage-as-administrator">Memory administration</a><span>Repository-fact access, switches, retention, and personal-memory policy.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/reference/review-excluded-files">Excluded files</a><span>Check file types and path exclusions before a demonstration.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/copilot-memory">Memory concepts</a><span>Repository facts and user preferences are different memory types.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-inner">
+        <h2>Context and tool references</h2>
+        <p class="lead">Use each provider's supported configuration. Do not copy deployment-specific endpoints or credentials.</p>
+        <ul class="sources">
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers">Repository MCP servers</a><span>Shared settings, read-only annotations, secret substitution, and session logs.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions">Repository instructions</a><span>Repository-wide and path-specific guidance.</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills">Agent skills</a><span>Task-specific instructions and review workflows.</span></li>
+          <li><a href="https://github.com/SonarSource/sonarqube-mcp-server#tools">SonarQube MCP tools</a><span>Official tool names, read-only mode, toolsets, transports, and requirements.</span></li>
+          <li><a href="https://www.wiz.io/blog/introducing-wiz-mcp">Wiz MCP capabilities</a><span>Official capability overview. Confirm exact tools and authentication in <a href="https://docs.wiz.io/docs/set-up-wiz-mcp-server">Wiz setup documentation</a>.</span></li>
+          <li><a href="https://github.com/DavidAnson/markdownlint-cli2-action">Markdownlint Action</a><span>Workflow usage and Markdown rule configuration.</span></li>
+          <li><a href="https://github.com/codespell-project/actions-codespell">Codespell Action</a><span>Workflow usage and spelling exceptions.</span></li>
+          <li><a href="https://github.com/actions/checkout">Checkout Action</a><span>Current usage and action pinning guidance.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <nav class="controls" aria-label="Slide controls">
+        <button type="button" id="prev" aria-label="Previous slide" title="Previous slide">←</button>
+        <span class="count" id="count" aria-live="polite"></span>
+        <button type="button" id="next" aria-label="Next slide" title="Next slide">→</button>
+        <button type="button" id="theme" aria-label="Switch to light theme" title="Theme (T)">◐</button>
+        <button type="button" id="fullscreen" aria-label="Enter full screen" title="Full screen (F)">⛶</button>
+      </nav>
+    </footer>
+    <p class="status" id="status" role="status"></p>
+    <div class="progress" aria-hidden="true"><span></span></div>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      const root = document.documentElement;
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("prev");
+      const next = document.getElementById("next");
+      const count = document.getElementById("count");
+      const progress = document.querySelector(".progress span");
+      const theme = document.getElementById("theme");
+      const fullscreen = document.getElementById("fullscreen");
+      const status = document.getElementById("status");
+      let current = 0;
+      function indexFromHash() {
+        const match = /^#(\d+)$/.exec(location.hash);
+        const value = match ? Number(match[1]) : 1;
+        return value >= 1 && value <= slides.length ? value - 1 : 0;
+      }
+      function show(index, updateHash) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach(function (slide, i) {
+          const active = i === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", String(!active));
+          slide.inert = !active;
+          slide.setAttribute("aria-label", "Slide " + (i + 1) + " of " + slides.length + ": " + slide.querySelector("h1, h2").textContent);
+        });
+        count.textContent = (current + 1) + " / " + slides.length;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
+        status.textContent = "";
+        if (updateHash !== false) history.replaceState(null, "", "#" + (current + 1));
+      }
+      function toggleTheme() {
+        const light = root.dataset.theme !== "light";
+        root.dataset.theme = light ? "light" : "dark";
+        theme.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+        document.querySelector('meta[name="theme-color"]').content = light ? "#ffffff" : "#0d1117";
+      }
+      async function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (root.requestFullscreen) await root.requestFullscreen();
+          else status.textContent = "Full screen is not available in this browser.";
+        } catch (error) {
+          status.textContent = "Full screen could not start. Use the browser full-screen command.";
+          console.error("Full screen failed:", error);
+        }
+      }
+      previous.addEventListener("click", function () { show(current - 1); });
+      next.addEventListener("click", function () { show(current + 1); });
+      theme.addEventListener("click", toggleTheme);
+      fullscreen.addEventListener("click", toggleFullscreen);
+      document.addEventListener("fullscreenchange", function () {
+        fullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Enter full screen");
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.metaKey || event.ctrlKey || event.altKey || event.target.closest("input, textarea, select, [contenteditable]")) return;
+        const onControl = event.target.closest("a, button");
+        switch (event.key) {
+          case "ArrowRight": case "ArrowDown": case "PageDown": event.preventDefault(); show(current + 1); break;
+          case "ArrowLeft": case "ArrowUp": case "PageUp": event.preventDefault(); show(current - 1); break;
+          case " ": if (!onControl) { event.preventDefault(); show(current + (event.shiftKey ? -1 : 1)); } break;
+          case "Home": event.preventDefault(); show(0); break;
+          case "End": event.preventDefault(); show(slides.length - 1); break;
+          case "t": case "T": if (!onControl) toggleTheme(); break;
+          case "f": case "F": if (!onControl) toggleFullscreen(); break;
+          case "p": case "P": if (!onControl) window.print(); break;
+        }
+      });
+      let touchStart = null;
+      document.addEventListener("touchstart", function (event) {
+        if (event.touches.length !== 1 || event.target.closest("a, button")) { touchStart = null; return; }
+        touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+      }, { passive: true });
+      document.addEventListener("touchend", function (event) {
+        if (!touchStart) return;
+        const dx = event.changedTouches[0].clientX - touchStart.x;
+        const dy = event.changedTouches[0].clientY - touchStart.y;
+        touchStart = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+      document.addEventListener("touchcancel", function () { touchStart = null; }, { passive: true });
+      window.addEventListener("hashchange", function () { show(indexFromHash(), false); });
+      show(indexFromHash(), false);
+    })();
+  </script>
+</body>
+</html>
