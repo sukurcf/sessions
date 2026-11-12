@@ -1,0 +1,1151 @@
+<!doctype html>
+<!--
+THESIS: Show how people and Copilot agents move a change from an issue to a reviewed pull request.
+OWN-WORLD: GitHub's dark Primer colors, system fonts, clear borders, and familiar status colors.
+STORY: Define the task, select the right agent or tool, review the result, and keep a person in control.
+FIRST VIEWPORT: A large title sits beside an example issue-to-review run.
+FORM: A full-screen learning deck that extends the repository's existing GitHub-themed presentations.
+-->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="A practical guide to GitHub Copilot agents, orchestration, reusable prompts, MCP, custom agents, and the Copilot SDK.">
+  <title>GitHub Copilot agents</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d1117;
+      --panel: #151b23;
+      --inset: #010409;
+      --raised: #212830;
+      --border: #3d444d;
+      --fg: #f0f6fc;
+      --muted: #b1bac4;
+      --blue: #79c0ff;
+      --green: #7ee787;
+      --purple: #d2a8ff;
+      --yellow: #f2cc60;
+      --blue-bg: #102a45;
+      --green-bg: #102b1c;
+      --yellow-bg: #332b15;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --body: clamp(16px, min(1.7vw, 2.8dvh), 30px);
+      --title: clamp(34px, min(4.4vw, 7.3dvh), 76px);
+      --hero: clamp(50px, min(7vw, 11dvh), 108px);
+      --heading: clamp(21px, min(2.15vw, 3.8dvh), 38px);
+      --gap: clamp(14px, min(1.8vw, 2.6dvh), 32px);
+      --pad: clamp(16px, min(2vw, 3dvh), 34px);
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --canvas: #ffffff;
+      --panel: #f6f8fa;
+      --inset: #ffffff;
+      --raised: #eaeef2;
+      --border: #a7b0b9;
+      --fg: #1f2328;
+      --muted: #57606a;
+      --blue: #0969da;
+      --green: #116329;
+      --purple: #8250df;
+      --yellow: #7d4e00;
+      --blue-bg: #ddf4ff;
+      --green-bg: #dafbe1;
+      --yellow-bg: #fff8c5;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background: var(--canvas);
+      color: var(--fg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, a { font: inherit; }
+    a { color: var(--blue); text-underline-offset: .15em; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .chrome {
+      position: fixed;
+      z-index: 3;
+      inset: 0 0 auto;
+      height: clamp(48px, 7dvh, 68px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      padding: 0 4vw;
+      border-bottom: 1px solid var(--border);
+      background: var(--canvas);
+      font-size: clamp(13px, 1.05vw, 17px);
+    }
+    .brand { display: flex; align-items: center; gap: .65em; min-width: 0; font-weight: 650; }
+    .brand svg { width: 1.55em; height: 1.55em; flex: none; color: var(--blue); }
+    .brand span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chrome-date { color: var(--muted); white-space: nowrap; }
+    .stage {
+      position: fixed;
+      inset: clamp(48px, 7dvh, 68px) 0 50px;
+      overflow: hidden;
+    }
+    .slide {
+      --fit: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: safe center;
+      padding: 1.8dvh 4vw;
+      overflow: hidden;
+    }
+    .slide[hidden] { display: none; }
+    .slide-content {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--gap) * var(--fit));
+      font-size: calc(var(--body) * var(--fit));
+      line-height: 1.38;
+    }
+    h1, h2, h3, p, ul, ol, dl, dt, dd, pre { margin: 0; }
+    h1, h2, h3 { font-weight: 680; letter-spacing: -.025em; line-height: 1.12; text-wrap: balance; }
+    h1 { font-size: calc(var(--hero) * var(--fit)); }
+    h2 { font-size: calc(var(--title) * var(--fit)); }
+    h3 { font-size: calc(var(--heading) * var(--fit)); }
+    p, li, dd, dt { font-size: inherit; }
+    strong { font-weight: 680; }
+    .lead { max-width: 76ch; color: var(--muted); }
+    .accent { color: var(--blue); }
+    .green { color: var(--green); }
+    .purple { color: var(--purple); }
+    .muted { color: var(--muted); }
+    .small { color: var(--muted); font-size: .82em; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
+      align-items: center;
+      gap: calc(var(--gap) * var(--fit) * 2);
+    }
+    .hero-copy { display: grid; gap: calc(var(--gap) * var(--fit)); }
+    .hero-copy .lead { max-width: 34ch; font-size: 1.12em; }
+    .hero-note { display: flex; flex-wrap: wrap; gap: .5em; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .4em;
+      padding: .18em .6em;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-bg);
+      font-size: .76em;
+      font-weight: 650;
+    }
+    .tag.success { color: var(--green); background: var(--green-bg); }
+    .window {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+    .window-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      padding: .75em 1em;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .78em;
+    }
+    .window-body { padding: calc(var(--pad) * var(--fit)); }
+    .run-list { display: grid; gap: .9em; }
+    .run-item { display: grid; grid-template-columns: 2em minmax(0, 1fr); align-items: start; gap: .75em; }
+    .run-icon {
+      display: grid;
+      width: 2em;
+      height: 2em;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--blue);
+      background: var(--inset);
+      font-weight: 700;
+    }
+    .run-item p { margin-top: .18em; color: var(--muted); font-size: .84em; }
+    .agenda {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 calc(var(--gap) * var(--fit) * 2);
+      list-style: none;
+      padding: 0;
+    }
+    .agenda li { border-bottom: 1px solid var(--border); }
+    .agenda a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      padding: .75em 0;
+      color: var(--fg);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .agenda a span:last-child { color: var(--blue); }
+    .split, .trio {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: calc(var(--gap) * var(--fit));
+      align-items: stretch;
+    }
+    .trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .split.wide-right { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+    .panel {
+      min-width: 0;
+      padding: calc(var(--pad) * var(--fit));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .panel > * + * { margin-top: .7em; }
+    .panel p { color: var(--muted); }
+    .panel strong { color: var(--fg); }
+    .list { padding-left: 1.2em; }
+    .list li + li { margin-top: .55em; }
+    .list li::marker { color: var(--blue); }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: calc(var(--gap) * var(--fit));
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+    .flow.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .flow li {
+      min-width: 0;
+      padding: calc(var(--pad) * var(--fit));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      counter-increment: step;
+    }
+    .flow li::before {
+      content: counter(step);
+      display: grid;
+      width: 1.65em;
+      height: 1.65em;
+      margin-bottom: .7em;
+      place-items: center;
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+      color: var(--blue);
+      font-weight: 700;
+    }
+    .flow h3 { margin-bottom: .45em; }
+    .flow p { color: var(--muted); }
+    .callout {
+      padding: .75em 1em;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .callout.good { color: var(--green); background: var(--green-bg); }
+    .callout.caution { color: var(--yellow); background: var(--yellow-bg); }
+    code, pre { font-family: var(--mono); }
+    code { overflow-wrap: anywhere; }
+    :not(pre) > code {
+      padding: .08em .25em;
+      border-radius: 4px;
+      color: var(--blue);
+      background: var(--raised);
+      font-size: .9em;
+    }
+    pre {
+      min-width: 0;
+      padding: calc(var(--pad) * var(--fit));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--inset);
+      font-size: .82em;
+      line-height: 1.42;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      tab-size: 2;
+    }
+    .code-title { display: flex; align-items: center; flex-wrap: wrap; gap: .5em; color: var(--muted); font-size: .83em; }
+    .code-title code { color: var(--blue); }
+    .code-block { display: grid; align-content: start; gap: .5em; min-width: 0; }
+    .row-list { display: grid; border-top: 1px solid var(--border); }
+    .row-list > div {
+      display: grid;
+      grid-template-columns: minmax(0, .7fr) minmax(0, 1.8fr);
+      gap: 1em;
+      padding: .65em 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .row-list dt { font-weight: 680; }
+    .row-list dd { color: var(--muted); }
+    .compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--gap) * var(--fit)); }
+    .compare > div { min-width: 0; padding: .4em 0 .7em; border-bottom: 1px solid var(--border); }
+    .compare h3 { margin-bottom: .5em; }
+    .compare p { color: var(--muted); }
+    .parallel {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.2fr) minmax(0, .9fr);
+      gap: calc(var(--gap) * var(--fit));
+      align-items: center;
+    }
+    .parallel .center { display: grid; gap: .5em; }
+    .parallel .worker { padding: .65em .8em; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+    .parallel .worker span { display: block; color: var(--muted); font-size: .85em; }
+    .parallel .endpoint { padding: 1em; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue-bg); }
+    .parallel .endpoint p { margin-top: .4em; color: var(--muted); }
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: .6em;
+      align-items: center;
+    }
+    .architecture > div:not(.arrow) {
+      min-width: 0;
+      padding: calc(var(--pad) * var(--fit));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .architecture p { margin-top: .45em; color: var(--muted); }
+    .arrow { color: var(--blue); font-size: 1.4em; }
+    .sources {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 calc(var(--gap) * var(--fit) * 2);
+      padding: 0;
+      list-style: none;
+    }
+    .sources li { min-width: 0; padding: .7em 0; border-bottom: 1px solid var(--border); }
+    .sources a { display: block; font-weight: 650; overflow-wrap: anywhere; }
+    .sources span { display: block; margin-top: .22em; color: var(--muted); font-size: .8em; }
+    .footer {
+      position: fixed;
+      z-index: 3;
+      inset: auto 4vw 0;
+      height: 50px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .controls button {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      place-items: center;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--fg);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .controls button:hover:not(:disabled) { background: var(--raised); }
+    .controls button:disabled { opacity: .4; cursor: default; }
+    .count { min-width: 48px; color: var(--muted); font-size: 11px; text-align: center; }
+    .progress { position: fixed; z-index: 4; inset: auto 0 0; height: 3px; background: var(--border); }
+    .progress span { display: block; width: 100%; height: 100%; background: var(--blue); transform-origin: left; transition: transform .18s ease-out; }
+    .status { position: fixed; right: 4vw; bottom: 52px; max-width: min(34em, 80vw); color: var(--yellow); background: var(--canvas); font-size: 14px; }
+    .status:empty { display: none; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-aspect-ratio: 6/5) {
+      :root {
+        --body: clamp(14px, min(3.9vw, 2.1dvh), 23px);
+        --title: clamp(28px, min(8vw, 5dvh), 52px);
+        --hero: clamp(44px, min(12vw, 8dvh), 76px);
+        --heading: clamp(18px, min(5vw, 3.1dvh), 30px);
+        --gap: clamp(9px, 1.7dvh, 20px);
+        --pad: clamp(10px, 1.7dvh, 20px);
+      }
+      .chrome { height: 48px; padding: 0 5vw; font-size: 13px; }
+      .chrome-date { display: none; }
+      .stage { inset: 48px 0 48px; }
+      .slide { padding: 1.5dvh 5vw; }
+      .hero, .split, .split.wide-right { grid-template-columns: 1fr; }
+      .hero { gap: calc(var(--gap) * var(--fit)); }
+      .hero-copy .lead { max-width: 50ch; }
+      .trio { grid-template-columns: 1fr; }
+      .trio .panel { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.6fr); gap: .5em; align-items: start; }
+      .trio .panel > * { margin: 0; }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow.three { grid-template-columns: 1fr; }
+      .flow.three li { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: .2em .5em; }
+      .flow.three li::before { grid-row: 1 / span 2; margin: 0; }
+      .flow.three h3, .flow.three p { grid-column: 2; margin: 0; }
+      .compare { grid-template-columns: 1fr; gap: .4em; }
+      .compare > div { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.6fr); gap: .5em; padding: .45em 0; }
+      .compare h3 { margin: 0; }
+      .parallel { grid-template-columns: 1fr; gap: .5em; }
+      .parallel .center { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4em; }
+      .parallel .worker { padding: .55em; }
+      .parallel .endpoint { padding: .65em; }
+      .parallel .endpoint p { margin-top: .2em; }
+      .architecture { grid-template-columns: 1fr auto 1fr auto 1fr; gap: .3em; }
+      .architecture > div:not(.arrow) { padding: .65em; }
+      .architecture h3 { font-size: 1em; }
+      .architecture p { font-size: .85em; }
+      .footer { inset: auto 5vw 0; height: 48px; }
+      .controls button { width: 28px; height: 28px; }
+    }
+    @media (max-width: 520px) {
+      .slide { padding-top: 6px; padding-bottom: 6px; }
+      .agenda a { padding: .55em 0; }
+      .panel > * + * { margin-top: .5em; }
+      .list li + li { margin-top: .35em; }
+      .flow li { padding: .7em; }
+      .flow li::before { margin-bottom: .35em; }
+      .flow h3 { margin-bottom: .25em; }
+      .row-list > div { grid-template-columns: minmax(0, .8fr) minmax(0, 1.5fr); padding: .48em 0; }
+      .sources { grid-template-columns: 1fr; }
+      .sources li { padding: .45em 0; }
+      pre { font-size: .76em; }
+    }
+    @media (max-height: 600px) and (min-aspect-ratio: 6/5) {
+      :root {
+        --body: min(1.7vw, 3dvh);
+        --title: min(4vw, 6.7dvh);
+        --hero: min(6vw, 9.5dvh);
+        --heading: min(2.2vw, 4dvh);
+        --gap: 1.5dvh;
+        --pad: 1.6dvh;
+      }
+      .chrome { height: 34px; font-size: 11px; }
+      .stage { inset: 34px 0 38px; }
+      .slide { padding-top: 1dvh; padding-bottom: 1dvh; }
+      .footer { height: 38px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+    @media print {
+      @page { size: 16in 9in; margin: 0; }
+      :root { --body: 24px; --title: 60px; --hero: 92px; --heading: 34px; --gap: 24px; --pad: 26px; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      html, body { width: auto; height: auto; overflow: visible; }
+      .chrome, .footer, .progress, .status { display: none; }
+      .stage { position: static; overflow: visible; }
+      .slide, .slide[hidden] {
+        --fit: 1 !important;
+        display: flex !important;
+        width: 16in;
+        height: 9in;
+        padding: .55in;
+        break-after: page;
+      }
+      .slide:last-child { break-after: auto; }
+      .hero, .split, .split.wide-right { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .trio, .compare, .flow.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .sources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <header class="chrome">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="4" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7 10h3m4 0h3M8 15h8M9 2v3m6-3v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>GitHub Copilot / Agent workflows</span>
+    </div>
+    <span class="chrome-date">12 November 2026</span>
+  </header>
+
+  <main class="stage" aria-label="GitHub Copilot slide deck">
+    <section class="slide" id="cover">
+      <div class="slide-content">
+        <div class="hero">
+          <div class="hero-copy">
+            <h1>GitHub Copilot<br><span class="accent">agents</span></h1>
+            <p class="lead">From a clear task to a reviewed change.</p>
+            <div class="hero-note">
+              <span class="tag">Build</span>
+              <span class="tag">Review</span>
+              <span class="tag success">Decide</span>
+            </div>
+          </div>
+          <div class="window" aria-label="Example agent workflow">
+            <div class="window-head"><span>Example workflow</span><span class="green">Ready for review</span></div>
+            <div class="window-body run-list">
+              <div class="run-item"><span class="run-icon">○</span><div><strong>Issue</strong><p>Describe the change and its limits.</p></div></div>
+              <div class="run-item"><span class="run-icon">⌘</span><div><strong>Coding agent</strong><p>Make changes and prepare a pull request.</p></div></div>
+              <div class="run-item"><span class="run-icon">✓</span><div><strong>Review</strong><p>Check the result and decide what to merge.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="agenda" hidden>
+      <div class="slide-content">
+        <h2>Agenda</h2>
+        <p class="lead">Select a topic, or use the arrow keys to move through the deck.</p>
+        <ul class="agenda">
+          <li><a href="#coding-agent"><span>Coding agent</span><span>↗</span></a></li>
+          <li><a href="#review-agent"><span>Code review agent</span><span>↗</span></a></li>
+          <li><a href="#orchestration"><span>Orchestration patterns</span><span>↗</span></a></li>
+          <li><a href="#reusable-prompts"><span>Reusable prompts</span><span>↗</span></a></li>
+          <li><a href="#subagents"><span>Sub-agents and handoffs</span><span>↗</span></a></li>
+          <li><a href="#mcp"><span>MCP integrations</span><span>↗</span></a></li>
+          <li><a href="#custom-agents"><span>Custom agents</span><span>↗</span></a></li>
+          <li><a href="#sdk"><span>Copilot SDK</span><span>↗</span></a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" id="workflow" hidden>
+      <div class="slide-content">
+        <h2>Agent workflow</h2>
+        <p class="lead">Use agents to help with the work. Keep the final decision with the team.</p>
+        <ol class="flow">
+          <li><h3>Define</h3><p>Write the goal, limits, and acceptance criteria.</p></li>
+          <li><h3>Build</h3><p>Assign a task to the coding agent.</p></li>
+          <li><h3>Review</h3><p>Run checks and request a Copilot review.</p></li>
+          <li><h3>Decide</h3><p>A person checks the result and merges it.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide" id="coding-agent" hidden>
+      <div class="slide-content">
+        <h2>Coding agent</h2>
+        <p class="lead">Copilot works on a task in the background and proposes a pull request.</p>
+        <div class="split">
+          <div class="panel">
+            <h3>Use it for</h3>
+            <ul class="list">
+              <li>Repository changes with a clear scope.</li>
+              <li>Bug fixes, tests, docs, or small features.</li>
+              <li>Tasks you can delegate while you work.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>What it does</h3>
+            <ul class="list">
+              <li>Reads the issue and repository context.</li>
+              <li>Changes files and can run checks.</li>
+              <li>Opens a pull request for your review.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="callout good">You own the requirements, review, and merge decision.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="assign-task" hidden>
+      <div class="slide-content">
+        <h2>Assign a task</h2>
+        <p class="lead">On GitHub.com, start with an issue in a repository where the cloud agent is enabled.</p>
+        <ol class="flow three">
+          <li><h3>Write</h3><p>Create an issue with a specific result and clear limits.</p></li>
+          <li><h3>Assign</h3><p>In <strong>Assignees</strong>, select <strong>Copilot</strong> and add any extra guidance.</p></li>
+          <li><h3>Follow</h3><p>Open the session log. Review the pull request and checks.</p></li>
+        </ol>
+        <p class="small">Availability depends on your plan, repository settings, and organization policy.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="task-brief" hidden>
+      <div class="slide-content">
+        <h2>Task brief</h2>
+        <p class="lead">A small, testable issue gives the agent a better starting point.</p>
+        <div class="split wide-right">
+          <div class="panel">
+            <h3>Include</h3>
+            <ul class="list">
+              <li>The result you need.</li>
+              <li>Files or behavior in scope.</li>
+              <li>Acceptance criteria and checks.</li>
+              <li>Changes the agent must avoid.</li>
+            </ul>
+          </div>
+          <div class="code-block">
+            <div class="code-title">Example issue</div>
+            <pre><code>Goal: Add pagination to the orders API.
+
+Use 20 items per page by default.
+Keep existing response fields.
+Add tests for empty and final pages.
+Do not change the database schema.</code></pre>
+            <p class="small">Example only. Change the details to match your repository.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="review-agent" hidden>
+      <div class="slide-content">
+        <h2>Code review agent</h2>
+        <p class="lead">Copilot examines changes and reports possible problems or suggestions.</p>
+        <div class="trio">
+          <div class="panel"><h3>Where</h3><p>Review pull requests on GitHub or changes in supported IDEs.</p></div>
+          <div class="panel"><h3>How</h3><p>Request Copilot as a reviewer, or configure automatic review.</p></div>
+          <div class="panel"><h3>Why</h3><p>Get another view of bugs, edge cases, and maintainability.</p></div>
+        </div>
+        <p class="callout caution">Copilot can miss defects or make incorrect suggestions. Verify each finding.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="review-workflow" hidden>
+      <div class="slide-content">
+        <h2>Pull request review</h2>
+        <p class="lead">Use the review as input, not as the final decision.</p>
+        <ol class="flow">
+          <li><h3>Request</h3><p>In the pull request, select <strong>Copilot</strong> under Reviewers.</p></li>
+          <li><h3>Read</h3><p>Check the comments and their severity.</p></li>
+          <li><h3>Verify</h3><p>Inspect the code and test each relevant claim.</p></li>
+          <li><h3>Act</h3><p>Apply, fix, or dismiss a suggestion. Re-request review when needed.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide" id="review-controls" hidden>
+      <div class="slide-content">
+        <h2>Review controls</h2>
+        <dl class="row-list">
+          <div><dt>Trigger</dt><dd>Request a review manually or set an automatic review rule.</dd></div>
+          <div><dt>Guidance</dt><dd>Add review guidance in <code>.github/copilot-instructions.md</code>.</dd></div>
+          <div><dt>Re-review</dt><dd>Request it again after changes, or configure review of new pushes.</dd></div>
+          <div><dt>Approval</dt><dd>Copilot comments by default. Approvals can be enabled by policy.</dd></div>
+        </dl>
+        <p class="callout good">Use required checks and human review as your team policy requires.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="orchestration" hidden>
+      <div class="slide-content">
+        <h2>Orchestration patterns</h2>
+        <p class="lead">A coordinator directs work, collects results, and checks the outcome.</p>
+        <div class="compare">
+          <div><h3>Sequence</h3><p>Complete one step before the next. Use it when work has dependencies.</p></div>
+          <div><h3>Parallel</h3><p>Run independent tasks at the same time. Combine their results.</p></div>
+          <div><h3>Review loop</h3><p>Build, check, and correct. Set a clear stop condition.</p></div>
+        </div>
+        <p class="callout">Use one agent for a small task. Delegation adds coordination and usage cost.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="parallel-work" hidden>
+      <div class="slide-content">
+        <h2>Parallel work</h2>
+        <p class="lead">Split only tasks that can proceed independently.</p>
+        <div class="parallel">
+          <div class="endpoint"><h3>Coordinator</h3><p>Defines scope and gives each worker the context it needs.</p></div>
+          <div class="center">
+            <div class="worker"><strong>Research</strong><span>Find relevant code.</span></div>
+            <div class="worker"><strong>Tests</strong><span>Identify test cases.</span></div>
+            <div class="worker"><strong>Review</strong><span>Inspect risks.</span></div>
+          </div>
+          <div class="endpoint"><h3>Combine</h3><p>Check the results, resolve conflicts, and report the outcome.</p></div>
+        </div>
+        <p class="small">For parallel edits, use separate files or isolated workspaces to prevent conflicts.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="task-boundaries" hidden>
+      <div class="slide-content">
+        <h2>Task boundaries</h2>
+        <p class="lead">Give each worker enough information to complete one bounded task.</p>
+        <div class="split">
+          <div class="panel">
+            <h3>Give</h3>
+            <ul class="list">
+              <li><strong>Goal:</strong> the question or change.</li>
+              <li><strong>Context:</strong> files, requirements, and decisions.</li>
+              <li><strong>Limits:</strong> permitted tools and actions.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Request</h3>
+            <ul class="list">
+              <li><strong>Result:</strong> findings, files, or a change.</li>
+              <li><strong>Evidence:</strong> file paths and checks.</li>
+              <li><strong>Stop:</strong> when the result is complete or blocked.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="reusable-prompts" hidden>
+      <div class="slide-content">
+        <h2>Reusable prompts</h2>
+        <p class="lead">Save repeatable guidance in the form that matches its purpose.</p>
+        <dl class="row-list">
+          <div><dt>Instructions</dt><dd>Repository rules that apply automatically when supported.</dd></div>
+          <div><dt>Prompt file</dt><dd>A task you run by name in a VS Code Local session.</dd></div>
+          <div><dt>Skill</dt><dd>A reusable workflow, with optional scripts and resources.</dd></div>
+          <div><dt>Custom agent</dt><dd>A specialist role with its own instructions and tools.</dd></div>
+        </dl>
+        <p class="small">Support and file locations can differ by Copilot surface and harness.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="prompt-file" hidden>
+      <div class="slide-content">
+        <h2>Prompt files</h2>
+        <div class="split">
+          <div class="code-block">
+            <div class="code-title"><code>.github/prompts/test-plan.prompt.md</code></div>
+            <pre><code>---
+description: Make a test plan
+agent: agent
+---
+Review the selected change.
+List test cases and edge cases.
+Do not change files.</code></pre>
+          </div>
+          <div class="panel">
+            <h3>Use</h3>
+            <p>In a VS Code <strong>Local</strong> session, enter <code>/test-plan</code> and add the change to inspect.</p>
+            <p>Include the goal, context, limits, and expected result.</p>
+            <p class="small">The Local harness is deprecated. Use skills for new Copilot-harness workflows.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="skills" hidden>
+      <div class="slide-content">
+        <h2>Agent skills</h2>
+        <p class="lead">A skill packages a repeatable workflow for supported Copilot surfaces.</p>
+        <div class="split">
+          <div class="code-block">
+            <div class="code-title"><code>.github/skills/test-plan/SKILL.md</code></div>
+            <pre><code>---
+name: test-plan
+description: Plan tests for a change. Use when preparing tests.
+---
+Read the change and related tests.
+List cases, edge cases, and gaps.
+Do not change files.</code></pre>
+          </div>
+          <div class="panel">
+            <h3>Use</h3>
+            <ul class="list">
+              <li>Describe what the skill does and when to use it.</li>
+              <li>Add scripts or examples when needed.</li>
+              <li>Invoke it by name or let Copilot select it when relevant.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="subagents" hidden>
+      <div class="slide-content">
+        <h2>Sub-agents</h2>
+        <p class="lead">A main agent delegates a focused task to a worker with its own context.</p>
+        <div class="trio">
+          <div class="panel"><h3>Delegate</h3><p>Ask a worker to research, test, or review a defined part of the task.</p></div>
+          <div class="panel"><h3>Return</h3><p>The worker reports the result to the main agent.</p></div>
+          <div class="panel"><h3>Combine</h3><p>The main agent checks the result and continues the work.</p></div>
+        </div>
+        <p class="callout">A sub-agent does not remove the need to verify its result.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="subagent-brief" hidden>
+      <div class="slide-content">
+        <h2>Sub-agent brief</h2>
+        <p class="lead">Make the delegated request self-contained.</p>
+        <div class="split wide-right">
+          <div class="panel">
+            <h3>Specify</h3>
+            <ul class="list">
+              <li>One goal and the relevant files.</li>
+              <li>Allowed actions and tool limits.</li>
+              <li>The result, evidence, and stop condition.</li>
+            </ul>
+          </div>
+          <div class="code-block">
+            <div class="code-title">Example request</div>
+            <pre><code>Use a sub-agent to inspect the
+pagination tests in this repository.
+
+Do not change files.
+Return missing cases and file paths.
+Stop after the test review.</code></pre>
+          </div>
+        </div>
+        <p class="small">Sub-agent tools and follow-up behavior differ by harness.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="handoffs" hidden>
+      <div class="slide-content">
+        <h2>Handoffs</h2>
+        <p class="lead">A handoff moves a completed stage to another role with context and a next prompt.</p>
+        <div class="split">
+          <div class="code-block">
+            <div class="code-title">VS Code Local agent file</div>
+            <pre><code>---
+description: Plan a change
+handoffs:
+  - label: Implement plan
+    agent: agent
+    prompt: Implement the plan.
+    send: false
+---
+Plan the task. Do not edit files.</code></pre>
+          </div>
+          <div class="panel">
+            <h3>Review, then continue</h3>
+            <p>Read the plan before you select the handoff button. With <code>send: false</code>, review the next prompt before sending it.</p>
+            <p class="small">This handoff configuration is for VS Code Local, not Copilot cloud agent. Local is deprecated.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="mcp" hidden>
+      <div class="slide-content">
+        <h2>MCP integrations</h2>
+        <p class="lead">Model Context Protocol (MCP) connects an agent to external tools and data.</p>
+        <div class="architecture">
+          <div><h3>Copilot</h3><p>Receives the task and selects a tool.</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div><h3>MCP server</h3><p>Offers tools with defined inputs.</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div><h3>Service</h3><p>Returns issues, logs, or other data.</p></div>
+        </div>
+        <p class="callout">Example: read an issue and related logs to investigate a failure.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="mcp-setup" hidden>
+      <div class="slide-content">
+        <h2>MCP setup</h2>
+        <p class="lead">Configuration is specific to the Copilot surface you use.</p>
+        <div class="split">
+          <div class="panel">
+            <h3>GitHub repository</h3>
+            <ul class="list">
+              <li>Open <strong>Settings → Copilot → MCP servers</strong>.</li>
+              <li>Add a server and allow only required tools.</li>
+              <li>Store keys as Agents secrets with the <code>COPILOT_MCP_</code> prefix.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>VS Code</h3>
+            <ul class="list">
+              <li>Add a trusted server through the MCP controls.</li>
+              <li>Sign in if required.</li>
+              <li>Check its tools before use.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="callout caution">Cloud agent can use configured MCP tools without asking for each call.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="mcp-safety" hidden>
+      <div class="slide-content">
+        <h2>MCP safety</h2>
+        <div class="trio">
+          <div class="panel"><h3>Trust</h3><p>Use a server you trust. Inspect the publisher and the tools it exposes.</p></div>
+          <div class="panel"><h3>Limit</h3><p>Use least-privilege credentials and allow only the required tools.</p></div>
+          <div class="panel"><h3>Verify</h3><p>Treat external content as untrusted. Check data and tool results.</p></div>
+        </div>
+        <p class="callout">For GitHub code review, MCP tools must declare <code>readOnlyHint: true</code>.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="custom-agents" hidden>
+      <div class="slide-content">
+        <h2>Custom agents</h2>
+        <p class="lead">Define a reusable specialist role with instructions and a selected set of tools.</p>
+        <div class="split">
+          <div class="panel">
+            <h3>Use a custom agent when</h3>
+            <ul class="list">
+              <li>A role has a repeatable responsibility.</li>
+              <li>It needs a specific result or tool set.</li>
+              <li>You want to share the role with a team.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Define and verify</h3>
+            <ul class="list">
+              <li>Store a repository agent in <code>.github/agents/</code>.</li>
+              <li>Describe its role, limits, and expected output.</li>
+              <li>Test its tool use and result on a small task.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="agent-example" hidden>
+      <div class="slide-content">
+        <h2>Custom agent example</h2>
+        <div class="split">
+          <div class="code-block">
+            <div class="code-title"><code>.github/agents/reviewer.agent.md</code></div>
+            <pre><code>---
+name: Reviewer
+description: Review changes without edits
+tools: ['read', 'search']
+---
+Check the supplied code and tests.
+Report actionable findings with paths.
+Do not edit files or run commands.</code></pre>
+          </div>
+          <div class="panel">
+            <h3>Why this works</h3>
+            <ul class="list">
+              <li>The role has one clear job.</li>
+              <li>The tool list is limited to reading and search.</li>
+              <li>The result includes evidence.</li>
+            </ul>
+            <p class="small">Check tool names and supported fields for the target harness.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="sdk" hidden>
+      <div class="slide-content">
+        <h2>Copilot SDK</h2>
+        <p class="lead">Build an application that uses the Copilot agent runtime.</p>
+        <div class="architecture">
+          <div><h3>Your app</h3><p>Provides the task and controls access.</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div><h3>SDK client</h3><p>Creates sessions and receives events.</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div><h3>Runtime</h3><p>Processes prompts and available tools.</p></div>
+        </div>
+        <p class="callout">SDKs are available for TypeScript, Python, Go, .NET, Java, and Rust.</p>
+        <p class="small">Configure authentication or a supported provider key. Runtime setup varies by SDK.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="sdk-example" hidden>
+      <div class="slide-content">
+        <h2>SDK example</h2>
+        <div class="code-block">
+          <div class="code-title">TypeScript · Install <code>@github/copilot-sdk</code></div>
+          <pre><code>import { CopilotClient } from "@github/copilot-sdk";
+
+const client = new CopilotClient();
+try {
+  const session = await client.createSession({
+    model: "auto",
+    onPermissionRequest: () =&gt; ({ kind: "reject" })
+  });
+  const reply = await session.sendAndWait({
+    prompt: "Explain this repository."
+  });
+  console.log(reply?.data.content);
+} finally {
+  await client.stop();
+}</code></pre>
+        </div>
+        <p class="small">This example rejects permission requests. Define a suitable permission policy for your app.</p>
+      </div>
+    </section>
+
+    <section class="slide" id="exercise" hidden>
+      <div class="slide-content">
+        <h2>End-to-end exercise</h2>
+        <p class="lead">Try the workflow with a small change that your team can verify.</p>
+        <ol class="flow">
+          <li><h3>Define</h3><p>Write an issue with a goal, limits, and test cases.</p></li>
+          <li><h3>Assign</h3><p>Give the issue to Copilot and inspect the session.</p></li>
+          <li><h3>Review</h3><p>Request Copilot review and run the required checks.</p></li>
+          <li><h3>Decide</h3><p>Check the diff, address findings, and approve or revise.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide" id="decision-guide" hidden>
+      <div class="slide-content">
+        <h2>Decision guide</h2>
+        <dl class="row-list">
+          <div><dt>Build a change</dt><dd>Use the coding agent for a bounded task.</dd></div>
+          <div><dt>Inspect a change</dt><dd>Use Copilot code review and human review.</dd></div>
+          <div><dt>Repeat a workflow</dt><dd>Use a skill or a supported prompt file.</dd></div>
+          <div><dt>Use a specialist</dt><dd>Define a custom agent or delegate to a sub-agent.</dd></div>
+          <div><dt>Connect a service</dt><dd>Use a trusted MCP server with limited tools.</dd></div>
+          <div><dt>Build an app</dt><dd>Use the Copilot SDK and define permission controls.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="slide" id="references-agents" hidden>
+      <div class="slide-content">
+        <h2>Agent references</h2>
+        <p class="lead">Official documentation. Checked on 12 November 2026.</p>
+        <ul class="sources">
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/overview" target="_blank" rel="noopener noreferrer">Get started with Copilot agents</a><span>Issue assignment and the pull request workflow</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-code-review" target="_blank" rel="noopener noreferrer">Use Copilot code review</a><span>Reviews, comments, and approvals</span></li>
+          <li><a href="https://code.visualstudio.com/docs/agents/run/subagents" target="_blank" rel="noopener noreferrer">Use sub-agents in VS Code</a><span>Delegation and harness differences</span></li>
+          <li><a href="https://code.visualstudio.com/docs/agent-customization/custom-agents" target="_blank" rel="noopener noreferrer">Custom agents in VS Code</a><span>Agent roles and Local handoffs</span></li>
+          <li><a href="https://docs.github.com/en/copilot/reference/custom-agents-configuration" target="_blank" rel="noopener noreferrer">Custom agent configuration</a><span>Supported fields and tools</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" id="references-tools" hidden>
+      <div class="slide-content">
+        <h2>Tool references</h2>
+        <p class="lead">Check the current documentation for support and policy changes.</p>
+        <ul class="sources">
+          <li><a href="https://code.visualstudio.com/docs/agent-customization/prompt-files" target="_blank" rel="noopener noreferrer">Prompt files in VS Code</a><span>Local sessions, file format, and migration</span></li>
+          <li><a href="https://code.visualstudio.com/docs/agent-customization/agent-skills" target="_blank" rel="noopener noreferrer">Agent skills</a><span>Skill files, locations, and invocation</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/configure-mcp-servers" target="_blank" rel="noopener noreferrer">Configure MCP servers</a><span>Repository setup and safety</span></li>
+          <li><a href="https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/set-up-the-github-mcp-server" target="_blank" rel="noopener noreferrer">Set up the GitHub MCP server</a><span>IDE setup and server trust</span></li>
+          <li><a href="https://github.com/github/copilot-sdk" target="_blank" rel="noopener noreferrer">GitHub Copilot SDK</a><span>SDKs, runtime, authentication, and examples</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <nav class="controls" aria-label="Slide controls">
+      <button type="button" id="previous" aria-label="Previous slide" title="Previous slide">←</button>
+      <span class="count" id="count" aria-hidden="true"></span>
+      <button type="button" id="next" aria-label="Next slide" title="Next slide">→</button>
+      <button type="button" id="theme" aria-label="Switch to light theme" title="Switch theme (T)">◐</button>
+      <button type="button" id="fullscreen" aria-label="Enter full screen" title="Full screen (F)">⛶</button>
+    </nav>
+  </footer>
+  <p class="status" id="status" role="status"></p>
+  <p class="visually-hidden" id="announcement" aria-live="polite" aria-atomic="true"></p>
+  <div class="progress" aria-hidden="true"><span></span></div>
+
+  <script>
+    (function () {
+      "use strict";
+      const root = document.documentElement;
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const count = document.getElementById("count");
+      const theme = document.getElementById("theme");
+      const fullscreen = document.getElementById("fullscreen");
+      const status = document.getElementById("status");
+      const announcement = document.getElementById("announcement");
+      const progress = document.querySelector(".progress span");
+      let current = 0;
+
+      function fitSlide() {
+        const slide = slides[current];
+        const content = slide.querySelector(".slide-content");
+        const style = getComputedStyle(slide);
+        const availableHeight = slide.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+        let scale = 1;
+        slide.style.setProperty("--fit", scale);
+        while ((content.getBoundingClientRect().height > availableHeight || content.scrollWidth > content.clientWidth + 1) && scale > .6) {
+          scale = Math.max(.6, scale - .025);
+          slide.style.setProperty("--fit", scale.toFixed(3));
+        }
+        if (content.getBoundingClientRect().height > availableHeight || content.scrollWidth > content.clientWidth + 1) {
+          status.textContent = "The slide does not fit. Make the window larger.";
+        } else {
+          status.textContent = "";
+        }
+      }
+
+      function indexFromHash() {
+        const id = location.hash.slice(1);
+        const index = slides.findIndex(function (slide) { return slide.id === id; });
+        return index < 0 ? 0 : index;
+      }
+
+      function show(index, updateHash) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach(function (slide, i) {
+          slide.hidden = i !== current;
+        });
+        const title = slides[current].querySelector("h1, h2").innerText.replace(/\s+/g, " ").trim();
+        count.textContent = (current + 1) + " / " + slides.length;
+        announcement.textContent = "Slide " + (current + 1) + " of " + slides.length + ": " + title;
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        progress.style.transform = "scaleX(" + ((current + 1) / slides.length) + ")";
+        if (updateHash !== false) history.replaceState(null, "", "#" + slides[current].id);
+        fitSlide();
+        requestAnimationFrame(fitSlide);
+      }
+
+      function toggleTheme() {
+        const light = root.dataset.theme !== "light";
+        root.dataset.theme = light ? "light" : "dark";
+        theme.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+        document.querySelector('meta[name="theme-color"]').content = light ? "#ffffff" : "#0d1117";
+      }
+
+      async function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (root.requestFullscreen) await root.requestFullscreen();
+          else status.textContent = "Full screen is not available in this browser.";
+        } catch (error) {
+          status.textContent = "Full screen could not start. Use the browser full-screen command.";
+          console.error("Full screen failed:", error);
+        }
+      }
+
+      previous.addEventListener("click", function () { show(current - 1); });
+      next.addEventListener("click", function () { show(current + 1); });
+      theme.addEventListener("click", toggleTheme);
+      fullscreen.addEventListener("click", toggleFullscreen);
+      document.addEventListener("fullscreenchange", function () {
+        fullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Enter full screen");
+      });
+      document.addEventListener("keydown", function (event) {
+        const target = event.target instanceof Element ? event.target : null;
+        if (event.metaKey || event.ctrlKey || event.altKey || (target && target.closest("input, textarea, select, [contenteditable]"))) return;
+        const onControl = target && target.closest("a, button");
+        switch (event.key) {
+          case "ArrowRight": case "ArrowDown": case "PageDown": event.preventDefault(); show(current + 1); break;
+          case "ArrowLeft": case "ArrowUp": case "PageUp": event.preventDefault(); show(current - 1); break;
+          case " ": if (!onControl) { event.preventDefault(); show(current + (event.shiftKey ? -1 : 1)); } break;
+          case "Home": event.preventDefault(); show(0); break;
+          case "End": event.preventDefault(); show(slides.length - 1); break;
+          case "t": case "T": if (!onControl) toggleTheme(); break;
+          case "f": case "F": if (!onControl) toggleFullscreen(); break;
+          case "p": case "P": if (!onControl) window.print(); break;
+        }
+      });
+      let touchStart = null;
+      document.addEventListener("touchstart", function (event) {
+        if (event.touches.length !== 1 || event.target.closest("a, button")) { touchStart = null; return; }
+        touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+      }, { passive: true });
+      document.addEventListener("touchend", function (event) {
+        if (!touchStart) return;
+        const dx = event.changedTouches[0].clientX - touchStart.x;
+        const dy = event.changedTouches[0].clientY - touchStart.y;
+        touchStart = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+      document.addEventListener("touchcancel", function () { touchStart = null; }, { passive: true });
+      window.addEventListener("hashchange", function () { show(indexFromHash(), false); });
+      window.addEventListener("resize", fitSlide);
+      show(indexFromHash(), false);
+      if (document.fonts) document.fonts.ready.then(fitSlide);
+    })();
+  </script>
+</body>
+</html>
