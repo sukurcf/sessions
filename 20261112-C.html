@@ -195,6 +195,18 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
       text-decoration: none;
     }
     .agenda a span:last-child { color: var(--blue); }
+    .agenda-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75em; }
+    .topic-cluster { min-width: 0; padding: .7em 0; border-top: 2px solid var(--blue); }
+    .topic-cluster:nth-child(2) { border-color: var(--purple); }
+    .topic-cluster:nth-child(3) { border-color: var(--yellow); }
+    .topic-cluster:nth-child(4) { border-color: var(--green); }
+    .cluster-name { margin-bottom: .35em; color: var(--blue); font: 600 .68em/1.2 var(--mono); letter-spacing: .04em; }
+    .topic-cluster:nth-child(2) .cluster-name { color: var(--purple); }
+    .topic-cluster:nth-child(3) .cluster-name { color: var(--yellow); }
+    .topic-cluster:nth-child(4) .cluster-name { color: var(--green); }
+    .topic-links { display: grid; }
+    .topic-links a { padding: .3em 0; border-bottom: 1px solid var(--border); color: var(--fg); font-size: .82em; text-decoration: none; }
+    .topic-links a:last-child { border-bottom: 0; }
     .split, .trio {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -319,6 +331,168 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
     }
     .architecture p { margin-top: .45em; color: var(--muted); }
     .arrow { color: var(--blue); font-size: 1.4em; }
+    .infographic {
+      display: grid;
+      gap: .75em;
+      min-width: 0;
+      padding: .8em 0;
+      border-block: 1px solid var(--border);
+    }
+    .info-head, .info-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1em;
+      color: var(--muted);
+      font-size: .78em;
+    }
+    .info-head strong { color: var(--fg); }
+    .route {
+      display: grid;
+      grid-template-columns: repeat(var(--steps, 4), minmax(0, 1fr));
+      align-items: stretch;
+    }
+    .route-step {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: .35em;
+      min-width: 0;
+      padding: .75em .9em .7em 1em;
+      border-top: 2px solid var(--blue);
+      background: linear-gradient(180deg, var(--blue-bg), transparent 82%);
+    }
+    .route-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      top: -.35em;
+      right: -.35em;
+      width: .65em;
+      height: .65em;
+      border: 2px solid var(--blue);
+      border-radius: 50%;
+      background: var(--canvas);
+    }
+    .route-step .step-label {
+      color: var(--blue);
+      font: 600 .68em/1.2 var(--mono);
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    .route-step strong { font-size: .96em; }
+    .route-step p { color: var(--muted); font-size: .78em; line-height: 1.38; }
+    .route-step.done { border-color: var(--green); background: linear-gradient(180deg, var(--green-bg), transparent 82%); }
+    .route-step.done .step-label { color: var(--green); }
+    .route-step.done:not(:last-child)::after { border-color: var(--green); }
+    .route-step.active { border-color: var(--purple); background: linear-gradient(180deg, color-mix(in srgb, var(--purple) 14%, transparent), transparent 82%); }
+    .route-step.active .step-label { color: var(--purple); }
+    .route-step.active:not(:last-child)::after { border-color: var(--purple); }
+    .lanes { display: grid; gap: .7em; }
+    .lane {
+      display: grid;
+      grid-template-columns: minmax(7em, .7fr) repeat(3, minmax(0, 1fr));
+      align-items: center;
+      gap: .5em;
+      padding: .45em 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .lane:last-child { border-bottom: 0; }
+    .lane-name { color: var(--blue); font-weight: 680; }
+    .lane-name.review { color: var(--purple); }
+    .lane-name.human { color: var(--green); }
+    .lane-step { min-width: 0; padding: .55em .7em; border-left: 2px solid var(--border); }
+    .lane-step strong { display: block; font-size: .86em; }
+    .lane-step span { display: block; margin-top: .18em; color: var(--muted); font-size: .73em; }
+    .lane-step.blue { border-color: var(--blue); }
+    .lane-step.purple { border-color: var(--purple); }
+    .lane-step.green { border-color: var(--green); }
+    .decision-map { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.45fr); gap: 1.1em; align-items: center; }
+    .decision-origin { display: grid; place-items: center; min-height: 6em; padding: .8em; border: 1px solid var(--blue); border-radius: 50%; color: var(--blue); background: var(--blue-bg); text-align: center; font-weight: 680; }
+    .decision-branches { display: grid; gap: .45em; }
+    .decision-branch { display: grid; grid-template-columns: 1fr 1.2em minmax(0, 1.6fr); align-items: center; gap: .6em; padding: .55em 0; border-bottom: 1px solid var(--border); }
+    .decision-branch:last-child { border-bottom: 0; }
+    .decision-branch > span:nth-child(2) { color: var(--blue); text-align: center; }
+    .decision-branch p { color: var(--muted); font-size: .8em; }
+    .prompt-recipe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6em; counter-reset: recipe; }
+    .recipe-part { min-width: 0; padding: .65em .8em; border-top: 3px solid var(--blue); background: var(--panel); counter-increment: recipe; }
+    .recipe-part::before { content: "0" counter(recipe); display: block; margin-bottom: .35em; color: var(--blue); font: 600 .68em/1 var(--mono); }
+    .recipe-part:nth-child(2) { border-color: var(--purple); }
+    .recipe-part:nth-child(2)::before { color: var(--purple); }
+    .recipe-part:nth-child(3) { border-color: var(--yellow); }
+    .recipe-part:nth-child(3)::before { color: var(--yellow); }
+    .recipe-part:nth-child(4) { border-color: var(--green); }
+    .recipe-part:nth-child(4)::before { color: var(--green); }
+    .recipe-part strong { display: block; }
+    .recipe-part p { margin-top: .25em; color: var(--muted); font-size: .76em; }
+    .tool-boundary { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .65em; }
+    .boundary-node { min-width: 0; padding: .7em; border: 1px solid var(--border); background: var(--panel); }
+    .boundary-node strong { display: block; }
+    .boundary-node p { margin-top: .2em; color: var(--muted); font-size: .77em; }
+    .boundary-node.trusted { border-color: var(--blue); background: var(--blue-bg); }
+    .boundary-node.external { border-style: dashed; }
+    .boundary-arrow { color: var(--blue); font-weight: 700; }
+    .agent-anatomy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 1.2em; align-items: center; }
+    .agent-file {
+      padding: .8em 1em;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--inset);
+      font: .78em/1.55 var(--mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .agent-file .yaml { color: var(--yellow); }
+    .agent-file .field { color: var(--blue); }
+    .agent-file .body { color: var(--muted); }
+    .agent-parts { display: grid; }
+    .agent-part { display: grid; grid-template-columns: minmax(6em, .7fr) minmax(0, 1.4fr); gap: .65em; padding: .55em 0; border-bottom: 1px solid var(--border); }
+    .agent-part strong { color: var(--blue); }
+    .agent-part span { color: var(--muted); font-size: .82em; }
+    .sdk-stack { display: grid; grid-template-columns: minmax(0, 1fr) 1.2em minmax(0, 1fr) 1.2em minmax(0, 1fr); align-items: stretch; gap: .55em; }
+    .sdk-layer { display: grid; align-content: center; gap: .45em; min-width: 0; padding: .85em 1em; border-bottom: 2px solid var(--border); background: var(--panel); }
+    .sdk-layer.app { border-color: var(--green); }
+    .sdk-layer.api { border-color: var(--blue); }
+    .sdk-layer.runtime { border-color: var(--purple); }
+    .sdk-layer p { color: var(--muted); font-size: .78em; }
+    .sdk-layer small { color: var(--muted); font: .7em var(--mono); }
+    .sdk-link { display: grid; align-content: center; color: var(--blue); text-align: center; font-size: 1.2em; }
+    .source-mark { display: flex; flex-wrap: wrap; gap: .45em; }
+    .source-mark .tag { font-size: .68em; }
+    @media (max-aspect-ratio: 6/5) {
+      .lane { grid-template-columns: minmax(5em, .65fr) repeat(3, minmax(0, 1fr)); gap: .25em; }
+      .lane-step { padding: .42em; }
+      .decision-map { grid-template-columns: minmax(0, .7fr) minmax(0, 1.4fr); }
+      .tool-boundary { gap: .3em; }
+      .boundary-node { padding: .5em; }
+      .sdk-stack { gap: .25em; }
+      .sdk-layer { padding: .65em; }
+    }
+    @media (max-width: 520px) {
+      .route { grid-template-columns: 1fr; gap: .35em; }
+      .route-step { grid-template-columns: minmax(4.5em, .55fr) minmax(0, 1fr); align-items: baseline; gap: .15em .55em; padding: .43em .65em; }
+      .route-step .step-label { grid-column: 1; grid-row: 1; }
+      .route-step strong { grid-column: 2; grid-row: 1; }
+      .route-step p { grid-column: 2; }
+      .route-step:not(:last-child)::after { top: auto; right: auto; bottom: -.37em; left: .72em; }
+      .lane { grid-template-columns: 4.3em repeat(3, minmax(0, 1fr)); gap: .2em; font-size: .88em; }
+      .lane-step { padding: .38em; }
+      .lane-step span { font-size: .68em; }
+      .decision-map { grid-template-columns: 1fr; gap: .4em; }
+      .decision-origin { min-height: 0; border: 0; border-bottom: 1px solid var(--blue); border-radius: 0; background: transparent; }
+      .decision-branch { grid-template-columns: minmax(0, 1fr) 1em minmax(0, 1.5fr); gap: .35em; }
+      .prompt-recipe { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tool-boundary { grid-template-columns: 1fr; gap: .28em; }
+      .boundary-arrow { transform: rotate(90deg); }
+      .agent-anatomy { grid-template-columns: 1fr; gap: .55em; }
+      .agent-file { padding: .55em; }
+      .sdk-stack { grid-template-columns: 1fr; gap: .3em; }
+      .sdk-link { transform: rotate(90deg); }
+      .sdk-layer { grid-template-columns: minmax(0, .75fr) minmax(0, 1.4fr); gap: .2em .5em; padding: .55em .7em; }
+      .sdk-layer > * { margin: 0; }
+      .sdk-layer p, .sdk-layer small { grid-column: 2; }
+      .sdk-layer small { display: block; }
+    }
     .sources {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -410,6 +584,7 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
     @media (max-width: 520px) {
       .slide { padding-top: 6px; padding-bottom: 6px; }
       .agenda a { padding: .55em 0; }
+      .agenda-map { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45em .8em; }
       .panel > * + * { margin-top: .5em; }
       .list li + li { margin-top: .35em; }
       .flow li { padding: .7em; }
@@ -483,13 +658,14 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
               <span class="tag success">Decide</span>
             </div>
           </div>
-          <div class="window" aria-label="Example agent workflow">
-            <div class="window-head"><span>Example workflow</span><span class="green">Ready for review</span></div>
-            <div class="window-body run-list">
-              <div class="run-item"><span class="run-icon">○</span><div><strong>Issue</strong><p>Describe the change and its limits.</p></div></div>
-              <div class="run-item"><span class="run-icon">⌘</span><div><strong>Coding agent</strong><p>Make changes and prepare a pull request.</p></div></div>
-              <div class="run-item"><span class="run-icon">✓</span><div><strong>Review</strong><p>Check the result and decide what to merge.</p></div></div>
+          <div class="infographic" aria-label="From issue to pull request">
+            <div class="info-head"><strong>ONE CHANGE · THREE ROLES</strong><span>human stays in control</span></div>
+            <div class="route" style="--steps:3">
+              <div class="route-step done"><span class="step-label">01 / define</span><strong>Issue</strong><p>Goal · limits · tests</p></div>
+              <div class="route-step active"><span class="step-label">02 / build</span><strong>Copilot</strong><p>Research · code · checks</p></div>
+              <div class="route-step"><span class="step-label">03 / decide</span><strong>Pull request</strong><p>Human review · merge</p></div>
             </div>
+            <div class="info-foot"><span>Task → working change</span><span class="green">person approves</span></div>
           </div>
         </div>
       </div>
@@ -499,16 +675,12 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
       <div class="slide-content">
         <h2>Agenda</h2>
         <p class="lead">Select a topic, or use the arrow keys to move through the deck.</p>
-        <ul class="agenda">
-          <li><a href="#coding-agent"><span>Coding agent</span><span>↗</span></a></li>
-          <li><a href="#review-agent"><span>Code review agent</span><span>↗</span></a></li>
-          <li><a href="#orchestration"><span>Orchestration patterns</span><span>↗</span></a></li>
-          <li><a href="#reusable-prompts"><span>Reusable prompts</span><span>↗</span></a></li>
-          <li><a href="#subagents"><span>Sub-agents and handoffs</span><span>↗</span></a></li>
-          <li><a href="#mcp"><span>MCP integrations</span><span>↗</span></a></li>
-          <li><a href="#custom-agents"><span>Custom agents</span><span>↗</span></a></li>
-          <li><a href="#sdk"><span>Copilot SDK</span><span>↗</span></a></li>
-        </ul>
+        <div class="agenda-map">
+          <div class="topic-cluster"><p class="cluster-name">BUILD & REVIEW</p><div class="topic-links"><a href="#coding-agent">Coding agent ↗</a><a href="#review-agent">Code review agent ↗</a></div></div>
+          <div class="topic-cluster"><p class="cluster-name">ORCHESTRATE</p><div class="topic-links"><a href="#orchestration">Work patterns ↗</a><a href="#subagents">Sub-agents ↗</a><a href="#handoffs">Handoffs ↗</a></div></div>
+          <div class="topic-cluster"><p class="cluster-name">REUSE</p><div class="topic-links"><a href="#reusable-prompts">Prompts & skills ↗</a><a href="#custom-agents">Custom agents ↗</a></div></div>
+          <div class="topic-cluster"><p class="cluster-name">EXTEND</p><div class="topic-links"><a href="#mcp">MCP integrations ↗</a><a href="#sdk">Copilot SDK ↗</a></div></div>
+        </div>
       </div>
     </section>
 
@@ -529,25 +701,16 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
       <div class="slide-content">
         <h2>Coding agent</h2>
         <p class="lead">Copilot works on a task in the background and proposes a pull request.</p>
-        <div class="split">
-          <div class="panel">
-            <h3>Use it for</h3>
-            <ul class="list">
-              <li>Repository changes with a clear scope.</li>
-              <li>Bug fixes, tests, docs, or small features.</li>
-              <li>Tasks you can delegate while you work.</li>
-            </ul>
-          </div>
-          <div class="panel">
-            <h3>What it does</h3>
-            <ul class="list">
-              <li>Reads the issue and repository context.</li>
-              <li>Changes files and can run checks.</li>
-              <li>Opens a pull request for your review.</li>
-            </ul>
+        <div class="infographic" aria-label="Coding agent workflow">
+          <div class="info-head"><strong>BACKGROUND WORKFLOW</strong><span>cloud agent on GitHub.com</span></div>
+          <div class="route">
+            <div class="route-step done"><span class="step-label">Input</span><strong>Issue</strong><p>Clear goal and constraints.</p></div>
+            <div class="route-step active"><span class="step-label">Context</span><strong>Repository</strong><p>Instructions and relevant code.</p></div>
+            <div class="route-step active"><span class="step-label">Work</span><strong>Agent session</strong><p>Research, edit, and run checks.</p></div>
+            <div class="route-step"><span class="step-label">Output</span><strong>Pull request</strong><p>Diff and checks for review.</p></div>
           </div>
         </div>
-        <p class="callout good">You own the requirements, review, and merge decision.</p>
+        <p class="callout good">Best for scoped work that can be described and checked. You own review and merge.</p>
       </div>
     </section>
 
@@ -568,15 +731,16 @@ FORM: A full-screen learning deck that extends the repository's existing GitHub-
       <div class="slide-content">
         <h2>Task brief</h2>
         <p class="lead">A small, testable issue gives the agent a better starting point.</p>
+        <div class="prompt-recipe" aria-label="Four parts of a good task">
+          <div class="recipe-part"><strong>Goal</strong><p>The outcome you need.</p></div>
+          <div class="recipe-part"><strong>Scope</strong><p>Files and behavior.</p></div>
+          <div class="recipe-part"><strong>Proof</strong><p>Tests and criteria.</p></div>
+          <div class="recipe-part"><strong>Limits</strong><p>What to leave alone.</p></div>
+        </div>
         <div class="split wide-right">
           <div class="panel">
-            <h3>Include</h3>
-            <ul class="list">
-              <li>The result you need.</li>
-              <li>Files or behavior in scope.</li>
-              <li>Acceptance criteria and checks.</li>
-              <li>Changes the agent must avoid.</li>
-            </ul>
+            <h3>Why it helps</h3>
+            <p>A shared definition of done makes the pull request easier to check.</p>
           </div>
           <div class="code-block">
             <div class="code-title">Example issue</div>
@@ -596,10 +760,13 @@ Do not change the database schema.</code></pre>
       <div class="slide-content">
         <h2>Code review agent</h2>
         <p class="lead">Copilot examines changes and reports possible problems or suggestions.</p>
-        <div class="trio">
-          <div class="panel"><h3>Where</h3><p>Review pull requests on GitHub or changes in supported IDEs.</p></div>
-          <div class="panel"><h3>How</h3><p>Request Copilot as a reviewer, or configure automatic review.</p></div>
-          <div class="panel"><h3>Why</h3><p>Get another view of bugs, edge cases, and maintainability.</p></div>
+        <p class="small">Request a review on GitHub or a supported IDE, or configure automatic review.</p>
+        <div class="infographic" aria-label="Code review workflow from pull request to verified findings">
+          <div class="route" style="--steps:3">
+            <div class="route-step done"><span class="step-label">Change</span><strong>Pull request</strong><p>Diff and tests are ready.</p></div>
+            <div class="route-step active"><span class="step-label">Copilot</span><strong>Review findings</strong><p>Possible bugs and edge cases.</p></div>
+            <div class="route-step"><span class="step-label">Person</span><strong>Verify</strong><p>Check suggestions and maintainability.</p></div>
+          </div>
         </div>
         <p class="callout caution">Copilot can miss defects or make incorrect suggestions. Verify each finding.</p>
       </div>
@@ -609,12 +776,11 @@ Do not change the database schema.</code></pre>
       <div class="slide-content">
         <h2>Pull request review</h2>
         <p class="lead">Use the review as input, not as the final decision.</p>
-        <ol class="flow">
-          <li><h3>Request</h3><p>In the pull request, select <strong>Copilot</strong> under Reviewers.</p></li>
-          <li><h3>Read</h3><p>Check the comments and their severity.</p></li>
-          <li><h3>Verify</h3><p>Inspect the code and test each relevant claim.</p></li>
-          <li><h3>Act</h3><p>Apply, fix, or dismiss a suggestion. Re-request review when needed.</p></li>
-        </ol>
+        <div class="infographic" aria-label="Pull request review stages">
+          <div class="lane"><span class="lane-name">CHANGE</span><span class="lane-step blue"><strong>Pull request</strong><span>Code and tests</span></span><span class="lane-step blue"><strong>Copilot review</strong><span>Findings on the diff</span></span><span class="lane-step green"><strong>Team decision</strong><span>Fix, accept, or dismiss</span></span></div>
+          <div class="lane"><span class="lane-name review">REVIEW</span><span class="lane-step"><strong>Request</strong><span>Manual or automatic</span></span><span class="lane-step purple"><strong>Inspect</strong><span>Verify each finding</span></span><span class="lane-step"><strong>Re-review</strong><span>When needed</span></span></div>
+        </div>
+        <p class="callout caution">A review is not proof of correctness. Verify the code and required checks.</p>
       </div>
     </section>
 
@@ -635,10 +801,10 @@ Do not change the database schema.</code></pre>
       <div class="slide-content">
         <h2>Orchestration patterns</h2>
         <p class="lead">A coordinator directs work, collects results, and checks the outcome.</p>
-        <div class="compare">
-          <div><h3>Sequence</h3><p>Complete one step before the next. Use it when work has dependencies.</p></div>
-          <div><h3>Parallel</h3><p>Run independent tasks at the same time. Combine their results.</p></div>
-          <div><h3>Review loop</h3><p>Build, check, and correct. Set a clear stop condition.</p></div>
+        <div class="infographic lanes" aria-label="Three orchestration patterns">
+          <div class="lane"><span class="lane-name">SEQUENCE</span><span class="lane-step blue"><strong>Plan</strong><span>First</span></span><span class="lane-step blue"><strong>Build</strong><span>After the plan</span></span><span class="lane-step green"><strong>Check</strong><span>Then finish</span></span></div>
+          <div class="lane"><span class="lane-name">PARALLEL</span><span class="lane-step blue"><strong>Research</strong><span>Independent task</span></span><span class="lane-step purple"><strong>Test plan</strong><span>Independent task</span></span><span class="lane-step green"><strong>Combine</strong><span>Coordinator checks</span></span></div>
+          <div class="lane"><span class="lane-name">REVIEW LOOP</span><span class="lane-step blue"><strong>Implement</strong><span>Make the change</span></span><span class="lane-step purple"><strong>Review</strong><span>Find a defect</span></span><span class="lane-step green"><strong>Fix</strong><span>Stop when verified</span></span></div>
         </div>
         <p class="callout">Use one agent for a small task. Delegation adds coordination and usage cost.</p>
       </div>
@@ -648,14 +814,9 @@ Do not change the database schema.</code></pre>
       <div class="slide-content">
         <h2>Parallel work</h2>
         <p class="lead">Split only tasks that can proceed independently.</p>
-        <div class="parallel">
-          <div class="endpoint"><h3>Coordinator</h3><p>Defines scope and gives each worker the context it needs.</p></div>
-          <div class="center">
-            <div class="worker"><strong>Research</strong><span>Find relevant code.</span></div>
-            <div class="worker"><strong>Tests</strong><span>Identify test cases.</span></div>
-            <div class="worker"><strong>Review</strong><span>Inspect risks.</span></div>
-          </div>
-          <div class="endpoint"><h3>Combine</h3><p>Check the results, resolve conflicts, and report the outcome.</p></div>
+        <div class="infographic" aria-label="Parallel agent coordination">
+          <div class="lane"><span class="lane-name">COORDINATOR</span><span class="lane-step blue"><strong>Split work</strong><span>Set one goal per task</span></span><span class="lane-step blue"><strong>Send context</strong><span>Include limits and files</span></span><span class="lane-step green"><strong>Synthesize</strong><span>Check and combine results</span></span></div>
+          <div class="lane"><span class="lane-name">WORKERS</span><span class="lane-step purple"><strong>Research</strong><span>Find relevant code</span></span><span class="lane-step purple"><strong>Plan tests</strong><span>List missing cases</span></span><span class="lane-step purple"><strong>Review</strong><span>Return evidence</span></span></div>
         </div>
         <p class="small">For parallel edits, use separate files or isolated workspaces to prevent conflicts.</p>
       </div>
@@ -666,23 +827,10 @@ Do not change the database schema.</code></pre>
         <h2>Task boundaries</h2>
         <p class="lead">Give each worker enough information to complete one bounded task.</p>
         <div class="split">
-          <div class="panel">
-            <h3>Give</h3>
-            <ul class="list">
-              <li><strong>Goal:</strong> the question or change.</li>
-              <li><strong>Context:</strong> files, requirements, and decisions.</li>
-              <li><strong>Limits:</strong> permitted tools and actions.</li>
-            </ul>
-          </div>
-          <div class="panel">
-            <h3>Request</h3>
-            <ul class="list">
-              <li><strong>Result:</strong> findings, files, or a change.</li>
-              <li><strong>Evidence:</strong> file paths and checks.</li>
-              <li><strong>Stop:</strong> when the result is complete or blocked.</li>
-            </ul>
-          </div>
+          <div class="panel"><h3>Give to each worker</h3><p>Goal · context · allowed tools · limits</p></div>
+          <div class="panel"><h3>Ask it to return</h3><p>Result · evidence · files · stop condition</p></div>
         </div>
+        <div class="source-mark"><span class="tag">One owner</span><span class="tag">Bounded task</span><span class="tag success">Verified result</span></div>
       </div>
     </section>
 
@@ -690,37 +838,31 @@ Do not change the database schema.</code></pre>
       <div class="slide-content">
         <h2>Reusable prompts</h2>
         <p class="lead">Save repeatable guidance in the form that matches its purpose.</p>
-        <dl class="row-list">
-          <div><dt>Instructions</dt><dd>Repository rules that apply automatically when supported.</dd></div>
-          <div><dt>Prompt file</dt><dd>A task you run by name in a VS Code Local session.</dd></div>
-          <div><dt>Skill</dt><dd>A reusable workflow, with optional scripts and resources.</dd></div>
-          <div><dt>Custom agent</dt><dd>A specialist role with its own instructions and tools.</dd></div>
-        </dl>
-        <p class="small">Support and file locations can differ by Copilot surface and harness.</p>
+        <div class="decision-map">
+          <div class="decision-origin">What do you<br>reuse?</div>
+          <div class="decision-branches">
+            <div class="decision-branch"><strong>Team rules</strong><span>→</span><p>Instructions · apply automatically</p></div>
+            <div class="decision-branch"><strong>One task</strong><span>→</span><p>Prompt · run when you need it</p></div>
+            <div class="decision-branch"><strong>Full workflow</strong><span>→</span><p>Skill · steps, scripts, and resources</p></div>
+            <div class="decision-branch"><strong>Specialist role</strong><span>→</span><p>Agent · role, tools, and result</p></div>
+          </div>
+        </div>
+        <p class="small">Choose a format that your Copilot surface supports. File paths and behavior can vary.</p>
       </div>
     </section>
 
     <section class="slide" id="prompt-file" hidden>
       <div class="slide-content">
         <h2>Prompt files</h2>
-        <div class="split">
-          <div class="code-block">
-            <div class="code-title"><code>.github/prompts/test-plan.prompt.md</code></div>
-            <pre><code>---
-description: Make a test plan
-agent: agent
----
-Review the selected change.
-List test cases and edge cases.
-Do not change files.</code></pre>
-          </div>
-          <div class="panel">
-            <h3>Use</h3>
-            <p>In a VS Code <strong>Local</strong> session, enter <code>/test-plan</code> and add the change to inspect.</p>
-            <p>Include the goal, context, limits, and expected result.</p>
-            <p class="small">The Local harness is deprecated. Use skills for new Copilot-harness workflows.</p>
+        <div class="infographic" aria-label="Prompt file workflow">
+          <div class="info-head"><strong>MANUAL REUSE</strong><span>VS Code Local harness only</span></div>
+          <div class="route" style="--steps:3">
+            <div class="route-step done"><span class="step-label">Save</span><strong><code>.prompt.md</code></strong><p>Keep the task in a named file.</p></div>
+            <div class="route-step active"><span class="step-label">Invoke</span><strong><code>/test-plan</code></strong><p>Run it when needed.</p></div>
+            <div class="route-step"><span class="step-label">Review</span><strong>Check result</strong><p>Keep or refine the prompt.</p></div>
           </div>
         </div>
+        <p class="callout caution">Local is deprecated. For new Copilot-harness workflows, create a skill instead.</p>
       </div>
     </section>
 
@@ -728,26 +870,16 @@ Do not change files.</code></pre>
       <div class="slide-content">
         <h2>Agent skills</h2>
         <p class="lead">A skill packages a repeatable workflow for supported Copilot surfaces.</p>
-        <div class="split">
-          <div class="code-block">
-            <div class="code-title"><code>.github/skills/test-plan/SKILL.md</code></div>
-            <pre><code>---
-name: test-plan
-description: Plan tests for a change. Use when preparing tests.
----
-Read the change and related tests.
-List cases, edge cases, and gaps.
-Do not change files.</code></pre>
-          </div>
-          <div class="panel">
-            <h3>Use</h3>
-            <ul class="list">
-              <li>Describe what the skill does and when to use it.</li>
-              <li>Add scripts or examples when needed.</li>
-              <li>Invoke it by name or let Copilot select it when relevant.</li>
-            </ul>
+        <div class="infographic">
+          <div class="info-head"><strong>ONE SKILL · MANY TASKS</strong><code>.github/skills/test-plan/SKILL.md</code></div>
+          <div class="prompt-recipe">
+            <div class="recipe-part"><strong>Instructions</strong><p>Describe the job.</p></div>
+            <div class="recipe-part"><strong>Resources</strong><p>Keep examples nearby.</p></div>
+            <div class="recipe-part"><strong>Scripts</strong><p>Automate repeatable steps.</p></div>
+            <div class="recipe-part"><strong>Invocation</strong><p>Call it by name.</p></div>
           </div>
         </div>
+        <p class="lead">Use when a workflow needs more than prompt text. A skill can load when relevant on supported surfaces.</p>
       </div>
     </section>
 
@@ -755,10 +887,13 @@ Do not change files.</code></pre>
       <div class="slide-content">
         <h2>Sub-agents</h2>
         <p class="lead">A main agent delegates a focused task to a worker with its own context.</p>
-        <div class="trio">
-          <div class="panel"><h3>Delegate</h3><p>Ask a worker to research, test, or review a defined part of the task.</p></div>
-          <div class="panel"><h3>Return</h3><p>The worker reports the result to the main agent.</p></div>
-          <div class="panel"><h3>Combine</h3><p>The main agent checks the result and continues the work.</p></div>
+        <div class="infographic" aria-label="Sub-agent task and result flow">
+          <div class="route" style="--steps:4">
+            <div class="route-step done"><span class="step-label">Main agent</span><strong>Frame</strong><p>Give one bounded goal.</p></div>
+            <div class="route-step active"><span class="step-label">Worker</span><strong>Research</strong><p>Work in a separate context.</p></div>
+            <div class="route-step active"><span class="step-label">Worker</span><strong>Return</strong><p>Provide findings and evidence.</p></div>
+            <div class="route-step"><span class="step-label">Main agent</span><strong>Verify</strong><p>Use the result in the main task.</p></div>
+          </div>
         </div>
         <p class="callout">A sub-agent does not remove the need to verify its result.</p>
       </div>
@@ -795,25 +930,14 @@ Stop after the test review.</code></pre>
       <div class="slide-content">
         <h2>Handoffs</h2>
         <p class="lead">A handoff moves a completed stage to another role with context and a next prompt.</p>
-        <div class="split">
-          <div class="code-block">
-            <div class="code-title">VS Code Local agent file</div>
-            <pre><code>---
-description: Plan a change
-handoffs:
-  - label: Implement plan
-    agent: agent
-    prompt: Implement the plan.
-    send: false
----
-Plan the task. Do not edit files.</code></pre>
-          </div>
-          <div class="panel">
-            <h3>Review, then continue</h3>
-            <p>Read the plan before you select the handoff button. With <code>send: false</code>, review the next prompt before sending it.</p>
-            <p class="small">This handoff configuration is for VS Code Local, not Copilot cloud agent. Local is deprecated.</p>
+        <div class="infographic" aria-label="Plan-to-build handoff">
+          <div class="route" style="--steps:3">
+            <div class="route-step done"><span class="step-label">Planner</span><strong>Proposes a plan</strong><p>Read files, no edits.</p></div>
+            <div class="route-step active"><span class="step-label">Person</span><strong>Reviews handoff</strong><p>Inspect the next prompt.</p></div>
+            <div class="route-step"><span class="step-label">Builder</span><strong>Implements</strong><p>Runs after approval.</p></div>
           </div>
         </div>
+        <p class="callout caution">VS Code Local handoffs are deprecated with Local. Use an agent skill for new workflows.</p>
       </div>
     </section>
 
@@ -821,14 +945,17 @@ Plan the task. Do not edit files.</code></pre>
       <div class="slide-content">
         <h2>MCP integrations</h2>
         <p class="lead">Model Context Protocol (MCP) connects an agent to external tools and data.</p>
-        <div class="architecture">
-          <div><h3>Copilot</h3><p>Receives the task and selects a tool.</p></div>
-          <div class="arrow" aria-hidden="true">→</div>
-          <div><h3>MCP server</h3><p>Offers tools with defined inputs.</p></div>
-          <div class="arrow" aria-hidden="true">→</div>
-          <div><h3>Service</h3><p>Returns issues, logs, or other data.</p></div>
+        <div class="infographic" aria-label="Copilot connects to external information through an MCP server">
+          <div class="tool-boundary">
+            <div class="boundary-node"><strong>Copilot</strong><p>Chooses a tool for the task.</p></div>
+            <span class="boundary-arrow" aria-hidden="true">→</span>
+            <div class="boundary-node trusted"><strong>MCP server</strong><p>Defines tools and their inputs.</p></div>
+            <span class="boundary-arrow" aria-hidden="true">→</span>
+            <div class="boundary-node external"><strong>External service</strong><p>Returns relevant information.</p></div>
+          </div>
+          <div class="info-foot"><span>Request</span><span>Tool call</span><span>Result enters context</span></div>
         </div>
-        <p class="callout">Example: read an issue and related logs to investigate a failure.</p>
+        <p class="callout">Example: read an issue and logs to investigate a failure.</p>
       </div>
     </section>
 
@@ -838,33 +965,36 @@ Plan the task. Do not edit files.</code></pre>
         <p class="lead">Configuration is specific to the Copilot surface you use.</p>
         <div class="split">
           <div class="panel">
-            <h3>GitHub repository</h3>
-            <ul class="list">
-              <li>Open <strong>Settings → Copilot → MCP servers</strong>.</li>
-              <li>Add a server and allow only required tools.</li>
-              <li>Store keys as Agents secrets with the <code>COPILOT_MCP_</code> prefix.</li>
-            </ul>
+            <h3>GitHub.com</h3>
+            <p>Repository Settings → Copilot → MCP servers.</p>
+            <p>Allow only required tools. Store keys as Agents secrets with the <code>COPILOT_MCP_</code> prefix.</p>
           </div>
           <div class="panel">
             <h3>VS Code</h3>
-            <ul class="list">
-              <li>Add a trusted server through the MCP controls.</li>
-              <li>Sign in if required.</li>
-              <li>Check its tools before use.</li>
-            </ul>
+            <p>Add a trusted server through the MCP controls.</p>
+            <p>Sign in when required. Check tools before use.</p>
           </div>
         </div>
-        <p class="callout caution">Cloud agent can use configured MCP tools without asking for each call.</p>
+        <div class="route" style="--steps:3">
+          <div class="route-step done"><span class="step-label">Configure</span><strong>Repository</strong><p>Add server details.</p></div>
+          <div class="route-step active"><span class="step-label">Restrict</span><strong>Tool allowlist</strong><p>Select the tools it needs.</p></div>
+          <div class="route-step"><span class="step-label">Protect</span><strong>Agent secrets</strong><p>Keep credentials out of code.</p></div>
+        </div>
+        <p class="callout caution">Cloud agent can call configured MCP tools without asking before each call.</p>
       </div>
     </section>
 
     <section class="slide" id="mcp-safety" hidden>
       <div class="slide-content">
         <h2>MCP safety</h2>
-        <div class="trio">
-          <div class="panel"><h3>Trust</h3><p>Use a server you trust. Inspect the publisher and the tools it exposes.</p></div>
-          <div class="panel"><h3>Limit</h3><p>Use least-privilege credentials and allow only the required tools.</p></div>
-          <div class="panel"><h3>Verify</h3><p>Treat external content as untrusted. Check data and tool results.</p></div>
+        <div class="infographic" aria-label="MCP security boundary">
+          <div class="tool-boundary">
+            <div class="boundary-node"><strong>Trust</strong><p>Check server and publisher.</p></div>
+            <span class="boundary-arrow" aria-hidden="true">→</span>
+            <div class="boundary-node trusted"><strong>Limit</strong><p>Allow selected tools only.</p></div>
+            <span class="boundary-arrow" aria-hidden="true">→</span>
+            <div class="boundary-node external"><strong>Verify</strong><p>Treat returned content as untrusted.</p></div>
+          </div>
         </div>
         <p class="callout">For GitHub code review, MCP tools must declare <code>readOnlyHint: true</code>.</p>
       </div>
@@ -898,28 +1028,18 @@ Plan the task. Do not edit files.</code></pre>
     <section class="slide" id="agent-example" hidden>
       <div class="slide-content">
         <h2>Custom agent example</h2>
-        <div class="split">
-          <div class="code-block">
-            <div class="code-title"><code>.github/agents/reviewer.agent.md</code></div>
-            <pre><code>---
-name: Reviewer
-description: Review changes without edits
-tools: ['read', 'search']
----
-Check the supplied code and tests.
-Report actionable findings with paths.
-Do not edit files or run commands.</code></pre>
-          </div>
-          <div class="panel">
-            <h3>Why this works</h3>
-            <ul class="list">
-              <li>The role has one clear job.</li>
-              <li>The tool list is limited to reading and search.</li>
-              <li>The result includes evidence.</li>
-            </ul>
-            <p class="small">Check tool names and supported fields for the target harness.</p>
+        <div class="infographic" aria-label="Parts of a custom agent file">
+          <div class="info-head"><strong>ONE ROLE · EXPLICIT CAPABILITIES</strong><code>.github/agents/reviewer.agent.md</code></div>
+          <div class="agent-anatomy">
+            <div class="agent-file"><span class="yaml">---</span><br><span class="field">name:</span> Reviewer<br><span class="field">tools:</span> [read, search]<br><span class="yaml">---</span><br><span class="body">Review code and tests.<br>Report findings with file paths.</span></div>
+            <div class="agent-parts">
+              <div class="agent-part"><strong>Frontmatter</strong><span>Name and permitted tools.</span></div>
+              <div class="agent-part"><strong>Instructions</strong><span>Task scope and limits.</span></div>
+              <div class="agent-part"><strong>Output</strong><span>Actionable result with evidence.</span></div>
+            </div>
           </div>
         </div>
+        <p class="small">Tool names and supported fields depend on the target Copilot surface.</p>
       </div>
     </section>
 
@@ -927,15 +1047,19 @@ Do not edit files or run commands.</code></pre>
       <div class="slide-content">
         <h2>Copilot SDK</h2>
         <p class="lead">Build an application that uses the Copilot agent runtime.</p>
-        <div class="architecture">
-          <div><h3>Your app</h3><p>Provides the task and controls access.</p></div>
-          <div class="arrow" aria-hidden="true">→</div>
-          <div><h3>SDK client</h3><p>Creates sessions and receives events.</p></div>
-          <div class="arrow" aria-hidden="true">→</div>
-          <div><h3>Runtime</h3><p>Processes prompts and available tools.</p></div>
+        <div class="infographic" aria-label="Copilot SDK architecture">
+          <div class="sdk-stack">
+            <div class="sdk-layer app"><h3>Your app</h3><p>Owns the product task.</p><small>permission policy</small></div>
+            <span class="sdk-link" aria-hidden="true">↔</span>
+            <div class="sdk-layer api"><h3>Copilot SDK</h3><p>Manages sessions and events.</p><small>JSON-RPC</small></div>
+            <span class="sdk-link" aria-hidden="true">↔</span>
+            <div class="sdk-layer runtime"><h3>Copilot runtime</h3><p>Runs the agent and tools.</p><small>bundled CLI or host</small></div>
+          </div>
         </div>
-        <p class="callout">SDKs are available for TypeScript, Python, Go, .NET, Java, and Rust.</p>
-        <p class="small">Configure authentication or a supported provider key. Runtime setup varies by SDK.</p>
+        <div class="source-mark" aria-label="SDK languages">
+          <span class="tag">TypeScript</span><span class="tag">Python</span><span class="tag">Go</span><span class="tag">.NET</span><span class="tag">Java</span><span class="tag">Rust</span>
+        </div>
+        <p class="small">Plan for authentication, permissions, session lifecycle, and runtime setup.</p>
       </div>
     </section>
 
@@ -968,26 +1092,31 @@ try {
       <div class="slide-content">
         <h2>End-to-end exercise</h2>
         <p class="lead">Try the workflow with a small change that your team can verify.</p>
-        <ol class="flow">
-          <li><h3>Define</h3><p>Write an issue with a goal, limits, and test cases.</p></li>
-          <li><h3>Assign</h3><p>Give the issue to Copilot and inspect the session.</p></li>
-          <li><h3>Review</h3><p>Request Copilot review and run the required checks.</p></li>
-          <li><h3>Decide</h3><p>Check the diff, address findings, and approve or revise.</p></li>
-        </ol>
+        <div class="infographic" aria-label="Exercise workflow from issue to merge decision">
+          <div class="route">
+            <div class="route-step done"><span class="step-label">You / define</span><strong>Issue</strong><p>Goal, tests, and limits.</p></div>
+            <div class="route-step active"><span class="step-label">Copilot / build</span><strong>Session</strong><p>Research and propose changes.</p></div>
+            <div class="route-step active"><span class="step-label">Copilot / review</span><strong>Findings</strong><p>Inspect diff and checks.</p></div>
+            <div class="route-step"><span class="step-label">You / decide</span><strong>Merge or revise</strong><p>Verify, then choose.</p></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="slide" id="decision-guide" hidden>
       <div class="slide-content">
         <h2>Decision guide</h2>
-        <dl class="row-list">
-          <div><dt>Build a change</dt><dd>Use the coding agent for a bounded task.</dd></div>
-          <div><dt>Inspect a change</dt><dd>Use Copilot code review and human review.</dd></div>
-          <div><dt>Repeat a workflow</dt><dd>Use a skill or a supported prompt file.</dd></div>
-          <div><dt>Use a specialist</dt><dd>Define a custom agent or delegate to a sub-agent.</dd></div>
-          <div><dt>Connect a service</dt><dd>Use a trusted MCP server with limited tools.</dd></div>
-          <div><dt>Build an app</dt><dd>Use the Copilot SDK and define permission controls.</dd></div>
-        </dl>
+        <div class="decision-map" aria-label="Choose a Copilot tool for your need">
+          <div class="decision-origin">What do you<br>need?</div>
+          <div class="decision-branches">
+            <div class="decision-branch"><strong>Build a change</strong><span>→</span><p>Coding agent for a bounded task</p></div>
+            <div class="decision-branch"><strong>Inspect a change</strong><span>→</span><p>Copilot code review and human review</p></div>
+            <div class="decision-branch"><strong>Repeat a workflow</strong><span>→</span><p>Skill or supported prompt file</p></div>
+            <div class="decision-branch"><strong>Use a specialist</strong><span>→</span><p>Custom agent or sub-agent</p></div>
+            <div class="decision-branch"><strong>Connect a service</strong><span>→</span><p>Trusted MCP server with limited tools</p></div>
+            <div class="decision-branch"><strong>Build an app</strong><span>→</span><p>Copilot SDK and permission controls</p></div>
+          </div>
+        </div>
       </div>
     </section>
 
