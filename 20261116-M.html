@@ -5,7 +5,7 @@ OWN-WORLD: GitHub dark and light colors, system type, repository paths, diffs, a
 STORY: Developers with basic Copilot experience learn what each feature does and when to use it.
 FIRST VIEWPORT: A large title at left and a four-stage delivery diagram at right. Small controls stay at bottom right.
 FORM: Full-viewport presentation within the established GitHub visual system. One topic per slide; no scrolling.
-SCOPE: General topic information only. No agenda, exercise instructions, or application-specific scenarios.
+SCOPE: General topic information with a full-day agenda. No demo instructions or application-specific scenarios.
 Original explanations based on official product documentation, reviewed 13 November 2026.
 -->
 <html lang="en">
@@ -245,6 +245,23 @@ Original explanations based on official product documentation, reviewed 13 Novem
     .chapter-grid button { display: flex; justify-content: space-between; align-items: center; gap: .8em; text-align: left; padding: .7em; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
     .chapter-grid button:hover { border-color: var(--blue); color: var(--blue); }
     .chapter-grid button small { color: var(--muted); font-size: .75em; white-space: nowrap; }
+    .agenda-slide { display: flex; flex: 1; flex-direction: column; min-height: 0; gap: .75em; font-size: clamp(12px, min(1.05vw, 1.55dvh), 20px); }
+    .agenda-head { display: flex; align-items: end; justify-content: space-between; gap: 1em; flex: none; }
+    .agenda-head h2 { font-size: clamp(30px, min(3.2vw, 5.2dvh), 58px); margin-bottom: .12em; }
+    .agenda-head p { color: var(--muted); font-size: .78em; }
+    .agenda-hours { color: var(--fg); font: .68em/1.3 var(--mono); white-space: nowrap; align-self: center; }
+    .agenda-rows { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: minmax(0, 1fr); gap: .3em; flex: 1; min-height: 0; }
+    .agenda-row { display: grid; grid-template-columns: 7.7em minmax(0, 1fr) auto; align-items: center; gap: .8em; min-width: 0; padding: .28em .62em; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); text-align: left; }
+    button.agenda-row:hover { border-color: var(--blue); background: var(--raised); }
+    .agenda-time { color: var(--muted); font: .68em/1.25 var(--mono); white-space: nowrap; }
+    .agenda-topic { display: grid; gap: .08em; min-width: 0; }
+    .agenda-topic strong { font-size: .8em; line-height: 1.2; }
+    .agenda-topic span { color: var(--muted); font-size: .65em; line-height: 1.2; }
+    .agenda-label { color: var(--blue); border: 1px solid currentColor; border-radius: 2em; padding: .24em .65em; font-size: .6em; line-height: 1.2; white-space: nowrap; }
+    .agenda-footnote { flex: none; color: var(--muted); font-size: .58em; }
+    .agenda-row.is-break { background: var(--yellow-bg); }
+    .agenda-row.is-break .agenda-label { color: var(--yellow); }
+    .agenda-row.is-lab .agenda-label { color: var(--green); }
     .key-help { margin-top: 1em; font-size: .72em; line-height: 1.8; color: var(--muted); }
     kbd { font-family: var(--mono); font-size: .9em; padding: .12em .3em; border: 1px solid var(--line); border-radius: 3px; color: var(--fg); }
     .notes-body { display: grid; gap: .85em; }
@@ -310,6 +327,26 @@ Original explanations based on official product documentation, reviewed 13 Novem
       dialog { padding: 18px; font-size: 15px; }
       .chapter-grid { gap: .45em; }
       .chapter-grid button { flex-direction: column; align-items: flex-start; padding: .6em; gap: .2em; }
+      .agenda-slide { gap: .55em; }
+      .agenda-head h2 { font-size: clamp(28px, min(7vw, 4.5dvh), 42px); }
+      .agenda-rows { gap: .26em; }
+      .agenda-row { grid-template-columns: 6.7em minmax(0, 1fr) auto; gap: .5em; padding: .28em .48em; }
+      .agenda-topic strong { font-size: .79em; }
+      .agenda-topic span { font-size: .63em; }
+    }
+    @media (max-height: 480px) and (min-aspect-ratio: 6/5) {
+      .agenda-slide { gap: .4em; font-size: clamp(10px, min(1.25vw, 2.45dvh), 13px); }
+      .agenda-head h2 { font-size: clamp(24px, 4.2dvh, 30px); }
+      .agenda-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); gap: .22em .55em; }
+      .agenda-row { grid-template-columns: 6.7em minmax(0, 1fr) auto; gap: .45em; padding: .18em .38em; }
+      .agenda-topic strong { font-size: .77em; }
+      .agenda-topic span { font-size: .61em; }
+      .agenda-label { padding: .18em .48em; }
+    }
+    @media (max-width: 480px) and (max-aspect-ratio: 6/5) {
+      .agenda-topic span { display: none; }
+      .agenda-topic strong { font-size: .9em; }
+      .agenda-time { font-size: .74em; }
     }
     @media (max-height: 540px) and (min-aspect-ratio: 6/5) {
       :root { --body: min(1.8vw, 3.4dvh); --title: min(3.8vw, 6.9dvh); --gap: 2dvh; --bar: 30px; --foot: 36px; --pad: 2.5vw; }
@@ -378,7 +415,7 @@ Original explanations based on official product documentation, reviewed 13 Novem
   </svg>
   <header class="topbar">
     <div class="brand"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg><strong>GitHub</strong><span>/ Copilot concepts</span></div>
-    <div class="top-context" id="chapter-label">Copilot foundations</div>
+    <div class="top-context" id="chapter-label">Agenda</div>
   </header>
   <main id="deck" aria-label="GitHub Copilot concept slides"></main>
   <footer>
@@ -426,9 +463,7 @@ Original explanations based on official product documentation, reviewed 13 Novem
       legacy_code: `${BASE}/get-started/best-practices`,
       agent_skills: `${BASE}/concepts/customizations/agent-skills`,
       mcp: `${BASE}/concepts/customizations/mcp`,
-      end_to_end_tests: "https://playwright.dev/docs/intro",
       spec_driven_development: "https://github.github.com/spec-kit/",
-      governance_hooks: `${BASE}/concepts/customizations/hooks`,
       app_automations: `${BASE}/concepts/agent-capabilities/agent-powered-workflows-and-operations/about-automations`,
       agentic_workflows: "https://github.github.io/gh-aw/introduction/overview/"
     };
@@ -660,23 +695,12 @@ Original explanations based on official product documentation, reviewed 13 Novem
       return diagram(`
         ${box(25, 150, 225, 140, "Copilot", "Chooses a tool", "copilot")}
         ${box(305, 150, 210, 140, "MCP", "Tool protocol", "plug", "purple")}
-        ${box(575, 50, 225, 112, "Browser", "Playwright", "monitor", "green")}
+        ${box(575, 50, 225, 112, "Issues", "Issue tracker", "pr", "green")}
         ${box(575, 205, 225, 112, "Data", "Approved sources", "database", "green")}
         ${line(261, 205, 293, 205)}${line(293, 250, 261, 250)}
         <path d="M527 205H548V105H563M548 205V260H563" class="route"/>
         ${text(410, 391, "Review the server, tools, data access, and permissions", "svg-small", "middle")}
-      `, "Copilot uses the Model Context Protocol to call approved external tools such as Playwright. A connection is not unrestricted permission.");
-    }
-    function e2eArt() {
-      return diagram(`
-        ${[["Browser", "User actions", "monitor"], ["App", "UI + API", "code"], ["Data", "Saved state", "database"]].map(([label, sub, glyph], i) => {
-          const x = 25 + i * 275;
-          return `${box(x, 130, 220, 145, label, sub, glyph, i === 2 ? "green" : "blue")}
-            ${i < 2 ? line(x + 230, 202, x + 263, 202) : ""}`;
-        }).join("")}
-        <path d="M685 289V340H135V289" fill="none" stroke="var(--green)" stroke-width="2.5" marker-end="url(#arrow-muted)"/>
-        ${text(410, 401, "Assert the outcome that the user can observe", "svg-heading", "middle")}
-      `, "An end-to-end test drives the browser through the application and its data services, then checks the result visible to the user.");
+      `, "Copilot uses the Model Context Protocol to call approved tools and data sources. A connection is not unrestricted permission.");
     }
     function specArt() {
       return diagram(`
@@ -692,17 +716,6 @@ Original explanations based on official product documentation, reviewed 13 Novem
         ${line(645, 213, 645, 263)}
         ${text(410, 445, "Changed requirement? Update the spec first.", "blue-ink", "middle")}
       `, "A specification defines users, behavior, rules, and acceptance criteria before the plan, code, and tests.", 470);
-    }
-    function hooksArt() {
-      return diagram(`
-        <path d="M100 130H720" class="wire"/>
-        ${[[110, "sessionStart", "Validate state"], [410, "preToolUse", "Check tool call"], [710, "postToolUse", "Record result"]].map(([x, name, action]) => `
-          ${dot(x, 130)}${text(x, 87, name, "svg-code blue-ink", "middle")}
-          ${line(x, 151, x, 231)}${svgIcon("terminal", x - 27, 249, 54, "purple")}
-          ${text(x, 348, action, "svg-heading", "middle")}
-        `).join("")}
-        ${text(410, 415, ".github/hooks/*.json \u2192 reviewed command or script", "svg-code", "middle")}
-      `, "Copilot CLI hooks can validate session state, check a tool call before execution, and record its result. Other clients can support different events.", 450);
     }
     function automationArt() {
       return diagram(`
@@ -748,25 +761,15 @@ Original explanations based on official product documentation, reviewed 13 Novem
             ${text(x, 269, a, "svg-heading", "middle")}${text(x, 308, b, "svg-small", "middle")}`;
         }).join("")}
         <path d="M82 100V66H734V100" fill="none" stroke="var(--purple)" stroke-width="2"/>
-        ${text(410, 42, "Hooks and automations support the process", "purple-ink", "middle")}
+        ${text(410, 42, "Repeatable checks and automations support the process", "purple-ink", "middle")}
         ${text(410, 404, "Delegate execution. Keep human accountability.", "svg-heading", "middle")}
-      `, "Intent, context, build, evidence, and human decisions form one workflow. Hooks and automations support the process.", 450);
+      `, "Intent, context, build, evidence, and human decisions form one workflow. Repeatable checks and automations support the process.", 450);
     }
 
     const slides = [];
     function add(chapter, heading, module, html, notes, ask, watch, sourceLabel = "") {
       slides.push({ chapter, heading, module, html, notes, ask, watch, sourceLabel });
     }
-    add("Copilot foundations", "GitHub Copilot", "", `<div class="hero">
-      <div class="hero-copy"><h1>GitHub<br>Copilot</h1><p class="hero-sub">Features and concepts</p>
-      <p class="lead">AI assistance for understanding,<br>building, testing, and reviewing code.</p>
-      <p class="hero-meta">What each feature does.<br>Where it helps. How to use it.</p></div>
-      <figure class="figure">${loopArt()}</figure></div>
-      ${takeaway("Copilot can assist with the work. People remain responsible for the result.")}`,
-      "Copilot uses language models, supplied context, and available tools to help with development tasks. Code suggestions, chat, agent sessions, and code review provide different levels of assistance.",
-      "Which tasks need suggestions, and which need an agent that can use tools?",
-      "Feature access and behavior depend on the client, plan, organization policy, and rollout. Generated output still needs verification.");
-
     add("Copilot foundations", "Copilot surfaces", "copilot_app", topic("Copilot surfaces", "The same assistant is available in different development environments.",
       [["Use", "Choose the editor, terminal, app, or GitHub to match the task."], ["How", "Give Copilot the relevant code, issue, files, and tool access."], ["Benefit", "Work close to the context and controls that you need."]],
       surfacesArt(), "A cloud agent runs remotely; IDE, CLI, and app sessions can use local tools."),
@@ -1029,13 +1032,6 @@ Use references/style.md.</pre>
       "What is the smallest tool and data access this task requires?",
       "Server trust, credentials, network access, and organization policy still matter. Treat returned content as data, not authority to expand the task.");
 
-    add("Browser tests and specifications", "End-to-end tests", "end_to_end_tests", topic("End-to-end tests", "Automated tests check a complete user flow through the running system.",
-      [["Use", "Protect critical journeys and catch integration failures."], ["How", "Use tools such as Playwright to perform actions and assert outcomes."], ["Benefit", "Check that UI, application logic, and data services work together."]],
-      e2eArt(), "MCP can give an agent browser access. A repeatable test still needs clear assertions."),
-      "Copilot can help draft and run browser tests. Stable locators, isolated test data, and observable assertions make tests more useful. BDD describes expected behavior with Given, When, and Then.",
-      "What can a complete user-flow test prove that a unit test cannot?",
-      "End-to-end tests need a working environment and can be slower or less stable than unit tests. Use them for important journeys, not every small condition.");
-
     add("Browser tests and specifications", "Spec-driven development", "spec_driven_development", topic("Spec-driven development", "Make requirements and acceptance criteria the starting point for implementation.",
       [["Use", "Complex features, cross-cutting changes, and requirements that need agreement."], ["How", "Define user needs and outcomes before the technical plan and task list."], ["Benefit", "Trace implementation and tests back to an agreed requirement."]],
       specArt(), "The specification states what and why. The plan explains how."),
@@ -1059,14 +1055,7 @@ Use references/style.md.</pre>
       "Which artifact records the decision, and which artifact proves its implementation?",
       "Process commands run in the configured coding agent, not as ordinary shell commands. People still approve requirements and technical decisions.");
 
-    add("Hooks and automations", "Hooks", "governance_hooks", topic("Hooks", "Commands or scripts that run at defined points in an agent's lifecycle.",
-      [["Use", "Validate state, check tool calls, or keep approved audit records."], ["How", "Map supported events to commands in <code>.github/hooks/*.json</code>."], ["Benefit", "Run a repeatable check instead of relying only on model instructions."]],
-      hooksArt(), "These are Copilot CLI event names. Supported events and formats differ by client."),
-      "Hooks receive event context and run code in the agent's environment. A pre-tool hook can check a request before the tool runs; a post-tool hook can record the result. The event contract defines the permitted response.",
-      "Which check needs to run at an exact point rather than remain a written guideline?",
-      "Review scripts, escape untrusted input, set time limits, and avoid logging secrets. A hook's failure behavior must be explicit.");
-
-    add("Hooks and automations", "Automation choices", "agentic_workflows", full("Automation choices", "Automations repeat agent work; choose how the task is configured and maintained.",
+    add("Automations and agentic workflows", "Automation choices", "agentic_workflows", full("Automation choices", "Automations repeat agent work; choose how the task is configured and maintained.",
       `<div class="compare"><article><h3>${icon("person")}App-managed task</h3><dl>
         <dt>Store</dt><dd>App or service settings, outside Git</dd>
         <dt>Runtime</dt><dd>App-local environment or cloud agent</dd>
@@ -1079,38 +1068,99 @@ Use references/style.md.</pre>
         <dt>Owner</dt><dd>Repository maintainers review the workflow in Git</dd>
         <dt>Best fit</dt><dd>Team processes that need versioned configuration</dd>
       </dl><p class="choose">Useful for issue triage, failure analysis, and maintenance.</p></article></div>`,
-      "A hook responds inside a session. An automation starts work from a separate trigger."),
+      "An automation starts work from a separate trigger."),
       "App-local tasks depend on the local environment. Cloud automations run remotely and can have personal or shared ownership. Agentic workflows are maintained as repository files and executed through GitHub Actions.",
       "Should this task's configuration be managed in settings or reviewed in Git?",
       "Trigger support, ownership, access, and policies vary by automation type. Select the runtime and permissions deliberately.");
 
-    add("Hooks and automations", "App automations", "app_automations", topic("App automations", "Saved agent tasks that run on demand, on a schedule, or from supported events.",
+    add("Automations and agentic workflows", "App automations", "app_automations", topic("App automations", "Saved agent tasks that run on demand, on a schedule, or from supported events.",
       [["Use", "Repeat reports, repository checks, issue triage, and maintenance."], ["How", "Configure the prompt, trigger, runtime, tools, and optional agent or model."], ["Benefit", "Repeat useful work without writing the same request each time."]],
       automationArt(), "Local runs need a running environment. Cloud runs can continue when your computer is off."),
       "An automation combines a saved goal with triggers and a controlled toolset. Start with a clear expected result. Cloud automation settings are stored outside Git and can be personal or shared.",
       "What should happen when a run finds no work or encounters an error?",
       "Cloud automations require an eligible private or internal repository, write access, and enabled policies. Keep secrets out of prompts and prevent duplicate or excessive outputs.");
 
-    add("Hooks and automations", "Agentic workflows", "agentic_workflows", topic("Agentic workflows", "AI-powered repository automation defined in Markdown and run in GitHub Actions.",
+    add("Automations and agentic workflows", "Agentic workflows", "agentic_workflows", topic("Agentic workflows", "AI-powered repository automation defined in Markdown and run in GitHub Actions.",
       [["Use", "Maintain team-owned triage, analysis, reporting, and recurring code tasks."], ["How", "Write YAML settings and Markdown instructions; compile with <code>gh aw compile</code>."], ["Benefit", "Version and review the task, permissions, and outputs alongside the code."]],
       workflowArt(), "The Markdown source describes the task. The generated .lock.yml runs it in Actions."),
       "YAML frontmatter configures triggers, tools, permissions, and output controls. The Markdown body describes the goal. Compilation creates the Actions workflow; maintainers review both files.",
       "Which parts should be fixed rules, and which need the agent to interpret context?",
       "Compilation does not prove that the goal or permissions are correct. Verify the runtime, credentials, network rules, and allowed outputs before enabling a workflow.");
 
-    add("Hooks and automations", "Automation safeguards", "agentic_workflows", topic("Automation safeguards", "Runtime controls limit what an unattended agent can access and change.",
+    add("Automations and agentic workflows", "Automation safeguards", "agentic_workflows", topic("Automation safeguards", "Runtime controls limit what an unattended agent can access and change.",
       [["Use", "Protect scheduled and event-driven work from excessive or unintended actions."], ["How", "Limit tools, credentials, network access, outputs, and run budgets."], ["Benefit", "Reduce the scope of mistakes and make results easier to inspect."]],
       guardrailsArt(), "Prompts describe the intended behavior. Permissions and runtime controls enforce limits."),
       "Use the smallest useful authority. In Agentic Workflows, safe outputs provide a controlled path for declared writes. A no-change result can be correct when the evidence does not justify action.",
       "What is the maximum useful output, and which action must never occur?",
       "Treat repository text, issues, logs, and external pages as untrusted input. Define failure handling, duplicate prevention, and a way to stop the automation.");
 
-    add("Connected workflow", "Connected workflow", "", full("Connected workflow", "Each capability supports a different part of a controlled development process.",
+    add("Connected workflow", "Wrap Up", "", full("Wrap Up", "Each capability supports a different part of a controlled development process.",
       `<figure class="figure">${integratedArt()}</figure>`,
       "Choose features by the need: clearer intent, reusable context, execution, evidence, or control."),
       "Specifications and plans define intent. Instructions, agents, and skills provide context and methods. Sessions perform work; tests and scans provide evidence. People make the acceptance decision.",
       "Which missing capability would most improve the quality of your current process?",
       "Not every task needs every feature. Use the simplest combination that provides enough context, control, and evidence.");
+
+    const agendaPlan = [
+      { number: 1, time: "10:00–10:15", title: "Legacy Code", description: "Understand unfamiliar code and refactor it safely.", headings: ["Legacy code", "Safe refactoring"] },
+      { number: 2, time: "10:15–10:40", title: "Feature Development", description: "Define a change, plan it, and use visual context.", headings: ["Feature development", "Planning and visual context"] },
+      { number: 3, time: "10:40–10:55", title: "Test Coverage", description: "Verify behavior, inspect coverage, and use test feedback.", headings: ["Feature verification", "Test coverage", "Test feedback"] },
+      { number: 4, time: "10:55–11:15", title: "Consistent Standards", description: "Instructions, instruction files, and reusable prompts.", headings: ["Customization options", "Custom instructions", "Instruction files", "Prompt files"] },
+      { number: 5, time: "11:15–11:35", title: "Delegate Tasks", description: "Custom agents, handoffs, and parallel sessions.", headings: ["Custom agents", "Agent configuration", "Agent handoffs", "Parallel sessions"] },
+      { number: 6, time: "11:35–11:45", title: "Code Review", description: "Review effort, findings, and connected tools.", headings: ["Code review", "Review controls", "Model Context Protocol"] },
+      { number: 7, time: "11:45–12:05", title: "Security", description: "Review code risks, scans, and secret exposure.", headings: ["Security layers", "Secret response"] },
+      { number: 8, time: "12:05–12:15", title: "Agent Skills", description: "Reusable methods, instructions, and resources.", headings: ["Agent skills", "Skill structure"] },
+      { number: 9, time: "12:15–12:25", title: "GitHub Copilot App Tour", description: "Sessions, workspaces, modes, and Copilot surfaces.", headings: ["Copilot surfaces", "App workspace", "Sessions", "Session modes"] },
+      { number: 10, time: "12:25–1:00", title: "Spec-Driven Development", description: "Define requirements, plan changes, and use Spec Kit.", headings: ["Spec-driven development", "Spec Kit"] },
+      { kind: "break", time: "1:00–2:00", title: "Lunch", description: "Break" },
+      { number: 11, time: "2:00–2:25", title: "Automations & Agentic Workflows", description: "Compare triggers, runtimes, and safety controls.", headings: ["Automation choices", "App automations", "Agentic workflows", "Automation safeguards"] },
+      { kind: "lab", number: 12, time: "2:25–3:50", title: "Hands-on Lab", description: "Apply the concepts in a guided session.", badge: "Guided" },
+      { number: 13, time: "3:50–4:00", title: "Wrap Up", description: "Connect the topics to a controlled workflow.", headings: ["Wrap Up"] }
+    ];
+    const orderedSlides = [];
+    for (const entry of agendaPlan) {
+      if (!entry.headings) continue;
+      const group = entry.headings.map(heading => {
+        const slide = slides.find(candidate => candidate.heading === heading);
+        if (!slide) throw new Error(`Agenda slide is missing: ${heading}`);
+        slide.chapter = entry.title;
+        return slide;
+      });
+      entry.slideStart = orderedSlides.length + 2;
+      orderedSlides.push(...group);
+      entry.slideEnd = orderedSlides.length + 1;
+    }
+    if (orderedSlides.length !== slides.length) throw new Error("Every topic slide must appear in the agenda.");
+    slides.splice(0, slides.length, ...orderedSlides);
+    const agendaRows = agendaPlan.map(entry => {
+      const title = `${entry.number ? `${String(entry.number).padStart(2, "0")} · ` : ""}${entry.title}`;
+      const hasSlides = Number.isInteger(entry.slideStart);
+      const slideRange = !hasSlides
+        ? ""
+        : entry.slideStart === entry.slideEnd
+        ? String(entry.slideStart).padStart(2, "0")
+        : `${String(entry.slideStart).padStart(2, "0")}–${String(entry.slideEnd).padStart(2, "0")}`;
+      const label = hasSlides ? `${entry.slideStart === entry.slideEnd ? "Slide" : "Slides"} ${slideRange}` : entry.badge || entry.description;
+      const contents = `<span class="agenda-time">${entry.time}</span><span class="agenda-topic"><strong>${escapeHTML(title)}</strong>${entry.description ? `<span>${escapeHTML(entry.description)}</span>` : ""}</span><span class="agenda-label">${escapeHTML(label)}</span>`;
+      const rowClass = `agenda-row${entry.kind === "break" ? " is-break" : ""}${entry.kind === "lab" ? " is-lab" : ""}`;
+      if (entry.slideStart && entry.kind !== "lab") {
+        return `<button type="button" class="${rowClass}" data-agenda-jump="${entry.slideStart - 1}" aria-label="Go to ${escapeHTML(entry.title)}, slides ${entry.slideStart} to ${entry.slideEnd}">${contents}</button>`;
+      }
+      return `<div class="${rowClass}" role="listitem">${contents}</div>`;
+    }).join("");
+    slides.unshift({
+      chapter: "Agenda",
+      heading: "Agenda",
+      module: "",
+      html: `<div class="agenda-slide">
+        <div class="agenda-head"><div><h2>Agenda</h2><p>A guided overview of Copilot features, useful applications, and team workflows.</p></div><div class="agenda-hours">10:00 AM–4:00 PM</div></div>
+        <div class="agenda-rows" role="list">${agendaRows}</div>
+        <p class="agenda-footnote">Slide ranges are shown at right. Lunch stays fixed at 1:00–2:00 PM.</p>
+      </div>`,
+      notes: "Use this slide to orient the audience to the day. The listed slides provide general information about each topic; demonstrate workflows separately.",
+      ask: "Which topics are most relevant to the team's current work?",
+      watch: "The hands-on lab is a facilitation block and has no demo instructions in this deck."
+    });
 
     const deck = document.getElementById("deck");
     deck.innerHTML = slides.map((slide, index) => `<section class="slide" id="slide-${index + 1}" data-index="${index}" data-module="${slide.module}" data-print="${index + 1} / ${slides.length} | ${escapeHTML(slide.heading)} | GitHub Copilot" aria-label="${index + 1} of ${slides.length}: ${escapeHTML(slide.heading)}" aria-roledescription="slide" aria-hidden="true" inert>${slide.html}</section>`).join("");
@@ -1233,6 +1283,7 @@ Use references/style.md.</pre>
     }
     previous.addEventListener("click", () => show(current - 1));
     next.addEventListener("click", () => show(current + 1));
+    document.querySelectorAll("[data-agenda-jump]").forEach(button => button.addEventListener("click", () => show(Number(button.dataset.agendaJump))));
     document.getElementById("contents-button").addEventListener("click", openContents);
     document.getElementById("notes-button").addEventListener("click", openNotes);
     document.getElementById("theme-button").addEventListener("click", toggleTheme);
