@@ -149,6 +149,27 @@ Original explanations based on official product documentation, reviewed 13 Novem
     .mode .mode-path { margin-top: auto; font-size: .78em; color: var(--blue); background: var(--blue-bg); padding: .65em; border-radius: 6px; }
     .model-line { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 1em; border-top: 1px solid var(--line); padding-top: .7em; font-size: .9em; }
     .model-line strong { color: var(--green); }
+    .cli-board { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr) minmax(0, 1.08fr); gap: calc(var(--gap) * 1.3); min-height: 0; }
+    .cli-col { min-width: 0; border-top: 2px solid var(--line); padding-top: .65em; display: flex; flex-direction: column; gap: .5em; }
+    .cli-col h3 { display: flex; align-items: center; gap: .5em; }
+    .cli-key { color: var(--muted); font-size: .76em; }
+    .cli-cycle { position: relative; list-style: none; margin: 0; padding: 0 1.5em 0 0; display: grid; gap: .55em; }
+    .cli-cycle::after { content: ""; position: absolute; top: 1.3em; bottom: 1.3em; right: .25em; width: .85em; border: 2px solid var(--blue); border-left: none; border-radius: 0 9px 9px 0; }
+    .cli-cycle::before { content: ""; position: absolute; top: calc(1.3em - 5px); right: 1.05em; border: 5px solid transparent; border-right: 7px solid var(--blue); }
+    .cli-cycle li { display: grid; gap: .12em; padding: .45em .7em; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 6px; background: var(--panel); }
+    .cli-cycle li[data-tone="purple"] { border-left-color: var(--purple); }
+    .cli-cycle li[data-tone="green"] { border-left-color: var(--green); }
+    .cli-cycle strong { font-size: .84em; }
+    .cli-cycle li[data-tone="blue"] strong { color: var(--blue); }
+    .cli-cycle li[data-tone="purple"] strong { color: var(--purple); }
+    .cli-cycle li[data-tone="green"] strong { color: var(--green); }
+    .cli-cycle span { color: var(--muted); font-size: .74em; line-height: 1.35; }
+    .cli-list > div { display: grid; grid-template-columns: 5.9em minmax(0, 1fr); align-items: baseline; gap: .6em; padding: .24em 0; border-top: 1px solid var(--line); }
+    .cli-list dt { font: .74em/1.4 var(--mono); color: var(--blue); white-space: nowrap; }
+    .cli-list dd { font-size: .76em; color: var(--muted); line-height: 1.4; }
+    .cli-list.words > div { grid-template-columns: 6.6em minmax(0, 1fr); }
+    .cli-list.words dt { font: 600 .76em/1.4 var(--sans); color: var(--fg); }
+    .cli-list.words code { font-size: .94em; }
     .path-box { background: var(--panel); border: 1px solid var(--line); padding: .8em; border-radius: var(--radius); }
     .path-box pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font: .76em/1.65 var(--mono); }
     .path-box .file { color: var(--blue); }
@@ -298,6 +319,16 @@ Original explanations based on official product documentation, reviewed 13 Novem
       .mode .mode-path { grid-column: 2; margin-top: 0; }
       .mode p { font-size: .92em; }
       .model-line { grid-template-columns: 4em 1fr; gap: .6em; }
+      .cli-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .9em 1em; }
+      .cli-col:first-child { grid-column: 1 / -1; }
+      .cli-col { gap: .4em; padding-top: .5em; }
+      .cli-cycle { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0; gap: .45em; }
+      .cli-cycle::before, .cli-cycle::after { display: none; }
+      .cli-cycle li { padding: .35em .45em; }
+      .cli-cycle span { font-size: .8em; }
+      .cli-list > div, .cli-list.words > div { grid-template-columns: 1fr; gap: 0; padding: .28em 0; }
+      .cli-list dt, .cli-list.words dt { font-size: .8em; }
+      .cli-list dd { font-size: .84em; }
       .matrix { font-size: .85em; }
       .matrix td, .matrix th { padding: .55em .4em; }
       .matrix td:last-child { width: 38%; }
@@ -337,11 +368,15 @@ Original explanations based on official product documentation, reviewed 13 Novem
     @media (max-height: 480px) and (min-aspect-ratio: 6/5) {
       .agenda-slide { gap: .4em; font-size: clamp(10px, min(1.25vw, 2.45dvh), 13px); }
       .agenda-head h2 { font-size: clamp(24px, 4.2dvh, 30px); }
-      .agenda-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); gap: .22em .55em; }
+      .agenda-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); gap: .22em .55em; }
       .agenda-row { grid-template-columns: 6.7em minmax(0, 1fr) auto; gap: .45em; padding: .18em .38em; }
       .agenda-topic strong { font-size: .77em; }
       .agenda-topic span { font-size: .61em; }
       .agenda-label { padding: .18em .48em; }
+      .cli-col { gap: .3em; padding-top: .45em; }
+      .cli-cycle { gap: .35em; }
+      .cli-cycle li { padding: .3em .6em; }
+      .cli-list > div { padding: .14em 0; }
     }
     @media (max-width: 480px) and (max-aspect-ratio: 6/5) {
       .agenda-topic span { display: none; }
@@ -451,6 +486,8 @@ Original explanations based on official product documentation, reviewed 13 Novem
     const BASE = "https://docs.github.com/en/copilot";
     const SOURCES = {
       copilot_app: `${BASE}/concepts/copilot-surfaces/github-copilot-app`,
+      copilot_cli: `${BASE}/concepts/copilot-surfaces/copilot-cli`,
+      copilot_cli_reference: `${BASE}/reference/copilot-cli-reference/cli-command-reference`,
       feature_development: `${BASE}/get-started/best-practices`,
       test_coverage: `${BASE}/get-started/best-practices`,
       consistent_standards: `${BASE}/concepts/prompting-and-context/custom-instructions`,
@@ -510,6 +547,27 @@ Original explanations based on official product documentation, reviewed 13 Novem
         ${box(605, 178, 205, 116, "CLI", "Terminal tasks", "terminal", "green")}
         ${box(225, 340, 360, 105, "Cloud agent", "Delegated work", "cloud")}
       `, "The Copilot app coordinates sessions. Use the IDE, CLI, GitHub.com, and cloud agent for their specific tasks.", 465);
+    }
+    function cliArt() {
+      const term = (y, value, cls = "") => text(48, y, value, `svg-code ${cls}`.trim());
+      return diagram(`
+        <rect x="20" y="30" width="430" height="390" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="1.6"/>
+        <path d="M20 76H450" stroke="var(--line)" stroke-width="1.6"/>
+        ${dot(48, 53, "red", 6)}${dot(72, 53, "yellow", 6)}${dot(96, 53, "green", 6)}
+        ${text(428, 61, "Terminal", "svg-tiny", "end")}
+        ${term(124, "$ copilot", "blue-ink")}
+        ${term(174, "> Fix the login test")}
+        ${term(224, "● Read src/auth.ts", "svg-small")}
+        ${term(270, "● Run npm test", "svg-small")}
+        ${term(320, "Allow? Yes · Session · No", "yellow-ink")}
+        ${term(384, "✓ Test passes", "green-ink")}
+        <path d="M450 225H482M482 85V365" class="route"/>
+        ${line(482, 85, 512, 85)}${line(482, 225, 512, 225)}${line(482, 365, 512, 365)}
+        ${box(520, 30, 280, 110, "Files", "Read and edit", "file")}
+        ${box(520, 170, 280, 110, "Shell", "Run with approval", "terminal", "yellow")}
+        ${box(520, 310, 280, 110, "GitHub", "Issues, PRs, Actions", "github", "green")}
+      `, "A terminal session: you type a prompt, the agent reads files, asks before it runs a command, and reports the result. It can work with files, the shell, and GitHub.", 450)
+        + caption("The agent reads code, asks before it runs tools, and works with GitHub.com.");
     }
     function contextArt() {
       return diagram(`
@@ -813,6 +871,39 @@ Original explanations based on official product documentation, reviewed 13 Novem
       "Which decisions must a person approve before implementation starts?",
       "Autopilot does not bypass permissions, organization policy, or required review. Other clients can use different mode names.");
 
+    add("Copilot foundations", "Copilot CLI", "copilot_cli", topic("Copilot CLI", "An AI agent in your terminal that can plan, edit files, run commands, and work with GitHub.",
+      [["Use", "Code changes, debugging, Git operations, and GitHub issues and pull requests from the terminal."], ["How", "Install the CLI, start <code>copilot</code> in a trusted project folder, and describe the task."], ["Benefit", "Stay in your terminal and approve each action before it runs."]],
+      cliArt(), "Interactive <code>copilot</code> accepts feedback. <code>copilot -p</code> runs one prompt and stops, for scripts."),
+      "The CLI runs on Linux, macOS, and Windows through PowerShell or WSL. Install it with npm, Homebrew, WinGet, or the install script, and sign in with /login. Interactive mode keeps a conversation. Programmatic mode runs one prompt and stops.",
+      "Which terminal tasks do you repeat often enough to give to an agent?",
+      "Start the CLI only in a folder that you trust. The agent can read, change, and run files in that folder. Model use and content exclusion follow your plan and policy.");
+
+    add("Copilot foundations", "CLI modes and controls", "copilot_cli_reference", full("CLI modes and controls", "Modes set how the agent works. Commands and configuration set what it can use.",
+      `<div class="cli-board">
+        <section class="cli-col"><h3>${icon("event")}Modes</h3>
+          <p class="cli-key"><kbd>Shift</kbd>+<kbd>Tab</kbd> cycles the modes</p>
+          <ol class="cli-cycle">
+            <li data-tone="blue"><strong>Standard</strong><span>Ask, then approve each tool use.</span></li>
+            <li data-tone="purple"><strong>Plan</strong><span>Clarify the task and write a plan before code.</span></li>
+            <li data-tone="green"><strong>Autopilot</strong><span>Continue until the task is complete.</span></li>
+          </ol>
+        </section>
+        <section class="cli-col"><h3>${icon("terminal")}Commands</h3>
+          <dl class="cli-list">
+            ${[["@ FILE", "Add a file to the context."], ["! COMMAND", "Run a shell command directly."], ["/plan", "Make a plan before changes."], ["/review", "Review the current changes."], ["/delegate", "Send work to the cloud agent."], ["/fleet", "Run parts of a task in parallel."], ["/model", "Select the AI model."], ["/resume", "Continue an earlier session."]].map(([name, detail]) => `<div><dt>${name}</dt><dd>${detail}</dd></div>`).join("")}
+          </dl>
+        </section>
+        <section class="cli-col"><h3>${icon("tools")}Customize and control</h3>
+          <dl class="cli-list words">
+            ${[["Instructions", "<code>AGENTS.md</code> · <code>/init</code>"], ["Agents", "<code>.github/agents/</code> · <code>/agent</code>"], ["Skills", "<code>.github/skills/</code> · <code>/skills</code>"], ["MCP, plugins", "<code>/mcp add</code> · <code>/plugin</code>"], ["Permissions", "<code>--allow-tool</code> · <code>--deny-tool</code>"], ["Sandbox", "<code>/sandbox enable</code>"]].map(([name, detail]) => `<div><dt>${name}</dt><dd>${detail}</dd></div>`).join("")}
+          </dl>
+        </section>
+      </div>`, "Deny rules always have priority. Use automatic approval only in an isolated environment.", true),
+      "Shift+Tab changes the mode. Slash commands control the session. @ adds a file, and ! runs a shell command without the model. /delegate makes a pull request with the cloud agent. /context shows token use, and /compact summarizes the conversation.",
+      "Which commands must always need your approval in this repository?",
+      "/allow-all and --allow-all let the agent use your access without prompts. Use deny rules, a sandbox, or a disposable environment for unattended runs.",
+      "CLI command reference");
+
     add("Build and test", "Feature development", "feature_development", topic("Feature development", "An agent can turn a written requirement into coordinated changes across files.",
       [["Use", "Add behavior, extend an API, or connect a UI to a service."], ["How", "Provide the goal, constraints, code context, and acceptance criteria."], ["Benefit", "Keep implementation and tests aligned with the same requirement."]],
       featureArt(), "A clear outcome is more useful than a feature name alone."),
@@ -1111,11 +1202,12 @@ Use references/style.md.</pre>
       { number: 7, time: "11:45–12:05", title: "Security", description: "Review code risks, scans, and secret exposure.", headings: ["Security layers", "Secret response"] },
       { number: 8, time: "12:05–12:15", title: "Agent Skills", description: "Reusable methods, instructions, and resources.", headings: ["Agent skills", "Skill structure"] },
       { number: 9, time: "12:15–12:25", title: "GitHub Copilot App Tour", description: "Sessions, workspaces, modes, and Copilot surfaces.", headings: ["Copilot surfaces", "App workspace", "Sessions", "Session modes"] },
-      { number: 10, time: "12:25–1:00", title: "Spec-Driven Development", description: "Define requirements, plan changes, and use Spec Kit.", headings: ["Spec-driven development", "Spec Kit"] },
+      { number: 10, time: "12:25–12:35", title: "GitHub Copilot CLI", description: "Terminal agent, modes, commands, and controls.", headings: ["Copilot CLI", "CLI modes and controls"] },
+      { number: 11, time: "12:35–1:00", title: "Spec-Driven Development", description: "Define requirements, plan changes, and use Spec Kit.", headings: ["Spec-driven development", "Spec Kit"] },
       { kind: "break", time: "1:00–2:00", title: "Lunch", description: "Break" },
-      { number: 11, time: "2:00–2:25", title: "Automations & Agentic Workflows", description: "Compare triggers, runtimes, and safety controls.", headings: ["Automation choices", "App automations", "Agentic workflows", "Automation safeguards"] },
-      { kind: "lab", number: 12, time: "2:25–3:50", title: "Hands-on Lab", description: "Apply the concepts in a guided session.", badge: "Guided" },
-      { number: 13, time: "3:50–4:00", title: "Wrap Up", description: "Connect the topics to a controlled workflow.", headings: ["Wrap Up"] }
+      { number: 12, time: "2:00–2:25", title: "Automations & Agentic Workflows", description: "Compare triggers, runtimes, and safety controls.", headings: ["Automation choices", "App automations", "Agentic workflows", "Automation safeguards"] },
+      { kind: "lab", number: 13, time: "2:25–3:50", title: "Hands-on Lab", description: "Apply the concepts in a guided session.", badge: "Guided" },
+      { number: 14, time: "3:50–4:00", title: "Wrap Up", description: "Connect the topics to a controlled workflow.", headings: ["Wrap Up"] }
     ];
     const orderedSlides = [];
     for (const entry of agendaPlan) {
