@@ -94,7 +94,11 @@ Original explanations based on official product documentation, reviewed 13 Novem
     .brand { display: flex; gap: .6em; align-items: center; white-space: nowrap; }
     .brand strong { font-size: 1.15em; }
     .brand span { color: var(--muted); }
+    .topbar-end { display: flex; align-items: center; gap: var(--gap); }
     .top-context { color: var(--muted); text-align: right; }
+    .merative-logo { display: block; width: auto; height: calc(var(--bar) - 10px); flex: none; color: #ffffff; }
+    :root[data-theme="light"] .merative-logo { color: #20201f; }
+    .slide > .merative-logo { display: none; }
     #deck { position: fixed; inset: var(--bar) 0 var(--foot); }
     .slide { display: none; height: 100%; padding: 2.5dvh var(--pad) 1.6dvh; }
     .slide.active { display: flex; flex-direction: column; gap: var(--gap); }
@@ -399,7 +403,8 @@ Original explanations based on official product documentation, reviewed 13 Novem
       html, body { height: auto; overflow: visible; background: var(--bg); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .topbar, footer, .progress, dialog, .status, .rack-controls { display: none !important; }
       #deck { position: static; }
-      .slide, .slide.active { display: flex !important; flex-direction: column; gap: 26px; width: 1600px; height: 900px; padding: 42px 48px; break-after: page; break-inside: avoid; }
+      .slide, .slide.active { position: relative; display: flex !important; flex-direction: column; gap: 26px; width: 1600px; height: 900px; padding: 42px 48px; break-after: page; break-inside: avoid; }
+      .slide > .merative-logo { display: block; position: absolute; top: 3px; right: 48px; height: 36px; }
       .slide:last-child { break-after: auto; }
       .diagram { max-height: 510px; }
       .rack-svg { max-height: 400px; }
@@ -411,6 +416,21 @@ Original explanations based on official product documentation, reviewed 13 Novem
 <body>
   <svg class="symbol-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <defs>
+      <!-- Merative vector artwork: https://www.merative.com (matches the supplied Seeklogo reference). -->
+      <linearGradient id="merative-gradient" x1="73.9899" y1="13.0841" x2="118.472" y2="-4.5242" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#9900ff"/><stop offset="1" stop-color="#fa1e32"/>
+      </linearGradient>
+      <symbol id="i-merative" viewBox="0 0 159 56" fill="currentColor">
+        <path d="M129.345 26.4457C129.392 23.0126 128.752 19.6045 127.463 16.4194C126.175 13.2343 124.263 10.3356 121.838 7.89153C119.414 5.4475 116.526 3.50688 113.342 2.18234C110.157 0.857793 106.74 0.17572 103.288 0.17572C99.8368 0.17572 96.4197 0.857793 93.2353 2.18234C90.0509 3.50688 87.1627 5.4475 84.7385 7.89153C82.3143 10.3356 80.4023 13.2343 79.1136 16.4194C77.8248 19.6045 77.1851 23.0126 77.2313 26.4457H80.7231C80.68 23.4708 81.2318 20.517 82.3465 17.756C83.4612 14.9951 85.1165 12.4821 87.2161 10.3632C89.3158 8.24426 91.8179 6.56165 94.5771 5.41317C97.3363 4.26469 100.297 3.67326 103.288 3.67326C106.279 3.67326 109.241 4.26469 112 5.41317C114.759 6.56165 117.261 8.24426 119.361 10.3632C121.46 12.4821 123.116 14.9951 124.23 17.756C125.345 20.517 125.897 23.4708 125.854 26.4457H129.345Z" fill="url(#merative-gradient)"/>
+        <path d="M20.4446 35.6165C19.2395 35.6173 18.0503 35.89 16.9665 36.4141C15.8827 36.9383 14.9326 37.7001 14.1875 38.6423C13.1614 37.36 11.7609 36.4257 10.1789 35.968C8.59682 35.5103 6.91104 35.5517 5.35363 36.0865C3.79622 36.6213 2.44379 37.6232 1.48252 38.9543C0.521261 40.2854 -0.00154939 41.8802 -0.013916 43.519V55.4965H3.37474V43.3745C3.37768 42.1995 3.83741 41.0712 4.65771 40.2258C5.47801 39.3803 6.59528 38.8833 7.77563 38.8387C8.95599 38.7941 10.1079 39.2055 10.9903 39.9866C11.8727 40.7677 12.4171 41.8581 12.5096 43.0295V55.4872H15.8701V43.0388C15.9448 41.855 16.4817 40.7471 17.3663 39.9516C18.2508 39.1561 19.4128 38.736 20.6044 38.7811C21.796 38.8261 22.9227 39.3327 23.744 40.1926C24.5653 41.0526 25.0161 42.1978 25.0003 43.3838V55.5058H28.4124V43.519C28.4062 41.421 27.564 39.411 26.0704 37.9297C24.5768 36.4483 22.5537 35.6164 20.4446 35.6165Z"/>
+        <path d="M65.6172 36.0174C63.504 36.0174 61.4774 36.8525 59.9831 38.3389C58.4889 39.8253 57.6494 41.8412 57.6494 43.9433V55.5151H61.0428V43.878C61.0428 41.3651 63.1472 39.3743 65.7906 39.2997C67.0749 39.267 68.4903 39.3603 68.4903 39.3603L68.6778 36.12C68.6778 36.12 67.642 36.0221 65.6172 36.0174Z"/>
+        <path d="M89.113 39.3742H95.7779V55.4965H99.1665V39.3742H105.789V36.1153H89.113V39.3742Z"/>
+        <path d="M113.837 36.12H110.448V55.5011H113.837V36.12Z"/>
+        <path d="M69.1045 55.4965H72.7697L78.8861 39.7659L85.0026 55.4965H88.6678C88.6678 55.4965 81.7077 38.1621 81.3187 37.2156C81.1159 36.742 80.7777 36.3381 80.346 36.0543C79.9144 35.7704 79.4083 35.619 78.8908 35.619C78.3734 35.619 77.8673 35.7704 77.4356 36.0543C77.0039 36.3381 76.6657 36.742 76.463 37.2156L69.1045 55.4965Z"/>
+        <path d="M117.872 36.12H121.533L127.654 51.8506L133.747 36.12H137.407C137.407 36.12 130.452 53.4544 130.058 54.3962C129.857 54.8715 129.519 55.2773 129.088 55.5626C128.656 55.8479 128.149 56.0001 127.63 56.0001C127.112 56.0001 126.605 55.8479 126.173 55.5626C125.741 55.2773 125.404 54.8715 125.202 54.3962L117.872 36.12Z"/>
+        <path d="M159 45.8455C159.056 43.1811 158.087 40.596 156.291 38.619C155.419 37.638 154.34 36.8604 153.131 36.3415C151.923 35.8225 150.614 35.575 149.298 35.6164C146.286 35.6164 143.831 36.5847 141.935 38.5211C140.994 39.4842 140.257 40.6256 139.769 41.8774C139.28 43.1292 139.049 44.4659 139.09 45.8082C139.047 47.1585 139.282 48.5032 139.781 49.7597C140.28 51.0161 141.032 52.1577 141.991 53.114C143.928 55.038 146.442 56 149.532 56C153.104 56 155.833 54.7225 157.72 52.1676L154.96 50.3633C153.785 52.0044 151.996 52.825 149.593 52.825C147.924 52.8783 146.285 52.3726 144.939 51.389C143.656 50.3966 142.8 48.9569 142.544 47.3608H158.869C158.949 46.8594 158.993 46.3531 159 45.8455ZM142.558 44.4142C142.762 42.8043 143.569 41.3303 144.819 40.2877C146.069 39.245 147.669 38.7106 149.298 38.7915C150.79 38.7698 152.241 39.279 153.39 40.2275C154.558 41.1817 155.285 42.5804 155.569 44.4235L142.558 44.4142Z"/>
+        <path d="M52.8734 45.8455C52.9324 43.1807 51.9629 40.5947 50.1644 38.6189C49.2927 37.6375 48.2139 36.8596 47.0051 36.3406C45.7964 35.8216 44.4873 35.5743 43.1715 35.6164C40.1593 35.6164 37.7049 36.5846 35.8083 38.521C34.8675 39.4842 34.1309 40.6256 33.6422 41.8774C33.1535 43.1292 32.9226 44.4659 32.9633 45.8082C32.9212 47.1583 33.1568 48.5028 33.6557 49.759C34.1546 51.0153 34.9062 52.157 35.8645 53.114C37.7987 55.038 40.3124 56 43.4058 56C46.9773 56 49.7082 54.7225 51.5986 52.1676L48.8474 50.3633C47.6694 52.0044 45.8821 52.825 43.4855 52.825C41.8146 52.8793 40.1739 52.3736 38.8267 51.389C37.544 50.3966 36.688 48.9569 36.4316 47.3607H52.7563C52.834 46.8594 52.8732 46.3528 52.8734 45.8455ZM36.4129 44.4142C36.6186 42.8052 37.4268 41.3325 38.6762 40.2903C39.9255 39.248 41.5241 38.7128 43.1527 38.7914C44.6454 38.7681 46.097 39.2775 47.2444 40.2274C48.413 41.1817 49.1411 42.5803 49.4285 44.4235L36.4129 44.4142Z"/>
+      </symbol>
       <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6.8" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M1 1L7 4L1 7" fill="none" stroke="var(--blue)" stroke-width="1.3"/></marker>
       <marker id="arrow-muted" markerWidth="8" markerHeight="8" refX="6.8" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M1 1L7 4L1 7" fill="none" stroke="var(--muted)" stroke-width="1.3"/></marker>
       <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.08c-3.12.68-3.78-1.33-3.78-1.33-.51-1.3-1.25-1.64-1.25-1.64-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.15 1.72 1.15 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.71-1.5-2.49-.28-5.11-1.25-5.11-5.54 0-1.22.44-2.22 1.15-3-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.54.23 2.68.11 2.96.72.78 1.15 1.78 1.15 3 0 4.3-2.62 5.25-5.12 5.53.4.35.76 1.03.76 2.08v3.09c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"/></symbol>
@@ -450,7 +470,10 @@ Original explanations based on official product documentation, reviewed 13 Novem
   </svg>
   <header class="topbar">
     <div class="brand"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg><strong>GitHub</strong><span>/ Copilot concepts</span></div>
-    <div class="top-context" id="chapter-label">Agenda</div>
+    <div class="topbar-end">
+      <div class="top-context" id="chapter-label">Agenda</div>
+      <svg class="merative-logo" viewBox="0 0 159 56" width="159" height="56" role="img" aria-label="Merative"><use href="#i-merative"/></svg>
+    </div>
   </header>
   <main id="deck" aria-label="GitHub Copilot concept slides"></main>
   <footer>
@@ -1255,7 +1278,7 @@ Use references/style.md.</pre>
     });
 
     const deck = document.getElementById("deck");
-    deck.innerHTML = slides.map((slide, index) => `<section class="slide" id="slide-${index + 1}" data-index="${index}" data-module="${slide.module}" data-print="${index + 1} / ${slides.length} | ${escapeHTML(slide.heading)} | GitHub Copilot" aria-label="${index + 1} of ${slides.length}: ${escapeHTML(slide.heading)}" aria-roledescription="slide" aria-hidden="true" inert>${slide.html}</section>`).join("");
+    deck.innerHTML = slides.map((slide, index) => `<section class="slide" id="slide-${index + 1}" data-index="${index}" data-module="${slide.module}" data-print="${index + 1} / ${slides.length} | ${escapeHTML(slide.heading)} | GitHub Copilot" aria-label="${index + 1} of ${slides.length}: ${escapeHTML(slide.heading)}" aria-roledescription="slide" aria-hidden="true" inert><svg class="merative-logo" viewBox="0 0 159 56" width="159" height="56" role="img" aria-label="Merative"><use href="#i-merative"/></svg>${slide.html}</section>`).join("");
     document.getElementById("rack-host").append(document.getElementById("rack-art").content.cloneNode(true));
     const sections = Array.from(deck.children);
     const contentsDialog = document.getElementById("contents-dialog");
