@@ -10,8 +10,8 @@
 THESIS: Teach one Copilot topic per slide through a decision, a file, and a working example.
 OWN-WORLD: Extend the recent decks' GitHub dark and light colors, system type, code panels, and small bottom-right controls.
 STORY: Choose a surface, provide context, configure a workflow, and inspect its result.
-FIRST VIEWPORT: Four mode rows occupy the left; a complete custom-agent example occupies the right. No cover slide.
-FORM: Eleven fixed presentation frames, including a ten-topic agenda. Topic-specific diagrams replace decorative imagery. All content fits without scrolling.
+FIRST VIEWPORT: A ten-topic agenda fills two columns; the Medtronic logo remains in the top-right header.
+FORM: Eleven presentation frames adapt between 20:13 (2560 x 1664 MacBook display) and 16:9. The taller layout increases text size and uses the full viewport without scrolling.
 Sources checked on 18 November 2026. Runtime and preview differences are stated at the point of use.
 -->
 <style>
@@ -74,11 +74,11 @@ Sources checked on 18 November 2026. Runtime and preview differences are stated 
   .spread { justify-content:space-between; }
   .grid { display:grid; gap:24px; min-width:0; min-height:0; }
   .agenda-grid { grid-template-columns:1fr 1fr; gap:0 58px; }
-  .agenda-list { list-style:none; margin:0; padding:0; }
-  .agenda-list li,.agenda-list li+li { display:grid; grid-template-columns:48px minmax(0,1fr); gap:12px; align-items:start; margin:0; padding:14px 0; border-top:1px solid var(--line); }
-  .agenda-number { color:var(--blue); font:700 23px/1.3 var(--mono); font-variant-numeric:tabular-nums; }
-  .agenda-list h2 { font-size:27px; line-height:1.2; margin:0 0 4px; }
-  .agenda-list p { font-size:22px; line-height:1.35; color:var(--muted); }
+  .agenda-list { display:grid; grid-template-rows:repeat(5,1fr); list-style:none; margin:0; padding:0; }
+  .agenda-list li,.agenda-list li+li { display:grid; grid-template-columns:48px minmax(0,1fr); gap:12px; align-items:start; align-content:center; margin:0; padding:14px 0; border-top:1px solid var(--line); }
+  .agenda-number { color:var(--blue); font:700 27px/1.3 var(--mono); font-variant-numeric:tabular-nums; }
+  .agenda-list h2 { font-size:32px; line-height:1.2; margin:0 0 4px; }
+  .agenda-list p { font-size:24px; line-height:1.35; color:var(--muted); }
   .cols2 { grid-template-columns:1fr 1fr; }
   .cols3 { grid-template-columns:1fr 1fr 1fr; }
   .rule { border-top:1px solid var(--line); padding-top:13px; }
@@ -91,7 +91,7 @@ Sources checked on 18 November 2026. Runtime and preview differences are stated 
   .field-line { font-size:22px; line-height:1.6; }
   .field-line code { color:var(--blue); }
   .ico { width:27px; height:27px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex:none; }
-  #stage { position:absolute; width:1920px; height:1080px; transform-origin:0 0; background:var(--bg); display:flex; flex-direction:column; }
+  #stage { position:absolute; width:1800px; height:1170px; transform-origin:0 0; background:var(--bg); display:flex; flex-direction:column; }
   .topbar { height:54px; flex:none; display:flex; align-items:center; gap:13px; padding:0 42px; border-bottom:1px solid var(--line); font-size:21px; }
   .topbar .brand { display:flex; align-items:center; gap:11px; font-weight:650; }
   .topbar .surfaces { margin-left:auto; color:var(--muted); font-size:19px; }
@@ -126,7 +126,7 @@ Sources checked on 18 November 2026. Runtime and preview differences are stated 
   .field-list dd { font-size:22px; }
   .command-grid { grid-template-columns:1.1fr 1fr 1.08fr; gap:30px; }
   .command-col + .command-col { border-left:1px solid var(--line); padding-left:30px; }
-  .command-row { display:grid; grid-template-columns:195px 1fr; gap:13px; padding:8px 0; border-top:1px solid var(--line); align-items:start; }
+  .command-row { display:grid; grid-template-columns:215px 1fr; gap:13px; padding:8px 0; border-top:1px solid var(--line); align-items:start; }
   .command-row:first-of-type { border-top:0; }
   .command-row code { color:var(--blue); font-size:22px; line-height:1.4; overflow-wrap:anywhere; }
   .command-row p { font-size:23px; line-height:1.4; }
@@ -202,7 +202,7 @@ Sources checked on 18 November 2026. Runtime and preview differences are stated 
   .terminal-title { display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--line); padding-bottom:13px; margin-bottom:16px; color:var(--muted); font-size:20px; }
   .terminal-title i { width:8px; height:8px; background:var(--muted); border-radius:50%; }
   .cli-grid h2 { font-size:29px; }
-  .cli-grid .field-list { grid-template-columns:165px 1fr; }
+  .cli-grid .field-list { grid-template-columns:190px 1fr; }
   .cli-grid .field-list dt,.cli-grid .field-list dd { font-size:21px; }
   .spec-top { grid-template-columns:1.12fr 1fr; }
   .spec-top pre { font-size:22px; }
@@ -253,7 +253,7 @@ Sources checked on 18 November 2026. Runtime and preview differences are stated 
   @media print {
     @page { size:20in 11.25in; margin:0; }
     html,body { width:auto; height:auto; overflow:visible; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
-    #stage { position:static; width:1920px; height:auto; transform:none !important; }
+    #stage { position:static; width:1920px !important; height:auto !important; transform:none !important; }
     .topbar,.progress,.navigation,.orientation-hint,#notice,.sr-only { display:none; }
     main { position:static; }
     .slide,.slide.active { position:relative; display:flex !important; width:1920px; height:1080px; padding-top:35px; break-after:page; }
@@ -835,12 +835,19 @@ cd order-export</code></pre><p class="small muted" style="margin-top:13px">Then 
   function fit() {
     const width = document.documentElement.clientWidth;
     const height = document.documentElement.clientHeight;
-    const scale = Math.min(width / 1920, height / 1080);
-    const offsetX = (width - 1920 * scale) / 2;
-    const offsetY = (height - 1080 * scale) / 2;
+    // Fit CSS pixels, not hardware pixels, so Retina scaling and browser chrome are respected.
+    const aspect = Math.max(20 / 13, Math.min(16 / 9, width / height));
+    const tallLayout = (16 / 9 - aspect) / (16 / 9 - 20 / 13);
+    const deckWidth = 1920 - 120 * tallLayout;
+    const deckHeight = deckWidth / aspect;
+    const scale = Math.min(width / deckWidth, height / deckHeight);
+    const offsetX = (width - deckWidth * scale) / 2;
+    const offsetY = (height - deckHeight * scale) / 2;
     document.documentElement.style.setProperty("--deck-scale", String(scale));
     document.documentElement.style.setProperty("--deck-offset-x", `${offsetX}px`);
     document.documentElement.style.setProperty("--deck-offset-y", `${offsetY}px`);
+    stage.style.width = `${deckWidth}px`;
+    stage.style.height = `${deckHeight}px`;
     stage.style.transform = `scale(${scale})`;
     stage.style.left = `${offsetX}px`;
     stage.style.top = `${offsetY}px`;
