@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Eleven slides about GitHub Copilot across VS Code, the Copilot app, the CLI, and GitHub.com. Includes an agenda, file examples, and official references.">
+<title>GitHub Copilot across surfaces | 19 November 2026</title>
+<!--
+THESIS: Teach one Copilot topic per slide through a decision, a file, and a working example.
+OWN-WORLD: Extend the recent decks' GitHub dark and light colors, system type, code panels, and small bottom-right controls.
+STORY: Choose a surface, provide context, configure a workflow, and inspect its result.
+FIRST VIEWPORT: Four mode rows occupy the left; a complete custom-agent example occupies the right. No cover slide.
+FORM: Eleven fixed presentation frames, including a ten-topic agenda. Topic-specific diagrams replace decorative imagery. All content fits without scrolling.
+Sources checked on 18 November 2026. Runtime and preview differences are stated at the point of use.
+-->
+<style>
+  :root {
+    --bg:#0d1117; --panel:#151b23; --raised:#212830; --code:#010409;
+    --fg:#f0f6fc; --muted:#b1bac4; --line:#3d444d;
+    --blue:#79c0ff; --green:#7ee787; --purple:#d2a8ff; --orange:#ffa657; --red:#ff7b72;
+    --blue-soft:#152b44; --green-soft:#152e22; --purple-soft:#2a203e; --orange-soft:#352719;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --cab-base:#212830; --cab-top:#485361; --cab-side:#303944; --cab-front:#3d4856; --cab-paper:#99a7b6; --cab-edge:#6e7c8b;
+    --deck-scale:1; --deck-offset-x:0px; --deck-offset-y:0px;
+  }
+  [data-theme="light"] {
+    --bg:#fff; --panel:#f6f8fa; --raised:#eaeef2; --code:#f6f8fa;
+    --fg:#1f2328; --muted:#59636e; --line:#d1d9e0;
+    --blue:#0550ae; --green:#116329; --purple:#6639ba; --orange:#953800; --red:#a40e26;
+    --blue-soft:#ddf4ff; --green-soft:#dafbe1; --purple-soft:#fbefff; --orange-soft:#fff1e5;
+    --cab-base:#d1d9e0; --cab-top:#f6f8fa; --cab-side:#a7b3bf; --cab-front:#c5cfd8; --cab-paper:#fff; --cab-edge:#667380;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
+  body { font-family:var(--sans); }
+  button,select { font:inherit; }
+  button,a,select { -webkit-tap-highlight-color:transparent; }
+  button,a,select,[tabindex] { outline-offset:4px; }
+  :focus-visible { outline:3px solid var(--blue); }
+  button { cursor:pointer; }
+  a { color:var(--blue); text-underline-offset:4px; }
+  a:hover { text-decoration-thickness:2px; }
+  h1,h2,h3,p,pre,figure,dl,dd { margin:0; }
+  h1 { font-size:54px; letter-spacing:-1.2px; line-height:1.12; font-weight:700; }
+  h2 { font-size:30px; letter-spacing:-.4px; line-height:1.2; margin-bottom:10px; }
+  h3 { font-size:26px; line-height:1.25; margin-bottom:7px; }
+  p,li,dd { font-size:24px; line-height:1.4; }
+  strong { font-weight:650; }
+  ul { margin:10px 0 0; padding-left:25px; }
+  li+li { margin-top:7px; }
+  li::marker { color:var(--blue); }
+  .small { font-size:22px; line-height:1.38; }
+  .tiny { font-size:19px; line-height:1.38; }
+  .muted { color:var(--muted); }
+  .blue { color:var(--blue); } .green { color:var(--green); } .purple { color:var(--purple); } .orange { color:var(--orange); }
+  code,kbd { font-family:var(--mono); font-size:.88em; }
+  p code,li code,dd code,td code,.inline-code { color:var(--blue); background:var(--raised); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere; }
+  kbd { border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:2px 6px; background:var(--panel); }
+  pre { font-family:var(--mono); font-size:22px; line-height:1.38; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:2; color:var(--fg); }
+  pre code { font-size:1em; }
+  .key { color:var(--blue); } .str { color:var(--green); } .comment { color:var(--muted); }
+  .codebox { padding:14px 18px; background:var(--code); border:1px solid var(--line); border-radius:8px; }
+  .file { display:block; font-family:var(--mono); color:var(--blue); font-size:20px; line-height:1.4; margin-bottom:11px; overflow-wrap:anywhere; }
+  .file::before { content:""; display:inline-block; width:10px; height:13px; border:1.5px solid currentColor; margin-right:10px; vertical-align:-1px; border-radius:1px; }
+  .badge { display:inline-block; color:var(--muted); border:1px solid var(--line); border-radius:5px; font-size:18px; font-weight:600; padding:3px 8px; vertical-align:3px; white-space:nowrap; }
+  .badge.warn { color:var(--orange); background:var(--orange-soft); border-color:var(--orange); }
+  .panel { padding:18px 24px; border:1px solid var(--line); background:var(--panel); border-radius:10px; min-width:0; min-height:0; }
+  .plain { min-width:0; min-height:0; }
+  .stack { display:flex; flex-direction:column; gap:12px; min-width:0; min-height:0; }
+  .stack > *, .content > :not(.grow) { flex-shrink:0; }
+  .stack > h2 { margin-bottom:0; }
+  .spread { justify-content:space-between; }
+  .grid { display:grid; gap:24px; min-width:0; min-height:0; }
+  .agenda-grid { grid-template-columns:1fr 1fr; gap:0 58px; }
+  .agenda-list { list-style:none; margin:0; padding:0; }
+  .agenda-list li,.agenda-list li+li { display:grid; grid-template-columns:48px minmax(0,1fr); gap:12px; align-items:start; margin:0; padding:14px 0; border-top:1px solid var(--line); }
+  .agenda-number { color:var(--blue); font:700 23px/1.3 var(--mono); font-variant-numeric:tabular-nums; }
+  .agenda-list h2 { font-size:27px; line-height:1.2; margin:0 0 4px; }
+  .agenda-list p { font-size:22px; line-height:1.35; color:var(--muted); }
+  .cols2 { grid-template-columns:1fr 1fr; }
+  .cols3 { grid-template-columns:1fr 1fr 1fr; }
+  .rule { border-top:1px solid var(--line); padding-top:13px; }
+  .note { padding:11px 16px; background:var(--blue-soft); border:1px solid var(--line); border-radius:7px; font-size:22px; line-height:1.38; }
+  .note.warn { background:var(--orange-soft); }
+  .note strong { color:var(--blue); }
+  .note.warn strong { color:var(--orange); }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .chips code { font-size:20px; background:var(--raised); padding:4px 8px; border-radius:4px; }
+  .field-line { font-size:22px; line-height:1.6; }
+  .field-line code { color:var(--blue); }
+  .ico { width:27px; height:27px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+  #stage { position:absolute; width:1920px; height:1080px; transform-origin:0 0; background:var(--bg); display:flex; flex-direction:column; }
+  .topbar { height:54px; flex:none; display:flex; align-items:center; gap:13px; padding:0 42px; border-bottom:1px solid var(--line); font-size:21px; }
+  .topbar .brand { display:flex; align-items:center; gap:11px; font-weight:650; }
+  .topbar .surfaces { margin-left:auto; color:var(--muted); font-size:19px; }
+  .topbar time { margin-left:24px; font-size:19px; color:var(--muted); white-space:nowrap; }
+  .medtronic-mark { flex:none; width:160px; height:40px; margin-left:18px; padding:6px 9px; display:grid; place-items:center; background:#fff; border-radius:4px; }
+  .medtronic-mark img { display:block; width:100%; height:auto; }
+  .progress { position:absolute; top:53px; left:0; width:100%; height:3px; background:var(--blue); transform:scaleX(.091); transform-origin:left; transition:transform .2s ease-out; }
+  main { flex:1; position:relative; min-height:0; }
+  .slide { position:absolute; inset:0; display:none; padding:25px 42px 0; flex-direction:column; }
+  .slide.active { display:flex; }
+  .slide-head { display:flex; align-items:flex-start; gap:22px; margin-bottom:19px; flex:none; }
+  .slide-index { color:var(--muted); font-family:var(--mono); font-size:24px; padding-top:11px; border-top:3px solid var(--blue); width:44px; flex:none; text-align:center; }
+  .lead { font-size:26px; color:var(--muted); line-height:1.4; margin-top:9px; }
+  .content { flex:1; min-height:0; display:flex; flex-direction:column; gap:18px; padding-bottom:18px; }
+  .content > .grow { flex:1; min-height:0; }
+  .sources { flex:none; height:49px; border-top:1px solid var(--line); display:flex; align-items:center; gap:21px; padding-right:420px; font-size:18px; color:var(--muted); }
+  .sources a { color:var(--muted); text-decoration:none; }
+  .sources a:hover { color:var(--blue); text-decoration:underline; }
+  .flow { display:flex; align-items:stretch; gap:12px; }
+  .flow-step { flex:1; min-width:0; padding:13px 17px; border:1px solid var(--line); background:var(--panel); border-radius:7px; }
+  .flow-step b { display:block; font-size:27px; margin-bottom:5px; }
+  .flow-step span { font-size:22px; color:var(--muted); line-height:1.4; }
+  .arrow { flex:none; align-self:center; font-size:30px; color:var(--muted); }
+  .mode-grid { grid-template-columns:1.32fr 1fr; }
+  .mode-row { display:grid; grid-template-columns:175px 1fr 1fr; gap:20px; padding:18px 0; border-top:1px solid var(--line); align-items:start; }
+  .mode-row:first-child { border-top:0; padding-top:0; }
+  .mode-name { display:flex; gap:12px; align-items:center; font-size:31px; font-weight:700; }
+  .mode-row p { font-size:24px; }
+  .mode-row small { display:block; color:var(--muted); font-size:22px; line-height:1.45; margin-top:8px; }
+  .field-list { display:grid; grid-template-columns:170px 1fr; gap:7px 18px; }
+  .field-list dt { font:22px/1.4 var(--mono); color:var(--blue); }
+  .field-list dd { font-size:22px; }
+  .command-grid { grid-template-columns:1.1fr 1fr 1.08fr; gap:30px; }
+  .command-col + .command-col { border-left:1px solid var(--line); padding-left:30px; }
+  .command-row { display:grid; grid-template-columns:195px 1fr; gap:13px; padding:8px 0; border-top:1px solid var(--line); align-items:start; }
+  .command-row:first-of-type { border-top:0; }
+  .command-row code { color:var(--blue); font-size:22px; line-height:1.4; overflow-wrap:anywhere; }
+  .command-row p { font-size:23px; line-height:1.4; }
+  .history-list { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-top:12px; }
+  .history-list code { font-size:21px; color:var(--purple); }
+  .history-list p { font-size:21px; color:var(--muted); }
+  .scope-row { display:grid; grid-template-columns:1.02fr 1fr 1fr; gap:23px; }
+  .scope-row > article+article { border-left:1px solid var(--line); padding-left:23px; }
+  .scope-picture { display:flex; align-items:center; gap:14px; padding:5px 0; min-height:65px; }
+  .scope-picture .scope-ring { display:grid; place-items:center; width:55px; height:55px; border:2px solid currentColor; border-radius:9px; flex:none; }
+  .scope-picture p { font-size:26px; font-weight:650; }
+  .scope-picture span { display:block; font-size:21px; color:var(--muted); font-weight:400; }
+  .scope-row pre { font-size:22px; }
+  .scope-row h2 { font-size:29px; }
+  .scope-row .file { font-size:19px; margin-bottom:0; }
+  .scope-bottom { display:grid; grid-template-columns:1.15fr 1fr; gap:24px; align-items:center; }
+  .match-demo { font-family:var(--mono); font-size:22px; line-height:1.6; }
+  .match-demo b { color:var(--green); }
+  .reuse-grid { grid-template-columns:1fr 1.13fr; }
+  .reuse-grid pre { font-size:22px; }
+  .reuse-bottom { display:grid; grid-template-columns:280px 1fr; gap:22px; align-items:center; }
+  .cabinet-figure { border:1px solid var(--line); border-radius:8px; background:var(--code); padding:10px 13px; }
+  .figure-heading,.figure-footer { display:flex; justify-content:space-between; gap:10px; font-size:18px; color:var(--muted); }
+  .cabinet-figure svg { width:100%; height:145px; display:block; }
+  .cabinet-figure [data-drawer] { transition:transform .38s cubic-bezier(.16,1,.3,1); }
+  .figure-controls { display:flex; gap:5px; margin-top:9px; }
+  .figure-controls button { border:1px solid var(--line); border-radius:4px; background:var(--panel); color:var(--fg); font-size:17px; padding:5px 8px; }
+  .figure-controls button[aria-pressed="true"] { border-color:var(--blue); background:var(--blue-soft); color:var(--blue); }
+  .orchestration-grid { grid-template-columns:1fr 1fr; }
+  .orchestration-grid pre { font-size:22px; line-height:1.37; }
+  .sequence-map { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0 3px; }
+  .sequence-map .station { text-align:center; flex:1; }
+  .station b { display:block; font-size:27px; margin:7px 0 4px; }
+  .station p { font-size:21px; color:var(--muted); }
+  .station .ico { width:38px; height:38px; color:var(--blue); }
+  .fork-map { width:100%; height:142px; display:block; }
+  .fork-map text { font-family:var(--sans); fill:var(--fg); font-size:24px; }
+  .fork-map .box { fill:var(--raised); stroke:var(--line); stroke-width:1.5; }
+  .fork-map .wire { fill:none; stroke:var(--muted); stroke-width:2; }
+  .review-grid { grid-template-columns:1fr 1.03fr 1fr; gap:28px; }
+  .surface-review { padding:15px 0; border-top:1px solid var(--line); }
+  .surface-review:first-of-type { padding-top:0; border-top:0; }
+  .surface-review h3 { color:var(--blue); font-size:27px; }
+  .surface-review p { font-size:24px; }
+  .review-grid pre { font-size:21px; line-height:1.32; }
+  .review-grid .file { font-size:19px; }
+  .effort-row { display:grid; grid-template-columns:130px 1fr; gap:17px; border-top:1px solid var(--line); padding:10px 0; }
+  .effort-row b { font-size:26px; }
+  .effort-row p { font-size:23px; }
+  .effort-row:first-of-type { border-top:0; }
+  .app-grid { grid-template-columns:1.12fr .98fr; }
+  .app-map { border:1px solid var(--line); border-radius:9px; background:var(--panel); display:grid; grid-template-columns:230px 1fr; overflow:hidden; }
+  .app-map aside { background:var(--code); padding:18px; border-right:1px solid var(--line); }
+  .app-map aside p { font-size:22px; padding:8px 10px; border-radius:5px; }
+  .app-map aside .selected { color:var(--blue); background:var(--blue-soft); }
+  .app-map .workspace { padding:18px 22px; }
+  .app-map .workspace h3 { font-size:26px; }
+  .app-map .workspace p { font-size:22px; }
+  .workspace-lanes { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .workspace-lanes span { padding:10px; background:var(--raised); border-radius:5px; font-size:20px; }
+  .feature-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 25px; }
+  .feature-grid h3 { color:var(--blue); }
+  .feature-grid p { font-size:23px; }
+  .app-grid pre { font-size:21px; line-height:1.34; }
+  .cli-grid { grid-template-columns:1.02fr 1.12fr .98fr; gap:27px; }
+  .cli-group { border-top:1px solid var(--line); padding:10px 0; }
+  .cli-group:first-of-type { border-top:0; }
+  .cli-group h3 { font-size:24px; }
+  .cli-group p { font-size:22px; color:var(--muted); margin-top:7px; }
+  .cli-group .chips code { font-size:20px; }
+  .terminal { background:var(--code); padding:18px; border:1px solid var(--line); border-radius:8px; }
+  .terminal pre { font-size:22px; line-height:1.4; }
+  .terminal-title { display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--line); padding-bottom:13px; margin-bottom:16px; color:var(--muted); font-size:20px; }
+  .terminal-title i { width:8px; height:8px; background:var(--muted); border-radius:50%; }
+  .cli-grid h2 { font-size:29px; }
+  .cli-grid .field-list { grid-template-columns:165px 1fr; }
+  .cli-grid .field-list dt,.cli-grid .field-list dd { font-size:21px; }
+  .spec-top { grid-template-columns:1.12fr 1fr; }
+  .spec-top pre { font-size:22px; }
+  .spec-flow .flow-step { padding:12px 16px; }
+  .spec-flow .flow-step code { display:block; font-size:20px; color:var(--blue); margin:9px 0; }
+  .gates { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .gates article { border-top:2px solid var(--line); padding-top:15px; }
+  .gates code { color:var(--purple); font-size:22px; }
+  .gates p { margin-top:9px; font-size:23px; }
+  .artifact-row { display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:25px; }
+  .artifact-row p { font-size:22px; }
+  .recap-grid { grid-template-columns:1.36fr .88fr; gap:36px; }
+  .news-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 28px; }
+  .news-item { border-top:1px solid var(--line); padding-top:13px; }
+  .news-item h3 { color:var(--blue); font-size:28px; }
+  .news-item p { font-size:24px; }
+  .resource-list { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .resource-list a { font-size:25px; }
+  .resource-list p { font-size:22px; color:var(--muted); margin-top:4px; }
+  .resource-url { font-size:29px; font-weight:650; overflow-wrap:anywhere; }
+  .resource-steps { counter-reset:reuse; list-style:none; padding:0; margin-top:0; }
+  .resource-steps li { counter-increment:reuse; display:flex; gap:16px; padding:6px 0; font-size:24px; }
+  .resource-steps li::before { content:counter(reuse); width:30px; flex:none; color:var(--green); font-weight:700; }
+  .navigation { position:fixed; right:calc(var(--deck-offset-x) + 16px * var(--deck-scale)); bottom:calc(var(--deck-offset-y) + 4px * var(--deck-scale)); transform:scale(var(--deck-scale)); transform-origin:bottom right; display:flex; align-items:center; gap:4px; z-index:20; background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:3px; color:var(--fg); font-size:16px; }
+  .navigation button { width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:4px; background:none; color:inherit; padding:3px; }
+  .navigation button:hover { background:var(--raised); }
+  .navigation button:disabled { opacity:.35; cursor:default; }
+  .navigation .ico { width:20px; height:20px; }
+  .navigation select { width:188px; border:0; border-radius:4px; padding:4px 2px; background:var(--panel); color:var(--fg); font-size:16px; cursor:pointer; }
+  .navigation .count { font-variant-numeric:tabular-nums; min-width:48px; text-align:center; color:var(--muted); }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  #notice { position:fixed; bottom:52px; right:12px; max-width:330px; padding:8px 12px; color:var(--fg); background:var(--panel); border:1px solid var(--line); border-radius:6px; font-size:14px; z-index:21; }
+  #notice:empty { display:none; }
+  .orientation-hint { display:none; }
+  @media (max-width:600px) and (orientation:portrait) {
+    .orientation-hint { display:block; position:fixed; left:0; right:0; bottom:60px; text-align:center; color:var(--muted); font-size:12px; }
+    .navigation { right:6px; bottom:8px; transform:none; font-size:12px; }
+    .navigation select { width:141px; font-size:12px; }
+    .navigation .count { min-width:36px; }
+  }
+  @media (pointer:coarse) {
+    .navigation button { width:38px; height:38px; }
+    .navigation select { height:38px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *,*::before,*::after { transition:none !important; animation:none !important; }
+  }
+  @media print {
+    @page { size:20in 11.25in; margin:0; }
+    html,body { width:auto; height:auto; overflow:visible; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    #stage { position:static; width:1920px; height:auto; transform:none !important; }
+    .topbar,.progress,.navigation,.orientation-hint,#notice,.sr-only { display:none; }
+    main { position:static; }
+    .slide,.slide.active { position:relative; display:flex !important; width:1920px; height:1080px; padding-top:35px; break-after:page; }
+    .slide:last-child { break-after:auto; }
+    .sources { padding-right:0; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-copilot" viewBox="0 0 24 24"><path d="M4 13v6c4 3 12 3 16 0v-6M2 14v4M22 14v4"/><rect x="3" y="4" width="8" height="8" rx="3"/><rect x="13" y="4" width="8" height="8" rx="3"/><path d="M11 7h2M9 16v2M15 16v2"/></symbol>
+    <symbol id="i-ask" viewBox="0 0 24 24"><path d="M4 4h16v13H9l-5 4zM8 8h8M8 12h5"/></symbol>
+    <symbol id="i-plan" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="19" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 5l-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></symbol>
+    <symbol id="i-review" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 5h7l2 3h9v12H3z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5zM14 2v6h5M8 13h8M8 17h6"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 9l4 3-4 3M13 16h5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-full" viewBox="0 0 24 24"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></symbol>
+  </defs>
+</svg>
+<div id="stage">
+  <header class="topbar">
+    <span class="brand"><svg class="ico" aria-hidden="true"><use href="#i-copilot"/></svg>GitHub Copilot</span>
+    <span class="muted">Across surfaces</span>
+    <span class="surfaces">VS Code / Copilot app / Copilot CLI / GitHub.com</span>
+    <time datetime="2026-11-19">19 November 2026</time>
+    <span class="medtronic-mark"><img alt="Medtronic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAA0CAYAAAAwjwU3AAADeklEQVR42u2dUXIcIQxEaWpukuPkYr51+8+VSlL27oxAAt77TGpmsYAeIQnQr98fDQBgBa7//JtvvksP2+KE39wZYzcIGC+lxkoPEquWIFaZ7V1ZrLAbvDMeXFmwAACxKkvHYACwyhztBf4o4ikA0O4E3ZWgpnhYBO8Blgq6A8F7AILuAPAY7SpYfHEB9hIj4WEhcAAriJZWqHQHAESrEcMCACgmWCzzAKDEknB2ndas33Mxt9kTXHlPbKuCNtw6uE+q9Lu/+R0nHz6gSuP7umkYF/LEfNOofviMiiQivGARp9/sUwf2f1a/e/Azd8eBB82vyAMOdHoMK0pwHdwmsxQf+mGr9KEd1VYXC7ZH2P3rHdeBWQu3ee787PbsJlpuz71sT17CVbGbdixZ6nhWqe8mQTHeC15pPEV67d5xnvWDCkLdKIRtB9UQmeLnlLZ5xzosT14OmsGEd4Zorf9bV/FygyolAg6OH3gxL+I0L81F4kYi7jlva44XS7Xrhf/zRu3S4BqrLPtEZMlUYEJXHY8Z2Uln7iWs6KKqxXqWEVkr3eh8s9ct/H0KylZmtq2S86Anz7CX8H0Dcsrm/P5RcuW6GI81dgz0gnVSKrBlZNRyanTH7iamKjRpRDIlf173g7MnKlrYWrVdMN62IiMbJ1hMBFhdHHSwrbxDX/ZN625wywEax8vstET0H1kWapwgsgbRrEhqClZ0AakmF6kacTqmsh0BySkCF5ufAaBxRDIAQOEQTy967AoAUOaR6mEhXAB4YemCFaWyBEVh1zokaGuVNRiXFhDQo70sEXR/NmAYVEBoo62ZJczevyYGXli7mFDYZlubUNbAUuE025oC1eXsfoRg6UAvywgsNxzt7M3hYcVf1Jl1YadZUgy7ARqxyrH7P9efRRaOanHR8qRnFfxuF/AYvGm/j+zbk+Ncvju2r4Uyep6wsdOHBUYdONlc6IjhDO9Uh61EFDRHzZKw/kAS2aKt7KsDbeUMO3TW2Fu2SUxGMrI72r0PuHaoHXKbNKKFaGkTYdQqdu9cGZU+AMQEWlK0sHOCfTrGbFUuihyxWyBSwFaP06jxUVj+0o/r4DhD5HXk0aIQfe23gpbMq98w/bT9KnwUcZvcv5o4z/S3YK0Q79Bk8RJfu5ff5RueX6UPpTe4ZmyHOfzj3KtQh0V2CZvRfnipHz4B+gL2cc7z4m0AAAAASUVORK5CYII="></span>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main id="deck" aria-label="GitHub Copilot presentation">
+
+    <section class="slide" id="slide-1" aria-labelledby="title-agenda" data-title="Agenda" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">01</span><div><h1 id="title-agenda">Agenda</h1><p class="lead">Ten practical stops across GitHub Copilot surfaces.</p></div></header>
+      <div class="content">
+        <div class="grid agenda-grid grow" aria-label="Ten topics in this presentation">
+          <ol class="agenda-list">
+            <li><span class="agenda-number">01</span><div><h2>Copilot modes</h2><p>Ask, Plan, Agent, and custom agents.</p></div></li>
+            <li><span class="agenda-number">02</span><div><h2>VS Code slash commands</h2><p>Built-ins, Chronicle, and runtime differences.</p></div></li>
+            <li><span class="agenda-number">03</span><div><h2>Instruction files</h2><p>Repository, file-matched, and directory guidance.</p></div></li>
+            <li><span class="agenda-number">04</span><div><h2>Prompts and skills</h2><p>Saved requests and reusable procedures.</p></div></li>
+            <li><span class="agenda-number">05</span><div><h2>Agent orchestration</h2><p>Sequential handoffs and parallel subagents.</p></div></li>
+          </ol>
+          <ol class="agenda-list" start="6">
+            <li><span class="agenda-number">06</span><div><h2>Code review</h2><p>Four surfaces, review setup, firewall, and effort.</p></div></li>
+            <li><span class="agenda-number">07</span><div><h2>Copilot app</h2><p>Projects, sessions, automations, and canvases.</p></div></li>
+            <li><span class="agenda-number">08</span><div><h2>Copilot CLI</h2><p>Commands, file and image context, and access.</p></div></li>
+            <li><span class="agenda-number">09</span><div><h2>Spec-driven development</h2><p>Build with GitHub Spec Kit.</p></div></li>
+            <li><span class="agenda-number">10</span><div><h2>Universe and resources</h2><p>Announcements and Awesome Copilot.</p></div></li>
+          </ol>
+        </div>
+      </div>
+      <footer class="sources"><span>Agenda</span><span>10 topics</span><span>4 Copilot surfaces</span></footer>
+    </section>
+
+    <section class="slide active" id="slide-2" aria-labelledby="title-1" data-title="Copilot modes">
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">02</span><div><h1 id="title-1">Copilot modes</h1><p class="lead">Choose the type of work first. Then choose the model and permissions.</p></div></header>
+      <div class="content">
+        <div class="grid mode-grid grow">
+          <div class="plain stack spread">
+            <div>
+              <div class="mode-row">
+                <div class="mode-name blue"><svg class="ico" aria-hidden="true"><use href="#i-ask"/></svg>Ask</div>
+                <p>Understand code or compare options.<small>No code changes are needed.</small></p>
+                <p>Select <strong>Ask</strong> in chat.<small>"Where is the access token checked?"</small></p>
+              </div>
+              <div class="mode-row">
+                <div class="mode-name purple"><svg class="ico" aria-hidden="true"><use href="#i-plan"/></svg>Plan</div>
+                <p>Research a change and identify decisions.<small>Review the plan before implementation.</small></p>
+                <p>Enter <code>/plan</code> and the task.<small>"Add pagination. Keep old clients working."</small></p>
+              </div>
+              <div class="mode-row">
+                <div class="mode-name green"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg>Agent</div>
+                <p>Build, fix, or test a change.<small>Uses tools, edits files, and runs commands.</small></p>
+                <p>Select <strong>Agent</strong> and give the result you need.<small>"Fix the failure and run its tests."</small></p>
+              </div>
+              <div class="mode-row">
+                <div class="mode-name orange"><svg class="ico" aria-hidden="true"><use href="#i-review"/></svg>Custom<br>agent</div>
+                <p>Reuse a focused role.<small>For example: a read-only reviewer or a test writer.</small></p>
+                <p>Create an agent file. Select its name.<small>Chat: Open Customizations &gt; Agents.</small></p>
+              </div>
+            </div>
+            <p class="note"><strong>Mode is not model.</strong> The mode sets the workflow. The model performs the reasoning. Permissions control allowed actions.</p>
+          </div>
+          <aside class="panel stack">
+            <div><h2>A reusable reviewer</h2><p class="small muted">YAML between <code>---</code> lines sets the role. Markdown below it gives the instructions.</p></div>
+            <div><span class="file">.github/agents/reviewer.agent.md</span><div class="codebox"><pre><code>---
+<span class="key">name:</span> Reviewer
+<span class="key">description:</span> Review changes without edits
+<span class="key">tools:</span> ['read', 'search']
+---
+Find incorrect behavior and missing tests.
+Report the file, line, impact, and fix.
+Do not edit files.</code></pre></div></div>
+            <dl class="field-list">
+              <dt>name</dt><dd>Name in the agent picker.</dd>
+              <dt>description</dt><dd>Purpose and when to use the agent.</dd>
+              <dt>tools</dt><dd>Tools for this role. Names depend on the runtime.</dd>
+              <dt>model</dt><dd>Optional model ID or ordered list.</dd>
+            </dl>
+            <p class="small rule"><strong>More fields:</strong> <code>reasoning-effort</code>, <code>model-policy</code>, <code>skills</code>, <code>hooks</code>, invocation controls. Check runtime support.</p>
+          </aside>
+        </div>
+        <div class="flow" aria-label="Example workflow: understand, plan, implement, then review">
+          <div class="flow-step"><b class="blue">Understand</b><span>Ask about the code</span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="purple">Plan</b><span>Agree on scope and checks</span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="green">Implement</b><span>Agent edits and tests</span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="orange">Review</b><span>Check the actual result</span></div>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://code.visualstudio.com/docs/agents/reference/ai-features-cheat-sheet">VS Code modes</a><a href="https://code.visualstudio.com/docs/agents/run/planning">Planning</a><a href="https://code.visualstudio.com/docs/agents/reference/custom-agent-file-reference">Agent fields</a></footer>
+    </section>
+
+    <section class="slide" id="slide-3" aria-labelledby="title-2" data-title="VS Code commands" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">03</span><div><h1 id="title-2">VS Code slash commands</h1><p class="lead">Type <code>/</code> in chat. The list depends on the runtime, VS Code version, settings, and installed skills.</p></div></header>
+      <div class="content">
+        <div class="grid command-grid grow">
+          <article class="command-col">
+            <h2>Code tasks <span class="badge">Local runtime</span></h2>
+            <p class="small muted" style="margin-bottom:13px">Attach a file or select code first. Add the expected result after the command.</p>
+            <div class="command-row"><code>/explain</code><p>Explain the selected code or a file.</p></div>
+            <div class="command-row"><code>/tests</code><p>Generate tests for existing code.</p></div>
+            <div class="command-row"><code>/setupTests</code><p>Set up a test framework and runner.</p></div>
+            <div class="command-row"><code>/fix</code><p>Propose a fix for a code problem.</p></div>
+            <div class="command-row"><code>/newNotebook</code><p>Create a Jupyter notebook.</p></div>
+            <div class="command-row"><code>/semanticSearch</code><p>Find code by meaning, when enabled.</p></div>
+            <div class="command-row"><code>@vscode /search</code><p>Make a workspace search query.</p></div>
+            <div class="command-row"><code>@terminal /explain</code><p>Explain a terminal command or failure.</p></div>
+            <p class="tiny muted rule">Some builds expose <code>/review</code>. Older builds also expose <code>/new</code>, <code>/doc</code>, <code>/generate</code>, and <code>/edit</code>. Use the menu as the authority.</p>
+          </article>
+          <article class="command-col">
+            <h2>Session work <span class="badge">Copilot runtime</span></h2>
+            <div class="command-row"><code>/plan &lt;task&gt;</code><p>Research and propose a plan before edits.</p></div>
+            <div class="command-row"><code>/compact</code><p>Summarize context; keep code changes.</p></div>
+            <div class="command-row"><code>/fork</code><p>Branch the chat, not the files.</p></div>
+            <div class="command-row"><code>/automate</code><p>Schedule work in the Agents window.</p></div>
+            <div class="command-row"><code>/research</code><p>Research with sources. Insiders preview.</p></div>
+            <div class="command-row"><code>/&lt;skill-name&gt;</code><p>Run an available skill.</p></div>
+            <div class="codebox" style="margin-top:20px"><pre><code>/plan Add CSV export.
+Keep the current API.
+Include a test for empty data.</code></pre></div>
+            <p class="small muted" style="margin-top:17px"><strong>No file to edit.</strong> Use a skill or Local prompt file for a custom slash workflow.</p>
+          </article>
+          <article class="command-col">
+            <h2>Session history</h2>
+            <p><code>/chronicle</code> searches saved sessions. Find earlier work, prepare a standup, or improve your workflow.</p>
+            <div class="codebox" style="margin-top:18px"><pre><code><span class="comment"># Copilot runtime, when listed</span>
+/chronicle standup
+<span class="comment"># Local runtime</span>
+/chronicle:standup</code></pre></div>
+            <div class="history-list">
+              <div><code>:standup</code><p>Summarize recent work.</p></div>
+              <div><code>:search</code><p>Find past sessions.</p></div>
+              <div><code>:tips</code><p>Improve your workflow.</p></div>
+              <div><code>:cost-tips</code><p>Find usage savings.</p></div>
+              <div><code>:improve</code><p>Improve customizations.</p></div>
+              <div><code>:reindex</code><p>Rebuild the history index.</p></div>
+            </div>
+            <p class="small rule" style="margin-top:15px">Local example: <code>/chronicle:search</code>. Enable <code>github.copilot.sessionSearch.enabled</code>.</p>
+            <p class="note" style="margin-top:15px"><strong>Command absent?</strong> Check the runtime or give the task in plain language.</p>
+          </article>
+        </div>
+        <p class="note warn"><strong>Runtime means the software that runs the agent.</strong> VS Code's Local runtime is deprecated and is scheduled for removal by February 2027. Use the Copilot runtime for new workflows.</p>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://code.visualstudio.com/docs/agents/reference/ai-features-cheat-sheet">Command guide</a><a href="https://github.com/microsoft/vscode/blob/main/extensions/copilot/package.json">Built-in command definitions</a><a href="https://github.com/microsoft/vscode/tree/main/extensions/copilot/assets/prompts">Chronicle commands</a></footer>
+    </section>
+
+    <section class="slide" id="slide-4" aria-labelledby="title-3" data-title="Instruction files" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">04</span><div><h1 id="title-3">Instruction files</h1><p class="lead">Save project rules once. Copilot adds the applicable rules to its context.</p></div></header>
+      <div class="content">
+        <div class="scope-row grow">
+          <article class="stack">
+            <div class="scope-picture blue"><span class="scope-ring"><svg class="ico" aria-hidden="true"><use href="#i-folder"/></svg></span><p>Whole repository<span>Shared Copilot guidance</span></p></div>
+            <div><h2>copilot-instructions.md</h2><span class="file">.github/copilot-instructions.md</span></div>
+            <p>Use for shared build commands, architecture rules, and test requirements.</p>
+            <div class="codebox"><pre><code># Project rules
+
+Use the existing API error type.
+Keep database calls in src/data.
+Run npm test after behavior changes.</code></pre></div>
+            <p class="small"><strong>Format:</strong> Plain Markdown. No YAML header is required.</p>
+            <p class="small"><strong>Use:</strong> Repository guidance on supported surfaces, not a new agent.</p>
+          </article>
+          <article class="stack">
+            <div class="scope-picture purple"><span class="scope-ring"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg></span><p>Matching files<span>Rules for a language or folder</span></p></div>
+            <div><h2>*.instructions.md</h2><span class="file">.github/instructions/tests.instructions.md</span></div>
+            <p>Add rules for matching files. Keep shared rules in the main file.</p>
+            <div class="codebox"><pre><code>---
+<span class="key">name:</span> API tests
+<span class="key">applyTo:</span> "tests/**/*.ts"
+<span class="key">description:</span> API test rules
+---
+Reuse the shared test fixtures.
+Test invalid input and empty data.</code></pre></div>
+            <p class="small"><strong>Fields:</strong> <code>applyTo</code>: root-relative globs, separated by commas. Optional: <code>name</code>, <code>description</code>.</p>
+            <p class="small"><strong>Local:</strong> <code>description</code> can also load rules by task. It does not restrict <code>applyTo</code>.</p>
+          </article>
+          <article class="stack">
+            <div class="scope-picture green"><span class="scope-ring"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg></span><p>Directory scope<span>Guidance that multiple agents can read</span></p></div>
+            <div><h2>AGENTS.md</h2><span class="file">AGENTS.md &nbsp; or &nbsp; src/payments/AGENTS.md</span></div>
+            <p>Share context across compatible agents. Use nested files for folder rules.</p>
+            <div class="codebox"><pre><code># Payment module
+
+Keep money values in minor units.
+Use the shared currency type.
+Run payment tests after edits.</code></pre></div>
+            <p class="small"><strong>Format:</strong> Plain Markdown. No YAML header is required.</p>
+            <p class="small"><strong>Copilot:</strong> Combines root and nested guidance. <strong>Local:</strong> Enable root AGENTS support and <code>chat.useNestedAgentsMdFiles</code>.</p>
+          </article>
+        </div>
+        <div class="scope-bottom panel">
+          <div><h3>Example: editing tests/api/orders.test.ts</h3><p class="match-demo"><b>Repository rules</b> + <b>matching test rules</b><br>+ applicable <b>AGENTS.md</b> guidance</p></div>
+          <p class="small"><strong>Keep rules consistent.</strong> Precedence differs by runtime. Instructions are not security controls or tests. They do not control inline suggestions.</p>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://code.visualstudio.com/docs/agents/reference/custom-instructions-reference">Syntax, scope, and settings</a><a href="https://docs.github.com/en/copilot/reference/custom-instructions-support">Support by surface</a></footer>
+    </section>
+
+    <section class="slide" id="slide-5" aria-labelledby="title-4" data-title="Prompts and skills" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">05</span><div><h1 id="title-4">Prompt files and agent skills</h1><p class="lead">A prompt saves one request. A skill packages a reusable procedure and its resources.</p></div></header>
+      <div class="content">
+        <div class="grid reuse-grid grow">
+          <article class="stack">
+            <div><h2>Prompt file <span class="badge warn">VS Code Local only</span></h2><p>Run a saved task manually. Useful for an existing Local workflow with a repeatable output format.</p></div>
+            <div><span class="file">.github/prompts/test-change.prompt.md</span><div class="codebox"><pre><code>---
+<span class="key">name:</span> test-change
+<span class="key">description:</span> Add tests for a change
+<span class="key">argument-hint:</span> "[file or folder]"
+<span class="key">agent:</span> agent
+<span class="key">tools:</span> ['read', 'search', 'edit']
+---
+Read the supplied code and existing tests.
+Add focused tests for the changed behavior.
+Use the project's existing test framework.</code></pre></div></div>
+            <p><strong>Run:</strong> <code>/test-change src/api</code> in a Local chat, or use the file's play button.</p>
+            <p class="small"><strong>Available header fields:</strong> <code>name</code>, <code>description</code>, <code>argument-hint</code>, <code>agent</code>, <code>model</code>, <code>tools</code>. All are optional.</p>
+            <p class="note warn"><strong>For new work, use a skill.</strong> Prompt files do not run in the Copilot runtime. Convert them before the Local runtime is removed.</p>
+          </article>
+          <article class="panel stack">
+            <div><h2>Agent skill <span class="badge">VS Code / App / CLI</span></h2><p class="small">Load steps and files on demand. Run by name or task match.</p></div>
+            <div><span class="file">.github/skills/test-change/SKILL.md</span><div class="codebox"><pre><code>---
+<span class="key">name:</span> test-change
+<span class="key">description:</span> Add focused tests when code changes.
+---
+1. Read the change and existing tests.
+2. Use [checks](references/checklist.md).
+3. Add tests. Run them. Report the result.</code></pre></div></div>
+            <div class="reuse-bottom">
+              <figure class="cabinet-figure" aria-labelledby="cabinet-caption">
+                <div class="figure-heading"><span>Fig. 1</span><span>Load on demand</span></div>
+                <svg id="skill-cabinet" viewBox="0 0 330 190" role="img" aria-label="A three-drawer file cabinet. Each drawer represents a level of skill content. Select a level to open its drawer."></svg>
+                <div class="figure-footer"><span>Select a level</span><output id="cabinet-readout">Metadata</output></div>
+                <div class="figure-controls" aria-label="Skill loading levels">
+                  <button type="button" data-level="0" aria-pressed="true">1</button>
+                  <button type="button" data-level="1" aria-pressed="false">2</button>
+                  <button type="button" data-level="2" aria-pressed="false">3</button>
+                </div>
+                <figcaption class="sr-only" id="cabinet-caption">Read metadata first, then the skill instructions, then required resources.</figcaption>
+              </figure>
+              <div class="small">
+                <p class="small"><strong>1.</strong> Name + description<br><strong>2.</strong> SKILL.md body<br><strong>3.</strong> Resources: references, scripts</p>
+                <p class="small" style="margin-top:12px"><strong>Required:</strong> <code>name</code> matches the folder. <code>description</code> states when to use the skill.</p>
+              </div>
+            </div>
+            <p class="small"><strong>Optional:</strong> <code>argument-hint</code>, <code>user-invocable</code>, <code>disable-model-invocation</code>. VS Code: experimental <code>context: fork</code>.</p>
+          </article>
+        </div>
+        <p class="note"><strong>Skill controls:</strong> <code>user-invocable: false</code> hides the slash command. <code>disable-model-invocation: true</code> stops automatic loading. A skill does not grant tool permissions.</p>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://code.visualstudio.com/docs/agent-customization/prompt-files">Prompt files</a><a href="https://code.visualstudio.com/docs/agent-customization/agent-skills">Skills and fields</a><a href="https://agentskills.io/specification">Open skill format</a></footer>
+    </section>
+
+    <section class="slide" id="slide-6" aria-labelledby="title-5" data-title="Agent orchestration" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">06</span><div><h1 id="title-5">Agent orchestration</h1><p class="lead">Run dependent work in sequence. Run independent work in parallel. Give each agent a clear task and stop condition.</p></div></header>
+      <div class="content">
+        <div class="grid orchestration-grid grow">
+          <article class="panel stack">
+            <div><h2>Sequential handoff <span class="badge">VS Code Local</span></h2><p class="small">A handoff changes the active agent in the same conversation. You review one stage before starting the next.</p></div>
+            <div class="sequence-map" aria-label="Planner to user approval to implementation">
+              <div class="station"><svg class="ico" aria-hidden="true"><use href="#i-plan"/></svg><b>Planner</b><p>Proposes a plan</p></div>
+              <span class="arrow" aria-hidden="true">&rarr;</span><div class="station"><svg class="ico" aria-hidden="true"><use href="#i-review"/></svg><b>You</b><p>Check and choose</p></div>
+              <span class="arrow" aria-hidden="true">&rarr;</span><div class="station"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><b>Agent</b><p>Implements the plan</p></div>
+            </div>
+            <div><span class="file">.github/agents/planner.agent.md</span><div class="codebox"><pre><code>---
+<span class="key">name:</span> Planner
+<span class="key">description:</span> Plan a change without edits
+<span class="key">tools:</span> ['read', 'search']
+<span class="key">handoffs:</span>
+  - <span class="key">label:</span> Implement plan
+    <span class="key">agent:</span> agent
+    <span class="key">prompt:</span> Implement the agreed plan.
+    <span class="key">send:</span> false
+---
+Research the task. Return a plan and tests.</code></pre></div></div>
+            <p class="small"><strong>Trigger:</strong> Plan with Planner, then select <strong>Implement plan</strong>. <code>send: false</code> lets you edit the prompt; <code>send: true</code> submits it after selection.</p>
+            <p class="small muted">Local runtime only. Optional handoff field: <code>model</code>.</p>
+          </article>
+          <article class="stack">
+            <div><h2>Parallel subagents</h2><p>The main agent gives each task a separate context, then combines the results.</p></div>
+            <svg class="fork-map" viewBox="0 0 820 145" role="img" aria-label="A coordinator sends independent research and test-analysis tasks to two workers, then combines the results.">
+              <path class="wire" d="M190 72H225V35H275M225 72V111H275M537 35H579V72H624M537 111H579V72"/>
+              <rect class="box" x="0" y="44" width="190" height="56" rx="7"/><text x="95" y="79" text-anchor="middle">Coordinator</text>
+              <rect class="box" x="275" y="7" width="262" height="56" rx="7"/><text x="406" y="42" text-anchor="middle">Research worker</text>
+              <rect class="box" x="275" y="83" width="262" height="56" rx="7"/><text x="406" y="118" text-anchor="middle">Test-analysis worker</text>
+              <rect class="box" x="624" y="44" width="190" height="56" rx="7"/><text x="719" y="79" text-anchor="middle">One result</text>
+            </svg>
+            <div class="codebox"><pre><code>Use two subagents in parallel.
+One: find the API's error-handling pattern.
+Two: find the relevant test fixtures.
+Do not edit files. Return paths and findings.
+Combine the results into an implementation plan.</code></pre></div>
+            <div class="grid cols2">
+              <div><h3 class="blue">Copilot runtime</h3><p class="small">Name the role or custom agent. Delegation uses <code>task</code>. In CLI, use <code>/fleet &lt;task&gt;</code> for parallel work.</p></div>
+              <div><h3 class="purple">Local runtime</h3><p class="small">Enable <strong>Run Subagent</strong>. In a coordinator agent, use:</p><pre class="small" style="margin-top:9px"><code><span class="key">tools:</span> ['agent', 'read']
+<span class="key">agents:</span> ['Researcher',
+         'Test analyst']</code></pre></div>
+            </div>
+            <p class="small rule">Hide from picker: <code>user-invocable: false</code>. Block delegation: <code>disable-model-invocation: true</code>. Local <code>agents</code> lists can override.</p>
+            <p class="note"><strong>Subagents share files.</strong> Avoid concurrent edits; use isolated worktrees.</p>
+          </article>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://code.visualstudio.com/docs/agent-customization/custom-agents#_handoffs">Handoffs</a><a href="https://code.visualstudio.com/docs/agents/run/subagents">Subagents</a><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/speed-up-task-completion">CLI fleet</a></footer>
+    </section>
+
+    <section class="slide" id="slide-7" aria-labelledby="title-6" data-title="Code review" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">07</span><div><h1 id="title-6">Code review</h1><p class="lead">Find defects before merge. Local feedback and GitHub pull request reviews use different controls.</p></div></header>
+      <div class="content">
+        <div class="grid review-grid grow">
+          <article class="stack">
+            <div><h2>Choose the surface</h2>
+              <div class="surface-review"><h3>VS Code</h3><p>Select code &gt; right-click &gt; <strong>Review</strong>, or use <strong>Source Control &gt; Review Changes</strong> for uncommitted changes.</p></div>
+              <div class="surface-review"><h3>GitHub Copilot app</h3><p><strong>Pull requests &gt; Files changed &gt; New session.</strong> Ask for a review, inspect comments, then submit from <strong>Review</strong>.</p></div>
+              <div class="surface-review"><h3>Copilot CLI</h3><p>Run <code>/review</code> or <code>/review src/api</code>. It analyzes changes and returns feedback in the terminal.</p></div>
+              <div class="surface-review"><h3>GitHub.com</h3><p>Open a PR &gt; <strong>Reviewers &gt; Copilot &gt; Request</strong>. A ruleset can request reviews automatically.</p></div>
+            </div>
+            <p class="note"><strong>Check each finding.</strong> Review severity is High, Medium, or Low. Effort is a separate setting. Copilot comments by default; approving reviews require explicit configuration.</p>
+          </article>
+          <article class="panel stack">
+            <div><h2>Review environment</h2><p class="small muted">GitHub.com runs setup in GitHub Actions. This file does not configure local reviews.</p></div>
+            <div><span class="file">.github/workflows/copilot-code-review.yml</span><div class="codebox"><pre><code><span class="key">on:</span> workflow_dispatch
+<span class="key">jobs:</span>
+  <span class="key">copilot-setup-steps:</span>
+    <span class="key">runs-on:</span> ubuntu-latest
+    <span class="key">permissions:</span> { contents: read }
+    <span class="key">steps:</span>
+      - <span class="key">uses:</span> actions/checkout@v6
+      - <span class="key">uses:</span> actions/setup-node@v7
+        <span class="key">with:</span> { node-version: '22' }
+      - <span class="key">run:</span> npm ci</code></pre></div></div>
+            <p class="small"><strong>Required job ID:</strong> <code>copilot-setup-steps</code>. <strong>Job fields:</strong> <code>runs-on</code>, <code>steps</code>, <code>permissions</code>, <code>services</code>, <code>snapshot</code>, <code>timeout-minutes</code> (maximum 59).</p>
+            <p class="small rule"><strong>Fallback:</strong> <code>copilot-setup-steps.yml</code> in the same folder. Commit the workflow to the default branch.</p>
+            <p class="small"><strong>Review guidance:</strong> Use instruction files (slide 4). Set <code>excludeAgent: "code-review"</code> to exclude a path-specific instruction file.</p>
+          </article>
+          <article class="stack">
+            <div><h2>GitHub.com effort</h2>
+              <div class="effort-row"><b class="blue">Lite</b><p>Fast, targeted feedback on clear issues.</p></div>
+              <div class="effort-row"><b class="purple">Balanced</b><p>Deeper reasoning. The default level.</p></div>
+              <div class="effort-row"><b class="orange">Max</b><p>Multiple high-reasoning models.</p></div>
+              <div class="effort-row"><b class="green">Adaptive</b><p>Chooses a level from risk and complexity. Public preview.</p></div>
+              <p class="small muted" style="margin-top:9px">Choose under PR <strong>Reviewers</strong>. Administrators set defaults and maximums. Higher effort uses more AI credits.</p>
+            </div>
+            <div class="rule"><h2>Firewall</h2><p class="small"><strong>Settings &gt; Copilot &gt; Internet access &gt; Copilot code review</strong></p><p class="small" style="margin-top:10px">Keep the firewall enabled. Select the recommended allowlist and add only required domains or URLs to the custom allowlist.</p><p class="small" style="margin-top:10px">Organization rules and repository rules combine. These controls are separate from cloud-agent firewall settings.</p></div>
+            <p class="note warn"><strong>Do not put firewall or effort fields in the setup YAML.</strong> Setup steps are outside the agent firewall's coverage. Keep their commands and dependencies trusted.</p>
+          </article>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-code-review">Review and effort</a><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment">Setup YAML</a><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-the-firewall">Firewall</a><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/managing-issues-and-pull-requests">App review</a></footer>
+    </section>
+
+    <section class="slide" id="slide-8" aria-labelledby="title-7" data-title="Copilot app" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">08</span><div><h1 id="title-7">GitHub Copilot app</h1><p class="lead">A desktop workspace for agent-led work: plan, run sessions, inspect results, and manage pull requests.</p></div></header>
+      <div class="content">
+        <div class="grid app-grid grow">
+          <article class="stack">
+            <div class="app-map" role="img" aria-label="Conceptual app layout: projects, chats, and repository sessions on the left; conversation and shared work surfaces on the right.">
+              <aside><p>Projects</p><p>Chats</p><p class="selected">Repository sessions</p><p>Automations</p><p>Customize</p></aside>
+              <div class="workspace"><h3>Task conversation</h3><p class="muted">Plan / Interactive / Autopilot</p><div class="workspace-lanes"><span>Changes and review</span><span>Browser and terminal</span><span>Documents and canvases</span><span>Issues and pull requests</span></div><p class="tiny muted" style="margin-top:12px">Conceptual map, not a product screenshot.</p></div>
+            </div>
+            <div class="feature-grid">
+              <div><h3>Projects</h3><p>Keep a goal, context, sessions, and results together across repositories.</p></div>
+              <div><h3>Chats</h3><p>Discuss ideas without a checkout. Add a repository session to change code.</p></div>
+              <div><h3>Repository sessions</h3><p>Use a worktree or the current checkout. Run locally, remotely, or in the cloud.</p></div>
+              <div><h3>Automations</h3><p>Run a saved task on a trigger. Local runs need the host; cloud runs do not.</p></div>
+              <div><h3>Customize</h3><p>Add instructions, agents, skills, plugins, and MCP connections. Check access first.</p></div>
+              <div><h3>Canvases</h3><p>Share a browser, document, spreadsheet, or custom panel. Use <code>/create-canvas</code>.</p></div>
+            </div>
+            <p class="note"><strong>Start:</strong> Add a repository &gt; create a session &gt; choose Plan &gt; describe the result &gt; review the plan and changes.</p>
+          </article>
+          <aside class="panel stack">
+            <div><h2>Repository configuration</h2><p class="small">Use the settings UI, or edit the repository file. Review and accept file-based configuration before it runs.</p></div>
+            <div><span class="file">.github/github-app.yml</span><div class="codebox"><pre><code><span class="key">instructions:</span> "Use existing test commands."
+<span class="key">scripts:</span>
+  - <span class="key">name:</span> Setup
+    <span class="key">command:</span> npm ci
+    <span class="key">triggers:</span> [session.create]
+  - <span class="key">name:</span> Run
+    <span class="key">command:</span> npm run dev
+<span class="key">server_ready_pattern:</span> '(http://localhost:\d+)'
+<span class="key">auto_open_in_browser:</span> true
+<span class="key">automation:</span>
+  <span class="key">auto_issue_session:</span> true
+  <span class="key">remote_control:</span> false</code></pre></div></div>
+            <p class="small"><strong>Scripts:</strong> <code>name</code>, <code>command</code>, optional <code>triggers</code>. Triggers are <code>session.create</code> and <code>session.archive</code>. No trigger means manual use.</p>
+            <p class="small"><strong>Browser:</strong> The first regex capture supplies the server URL or port.</p>
+            <p class="note warn"><strong>The automation block is not a schedule.</strong> Set the recurring task, environment, and trigger in <strong>Automations &gt; Create automation</strong>.</p>
+          </aside>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/github-copilot-app">App overview</a><a href="https://docs.github.com/en/copilot/reference/github-copilot-app-reference/repository-configuration">YAML fields</a><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/using-automations">Automations</a><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/working-with-canvas-extensions">Canvases</a></footer>
+    </section>
+
+    <section class="slide" id="slide-9" aria-labelledby="title-8" data-title="Copilot CLI" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">09</span><div><h1 id="title-8">GitHub Copilot CLI</h1><p class="lead">Use an agent from your terminal. It can read code, edit files, run tools, and inspect results.</p></div></header>
+      <div class="content">
+        <div class="grid cli-grid grow">
+          <article class="stack">
+            <div><h2>Slash commands</h2><p class="small muted">Start with <code>copilot</code>. Use <code>/help</code> for the installed version's full command list.</p></div>
+            <div>
+              <div class="cli-group"><h3>Plan and execute</h3><div class="chips"><code>/plan</code><code>/autopilot</code><code>/fleet</code><code>/delegate</code></div><p>Plan / continue / parallel work / remote work.</p></div>
+              <div class="cli-group"><h3>Inspect</h3><div class="chips"><code>/review</code><code>/security-review</code><code>/diff</code><code>/research</code></div><p>Review changes or research with sources.</p></div>
+              <div class="cli-group"><h3>Manage context</h3><div class="chips"><code>/context</code><code>/compact</code><code>/resume</code><code>/chronicle</code></div><p>Inspect, summarize, resume, or search history.</p></div>
+              <div class="cli-group"><h3>Customize</h3><div class="chips"><code>/init</code><code>/agent</code><code>/skills</code><code>/mcp</code><code>/plugin</code><code>/model</code></div><p>Set guidance, roles, skills, tools, and models.</p></div>
+              <div class="cli-group"><h3>Control access</h3><div class="chips"><code>/permissions</code><code>/sandbox</code><code>/add-dir</code></div><p>Directory access does not attach its content.</p></div>
+            </div>
+          </article>
+          <article class="stack">
+            <h2>Add context</h2>
+            <div class="terminal">
+              <div class="terminal-title"><i></i><i></i><i></i><span>Interactive session</span></div>
+              <pre><code>copilot
+<span class="comment"># Type @ and select a file</span>
+Explain @src/auth.ts
+Compare with @tests/auth.test.ts
+<span class="comment"># Add an issue or pull request</span>
+Explain #42
+<span class="comment"># Direct shell command, not AI</span>
+! git status</code></pre>
+            </div>
+            <p class="small"><strong>Image:</strong> Paste a clipboard image with <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>Alt</kbd>+<kbd>V</kbd>, as supported by your terminal and OS. Check that the attachment appears before sending.</p>
+            <div class="terminal">
+              <div class="terminal-title"><svg class="ico" aria-hidden="true"><use href="#i-terminal"/></svg><span>One-shot prompt with an image</span></div>
+              <pre><code>copilot -p "Explain this UI mockup" \
+  --attachment ./screen.png</code></pre>
+            </div>
+            <p class="small muted"><code>-p</code> runs one request and exits. <code>--attachment</code> is for non-interactive prompts. Repeat the option for more files.</p>
+          </article>
+          <article class="panel stack">
+            <div><h2>Configure and continue</h2><pre><code>copilot login
+copilot --continue
+copilot config --list</code></pre></div>
+            <div class="rule"><h3>Settings files</h3><p class="small"><code>~/.copilot/settings.json</code><br>Personal defaults.</p><p class="small" style="margin-top:10px"><code>.github/copilot/settings.json</code><br>Supported shared repository settings.</p><p class="small" style="margin-top:10px"><code>.github/copilot/settings.local.json</code><br>Local overrides; do not share personal values.</p></div>
+            <div class="rule"><h3>Useful command-line options</h3><dl class="field-list" style="margin-top:12px">
+              <dt>--agent</dt><dd>Select a custom role.</dd>
+              <dt>--model</dt><dd>Select an available model.</dd>
+              <dt>--allow-tool</dt><dd>Permit a specific tool.</dd>
+              <dt>--deny-tool</dt><dd>Deny a specific tool.</dd>
+              <dt>--output-format</dt><dd>Use text or JSONL output.</dd>
+            </dl></div>
+            <p class="note warn"><strong>Do not default to <code>--allow-all</code>.</strong> Check tools and instructions before you grant access.</p>
+          </article>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference">CLI commands and shortcuts</a><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference">One-shot options</a><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference">Settings files</a></footer>
+    </section>
+
+    <section class="slide" id="slide-10" aria-labelledby="title-9" data-title="Spec-driven development" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">10</span><div><h1 id="title-9">Spec-driven development</h1><p class="lead">GitHub Spec Kit turns intent into a specification, a plan, tasks, code, and evidence.</p></div></header>
+      <div class="content">
+        <div class="grid spec-top">
+          <div class="stack"><h2>Start with the behavior</h2><p>Use Spec Kit for several related requirements. Define acceptance criteria and resolve gaps before coding.</p><p class="small"><strong>Example:</strong> "Export orders to CSV. Include current filters. Return a header-only file when there are no orders."</p></div>
+          <div class="codebox"><span class="file">Terminal setup &mdash; new project</span><pre><code>uv tool install specify-cli
+specify init order-export --integration copilot
+cd order-export</code></pre><p class="small muted" style="margin-top:13px">Then open Copilot in this folder. Run the following skills in chat, not in the terminal.</p></div>
+        </div>
+        <div class="flow spec-flow" aria-label="Specify, plan, tasks, implement, and converge in sequence">
+          <div class="flow-step"><b class="blue">Specify</b><code>/speckit-specify</code><span>What and why<br><strong>spec.md</strong></span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="purple">Plan</b><code>/speckit-plan</code><span>Design and stack<br><strong>plan.md</strong></span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="orange">Tasks</b><code>/speckit-tasks</code><span>Ordered work<br><strong>tasks.md</strong></span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="green">Implement</b><code>/speckit-implement</code><span>Build and test<br><strong>Source + tests</strong></span></div><span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="flow-step"><b class="blue">Converge</b><code>/speckit-converge</code><span>Check against intent<br><strong>Remaining tasks</strong></span></div>
+        </div>
+        <div class="gates grow">
+          <article><h3>Project principles</h3><code>/speckit-constitution</code><p>Start with rules for validation, tests, and compatibility.</p></article>
+          <article><h3>Before planning</h3><code>/speckit-clarify</code><p>Resolve gaps in requirements before choosing an implementation.</p></article>
+          <article><h3>After planning</h3><code>/speckit-checklist</code><p>Check whether requirements are clear and complete. This is not a runtime test suite.</p></article>
+          <article><h3>Before implementation</h3><code>/speckit-analyze</code><p>Find conflicts in spec, plan, and tasks. Read-only; edit the source documents.</p></article>
+        </div>
+        <div class="panel artifact-row">
+          <div><h3>Files to maintain</h3><p>Edit the feature's <code>spec.md</code>, <code>plan.md</code>, and <code>tasks.md</code> when requirements or decisions change.</p></div>
+          <div><h3>Active feature</h3><p><code>.specify/feature.json</code> records the feature directory. A Git branch change alone does not select a feature.</p></div>
+          <div><h3>Close the loop</h3><p>Converge adds missing tasks. Implement them and check again. Review the result before you merge.</p></div>
+        </div>
+        <p class="note"><strong>Current Copilot syntax:</strong> <code>/speckit-*</code> in default skills mode. Older prompt integrations and some other agents use <code>/speckit.*</code>. Check the integration you installed.</p>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.github.com/spec-kit/">Spec Kit</a><a href="https://github.github.com/spec-kit/quickstart.html">Current Copilot quickstart</a><a href="https://github.github.com/spec-kit/reference/agentic-sdd.html">Commands and artifacts</a></footer>
+    </section>
+
+    <section class="slide" id="slide-11" aria-labelledby="title-10" data-title="Universe and resources" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">11</span><div><h1 id="title-10">Universe recap and reusable resources</h1><p class="lead">Use the Universe 2026 recap for announcements. Use Awesome Copilot for resources you can inspect and adapt.</p></div></header>
+      <div class="content">
+        <div class="grid recap-grid grow">
+          <article class="stack">
+            <h2>Universe 2026 highlights</h2>
+            <div class="news-grid">
+              <div class="news-item"><h3>Copilot Fusion</h3><p>Choose Standard, High, or Max. Copilot selects one model or combines models for the task.</p></div>
+              <div class="news-item"><h3>Copilot Projects</h3><p>Give Copilot a goal. Coordinate context, sessions, and results across repositories.</p></div>
+              <div class="news-item"><h3>Copilot Automations</h3><p>Run reusable tasks on demand, on a schedule, or from triggers. Control actions and cost.</p></div>
+              <div class="news-item"><h3>Copilot Connectors</h3><p>Connect supported services once. Reuse managed MCP connections across Copilot surfaces.</p></div>
+              <div class="news-item"><h3>Security canvas and AI Scan</h3><p>Inspect code-scanning findings beside your work. Use AI Scan for repository and PR analysis.</p></div>
+              <div class="news-item"><h3>AI secret detection</h3><p>Detect unstructured secrets before a push. Enable push protection and AI detection.</p></div>
+              <div class="news-item"><h3>Package firewall</h3><p>Block risky npm packages before installation by developers, agents, or CI runners.</p></div>
+              <div class="news-item"><h3>Dependabot reachability</h3><p>See which vulnerable functions your JavaScript code calls. Use this evidence to prioritize fixes.</p></div>
+            </div>
+            <div class="rule"><h3>GitHub platform</h3><p class="small"><strong>Stacked pull requests:</strong> review linked changes in smaller units. <strong>Issue artifacts:</strong> keep plans and research with the issue. <strong>GitHub CLI <code>--attach</code>:</strong> add images and videos.</p></div>
+            <p class="tiny muted">These are recap highlights, not an availability guarantee. Check each feature's documentation for plan, policy, platform, and preview requirements.</p>
+          </article>
+          <aside class="panel stack spread">
+            <div><h2>Awesome Copilot</h2><a class="resource-url" href="https://awesome-copilot.github.com/">awesome-copilot.github.com</a><p class="small" style="margin-top:12px">A community library of reusable Copilot resources and hands-on guides.</p></div>
+            <div class="resource-list">
+              <div><a href="https://awesome-copilot.github.com/agents/">Agents</a><p>Focused roles</p></div>
+              <div><a href="https://awesome-copilot.github.com/instructions/">Instructions</a><p>Project rules</p></div>
+              <div><a href="https://awesome-copilot.github.com/skills/">Skills</a><p>Reusable procedures</p></div>
+              <div><a href="https://awesome-copilot.github.com/plugins/">Plugins</a><p>Packaged capabilities</p></div>
+              <div><a href="https://awesome-copilot.github.com/extensions/">Extensions</a><p>App canvases</p></div>
+              <div><a href="https://awesome-copilot.github.com/learning-hub/">Learning Hub</a><p>Guides and workshops</p></div>
+            </div>
+            <div class="rule"><h3>Use a resource</h3><ol class="resource-steps">
+              <li>Choose a resource for one recurring task.</li>
+              <li>Read its source, scripts, license, and required access.</li>
+              <li>Install it, or copy it to the documented location.</li>
+              <li>Adapt paths and commands. Try it on a small task.</li>
+            </ol></div>
+            <p class="note"><strong>Keep <code>SKILL.md</code> and its resources together.</strong> Inspect community code before use.</p>
+          </aside>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.com/events/universe/recap">Universe 2026 recap</a><a href="https://awesome-copilot.github.com/">Awesome Copilot website</a><a href="https://github.com/github/awesome-copilot">Resource source repository</a><span>Checked 18 Nov 2026</span></footer>
+    </section>
+  </main>
+</div>
+<nav class="navigation" aria-label="Slide navigation">
+  <button type="button" id="previous" title="Previous slide (Left arrow)" aria-label="Previous slide"><svg class="ico" aria-hidden="true"><use href="#i-left"/></svg></button>
+  <span class="count" id="count" aria-hidden="true">1 / 11</span>
+  <button type="button" id="next" title="Next slide (Right arrow)" aria-label="Next slide"><svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+  <label for="jump" class="sr-only">Choose a slide</label><select id="jump" title="Choose a slide"></select>
+  <button type="button" id="theme" title="Change theme (T)" aria-label="Use light theme"><svg class="ico" aria-hidden="true"><use href="#i-theme"/></svg></button>
+  <button type="button" id="fullscreen" title="Full screen (F)" aria-label="Enter full screen"><svg class="ico" aria-hidden="true"><use href="#i-full"/></svg></button>
+</nav>
+<p class="orientation-hint">Use landscape for larger slide text.</p>
+<p id="slide-announcement" class="sr-only" aria-live="polite"></p>
+<p id="notice" role="status"></p>
+<noscript><p style="position:fixed;bottom:55px;left:15px;background:#0d1117;color:#f0f6fc;padding:12px;z-index:30">Enable JavaScript to fit and navigate this standalone deck.</p></noscript>
+<script>
+(() => {
+  "use strict";
+  const stage = document.getElementById("stage");
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const previous = document.getElementById("previous");
+  const next = document.getElementById("next");
+  const jump = document.getElementById("jump");
+  const theme = document.getElementById("theme");
+  const fullscreen = document.getElementById("fullscreen");
+  const notice = document.getElementById("notice");
+  let current = 0;
+  let noticeTimer;
+
+  slides.forEach((slide, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${index + 1}. ${slide.dataset.title}`;
+    jump.append(option);
+  });
+
+  function fit() {
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
+    const scale = Math.min(width / 1920, height / 1080);
+    const offsetX = (width - 1920 * scale) / 2;
+    const offsetY = (height - 1080 * scale) / 2;
+    document.documentElement.style.setProperty("--deck-scale", String(scale));
+    document.documentElement.style.setProperty("--deck-offset-x", `${offsetX}px`);
+    document.documentElement.style.setProperty("--deck-offset-y", `${offsetY}px`);
+    stage.style.transform = `scale(${scale})`;
+    stage.style.left = `${offsetX}px`;
+    stage.style.top = `${offsetY}px`;
+  }
+
+  function show(index, updateHash = true) {
+    current = Math.max(0, Math.min(slides.length - 1, index));
+    if (slides.some(slide => slide.contains(document.activeElement))) document.activeElement.blur();
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("active", i === current);
+      slide.inert = i !== current;
+      slide.setAttribute("aria-hidden", String(i !== current));
+    });
+    document.getElementById("count").textContent = `${current + 1} / ${slides.length}`;
+    document.getElementById("slide-announcement").textContent = `Slide ${current + 1} of ${slides.length}: ${slides[current].dataset.title}`;
+    document.querySelector(".progress").style.transform = `scaleX(${(current + 1) / slides.length})`;
+    previous.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    jump.value = String(current);
+    document.title = `${slides[current].dataset.title} | GitHub Copilot`;
+    if (updateHash) window.location.hash = `slide-${current + 1}`;
+  }
+
+  function readHash() {
+    const match = /^#slide-(\d+)$/.exec(window.location.hash);
+    show(match ? Number(match[1]) - 1 : 0, false);
+  }
+
+  function toggleTheme() {
+    const isLight = document.documentElement.dataset.theme !== "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    theme.setAttribute("aria-label", isLight ? "Use dark theme" : "Use light theme");
+  }
+
+  function report(message) {
+    clearTimeout(noticeTimer);
+    notice.textContent = message;
+    noticeTimer = setTimeout(() => { notice.textContent = ""; }, 6000);
+  }
+
+  async function toggleFullscreen() {
+    if (!document.fullscreenEnabled) {
+      report("Full screen is not available here. Open this HTML file in a browser.");
+      return;
+    }
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch (error) {
+      report(`Full screen could not start: ${error.message}`);
+    }
+  }
+
+  previous.addEventListener("click", () => show(current - 1));
+  next.addEventListener("click", () => show(current + 1));
+  jump.addEventListener("change", () => show(Number(jump.value)));
+  theme.addEventListener("click", toggleTheme);
+  fullscreen.addEventListener("click", toggleFullscreen);
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", readHash);
+  document.addEventListener("fullscreenchange", () => {
+    fullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Enter full screen");
+    fit();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest("input,textarea,select,[contenteditable=true]")) return;
+    if (event.key === " " && event.target.closest("button,a")) return;
+    const actions = {
+      ArrowRight: () => show(current + 1), ArrowDown: () => show(current + 1),
+      PageDown: () => show(current + 1), " ": () => show(current + 1),
+      ArrowLeft: () => show(current - 1), ArrowUp: () => show(current - 1),
+      PageUp: () => show(current - 1), Home: () => show(0), End: () => show(slides.length - 1),
+      t: toggleTheme, T: toggleTheme, f: toggleFullscreen, F: toggleFullscreen
+    };
+    if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
+    else if (/^\d$/.test(event.key)) { event.preventDefault(); show(event.key === "0" ? slides.length - 1 : Number(event.key) - 1); }
+  });
+  document.querySelectorAll(".sources a,.resource-list a,.resource-url").forEach(link => {
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+  });
+
+  /*
+   * Figure tier: a three-drawer index cabinet. Pulling a drawer represents
+   * loading one level of skill content, not granting access to a tool.
+   * Parts: 4 feet, base, 2 side posts, back, top, 3 shelves, 6 rails,
+   * 3 floors, 6 side walls, 3 backs, 3 fronts, 6 handle mounts,
+   * 3 handles, 3 label holders, 3 inserts, 9 paper cards, 4 top screws.
+   */
+  const svg = document.getElementById("skill-cabinet");
+  const project = ([x, y, z]) => [167 + (x - y) * 1.25, 153 + (x + y) * .44 - z * 1.15];
+  const points = vertices => vertices.map(vertex => project(vertex).map(n => n.toFixed(2)).join(",")).join(" ");
+  function box(x, y, z, width, depth, height, paper = false) {
+    const a = [x,y,z], b = [x+width,y,z], c = [x+width,y+depth,z], d = [x,y+depth,z];
+    const e = [x,y,z+height], f = [x+width,y,z+height], g = [x+width,y+depth,z+height], h = [x,y+depth,z+height];
+    const top = paper ? "var(--cab-paper)" : "var(--cab-top)";
+    return `<g stroke="var(--cab-edge)" stroke-width=".55" stroke-linejoin="round"><polygon fill="var(--cab-base)" points="${points([a,b,c,d])}"/><polygon fill="var(--cab-side)" points="${points([b,c,g,f])}"/><polygon fill="var(--cab-front)" points="${points([d,c,g,h])}"/><polygon fill="${top}" points="${points([e,f,g,h])}"/></g>`;
+  }
+  let cabinet = "";
+  [[-31,-25],[25,-25],[-31,18],[25,18]].forEach(([x,y]) => { cabinet += box(x,y,0,7,7,5); });
+  cabinet += box(-35,-29,5,74,60,5);
+  cabinet += box(-35,-29,10,74,4,91);
+  cabinet += box(-35,-25,10,4,52,91);
+  const drawers = [];
+  for (let i=0; i<3; i++) {
+    const z = 13 + i * 28;
+    cabinet += box(-31,-25,z-3,66,52,2);
+    cabinet += box(-30,-24,z-1,2,49,2) + box(31,-24,z-1,2,49,2);
+    let drawer = box(-27,-22,z,57,45,2);
+    drawer += box(-27,-22,z+2,57,2,18);
+    drawer += box(-27,-20,z+2,2,41,18);
+    for (let p=0; p<3; p++) drawer += box(-22,-15+p*11,z+2,45,1.3,14,true);
+    drawer += box(28,-20,z+2,2,41,18);
+    drawer += box(-29,21,z,61,4,23);
+    drawer += box(-10,25,z+9,4,3,3) + box(12,25,z+9,4,3,3);
+    drawer += box(-10,28,z+9,26,2,3);
+    drawer += box(-8,25,z+15,22,.8,5) + box(-6,25.9,z+16,18,.3,3,true);
+    drawers.push(`<g data-drawer="${2-i}">${drawer}</g>`);
+  }
+  cabinet += drawers.join("");
+  cabinet += box(35,-25,10,4,52,91);
+  cabinet += box(-35,-29,101,74,60,4);
+  [[-30,-24],[31,-24],[-30,23],[31,23]].forEach(([x,y]) => { cabinet += box(x,y,105,1.6,1.6,.5); });
+  svg.innerHTML = cabinet;
+  const levels = ["Metadata","Instructions","Resources"];
+  function openDrawer(level) {
+    svg.querySelectorAll("[data-drawer]").forEach(drawer => {
+      const selected = Number(drawer.dataset.drawer) === level;
+      drawer.style.transform = selected ? "translate(-23px,8px)" : "translate(0,0)";
+    });
+    document.querySelectorAll("[data-level]").forEach(button => {
+      button.setAttribute("aria-pressed", String(Number(button.dataset.level) === level));
+      button.setAttribute("aria-label", `Show ${levels[Number(button.dataset.level)].toLowerCase()}`);
+    });
+    document.getElementById("cabinet-readout").textContent = levels[level];
+  }
+  document.querySelectorAll("[data-level]").forEach(button => {
+    button.addEventListener("click", () => openDrawer(Number(button.dataset.level)));
+  });
+  openDrawer(0);
+  fit();
+  readHash();
+})();
+</script>
+</body>
+</html>
