@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="An animated slide deck: eight strategies to optimize your GitHub Copilot AI usage.">
+<title>Optimize your AI usage | GitHub Copilot</title>
+<!--
+THESIS: Each AI credit must buy useful work, not waste.
+OWN-WORLD: Tokens are GitHub contribution squares. Green squares are useful work. Red squares are waste.
+STORY: Overview, then the eight strategies in the order of the source page, then usage tracking.
+FIRST VIEWPORT: A full contribution graph lights up in a wave. Red waste squares turn green.
+FORM: GitHub dark and light theme. Fixed stage from 16:9 to 20:13. Each tip has What, Where, How, and Benefit, plus one animated figure.
+Source: https://docs.github.com/en/copilot/tutorials/optimize-ai-usage (checked 19 November 2026).
+-->
+<style>
+:root{--bg:#0d1117;--panel:#151b23;--raised:#212830;--code:#010409;--fg:#f0f6fc;--muted:#b1bac4;--line:#3d444d;--blue:#79c0ff;--green:#7ee787;--purple:#d2a8ff;--orange:#ffa657;--red:#ff7b72;--yellow:#e3b341;--blue-soft:#152b44;--green-soft:#152e22;--purple-soft:#2a203e;--orange-soft:#352719;--red-soft:#3b1d20;--g0:var(--raised);--g1:#0e4429;--g2:#006d32;--g3:#26a641;--g4:#39d353;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--ease:cubic-bezier(.22,.8,.24,1);--deck-scale:1;--deck-offset-x:0px;--deck-offset-y:0px}
+[data-theme="light"]{--bg:#fff;--panel:#f6f8fa;--raised:#eaeef2;--code:#f6f8fa;--fg:#1f2328;--muted:#59636e;--line:#d1d9e0;--blue:#0550ae;--green:#116329;--purple:#6639ba;--orange:#953800;--red:#a40e26;--yellow:#7d4e00;--blue-soft:#ddf4ff;--green-soft:#dafbe1;--purple-soft:#fbefff;--orange-soft:#fff1e5;--red-soft:#ffebe9;--g1:#9be9a8;--g2:#40c463;--g3:#30a14e;--g4:#216e39}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg)}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,p{margin:0}
+h1{font-size:52px;line-height:1.12;font-weight:700;letter-spacing:-1.1px}
+p,li{font-size:23px;line-height:1.4}
+ul{margin:0;padding:0;list-style:none}
+code{font-family:var(--mono);font-size:.88em}
+p code,li code{color:var(--blue);background:var(--raised);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.ico{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#stage{position:absolute;width:1800px;height:1170px;transform-origin:0 0;background:var(--bg);display:flex;flex-direction:column}
+.topbar{height:54px;flex:none;display:flex;align-items:center;gap:13px;padding:0 42px;border-bottom:1px solid var(--line);font-size:21px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:650}
+.sub{color:var(--muted);padding-left:13px;border-left:1px solid var(--line)}
+.strats{margin-left:auto;display:flex;gap:6px;font-size:17px;color:var(--muted)}
+.strats span{padding:3px 10px;border-radius:999px;border:1px solid transparent;white-space:nowrap;transition:color .3s,background .3s,border-color .3s}
+.strats span.on{color:var(--blue);background:var(--blue-soft);border-color:var(--blue)}
+.topbar time{font-size:19px;color:var(--muted);margin-left:14px}
+.progress{position:absolute;top:53px;left:0;width:100%;height:3px;background:var(--blue);transform:scaleX(.05);transform-origin:left;transition:transform .2s ease-out}
+main{flex:1;position:relative;min-height:0}
+.slide{position:absolute;inset:0;display:none;padding:22px 42px 0;flex-direction:column}
+.slide.active{display:flex}
+.slide-head{display:flex;gap:22px;margin-bottom:16px;flex:none}
+.slide-index{font:24px/1 var(--mono);color:var(--muted);padding-top:11px;border-top:3px solid var(--blue);width:44px;text-align:center;flex:none;align-self:flex-start}
+.lead{font-size:25px;color:var(--muted);margin-top:7px}
+.content{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;padding-bottom:14px}
+.sources{flex:none;height:48px;border-top:1px solid var(--line);display:flex;align-items:center;gap:21px;padding-right:480px;font-size:18px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.sources a{color:var(--muted);text-decoration:none}
+.sources a:hover{color:var(--blue);text-decoration:underline}
+.lab{display:inline-block;align-self:flex-start;font:700 18px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:5px;border:1px solid currentColor;margin-bottom:8px}
+.lab.what{color:var(--blue);background:var(--blue-soft)}
+.lab.where{color:var(--orange);background:var(--orange-soft)}
+.lab.how{color:var(--purple);background:var(--purple-soft)}
+.lab.benefit{color:var(--green);background:var(--green-soft)}
+.feat{display:grid;grid-template-columns:.94fr 1.06fr;gap:32px}
+.feat > section{display:flex;flex-direction:column;gap:28px;min-width:0;min-height:0}
+.blk{display:flex;flex-direction:column}
+.feat p,.feat li{font-size:29px;line-height:1.34}
+.dots li{position:relative;padding-left:30px}
+.dots li+li{margin-top:4px}
+.dots li::before{content:"";position:absolute;left:2px;top:.5em;width:13px;height:13px;border-radius:3px;background:var(--purple)}
+.note{font-size:23px;line-height:1.35;padding:10px 14px;border-radius:8px;background:var(--orange-soft);border:1px solid var(--line)}
+.fig{flex:1;min-height:0;display:flex;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px}
+.fig svg{width:100%;height:100%;display:block}
+svg text{font-family:var(--sans)}
+.t{font-size:24px;font-weight:600;fill:var(--fg)}
+.tb{font-size:26px;font-weight:700;fill:var(--fg)}
+.m{font-size:22px;fill:var(--muted)}
+.ct{font-size:22px;font-weight:600;fill:var(--fg)}
+.mono{font-family:var(--mono);font-size:22px;font-weight:600;fill:var(--blue)}
+.code{font-family:var(--mono);font-size:22px;fill:var(--fg)}
+.big{font-size:40px;font-weight:700;fill:var(--fg)}
+.ctr{text-anchor:middle}.end{text-anchor:end}
+.box{fill:var(--raised);stroke:var(--line);stroke-width:1.5}
+.boxb{fill:var(--blue-soft);stroke:var(--blue);stroke-width:1.5}
+.boxg{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
+.boxp{fill:var(--purple-soft);stroke:var(--purple);stroke-width:1.5}
+.boxo{fill:var(--orange-soft);stroke:var(--orange);stroke-width:1.5}
+.boxr{fill:var(--red-soft);stroke:var(--red);stroke-width:1.5}
+.term{fill:var(--code);stroke:var(--line);stroke-width:1.5}
+.wire{fill:none;stroke:var(--muted);stroke-width:2}
+.wireb{fill:none;stroke:var(--blue);stroke-width:2.5}
+.wireg{fill:none;stroke:var(--green);stroke-width:3}
+.wirep{fill:none;stroke:var(--purple);stroke-width:2.5}
+.wirer{fill:none;stroke:var(--red);stroke-width:3}
+.dash{stroke-dasharray:6 6}
+.fb{fill:var(--blue)}.fg{fill:var(--green)}.fp{fill:var(--purple)}.fo{fill:var(--orange)}.fr{fill:var(--red)}.fy{fill:var(--yellow)}.fm{fill:var(--muted)}.ff{fill:var(--fg)}
+.tb2{fill:var(--blue)}.tg{fill:var(--green)}.tp{fill:var(--purple)}.to{fill:var(--orange)}.tr{fill:var(--red)}
+.sq{transform-box:fill-box;transform-origin:center}
+.l0{fill:var(--g0)}.l1{fill:var(--g1)}.l2{fill:var(--g2)}.l3{fill:var(--g3)}.l4{fill:var(--g4)}
+.sr{fill:var(--red)}.sb{fill:var(--blue)}.so{fill:var(--orange)}.sp{fill:var(--purple)}
+.off{opacity:.45}
+.a-pop,.a-fly,.a-move,.a-grow-x,.a-grow-y,.a-squash,.a-shake,.a-spin{transform-box:fill-box;transform-origin:center}
+.a-grow-x{transform-origin:left center}
+.a-grow-y,.a-squash{transform-origin:center bottom}
+.a-draw{stroke-dasharray:1;stroke-dashoffset:0}
+.slide.active .a-rise{animation:rise .7s var(--ease) var(--d,0s) both}
+.slide.active .a-pop{animation:pop .55s var(--ease) var(--d,0s) both}
+.slide.active .a-fade{animation:fade .6s ease-out var(--d,0s) both}
+.slide.active .a-fly{animation:fly 1s var(--ease) var(--d,0s) both}
+.slide.active .a-move{animation:move .8s var(--ease) var(--d,0s) both}
+.slide.active .a-grow-x{animation:growx 1.1s var(--ease) var(--d,0s) both}
+.slide.active .a-grow-y{animation:growy .8s var(--ease) var(--d,0s) both}
+.slide.active .a-draw{animation:draw 1s ease-in-out var(--d,0s) both}
+.slide.active .a-wipe{animation:wipe var(--t,1s) steps(var(--n,24),end) var(--d,0s) both}
+.slide.active .a-squash{animation:squash 1.1s var(--ease) var(--d,0s) both}
+.slide.active .a-dim{animation:dim .7s ease-out var(--d,0s) both}
+.slide.active .a-shake{animation:shake .6s ease-in-out var(--d,0s) both}
+.slide.active .lit{animation:lit .7s var(--ease) var(--d,0s) both}
+.slide.active .waste{animation:waste 2.8s ease-in-out var(--d,0s) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{from{opacity:0;transform:scale(.5)}}
+@keyframes fade{from{opacity:0}}
+@keyframes fly{from{opacity:0;transform:translate(var(--fx,0px),var(--fy,0px)) scale(.7)}}
+@keyframes move{from{transform:translate(var(--fx,0px),var(--fy,0px))}}
+@keyframes growx{from{transform:scaleX(0)}}
+@keyframes growy{from{transform:scaleY(0)}}
+@keyframes draw{0%{stroke-dashoffset:1;marker-end:none}88%{marker-end:none}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}}
+@keyframes squash{from{transform:scaleY(var(--sy,4))}}
+@keyframes dim{from{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes lit{from{fill:var(--g0);transform:scale(.3)}}
+@keyframes waste{0%{fill:var(--g0);transform:scale(.3)}12%{fill:var(--red);transform:scale(1.15)}22%{transform:scale(1)}60%{fill:var(--red)}}
+.chip{font-family:var(--mono);font-size:20px;font-weight:600;fill:var(--fg)}
+.a-shrink{transform-box:fill-box;transform-origin:left center}
+.slide.active .a-scan{animation:scan .6s ease-in-out var(--d,0s) both}
+.slide.active .a-shrink{animation:shrink 1.2s var(--ease) var(--d,0s) both}
+.box.a-scan{fill:var(--orange-soft);stroke:var(--orange)}
+@keyframes scan{0%{fill:var(--raised);stroke:var(--line)}50%{fill:var(--orange)}}
+.gauge-mid{fill:none;stroke:var(--yellow);stroke-width:46}
+[data-theme="light"] .gauge-mid{stroke:#bf8700}
+@keyframes shrink{from{transform:scaleX(var(--s,4))}}
+.hero{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:44px;padding-bottom:24px}
+.hero h1{font-size:128px;line-height:1.02;letter-spacing:-3.4px}
+.hero .lead{font-size:38px;margin-top:18px}
+.hero-grid{width:100%;height:auto;display:block}
+.hero-foot{display:flex;align-items:center;gap:40px;font-size:24px;color:var(--muted)}
+.key{display:inline-flex;align-items:center;gap:10px}
+.key i{width:22px;height:22px;border-radius:4px;display:inline-block}
+.hint{margin-left:auto;display:inline-flex;align-items:center;gap:10px}
+kbd{font:600 20px var(--mono);padding:2px 9px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--panel);color:var(--fg)}
+.plan{display:grid;grid-template-columns:1.12fr .88fr;gap:32px}
+.rows{display:grid;grid-template-rows:repeat(8,1fr);gap:8px;min-height:0}
+.row{display:flex;align-items:center;gap:20px;padding:0 22px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:0}
+.row .n{font:700 22px var(--mono);color:var(--muted);width:20px;flex:none}
+.row .rt{min-width:0}
+.row b{display:block;font-size:27px;line-height:1.2;font-weight:650}
+.row .d{display:block;font-size:22px;line-height:1.3;color:var(--muted)}
+.row .ref{margin-left:auto;font:600 19px var(--mono);color:var(--blue);white-space:nowrap}
+.sw{flex:none;width:58px;height:32px;border-radius:16px;background:var(--green-soft);border:1.5px solid var(--green);position:relative}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:21px;height:21px;border-radius:50%;background:var(--green);transform:translateX(26px)}
+.slide.active .sw{animation:swbg .35s ease-out var(--d,0s) both}
+.slide.active .sw::after{animation:knob .35s var(--ease) var(--d,0s) both}
+@keyframes swbg{from{background:var(--raised);border-color:var(--line)}}
+@keyframes knob{from{transform:translateX(0);background:var(--muted)}}
+.needle{transform-box:view-box;transform-origin:450px 520px;transform:rotate(-62deg)}
+.slide.active .needle{animation:needle 2.8s steps(8,end) .45s both}
+@keyframes needle{from{transform:rotate(62deg)}}
+.navigation{position:fixed;right:calc(var(--deck-offset-x) + 16px * var(--deck-scale));bottom:calc(var(--deck-offset-y) + 4px * var(--deck-scale));transform:scale(var(--deck-scale));transform-origin:bottom right;display:flex;align-items:center;gap:4px;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:3px;color:var(--fg);font-size:16px}
+.navigation button{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:inherit;cursor:pointer;padding:0}
+.navigation button:hover{background:var(--raised)}
+.navigation button:disabled{opacity:.35;cursor:default;background:transparent}
+.navigation button:focus-visible,.navigation select:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.navigation .ico{width:20px;height:20px}
+.navigation select{width:188px;height:32px;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 6px}
+.count{min-width:54px;text-align:center;font-variant-numeric:tabular-nums;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#notice{position:fixed;bottom:52px;right:12px;z-index:21;margin:0;padding:6px 10px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:15px var(--sans)}
+#notice:empty{display:none}
+.orientation-hint{display:none}
+@media (orientation:portrait) and (max-width:900px){.orientation-hint{display:block;position:fixed;top:8px;left:8px;right:8px;z-index:22;margin:0;padding:8px 12px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:15px var(--sans)}}
+@media (pointer:coarse){.navigation button{width:38px;height:38px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.loop{display:none}.hero-grid .waste{fill:var(--red)}}
+@media print{
+@page{size:20in 11.25in;margin:0}
+html,body{overflow:visible;height:auto}
+#stage{position:static;transform:none!important;width:1920px!important;height:auto!important}
+.topbar,.progress,.navigation,#notice,.orientation-hint{display:none}
+main{flex:none}
+.slide{position:relative;inset:auto;display:flex!important;width:1920px;height:1080px;break-after:page}
+.sources{padding-right:0}
+*,*::before,*::after{animation:none!important}
+.loop{display:none}
+.hero-grid .waste{fill:var(--red)}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-copilot" viewBox="0 0 24 24"><path d="M4 13v6c4 3 12 3 16 0v-6M2 14v4M22 14v4"/><rect x="3" y="4" width="8" height="8" rx="3"/><rect x="13" y="4" width="8" height="8" rx="3"/><path d="M11 7h2M9 16v2M15 16v2"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="i-replay" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.6-5.7"/><path d="M5 3.5V8h4.5"/></symbol>
+<symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-full" viewBox="0 0 24 24"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></symbol>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1l8 4-8 4z" fill="context-stroke"/></marker>
+</defs>
+</svg>
+<div id="stage">
+<header class="topbar">
+<span class="brand"><svg class="ico" aria-hidden="true"><use href="#i-copilot"/></svg>GitHub Copilot</span>
+<span class="sub">Optimize AI usage</span>
+<div class="strats" role="list" aria-label="Strategies">
+<span role="listitem" data-s="1">1 Model</span><span role="listitem" data-s="2">2 Prompt</span><span role="listitem" data-s="3">3 Context</span><span role="listitem" data-s="4">4 Cache</span><span role="listitem" data-s="5">5 Limit</span><span role="listitem" data-s="6">6 Phases</span><span role="listitem" data-s="7">7 Learn</span><span role="listitem" data-s="8">8 Guard</span>
+</div>
+<time datetime="2026-11-19">19 November 2026</time>
+<div class="progress" aria-hidden="true"></div>
+</header>
+<main>
+<section class="slide" data-title="Optimize your AI usage">
+<div class="hero">
+<div class="a-rise"><h1>Optimize your AI usage</h1><p class="lead">Eight strategies to get more useful work from each AI credit.</p></div>
+<svg class="hero-grid" viewBox="0 0 1658 378" role="img" aria-label="Illustration: a graph of token squares. Green squares are useful work. Red squares are waste."><g id="hero-grid"></g></svg>
+<div class="hero-foot a-rise" style="--d:1.8s">
+<span class="key"><i style="background:var(--g3)"></i>Useful work</span>
+<span class="key"><i style="background:var(--red)"></i>Waste</span>
+<span>Each square is a group of tokens.</span>
+<span class="hint"><kbd>←</kbd><kbd>→</kbd> Change slide <kbd>R</kbd> Replay</span>
+</div>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Eight strategies">
+<header class="slide-head"><span class="slide-index">02</span><div><h1>Eight strategies</h1><p class="lead">These strategies can reduce the AI credits that a task uses.</p></div></header>
+<div class="content plan">
+<ul class="rows">
+<li class="row a-rise" style="--d:.1s"><span class="sw" style="--d:.45s"></span><span class="n">1</span><span class="rt"><b>Choose the right model</b><span class="d">Match the capability to the task.</span></span><span class="ref">Slides 3–6</span></li>
+<li class="row a-rise" style="--d:.15s"><span class="sw" style="--d:.8s"></span><span class="n">2</span><span class="rt"><b>Write a complete prompt</b><span class="d">Task, context, and a stopping condition.</span></span><span class="ref">Slide 7</span></li>
+<li class="row a-rise" style="--d:.2s"><span class="sw" style="--d:1.15s"></span><span class="n">3</span><span class="rt"><b>Keep the context small</b><span class="d">New sessions, a project map, and few tools.</span></span><span class="ref">Slides 8–9</span></li>
+<li class="row a-rise" style="--d:.25s"><span class="sw" style="--d:1.5s"></span><span class="n">4</span><span class="rt"><b>Keep the prompt cache warm</b><span class="d">Do not change settings in a session.</span></span><span class="ref">Slide 10</span></li>
+<li class="row a-rise" style="--d:.3s"><span class="sw" style="--d:1.85s"></span><span class="n">5</span><span class="rt"><b>Set a session limit</b><span class="d">Cap the AI credits for one session.</span></span><span class="ref">Slide 11</span></li>
+<li class="row a-rise" style="--d:.35s"><span class="sw" style="--d:2.2s"></span><span class="n">6</span><span class="rt"><b>Split work into phases</b><span class="d">Research, plan, and implement.</span></span><span class="ref">Slide 12</span></li>
+<li class="row a-rise" style="--d:.4s"><span class="sw" style="--d:2.55s"></span><span class="n">7</span><span class="rt"><b>Learn from your sessions</b><span class="d">Find waste. Update the instructions.</span></span><span class="ref">Slides 13–14</span></li>
+<li class="row a-rise" style="--d:.45s"><span class="sw" style="--d:2.9s"></span><span class="n">8</span><span class="rt"><b>Add guardrails</b><span class="d">Tests, linters, and security scans.</span></span><span class="ref">Slide 15</span></li>
+</ul>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Illustration: a gauge of AI credits per task. The needle moves from high to low as each strategy turns on.">
+<text class="tb ctr" x="450" y="60">AI credits per task</text>
+<text class="m ctr" x="450" y="96">Illustration</text>
+<path class="wireg" style="stroke-width:46" d="M130 520 A320 320 0 0 1 288 244"/>
+<path class="gauge-mid" d="M292 241 A320 320 0 0 1 608 241"/>
+<path class="wirer" style="stroke-width:46" d="M612 244 A320 320 0 0 1 770 520"/>
+<line class="needle" x1="450" y1="520" x2="450" y2="250" style="stroke:var(--fg);stroke-width:9;stroke-linecap:round"/>
+<circle class="ff" cx="450" cy="520" r="22"/>
+<text class="tb tg ctr" x="130" y="590">Low</text>
+<text class="tb tr ctr" x="770" y="590">High</text>
+<text class="tb ctr a-rise" style="--d:3.3s" x="450" y="670">Use the strategies that fit the task.</text>
+<text class="m ctr a-rise" style="--d:3.5s" x="450" y="710">Less waste moves the needle down.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Choose the right model" data-strategy="1">
+<header class="slide-head"><span class="slide-index">03</span><div><h1>Choose the right model</h1><p class="lead">Use as much capability as the task requires, and as little as necessary.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Models differ in capability and cost. A reasoning model thinks deeply. A lighter model is fast and costs less.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>The model picker in Copilot Chat, or the <code>/model</code> command in Copilot CLI.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Reasoning model: architecture decisions, complex debugging, and system design.</li><li>Mid-tier model: the plan is clear, and you need efficient execution.</li><li>Lighter model: refactoring, formatting, and documentation updates.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Routine work costs less. Quality can also improve: on some execution-heavy tasks, a reasoning model can overthink and make unnecessary changes.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: tasks go from a new task box into three model lanes. The reasoning lane costs six squares, the mid-tier lane three, and the lighter lane one.">
+<path class="wire a-draw" style="--d:.2s" pathLength="1" marker-end="url(#arrow)" d="M380 84 C 330 112, 170 100, 150 126"/>
+<path class="wire a-draw" style="--d:.2s" pathLength="1" marker-end="url(#arrow)" d="M450 84 L450 126"/>
+<path class="wire a-draw" style="--d:.2s" pathLength="1" marker-end="url(#arrow)" d="M520 84 C 570 112, 730 100, 750 126"/>
+<rect class="box" x="330" y="20" width="240" height="64" rx="10"/>
+<text class="m" x="10" y="44">Illustration</text>
+<text class="t ctr" x="450" y="61">New task</text>
+<rect class="boxp" x="10" y="130" width="280" height="540" rx="12"/>
+<rect class="boxb" x="310" y="130" width="280" height="540" rx="12"/>
+<rect class="boxg" x="610" y="130" width="280" height="540" rx="12"/>
+<text class="tb tp ctr" x="150" y="174">Reasoning</text><text class="m ctr" x="150" y="207">Thinks deeply</text>
+<text class="tb tb2 ctr" x="450" y="174">Mid-tier</text><text class="m ctr" x="450" y="207">Runs a clear plan</text>
+<text class="tb tg ctr" x="750" y="174">Lighter</text><text class="m ctr" x="750" y="207">Fast and low cost</text>
+<g class="a-fly" style="--d:.7s;--fx:300px;--fy:-208px"><rect class="box" x="25" y="232" width="250" height="56" rx="8"/><text class="ct ctr" x="150" y="268">Architecture</text></g>
+<g class="a-fly" style="--d:.9s;--fx:-300px;--fy:-208px"><rect class="box" x="625" y="232" width="250" height="56" rx="8"/><text class="ct ctr" x="750" y="268">Refactor</text></g>
+<g class="a-fly" style="--d:1.1s;--fx:0px;--fy:-208px"><rect class="box" x="325" y="232" width="250" height="56" rx="8"/><text class="ct ctr" x="450" y="268">Implement a plan</text></g>
+<g class="a-fly" style="--d:1.3s;--fx:300px;--fy:-280px"><rect class="box" x="25" y="304" width="250" height="56" rx="8"/><text class="ct ctr" x="150" y="340">Complex debugging</text></g>
+<g class="a-fly" style="--d:1.5s;--fx:-300px;--fy:-280px"><rect class="box" x="625" y="304" width="250" height="56" rx="8"/><text class="ct ctr" x="750" y="340">Format code</text></g>
+<g class="a-fly" style="--d:1.7s;--fx:0px;--fy:-280px"><rect class="box" x="325" y="304" width="250" height="56" rx="8"/><text class="ct ctr" x="450" y="340">Known steps</text></g>
+<g class="a-fly" style="--d:1.9s;--fx:300px;--fy:-352px"><rect class="box" x="25" y="376" width="250" height="56" rx="8"/><text class="ct ctr" x="150" y="412">System design</text></g>
+<g class="a-fly" style="--d:2.1s;--fx:-300px;--fy:-352px"><rect class="box" x="625" y="376" width="250" height="56" rx="8"/><text class="ct ctr" x="750" y="412">Update docs</text></g>
+<text class="m ctr" x="150" y="488">Cost per task</text><text class="m ctr" x="450" y="488">Cost per task</text><text class="m ctr" x="750" y="488">Cost per task</text>
+<g data-sq="6" data-x="57" data-y="506" data-cls="so" data-d="2.5" data-step=".1"></g>
+<g data-sq="3" data-x="405" data-y="506" data-cls="so" data-d="2.5" data-step=".1"></g>
+<g data-sq="1" data-x="737" data-y="506" data-cls="so" data-d="2.5"></g>
+<text class="tb tr ctr a-fade" style="--d:3.2s" x="150" y="590">High</text>
+<text class="tb to ctr a-fade" style="--d:3.2s" x="450" y="590">Medium</text>
+<text class="tb tg ctr a-fade" style="--d:3.2s" x="750" y="590">Low</text>
+<text class="tb ctr a-rise" style="--d:3.5s" x="450" y="732">Match the model to the task.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Set the reasoning level" data-strategy="1">
+<header class="slide-head"><span class="slide-index">04</span><div><h1>Set the reasoning level</h1><p class="lead">Match the thinking to the difficulty of the task.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Some models let you set how much the model thinks before it answers. A higher level uses more tokens and AI credits.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>VS Code and Copilot CLI, for models that support it.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Use the regular level by default.</li><li>Raise the level only for a hard task, for example a complex bug.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Routine tasks use fewer tokens. Hard tasks still get deep thinking.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a routine task stays on the regular level and uses four thinking squares. A hard task moves to the high level and uses thirty-six squares.">
+<rect class="box" x="10" y="20" width="880" height="330" rx="12"/>
+<text class="tb" x="40" y="70">Routine task</text>
+<text class="m" x="40" y="104">Example: rename a variable</text>
+<rect x="40" y="140" width="390" height="60" rx="30" style="fill:var(--bg);stroke:var(--line);stroke-width:1.5"/>
+<rect class="boxb a-pop" style="--d:.5s" x="174" y="144" width="122" height="52" rx="26"/>
+<text class="m ctr" x="105" y="179">Low</text><text class="ct ctr" x="235" y="179">Regular</text><text class="m ctr" x="365" y="179">High</text>
+<text class="m" x="480" y="70">Thinking tokens</text>
+<g data-sq="4" data-x="480" data-y="96" data-cls="l3" data-d=".8" data-step=".12"></g>
+<text class="tb tg a-fade" style="--d:1.4s" x="480" y="250">Fast and low cost</text>
+<rect class="box" x="10" y="380" width="880" height="330" rx="12"/>
+<text class="tb" x="40" y="430">Hard task</text>
+<text class="m" x="40" y="464">Example: a complex bug</text>
+<rect x="40" y="500" width="390" height="60" rx="30" style="fill:var(--bg);stroke:var(--line);stroke-width:1.5"/>
+<rect class="boxp a-move" style="--d:1.7s;--fx:-130px" x="304" y="504" width="122" height="52" rx="26"/>
+<text class="m ctr" x="105" y="539">Low</text><text class="m ctr" x="235" y="539">Regular</text><text class="ct ctr" x="365" y="539">High</text>
+<text class="m" x="480" y="430">Thinking tokens</text>
+<g data-sq="36" data-cols="12" data-x="480" data-y="456" data-cls="sp" data-d="2.2" data-step=".035"></g>
+<text class="tb tp a-fade" style="--d:3.5s" x="480" y="640">Deep thinking, more credits</text>
+<text class="m ctr a-rise" style="--d:3.8s" x="450" y="760">Illustration. Token use varies by task.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Let Copilot Fusion choose" data-strategy="1">
+<header class="slide-head"><span class="slide-index">05</span><div><h1>Let Copilot Fusion choose</h1><p class="lead">Copilot Fusion picks one best model, or uses more models for review passes.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Copilot Fusion selects models for you. It uses capability signals for reasoning, code generation, debugging, and tool use.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>The model picker. Use Copilot Fusion as your default.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><p>Select an effort level:</p><ul class="dots"><li>Fusion Standard: balances cost, quality, and speed.</li><li>Fusion High: balanced work with moderate token savings.</li><li>Fusion Max: top capability, with care for token use.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Good model choices with no manual work. A reviewer gets only the context that it needs. Paid plans get a 30% discount on model costs with Fusion through 30 November 2026.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a task goes into Copilot Fusion. Four capability signals grow. Fusion uses one model, or a main model plus a reviewer with a small context.">
+<rect class="box" x="20" y="40" width="200" height="80" rx="10"/>
+<text class="t ctr" x="120" y="89">Your task</text>
+<text class="m" x="20" y="170">Illustration</text>
+<path class="wire a-draw" style="--d:.3s" pathLength="1" marker-end="url(#arrow)" d="M222 80 L286 80"/>
+<rect class="boxp" x="290" y="20" width="590" height="300" rx="12"/>
+<text class="tb tp" x="320" y="66">Copilot Fusion</text>
+<text class="m end" x="856" y="66">Capability signals</text>
+<text class="m" x="320" y="141">Reasoning</text><rect class="fp a-grow-x" style="--d:.6s" x="540" y="122" width="280" height="24" rx="4"/>
+<text class="m" x="320" y="191">Code generation</text><rect class="fp a-grow-x" style="--d:.75s" x="540" y="172" width="220" height="24" rx="4"/>
+<text class="m" x="320" y="241">Debugging</text><rect class="fp a-grow-x" style="--d:.9s" x="540" y="222" width="180" height="24" rx="4"/>
+<text class="m" x="320" y="291">Tool use</text><rect class="fp a-grow-x" style="--d:1.05s" x="540" y="272" width="250" height="24" rx="4"/>
+<path class="wireb a-draw" style="--d:1.6s" pathLength="1" marker-end="url(#arrow)" d="M520 322 C 520 352, 225 352, 225 380"/>
+<path class="wireg a-draw" style="--d:1.6s" pathLength="1" marker-end="url(#arrow)" d="M700 322 C 700 352, 675 352, 675 380"/>
+<g class="a-rise" style="--d:2s">
+<rect class="boxb" x="20" y="384" width="410" height="256" rx="12"/>
+<text class="tb" x="44" y="428">One model</text>
+<text class="m" x="44" y="462">The best model does the task</text>
+<rect class="box" x="44" y="490" width="200" height="64" rx="8"/><text class="ct ctr" x="144" y="530">Main model</text>
+<text class="tb tg" x="44" y="612">Cache stays warm</text>
+</g>
+<g data-sq="5" data-x="262" data-y="509" data-cls="l3" data-d="2.4" data-step=".08"></g>
+<g class="a-rise" style="--d:2.3s">
+<rect class="boxg" x="470" y="384" width="410" height="256" rx="12"/>
+<text class="tb" x="494" y="428">Model + reviewer</text>
+<text class="m" x="494" y="462">A second model checks the work</text>
+<rect class="box" x="494" y="490" width="180" height="64" rx="8"/><text class="ct ctr" x="584" y="530">Main model</text>
+<rect class="box" x="690" y="490" width="170" height="64" rx="8"/><text class="ct ctr" x="775" y="530">Reviewer</text>
+<text class="m" x="494" y="622">Small context for the reviewer</text>
+</g>
+<g data-sq="5" data-x="494" data-y="566" data-cls="l3" data-d="2.7" data-step=".08"></g>
+<g data-sq="2" data-x="690" data-y="566" data-cls="l1" data-d="3.1" data-step=".08"></g>
+<text class="m" x="20" y="720">Effort levels</text>
+<g class="a-pop" style="--d:3.4s"><rect class="boxp" x="190" y="686" width="220" height="52" rx="26"/><text class="ct ctr" x="300" y="720">Fusion Standard</text></g>
+<g class="a-pop" style="--d:3.55s"><rect class="boxp" x="425" y="686" width="220" height="52" rx="26"/><text class="ct ctr" x="535" y="720">Fusion High</text></g>
+<g class="a-pop" style="--d:3.7s"><rect class="boxp" x="660" y="686" width="220" height="52" rx="26"/><text class="ct ctr" x="770" y="720">Fusion Max</text></g>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Use subagents on lighter models" data-strategy="1">
+<header class="slide-head"><span class="slide-index">06</span><div><h1>Use subagents on lighter models</h1><p class="lead">A small, focused task often needs only a lighter model.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>A subagent is a helper agent that does one part of a task. It has its own session. It does not inherit the conversation history.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Agent sessions where the main agent gives a side task to a subagent.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Give each subagent one focused task.</li><li>Run each subagent on a cheaper model.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Side tasks cost less. The main prompt cache stays warm, because a subagent does not switch the main model.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a main agent with a large cached context sends three side tasks to subagents. Each subagent has a small context on a lighter model.">
+<rect class="boxb" x="10" y="20" width="880" height="270" rx="12"/>
+<text class="tb" x="40" y="66">Main agent</text>
+<text class="m" x="40" y="100">One model for the full session</text>
+<g data-sq="40" data-cols="20" data-x="40" data-y="124" data-cls="lv" data-d=".2" data-step=".02"></g>
+<text class="tb tg a-fade" style="--d:1.2s" x="40" y="250">Prompt cache stays warm</text>
+<path class="wirep a-draw" style="--d:1.3s" pathLength="1" marker-end="url(#arrow)" d="M145 292 L145 378"/>
+<path class="wirep a-draw" style="--d:1.45s" pathLength="1" marker-end="url(#arrow)" d="M450 292 L450 378"/>
+<path class="wirep a-draw" style="--d:1.6s" pathLength="1" marker-end="url(#arrow)" d="M755 292 L755 378"/>
+<circle class="loop fp" r="7" opacity="0"><set attributeName="opacity" to="1" begin="2.2s" fill="freeze"/><animateMotion begin="2.2s" dur="1.6s" repeatCount="indefinite" path="M145 296 L145 366"/></circle>
+<circle class="loop fp" r="7" opacity="0"><set attributeName="opacity" to="1" begin="2.5s" fill="freeze"/><animateMotion begin="2.5s" dur="1.6s" repeatCount="indefinite" path="M450 296 L450 366"/></circle>
+<circle class="loop fp" r="7" opacity="0"><set attributeName="opacity" to="1" begin="2.8s" fill="freeze"/><animateMotion begin="2.8s" dur="1.6s" repeatCount="indefinite" path="M755 296 L755 366"/></circle>
+<g class="a-rise" style="--d:1.8s"><rect class="boxp" x="10" y="384" width="270" height="290" rx="12"/><text class="tb ctr" x="145" y="430">Search the code</text><text class="m ctr" x="145" y="464">Lighter model</text><text class="m ctr" x="145" y="572">Own session</text><text class="m ctr" x="145" y="606">No history</text></g>
+<g class="a-rise" style="--d:2s"><rect class="boxp" x="315" y="384" width="270" height="290" rx="12"/><text class="tb ctr" x="450" y="430">Summarize logs</text><text class="m ctr" x="450" y="464">Lighter model</text><text class="m ctr" x="450" y="572">Own session</text><text class="m ctr" x="450" y="606">No history</text></g>
+<g class="a-rise" style="--d:2.2s"><rect class="boxp" x="620" y="384" width="270" height="290" rx="12"/><text class="tb ctr" x="755" y="430">Write tests</text><text class="m ctr" x="755" y="464">Lighter model</text><text class="m ctr" x="755" y="572">Own session</text><text class="m ctr" x="755" y="606">No history</text></g>
+<g data-sq="4" data-x="84" data-y="494" data-cls="l2" data-d="2.4" data-step=".08"></g>
+<g data-sq="4" data-x="389" data-y="494" data-cls="l2" data-d="2.6" data-step=".08"></g>
+<g data-sq="4" data-x="694" data-y="494" data-cls="l2" data-d="2.8" data-step=".08"></g>
+<text class="tb ctr a-rise" style="--d:3.2s" x="450" y="740">Small, separate contexts. Low cost.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Write a complete prompt" data-strategy="2">
+<header class="slide-head"><span class="slide-index">07</span><div><h1>Write a complete prompt</h1><p class="lead">A few extra words now can save many runs later.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>A complete prompt has three parts: a clear task, the relevant context, and a stopping condition.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Every prompt that you give to Copilot.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Task: say what to change, where, and the expected result. Do not write only “fix this issue”.</li><li>Context: give the files, services, logs, errors, and inputs at the start.</li><li>Stopping condition: say what “done” looks like.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Fewer runs, with almost no extra tokens. Without a stopping condition, you can get extra commits, unrelated refactors, and scope growth.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a vague prompt takes a long, winding path and uses many squares. A complete prompt takes a straight path and uses few squares.">
+<rect class="boxr" x="10" y="10" width="880" height="330" rx="12"/>
+<text class="tb" x="40" y="55">Vague prompt</text>
+<rect class="term" x="330" y="24" width="280" height="48" rx="8"/><text class="code ctr" x="470" y="56">Fix this issue</text>
+<circle class="fm" cx="60" cy="190" r="10"/>
+<circle class="boxg" cx="820" cy="190" r="16"/>
+<path class="wirer a-draw" style="--d:.4s;animation-duration:2s" pathLength="1" d="M70 190 C 130 100, 190 280, 260 190 S 380 100, 440 200 S 580 270, 620 160 S 740 120, 804 190"/>
+<g data-sq="14" data-x="40" data-y="272" data-cls="sr" data-d=".5" data-step=".13"></g>
+<text class="tb tr a-fade" style="--d:2.4s" x="520" y="294">Many runs, many tokens</text>
+<rect class="boxg" x="10" y="370" width="880" height="400" rx="12"/>
+<text class="tb" x="40" y="415">Complete prompt</text>
+<rect class="term" x="40" y="436" width="820" height="152" rx="8"/>
+<text class="code a-wipe" style="--d:2.6s;--n:55;--t:.9s" x="60" y="476"><tspan class="tp">Task:</tspan> Sign-in returns error 500 after a password reset.</text>
+<text class="code a-wipe" style="--d:3.5s;--n:44;--t:.7s" x="60" y="516"><tspan class="tb2">Context:</tspan> See auth/reset.ts and logs/api.log.</text>
+<text class="code a-wipe" style="--d:4.2s;--n:52;--t:.8s" x="60" y="556"><tspan class="tg">Done when:</tspan> test_reset passes. No other files change.</text>
+<circle class="fm" cx="60" cy="640" r="10"/>
+<circle class="boxg" cx="820" cy="640" r="16"/>
+<path class="wireg a-draw" style="--d:5s;animation-duration:.6s" pathLength="1" d="M70 640 L804 640"/>
+<g data-sq="4" data-x="40" data-y="690" data-cls="l3" data-d="5.1" data-step=".1"></g>
+<text class="tb tg a-fade" style="--d:5.5s" x="190" y="712">One run, few tokens</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Keep the context small" data-strategy="3">
+<header class="slide-head"><span class="slide-index">08</span><div><h1>Keep the context small</h1><p class="lead">Open tabs, attached files, and long conversation history all count.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Copilot sends context with each request. More context means more tokens on each request.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Copilot CLI and Copilot Chat.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Start a new conversation for an unrelated task: <code>/new</code> or <code>/clear</code> in the CLI, or a new chat session.</li><li>In Copilot CLI, use <code>/compact</code> to summarize a long session, for example <code>/compact focus on the auth module</code>.</li><li>In Copilot CLI, use <code>/context</code> to see what uses the context.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Each request carries fewer tokens. The model sees the information that matters.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a long session fills the context with history. The compact command squashes the history into one short summary.">
+<text class="tb ctr" x="170" y="44">Long session</text>
+<rect class="box" x="40" y="64" width="260" height="556" rx="10"/>
+<rect class="boxp a-pop" style="--d:.2s" x="50" y="548" width="240" height="60" rx="6"/><text class="ct ctr" x="170" y="586">System prompt</text>
+<rect class="boxb a-pop" style="--d:.35s" x="50" y="480" width="240" height="60" rx="6"/><text class="ct ctr" x="170" y="518">Open tabs</text>
+<rect class="boxo a-pop" style="--d:.5s" x="50" y="412" width="240" height="60" rx="6"/><text class="ct ctr" x="170" y="450">Attached files</text>
+<rect class="boxg a-pop" style="--d:.7s" x="50" y="368" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:.82s" x="50" y="328" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:.94s" x="50" y="288" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:1.06s" x="50" y="248" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:1.18s" x="50" y="208" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:1.3s" x="50" y="168" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:1.42s" x="50" y="128" width="240" height="36" rx="5"/>
+<rect class="boxg a-pop" style="--d:1.54s" x="50" y="88" width="240" height="36" rx="5"/>
+<text class="ct ctr a-fade" style="--d:1.6s" x="170" y="273">History</text>
+<g class="a-pop" style="--d:1.9s"><rect class="boxp" x="340" y="300" width="200" height="56" rx="8"/><text class="mono ctr" x="440" y="336">/compact</text></g>
+<path class="wirep a-draw" style="--d:2.1s" pathLength="1" marker-end="url(#arrow)" d="M318 392 L560 392"/>
+<text class="tb ctr" x="710" y="44">After /compact</text>
+<rect class="box" x="580" y="64" width="260" height="556" rx="10"/>
+<rect x="590" y="88" width="240" height="234" rx="6" style="fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6"/>
+<text class="m ctr a-fade" style="--d:3.4s" x="710" y="212">Free space</text>
+<rect class="boxp a-pop" style="--d:2.3s" x="590" y="548" width="240" height="60" rx="6"/><text class="ct ctr" x="710" y="586">System prompt</text>
+<rect class="boxb a-pop" style="--d:2.4s" x="590" y="480" width="240" height="60" rx="6"/><text class="ct ctr" x="710" y="518">Open tabs</text>
+<rect class="boxo a-pop" style="--d:2.5s" x="590" y="412" width="240" height="60" rx="6"/><text class="ct ctr" x="710" y="450">Attached files</text>
+<rect class="boxg a-squash" style="--d:2.7s;--sy:4.2" x="590" y="332" width="240" height="76" rx="6"/>
+<text class="ct ctr a-fade" style="--d:3.3s" x="710" y="378">Summary</text>
+<rect class="box" x="40" y="660" width="390" height="100" rx="10"/>
+<text class="mono" x="64" y="700">/new  or  /clear</text>
+<text class="m" x="64" y="738">Start a new conversation</text>
+<rect class="box" x="470" y="660" width="390" height="100" rx="10"/>
+<text class="mono" x="494" y="700">/context</text>
+<text class="m" x="494" y="738">See what uses the context</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Map the project and trim tools" data-strategy="3">
+<header class="slide-head"><span class="slide-index">09</span><div><h1>Map the project and trim tools</h1><p class="lead">Give the agent a map. Enable only the tools that you need.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>A project map tells the agent where things are. Each enabled tool adds its definition to the context on every request.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Map: <code>AGENTS.md</code> or <code>.github/copilot-instructions.md</code>. Tools: your MCP server settings, for example the GitHub MCP server.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>In the map, tell the agent where the main parts of the code are.</li><li>Enable only the toolsets that you need: <code>--toolsets repos,issues</code> or <code>GITHUB_TOOLSETS="repos,issues"</code>.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>The agent goes directly to the right files. Each request carries fewer tool definitions.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: without a map, the agent reads many files. With AGENTS.md, it goes to the right file. Unused toolsets turn off and the tool context bar gets shorter.">
+<rect class="box" x="10" y="10" width="880" height="360" rx="12"/>
+<text class="tb" x="40" y="52">Project map</text>
+<text class="m" x="40" y="92">Without a map</text>
+<text class="m" x="480" y="92">With AGENTS.md</text>
+<rect class="box a-scan" style="--d:.3s" x="40" y="114" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:.42s" x="128" y="114" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:.54s" x="216" y="114" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:.66s" x="304" y="114" width="70" height="48" rx="6"/>
+<rect class="box a-scan" style="--d:.78s" x="40" y="180" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:.9s" x="128" y="180" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:1.02s" x="216" y="180" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:1.14s" x="304" y="180" width="70" height="48" rx="6"/>
+<rect class="box a-scan" style="--d:1.26s" x="40" y="246" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:1.38s" x="128" y="246" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:1.5s" x="216" y="246" width="70" height="48" rx="6"/><rect class="box a-scan" style="--d:1.62s" x="304" y="246" width="70" height="48" rx="6"/>
+<text class="tb tr a-fade" style="--d:1.9s" x="40" y="342">Reads many files</text>
+<g class="a-pop" style="--d:2.1s"><rect class="boxb" x="480" y="114" width="170" height="180" rx="8"/><text class="mono ctr" x="565" y="150">AGENTS.md</text>
+<rect class="fm" x="505" y="172" width="120" height="8" rx="4" opacity=".5"/><rect class="fm" x="505" y="198" width="96" height="8" rx="4" opacity=".5"/><rect class="fm" x="505" y="224" width="126" height="8" rx="4" opacity=".5"/><rect class="fm" x="505" y="250" width="86" height="8" rx="4" opacity=".5"/></g>
+<path class="wireg a-draw" style="--d:2.5s;animation-duration:.6s" pathLength="1" marker-end="url(#arrow)" d="M654 206 L752 206"/>
+<rect class="boxg a-pop" style="--d:3s" x="760" y="180" width="90" height="56" rx="6"/>
+<text class="tb tg a-fade" style="--d:3.1s" x="480" y="342">Reads the right file</text>
+<rect class="box" x="10" y="400" width="880" height="370" rx="12"/>
+<text class="tb" x="40" y="442">Toolsets</text>
+<text class="m end" x="860" y="442">Example: GitHub MCP server</text>
+<g class="off a-dim" style="--d:3.6s"><rect class="box" x="40" y="462" width="200" height="44" rx="22"/><text class="chip ctr" x="140" y="491">actions</text></g>
+<g class="off a-dim" style="--d:3.7s"><rect class="box" x="250" y="462" width="200" height="44" rx="22"/><text class="chip ctr" x="350" y="491">code_security</text></g>
+<g class="off a-dim" style="--d:3.8s"><rect class="box" x="460" y="462" width="200" height="44" rx="22"/><text class="chip ctr" x="560" y="491">dependabot</text></g>
+<g class="off a-dim" style="--d:3.9s"><rect class="box" x="670" y="462" width="200" height="44" rx="22"/><text class="chip ctr" x="770" y="491">discussions</text></g>
+<g class="off a-dim" style="--d:4s"><rect class="box" x="40" y="516" width="200" height="44" rx="22"/><text class="chip ctr" x="140" y="545">gists</text></g>
+<g><rect class="boxg" x="250" y="516" width="200" height="44" rx="22"/><text class="chip tg ctr" x="350" y="545">issues</text></g>
+<g class="off a-dim" style="--d:4.1s"><rect class="box" x="460" y="516" width="200" height="44" rx="22"/><text class="chip ctr" x="560" y="545">labels</text></g>
+<g class="off a-dim" style="--d:4.2s"><rect class="box" x="670" y="516" width="200" height="44" rx="22"/><text class="chip ctr" x="770" y="545">notifications</text></g>
+<g class="off a-dim" style="--d:4.3s"><rect class="box" x="40" y="570" width="200" height="44" rx="22"/><text class="chip ctr" x="140" y="599">orgs</text></g>
+<g class="off a-dim" style="--d:4.4s"><rect class="box" x="250" y="570" width="200" height="44" rx="22"/><text class="chip ctr" x="350" y="599">projects</text></g>
+<g class="off a-dim" style="--d:4.5s"><rect class="box" x="460" y="570" width="200" height="44" rx="22"/><text class="chip ctr" x="560" y="599">pull_requests</text></g>
+<g><rect class="boxg" x="670" y="570" width="200" height="44" rx="22"/><text class="chip tg ctr" x="770" y="599">repos</text></g>
+<text class="m" x="40" y="654">Tool definitions in each request</text>
+<rect x="40" y="670" width="820" height="34" rx="6" style="fill:var(--bg);stroke:var(--line);stroke-width:1.5"/>
+<rect class="fg a-shrink" style="--d:4.6s;--s:5.1" x="40" y="670" width="160" height="34" rx="6"/>
+<text class="mono" x="40" y="748">github-mcp-server stdio --toolsets repos,issues</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><a href="https://github.com/github/github-mcp-server">GitHub MCP server</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Keep the prompt cache warm" data-strategy="4">
+<header class="slide-head"><span class="slide-index">10</span><div><h1>Keep the prompt cache warm</h1><p class="lead">Do not break the cache in the middle of a session.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Each turn sends the system prompt, file contents, and tool definitions again. The prompt cache stores these tokens.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Every session with more than one turn.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Pick one model, or use auto model selection, and keep it for the session.</li><li>Set the reasoning effort, context size, and tools before you start.</li><li>After a long break, start a new session, or use <code>/compact</code> in Copilot CLI.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Cached input tokens are typically billed at 10% of the normal input price. Later turns cost less.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: five turns of a session. Turns two and three reuse cached tokens. A model switch in turn four rebuilds the cache at full price. Turn five is cached again.">
+<rect class="sb" x="40" y="22" width="22" height="22" rx="4"/><text class="m" x="72" y="41">Full price</text>
+<rect class="l3" x="240" y="22" width="22" height="22" rx="4"/><text class="m" x="272" y="41">Cached: 10% of the price</text>
+<rect class="sr" x="590" y="22" width="22" height="22" rx="4"/><text class="m" x="622" y="41">Cache rebuilt</text>
+<g class="a-rise" style="--d:.2s"><rect class="box" x="10" y="76" width="880" height="64" rx="8"/><text class="t" x="32" y="117">Turn 1</text><text class="m" x="610" y="116">First turn</text>
+<g data-sq="10" data-size="22" data-gap="5" data-x="150" data-y="97" data-cls="sb" data-d=".3" data-step=".04"></g></g>
+<g class="a-rise" style="--d:.9s"><rect class="box" x="10" y="156" width="880" height="64" rx="8"/><text class="t" x="32" y="197">Turn 2</text><text class="m" x="610" y="196">Cached prefix</text>
+<g data-sq="10" data-size="22" data-gap="5" data-x="150" data-y="177" data-cls="l3" data-d="1" data-step=".03"></g><g data-sq="2" data-size="22" data-gap="5" data-x="420" data-y="177" data-cls="sb" data-d="1.35" data-step=".05"></g></g>
+<g class="a-rise" style="--d:1.6s"><rect class="box" x="10" y="236" width="880" height="64" rx="8"/><text class="t" x="32" y="277">Turn 3</text><text class="m" x="610" y="276">Cached prefix</text>
+<g data-sq="12" data-size="22" data-gap="5" data-x="150" data-y="257" data-cls="l3" data-d="1.7" data-step=".03"></g><g data-sq="2" data-size="22" data-gap="5" data-x="474" data-y="257" data-cls="sb" data-d="2.1" data-step=".05"></g></g>
+<g class="a-rise" style="--d:2.4s"><g class="a-shake" style="--d:3.1s"><rect class="boxr" x="10" y="316" width="880" height="64" rx="8"/><text class="t" x="32" y="357">Turn 4</text><text class="t tr" x="610" y="356">Model switched</text>
+<g data-sq="14" data-size="22" data-gap="5" data-x="150" data-y="337" data-cls="sr" data-d="2.5" data-step=".04"></g></g></g>
+<g class="a-rise" style="--d:3.6s"><rect class="box" x="10" y="396" width="880" height="64" rx="8"/><text class="t" x="32" y="437">Turn 5</text><text class="m" x="610" y="436">Cached again</text>
+<g data-sq="14" data-size="22" data-gap="5" data-x="150" data-y="417" data-cls="l3" data-d="3.7" data-step=".03"></g><g data-sq="2" data-size="22" data-gap="5" data-x="528" data-y="417" data-cls="sb" data-d="4.15" data-step=".05"></g></g>
+<g class="a-rise" style="--d:4.5s"><rect class="boxr" x="10" y="490" width="880" height="280" rx="12"/>
+<text class="tb" x="40" y="534">Cache breakers</text>
+<text class="t tr" x="40" y="582">✕</text><text class="t" x="76" y="582">Switch models in the middle of a session</text>
+<text class="t tr" x="40" y="628">✕</text><text class="t" x="76" y="628">Change effort, context size, or tools mid-session</text>
+<text class="t tr" x="40" y="674">✕</text><text class="t" x="76" y="674">Return after the cache expires</text>
+<text class="m" x="76" y="710">Cache expiry, with no activity: 24 hours for OpenAI models,</text>
+<text class="m" x="76" y="742">1 hour for most other models.</text></g>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Set a session limit" data-strategy="5">
+<header class="slide-head"><span class="slide-index">11</span><div><h1>Set a session limit</h1><p class="lead">Cap the AI credits that one session can use.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>An AI credit session limit caps the work that Copilot does in one session. It is a soft limit: a response in progress can finish above it.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Copilot CLI and Copilot SDK (public preview).</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Set it before the task starts: <code>/limits set max-ai-credits 300</code></li><li>Remove it: <code>/limits unset</code></li><li>In a script, the run ends at the limit: <code>copilot -p "YOUR PROMPT" --max-ai-credits 300</code></li><li>To tune a task, find the lowest limit that still gives a good result.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>You avoid unexpected costs from one task. In a session, you choose to continue or raise the limit.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: a limit of 300 AI credits is set. The credit meter fills to the limit. The agent stops and shows a dialog with Continue and Raise limit.">
+<rect class="term" x="10" y="10" width="880" height="110" rx="10"/>
+<text class="code a-wipe" style="--d:.3s;--n:32;--t:.9s" x="40" y="56"><tspan class="tg">&gt;</tspan> /limits set max-ai-credits 300</text>
+<text class="m a-fade" style="--d:1.2s" x="40" y="98">Set the limit before the task starts.</text>
+<text class="m" x="40" y="180">AI credits used in this session</text>
+<text class="t tr end" x="860" y="180">Limit: 300</text>
+<g data-sq="26" data-cols="26" data-x="40" data-y="202" data-size="26" data-gap="4" data-cls="l0" data-anim=""></g>
+<g data-sq="26" data-cols="26" data-x="40" data-y="202" data-size="26" data-gap="4" data-cls="lv" data-d="1.4" data-step=".07"></g>
+<line class="wirer" x1="836" y1="194" x2="836" y2="236"/>
+<text class="m" x="40" y="270">0</text>
+<text class="m end" x="860" y="270">300</text>
+<g class="a-pop" style="--d:3.4s">
+<rect class="box" x="110" y="306" width="680" height="250" rx="12"/>
+<text class="tb" x="150" y="356">Session limit reached</text>
+<text class="m end" x="750" y="356">Illustration</text>
+<line class="wire" x1="110" y1="378" x2="790" y2="378"/>
+<text class="t" x="150" y="424">The agent stopped cleanly and told you.</text>
+<rect class="boxg" x="150" y="466" width="240" height="60" rx="8"/><text class="ct ctr" x="270" y="504">Continue</text>
+<g class="a-pop" style="--d:4.1s"><rect class="boxb" x="420" y="466" width="240" height="60" rx="8"/><text class="ct ctr" x="540" y="504">Raise limit</text></g>
+</g>
+<g class="a-rise" style="--d:4.5s"><rect class="box" x="10" y="590" width="280" height="180" rx="12"/>
+<text class="m" x="36" y="632">Minimum limit</text><text class="big" x="36" y="696">30</text><text class="m" x="36" y="742">AI credits</text></g>
+<g class="a-rise" style="--d:4.65s"><rect class="box" x="310" y="590" width="280" height="180" rx="12"/>
+<text class="m" x="336" y="632">One AI credit</text><text class="big" x="336" y="696">$0.01</text><text class="m" x="336" y="742">US dollars</text></g>
+<g class="a-rise" style="--d:4.8s"><rect class="boxo" x="610" y="590" width="280" height="180" rx="12"/>
+<text class="t to" x="636" y="632">Not a budget</text><text class="m" x="636" y="680">Budgets and spending</text><text class="m" x="636" y="712">limits still control</text><text class="m" x="636" y="744">monthly usage.</text></g>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Split work into phases" data-strategy="6">
+<header class="slide-head"><span class="slide-index">12</span><div><h1>Split work into phases</h1><p class="lead">Plan with a strong model. Implement with a cheaper model.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Divide a large task into three phases: research, plan, and implement.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Large tasks in Copilot CLI or in Copilot Chat in VS Code.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Research: explore the code, and find the relevant files and dependencies.</li><li>Plan with a strong reasoning model. In the CLI, use <code>/plan</code>. In VS Code, select Plan in the agent dropdown, or type <code>plan</code>.</li><li>Implement against the plan with a cheaper model and a focused context.</li><li>Start a new session between phases.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>You do not carry unnecessary context forward. Each phase uses a model that suits it.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: in one long session, the context grows each turn. In three sessions, each phase starts small and only the plan file moves to the implement phase.">
+<rect class="boxr" x="10" y="10" width="880" height="330" rx="12"/>
+<text class="tb" x="40" y="54">One long session</text>
+<text class="m end" x="860" y="54">Context grows each turn</text>
+<rect class="l3 a-grow-y" style="--d:.3s" x="60" y="286" width="56" height="24" rx="4"/>
+<rect class="l3 a-grow-y" style="--d:.4s" x="142" y="265" width="56" height="45" rx="4"/>
+<rect class="l3 a-grow-y" style="--d:.5s" x="224" y="244" width="56" height="66" rx="4"/>
+<rect class="so a-grow-y" style="--d:.6s" x="306" y="223" width="56" height="87" rx="4"/>
+<rect class="so a-grow-y" style="--d:.7s" x="388" y="202" width="56" height="108" rx="4"/>
+<rect class="so a-grow-y" style="--d:.8s" x="470" y="181" width="56" height="129" rx="4"/>
+<rect class="sr a-grow-y" style="--d:.9s" x="552" y="160" width="56" height="150" rx="4"/>
+<rect class="sr a-grow-y" style="--d:1s" x="634" y="139" width="56" height="171" rx="4"/>
+<rect class="sr a-grow-y" style="--d:1.1s" x="716" y="118" width="56" height="192" rx="4"/>
+<rect class="sr a-grow-y" style="--d:1.2s" x="798" y="97" width="56" height="213" rx="4"/>
+<rect class="box" x="10" y="370" width="880" height="400" rx="12"/>
+<text class="tb" x="40" y="414">Three sessions</text>
+<g class="a-rise" style="--d:1.7s"><rect class="boxb" x="30" y="436" width="250" height="250" rx="10"/>
+<text class="tb ctr" x="155" y="478">Research</text><text class="m ctr" x="155" y="512">Explore the code</text></g>
+<g class="a-rise" style="--d:2s"><rect class="boxp" x="325" y="436" width="250" height="250" rx="10"/>
+<text class="tb ctr" x="450" y="478">Plan</text><text class="m ctr" x="450" y="512">Strong model</text></g>
+<g class="a-rise" style="--d:2.3s"><rect class="boxg" x="620" y="436" width="250" height="250" rx="10"/>
+<text class="tb ctr" x="745" y="478">Implement</text><text class="m ctr" x="745" y="512">Cheaper model</text></g>
+<rect class="l3 a-grow-y" style="--d:1.9s" x="90" y="610" width="34" height="56" rx="4"/>
+<rect class="l3 a-grow-y" style="--d:2s" x="138" y="590" width="34" height="76" rx="4"/>
+<rect class="l3 a-grow-y" style="--d:2.1s" x="186" y="618" width="34" height="48" rx="4"/>
+<path class="wireb a-draw" style="--d:2.2s;animation-duration:.4s" pathLength="1" marker-end="url(#arrow)" d="M284 600 L318 600"/>
+<path class="wirep a-draw" style="--d:2.6s;animation-duration:.4s" pathLength="1" marker-end="url(#arrow)" d="M579 600 L613 600"/>
+<g class="a-pop" style="--d:2.4s"><rect class="term" x="390" y="534" width="120" height="132" rx="8"/><text class="mono ctr" x="450" y="568">plan.md</text>
+<rect class="fm" x="408" y="588" width="84" height="7" rx="3" opacity=".5"/><rect class="fm" x="408" y="610" width="66" height="7" rx="3" opacity=".5"/><rect class="fm" x="408" y="632" width="76" height="7" rx="3" opacity=".5"/></g>
+<g class="a-fly" style="--d:2.9s;--fx:-240px;--fy:0px"><rect class="term" x="630" y="534" width="120" height="132" rx="8"/><text class="mono ctr" x="690" y="568">plan.md</text>
+<rect class="fm" x="648" y="588" width="84" height="7" rx="3" opacity=".5"/><rect class="fm" x="648" y="610" width="66" height="7" rx="3" opacity=".5"/><rect class="fm" x="648" y="632" width="76" height="7" rx="3" opacity=".5"/></g>
+<rect class="l3 a-grow-y" style="--d:3.6s" x="774" y="614" width="30" height="52" rx="4"/>
+<rect class="l3 a-grow-y" style="--d:3.7s" x="818" y="598" width="30" height="68" rx="4"/>
+<text class="tb tg ctr a-fade" style="--d:3.9s" x="450" y="734">Carry the plan, not the full history.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Learn from your sessions" data-strategy="7">
+<header class="slide-head"><span class="slide-index">13</span><div><h1>Learn from your sessions</h1><p class="lead">Turn a one-time insight into standing guidance.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p><code>/chronicle</code> makes useful insights from your session history.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Copilot CLI, and the <code>copilot-instructions.md</code> file in your repository.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li><code>/chronicle tips</code> finds ways to use Copilot more efficiently.</li><li><code>/chronicle cost-tips</code> shows your token usage patterns and ways to reduce cost.</li><li>When it finds a recurring pattern, write it in <code>copilot-instructions.md</code>.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>You fix a recurring problem one time. You do not have to repeat the guidance.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: the chronicle cost-tips command finds a recurring pattern. A new line goes into the copilot-instructions.md file.">
+<rect class="term" x="10" y="10" width="880" height="320" rx="10"/>
+<text class="code a-wipe" style="--d:.3s;--n:22;--t:.8s" x="40" y="58"><tspan class="tg">&gt;</tspan> /chronicle cost-tips</text>
+<text class="m a-fade" style="--d:1.2s" x="40" y="112">Example output</text>
+<rect class="boxo a-fade" style="--d:2.4s" x="26" y="132" width="848" height="48" rx="6"/>
+<text class="code a-rise" style="--d:1.5s" x="40" y="164">Recurring: the agent reads all of src/.</text>
+<text class="code a-rise" style="--d:1.8s" x="40" y="226">Tip: Add a project map to your instructions.</text>
+<text class="code a-rise" style="--d:2.1s" x="40" y="288">Tip: Give a stopping condition in each prompt.</text>
+<path class="wireg a-draw" style="--d:2.8s;animation-duration:.5s" pathLength="1" marker-end="url(#arrow)" d="M450 336 L450 412"/>
+<rect class="box" x="10" y="420" width="880" height="350" rx="12"/>
+<text class="mono" x="40" y="466">.github/copilot-instructions.md</text>
+<text class="m end" x="860" y="466">Example</text>
+<line class="wire" x1="10" y1="488" x2="890" y2="488"/>
+<text class="code" x="40" y="538">- Use pnpm, not npm.</text>
+<text class="code" x="40" y="588">- Run pnpm test before you finish.</text>
+<rect class="boxg a-pop" style="--d:3.2s" x="26" y="610" width="848" height="54" rx="6"/>
+<text class="code a-wipe" style="--d:3.5s;--n:45;--t:1s" x="40" y="646">+ Project map: API in src/api, UI in src/web.</text>
+<text class="t tg a-fade" style="--d:4.6s" x="40" y="732">Now it applies to every future session.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Keep instructions short and useful" data-strategy="7">
+<header class="slide-head"><span class="slide-index">14</span><div><h1>Keep instructions short and useful</h1><p class="lead">The instructions file is in the context on every run.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Good instructions are short and specific. They come from agent behavior that you saw, not from generic best practices.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p><code>copilot-instructions.md</code> in your repository. Personal and organization instructions can layer on top.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Write a rule for each pitfall that the agent repeats.</li><li>Remove one-off preferences and rare details.</li><li>Update the file when your code, architecture, standards, or workflows change.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Even small improvements help on every run. You get fewer repeated errors and fewer wasted tokens.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: possible rules fly into two bins. Include: frameworks, pitfalls, output rules, conventions, and commands. Avoid: long documents, unfit AI guidance, rare details, and noisy rules.">
+<text class="m ctr" x="450" y="52">Sort each possible rule</text>
+<rect class="boxg" x="10" y="90" width="430" height="510" rx="12"/>
+<text class="tb tg" x="40" y="136">✓ Include</text>
+<g class="a-fly" style="--d:.4s;--fx:225px;--fy:-140px"><rect class="box" x="30" y="160" width="390" height="62" rx="8"/><text class="ct ctr" x="225" y="199">Frameworks and design patterns</text></g>
+<g class="a-fly" style="--d:.8s;--fx:225px;--fy:-210px"><rect class="box" x="30" y="238" width="390" height="62" rx="8"/><text class="ct ctr" x="225" y="277">Known pitfalls</text></g>
+<g class="a-fly" style="--d:1.2s;--fx:225px;--fy:-290px"><rect class="box" x="30" y="316" width="390" height="62" rx="8"/><text class="ct ctr" x="225" y="355">Output rules: “be concise”</text></g>
+<g class="a-fly" style="--d:1.6s;--fx:225px;--fy:-370px"><rect class="box" x="30" y="394" width="390" height="62" rx="8"/><text class="ct ctr" x="225" y="433">Team conventions</text></g>
+<g class="a-fly" style="--d:2s;--fx:225px;--fy:-450px"><rect class="box" x="30" y="472" width="390" height="62" rx="8"/><text class="ct ctr" x="225" y="511">Build, test, and lint commands</text></g>
+<rect class="boxr" x="460" y="90" width="430" height="510" rx="12"/>
+<text class="tb tr" x="490" y="136">✕ Avoid</text>
+<g class="a-fly" style="--d:.6s;--fx:-225px;--fy:-140px"><rect class="box" x="480" y="160" width="390" height="62" rx="8"/><text class="ct ctr" x="675" y="199">Long, generic documents</text></g>
+<g class="a-fly" style="--d:1s;--fx:-225px;--fy:-210px"><rect class="box" x="480" y="238" width="390" height="62" rx="8"/><text class="ct ctr" x="675" y="277">AI guidance that does not fit</text></g>
+<g class="a-fly" style="--d:1.4s;--fx:-225px;--fy:-290px"><rect class="box" x="480" y="316" width="390" height="62" rx="8"/><text class="ct ctr" x="675" y="355">One-off or rare details</text></g>
+<g class="a-fly" style="--d:1.8s;--fx:-225px;--fy:-370px"><rect class="box" x="480" y="394" width="390" height="62" rx="8"/><text class="ct ctr" x="675" y="433">Overloaded, noisy rules</text></g>
+<g class="a-rise" style="--d:2.5s"><rect class="box" x="10" y="630" width="880" height="140" rx="12"/>
+<text class="t" x="40" y="676">Small savings add up over many runs</text>
+<text class="m end" x="860" y="676">1 square = 1 run</text></g>
+<g data-sq="27" data-cols="27" data-x="40" data-y="706" data-size="26" data-gap="4" data-cls="lv" data-d="2.8" data-step=".05"></g>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+<section class="slide" data-title="Add guardrails" data-strategy="8">
+<header class="slide-head"><span class="slide-index">15</span><div><h1>Add guardrails</h1><p class="lead">Give the agent a clear pass or fail signal.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>Deterministic checks test each change from the agent. You need them because agents are not always correct.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>Multi-step agent work, where small errors can quickly compound.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Unit tests: check that the change gives the expected behavior.</li><li>Linters: keep structure and style consistent.</li><li>Security scans: find risky patterns early.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>Fewer retries, faster completion, and more predictable output. Total tokens are often lower, even if each step uses a few more.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: in cycle one, unit tests pass but the linter fails, so the agent adjusts. In cycle two, all checks pass and the task is done.">
+<text class="m" x="10" y="32">Cycle 1</text>
+<g class="a-rise" style="--d:.2s"><rect class="boxb" x="10" y="50" width="196" height="100" rx="10"/><text class="ct ctr" x="108" y="108">Change</text></g>
+<g class="a-rise" style="--d:.35s"><rect class="box" x="238" y="50" width="196" height="100" rx="10"/><text class="ct ctr" x="336" y="108">Unit tests</text></g>
+<g class="a-rise" style="--d:.5s"><g class="a-shake" style="--d:1.5s"><rect class="boxr" x="466" y="50" width="196" height="100" rx="10"/><text class="ct ctr" x="564" y="108">Linter</text></g></g>
+<g class="a-rise" style="--d:.65s"><rect class="box" x="694" y="50" width="196" height="100" rx="10"/><text class="ct ctr" x="792" y="108">Security scan</text></g>
+<path class="wire a-draw" style="--d:.8s;animation-duration:.3s" pathLength="1" marker-end="url(#arrow)" d="M208 100 L234 100"/>
+<path class="wire a-draw" style="--d:.9s;animation-duration:.3s" pathLength="1" marker-end="url(#arrow)" d="M436 100 L462 100"/>
+<text class="big tg ctr a-pop" style="--d:1.1s" x="336" y="208">✓</text>
+<text class="big tr ctr a-pop" style="--d:1.5s" x="564" y="208">✕</text>
+<text class="m ctr a-fade" style="--d:1.7s" x="792" y="200">Not run</text>
+<path class="wirer a-draw" style="--d:1.9s" pathLength="1" marker-end="url(#arrow)" d="M564 226 C 564 318, 108 318, 108 162"/>
+<text class="t tr ctr a-fade" style="--d:2.5s" x="336" y="350">Fail: adjust and try again</text>
+<text class="m" x="10" y="422">Cycle 2</text>
+<g class="a-rise" style="--d:2.8s"><rect class="boxb" x="10" y="440" width="196" height="100" rx="10"/><text class="ct ctr" x="108" y="498">Change</text></g>
+<g class="a-rise" style="--d:2.95s"><rect class="boxg" x="238" y="440" width="196" height="100" rx="10"/><text class="ct ctr" x="336" y="498">Unit tests</text></g>
+<g class="a-rise" style="--d:3.1s"><rect class="boxg" x="466" y="440" width="196" height="100" rx="10"/><text class="ct ctr" x="564" y="498">Linter</text></g>
+<g class="a-rise" style="--d:3.25s"><rect class="boxg" x="694" y="440" width="196" height="100" rx="10"/><text class="ct ctr" x="792" y="498">Security scan</text></g>
+<path class="wire a-draw" style="--d:3.3s;animation-duration:.3s" pathLength="1" marker-end="url(#arrow)" d="M208 490 L234 490"/>
+<path class="wire a-draw" style="--d:3.35s;animation-duration:.3s" pathLength="1" marker-end="url(#arrow)" d="M436 490 L462 490"/>
+<path class="wire a-draw" style="--d:3.4s;animation-duration:.3s" pathLength="1" marker-end="url(#arrow)" d="M664 490 L690 490"/>
+<text class="big tg ctr a-pop" style="--d:3.6s" x="336" y="598">✓</text>
+<text class="big tg ctr a-pop" style="--d:3.9s" x="564" y="598">✓</text>
+<text class="big tg ctr a-pop" style="--d:4.2s" x="792" y="598">✓</text>
+<g class="a-pop" style="--d:4.6s"><rect class="boxg" x="250" y="650" width="400" height="100" rx="12"/><text class="tb tg ctr" x="450" y="710">Done: all checks pass</text></g>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><span>Checked: 19 November 2026</span></footer>
+</section>
+
+<section class="slide" data-title="Track usage and spending">
+<header class="slide-head"><span class="slide-index">16</span><div><h1>Track usage and spending</h1><p class="lead">See where your AI credits go. Then adjust.</p></div></header>
+<div class="content feat">
+<section>
+<div class="blk a-rise" style="--d:.05s"><span class="lab what">What</span><p>The AI usage page shows your AI credit use for each feature and each model.</p></div>
+<div class="blk a-rise" style="--d:.15s"><span class="lab where">Where</span><p>The AI usage page, under <code>github.com/settings/billing</code>.</p></div>
+<div class="blk a-rise" style="--d:.25s"><span class="lab how">How</span><ul class="dots"><li>Find the features and models that use the most credits.</li><li>Set budget controls.</li><li>If you are often near your monthly limit, compare a higher plan.</li></ul></div>
+<div class="blk a-rise" style="--d:.35s"><span class="lab benefit">Benefit</span><p>You adjust based on real data. A higher plan can cost less than paying for additional usage.</p></div>
+</section>
+<section class="fig">
+<svg viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animation: an example AI usage dashboard. Bars grow for usage by feature and by model. A monthly total bar grows toward a budget line.">
+<rect class="box" x="10" y="10" width="880" height="760" rx="12"/>
+<text class="tb" x="40" y="58">AI usage</text>
+<text class="m end" x="860" y="58">Illustration. Not real data.</text>
+<line class="wire" x1="10" y1="82" x2="890" y2="82"/>
+<text class="t" x="40" y="128">By feature</text>
+<text class="ct" x="40" y="172">Cloud agent</text><rect class="sb a-grow-x" style="--d:.4s" x="300" y="148" width="480" height="34" rx="5"/>
+<text class="ct" x="40" y="222">Copilot CLI</text><rect class="sb a-grow-x" style="--d:.55s" x="300" y="198" width="340" height="34" rx="5"/>
+<text class="ct" x="40" y="272">Chat</text><rect class="sb a-grow-x" style="--d:.7s" x="300" y="248" width="220" height="34" rx="5"/>
+<text class="ct" x="40" y="322">Code review</text><rect class="sb a-grow-x" style="--d:.85s" x="300" y="298" width="130" height="34" rx="5"/>
+<text class="t" x="40" y="398">By model</text>
+<text class="ct" x="40" y="442">Reasoning model</text><rect class="sp a-grow-x" style="--d:1.2s" x="300" y="418" width="440" height="34" rx="5"/>
+<text class="ct" x="40" y="492">Mid-tier model</text><rect class="sp a-grow-x" style="--d:1.35s" x="300" y="468" width="260" height="34" rx="5"/>
+<text class="ct" x="40" y="542">Lighter model</text><rect class="sp a-grow-x" style="--d:1.5s" x="300" y="518" width="120" height="34" rx="5"/>
+<text class="t" x="40" y="618">This month</text>
+<text class="t tr ctr" x="740" y="618">Budget</text>
+<rect x="40" y="640" width="820" height="44" rx="6" style="fill:var(--bg);stroke:var(--line);stroke-width:1.5"/>
+<rect class="l3 a-grow-x" style="--d:1.8s;animation-duration:1.6s" x="40" y="640" width="560" height="44" rx="6"/>
+<line class="wirer" x1="740" y1="630" x2="740" y2="694"/>
+<text class="t a-fade" style="--d:3.3s" x="40" y="738">80% of the budget is used.</text>
+</svg>
+</section>
+</div>
+<footer class="sources"><a href="https://docs.github.com/en/copilot/tutorials/optimize-ai-usage">Source: Optimizing your AI usage (GitHub Docs)</a><a href="https://github.com/settings/billing">AI usage page</a><span>Checked: 19 November 2026</span></footer>
+</section>
+</main>
+</div>
+<nav class="navigation" aria-label="Slide navigation">
+<button id="previous" type="button" aria-label="Previous slide" title="Previous slide (Left arrow)"><svg class="ico" aria-hidden="true"><use href="#i-left"/></svg></button>
+<span id="count" class="count">1 / 16</span>
+<button id="next" type="button" aria-label="Next slide" title="Next slide (Right arrow)"><svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+<label for="jump" class="sr-only">Go to slide</label>
+<select id="jump"></select>
+<button id="replay" type="button" aria-label="Replay animation" title="Replay animation (R)"><svg class="ico" aria-hidden="true"><use href="#i-replay"/></svg></button>
+<button id="theme" type="button" aria-label="Light theme" aria-pressed="false" title="Change theme (T)"><svg class="ico" aria-hidden="true"><use href="#i-theme"/></svg></button>
+<button id="fullscreen" type="button" aria-label="Full screen" title="Full screen (F)"><svg class="ico" aria-hidden="true"><use href="#i-full"/></svg></button>
+</nav>
+<p class="orientation-hint">Turn your device to landscape for the best view.</p>
+<p id="slide-announcement" class="sr-only" aria-live="polite"></p>
+<p id="notice" role="status"></p>
+<noscript><p style="position:fixed;top:60px;left:42px;font:20px sans-serif">This deck needs JavaScript to show the slides.</p></noscript>
+<script>
+(function(){
+"use strict";
+var NS="http://www.w3.org/2000/svg";
+var stage=document.getElementById("stage");
+var slides=[].slice.call(document.querySelectorAll(".slide"));
+var prev=document.getElementById("previous"),next=document.getElementById("next"),count=document.getElementById("count");
+var jump=document.getElementById("jump"),replayBtn=document.getElementById("replay"),themeBtn=document.getElementById("theme"),fullBtn=document.getElementById("fullscreen");
+var announce=document.getElementById("slide-announcement"),notice=document.getElementById("notice"),progress=document.querySelector(".progress");
+var pills=[].slice.call(document.querySelectorAll(".strats [data-s]"));
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)");
+var current=0,noticeTimer=0;
+function sq(g,x,y,s,cls,d){var r=document.createElementNS(NS,"rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",s);r.setAttribute("height",s);r.setAttribute("rx",Math.round(s/6));r.setAttribute("class","sq "+cls);r.style.setProperty("--d",d.toFixed(2)+"s");g.appendChild(r);}
+[].forEach.call(document.querySelectorAll("g[data-sq]"),function(g){
+var n=+g.dataset.sq,cols=+(g.dataset.cols||n),s=+(g.dataset.size||26),gap=+(g.dataset.gap||6),x=+(g.dataset.x||0),y=+(g.dataset.y||0),d=+(g.dataset.d||0),step=+(g.dataset.step||0.05),cls=g.dataset.cls||"l3",anim=g.dataset.anim===undefined?"a-pop":g.dataset.anim;
+for(var i=0;i<n;i++){var c=cls==="lv"?"l"+(1+(i*7+3)%4):cls;sq(g,x+(i%cols)*(s+gap),y+Math.floor(i/cols)*(s+gap),s,c+(anim?" "+anim:""),d+i*step);}
+});
+var hero=document.getElementById("hero-grid");
+if(hero){for(var c=0;c<52;c++){for(var r=0;r<12;r++){
+var lvl=1+((c*3+r*5+(c*r)%7)%4),waste=(c*7+r*13)%11===0,empty=!waste&&(c*11+r*5)%9===0;
+sq(hero,c*32,r*32,26,(empty?"l0":"l"+lvl)+(empty?"":waste?" waste":" lit"),0.2+c*0.03+r*0.045);}}}
+slides.forEach(function(s,k){var o=document.createElement("option");o.value=String(k);o.textContent=(k+1)+". "+s.dataset.title;jump.appendChild(o);});
+[].forEach.call(document.querySelectorAll(".sources a"),function(a){a.target="_blank";a.rel="noopener noreferrer";});
+function fit(){
+var w=window.innerWidth,h=window.innerHeight,aspect=Math.min(16/9,Math.max(20/13,w/h));
+var tall=(16/9-aspect)/(16/9-20/13),dw=1920-120*tall,dh=dw/aspect,s=Math.min(w/dw,h/dh),ox=(w-dw*s)/2,oy=(h-dh*s)/2;
+stage.style.width=dw+"px";stage.style.height=dh+"px";stage.style.transform="scale("+s+")";stage.style.left=ox+"px";stage.style.top=oy+"px";
+var st=document.documentElement.style;st.setProperty("--deck-scale",String(s));st.setProperty("--deck-offset-x",ox+"px");st.setProperty("--deck-offset-y",oy+"px");
+}
+function smil(i){slides.forEach(function(s,k){[].forEach.call(s.querySelectorAll("svg"),function(v){if(!v.pauseAnimations)return;if(k===i&&!reduce.matches){try{v.setCurrentTime(0);}catch(e){}v.unpauseAnimations();}else v.pauseAnimations();});});}
+function show(i,upd){
+i=Math.max(0,Math.min(slides.length-1,i));
+var a=document.activeElement;if(a&&a.closest&&a.closest(".slide"))a.blur();
+slides.forEach(function(s,k){var on=k===i;s.classList.toggle("active",on);s.inert=!on;s.setAttribute("aria-hidden",on?"false":"true");});
+current=i;var t=slides[i].dataset.title,strat=slides[i].dataset.strategy||"";
+count.textContent=(i+1)+" / "+slides.length;
+announce.textContent="Slide "+(i+1)+" of "+slides.length+": "+t;
+progress.style.transform="scaleX("+((i+1)/slides.length)+")";
+prev.disabled=i===0;next.disabled=i===slides.length-1;jump.value=String(i);
+document.title=t+" | GitHub Copilot";
+pills.forEach(function(p){var on=p.dataset.s===strat;p.classList.toggle("on",on);if(on)p.setAttribute("aria-current","step");else p.removeAttribute("aria-current");});
+smil(i);
+if(upd!==false){var hsh="#slide-"+(i+1);if(location.hash!==hsh)history.replaceState(null,"",hsh);}
+}
+function readHash(){var m=/^#slide-(\d+)$/.exec(location.hash);return m?+m[1]-1:null;}
+function report(msg){notice.textContent=msg;clearTimeout(noticeTimer);noticeTimer=setTimeout(function(){notice.textContent="";},1800);}
+function replay(){var s=slides[current];s.classList.remove("active");void s.offsetWidth;s.classList.add("active");smil(current);report("Animation replayed");}
+function setTheme(n){document.documentElement.dataset.theme=n;themeBtn.setAttribute("aria-pressed",String(n==="light"));try{localStorage.setItem("oau-theme",n);}catch(e){}}
+function toggleTheme(){var n=document.documentElement.dataset.theme==="dark"?"light":"dark";setTheme(n);report(n==="light"?"Light theme":"Dark theme");}
+try{var saved=localStorage.getItem("oau-theme");if(saved==="light"||saved==="dark")setTheme(saved);}catch(e){}
+async function toggleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else report("Full screen is not available");}catch(e){report("Full screen is not available");}}
+prev.addEventListener("click",function(){show(current-1);});
+next.addEventListener("click",function(){show(current+1);});
+jump.addEventListener("change",function(){show(+jump.value);});
+replayBtn.addEventListener("click",replay);
+themeBtn.addEventListener("click",toggleTheme);
+fullBtn.addEventListener("click",toggleFullscreen);
+window.addEventListener("resize",fit);
+window.addEventListener("hashchange",function(){var h=readHash();if(h!==null&&h!==current)show(h,false);});
+document.addEventListener("fullscreenchange",function(){fullBtn.setAttribute("aria-label",document.fullscreenElement?"Exit full screen":"Full screen");});
+document.addEventListener("keydown",function(e){
+if(e.altKey||e.ctrlKey||e.metaKey)return;
+var tg=e.target,k=e.key;
+if(tg&&/^(INPUT|SELECT|TEXTAREA)$/.test(tg.tagName))return;
+if(tg&&tg.tagName==="BUTTON"&&(k===" "||k==="Enter"))return;
+if(k==="ArrowRight"||k==="ArrowDown"||k==="PageDown"||k===" "){e.preventDefault();show(current+1);}
+else if(k==="ArrowLeft"||k==="ArrowUp"||k==="PageUp"){e.preventDefault();show(current-1);}
+else if(k==="Home"){e.preventDefault();show(0);}
+else if(k==="End"){e.preventDefault();show(slides.length-1);}
+else if(k==="t"||k==="T")toggleTheme();
+else if(k==="f"||k==="F")toggleFullscreen();
+else if(k==="r"||k==="R")replay();
+else if(/^[0-9]$/.test(k)){var n=+k;show(n===0?slides.length-1:n-1);}
+});
+fit();
+var start=readHash();show(start===null?0:start,false);
+})();
+</script>
+</body>
+</html>
