@@ -176,7 +176,7 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
     .sources { padding-right:0; }
   }
   /* Agenda */
-  .agenda { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr 1.75fr; gap:20px; }
+  .agenda { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
   .ag { --accent:var(--blue); display:flex; flex-direction:column; gap:12px; padding:22px 20px 16px; background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 6px 0 var(--accent); border-radius:10px; min-width:0; }
   .ag.p { --accent:var(--purple); } .ag.r { --accent:var(--red); } .ag.o { --accent:var(--orange); }
   .ag h2 { font-size:34px; }
@@ -185,7 +185,6 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
   .ag li { display:grid; grid-template-columns:48px 1fr; align-items:baseline; font-size:27px; line-height:1.25; font-weight:600; }
   .ag li b { font:600 19px var(--mono); color:var(--muted); }
   .ag li span { display:block; font-size:21px; color:var(--muted); font-weight:400; margin-top:2px; }
-  .ag.o ol { grid-template-columns:1fr 1fr; grid-template-rows:repeat(4,auto); grid-auto-flow:column; gap:14px 20px; }
   .ag-foot { margin-top:auto; display:flex; align-items:baseline; gap:14px; padding-top:12px; border-top:1px solid var(--line); }
   .ag-foot b { font-size:64px; line-height:1; letter-spacing:-2px; color:var(--accent); }
   .ag-foot span { font-size:22px; color:var(--muted); line-height:1.3; }
@@ -257,6 +256,77 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
   .try .card p { font-size:32px; line-height:1.3; margin:0; color:var(--fg); }
   .try .links { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:10px 36px; font-size:26px; align-items:center; }
   .try .links code { font-size:.9em; }
+  .try.four { grid-template-columns:repeat(4,1fr); }
+  .try.four .card { padding:22px 24px 18px 30px; gap:10px; }
+  .try.four .card h3 { font-size:40px; }
+  .try.four .card p { font-size:30px; }
+  .try.four .card .sf { font-size:22px; }
+
+  /* Motion: build-in when a slide opens, looped flow in the figures */
+  @keyframes kUp { from { opacity:0; transform:translateY(18px); } }
+  @keyframes kFade { from { opacity:0; } }
+  @keyframes kPop { from { opacity:0; transform:scale(.5); } 70% { opacity:1; transform:scale(1.05); } }
+  @keyframes kLeft { from { opacity:0; transform:translateX(-32px); } }
+  @keyframes kDrop { from { opacity:0; transform:translateY(-48px); } 75% { opacity:1; transform:translateY(4px); } }
+  @keyframes kGrowX { from { opacity:0; transform:scaleX(0); } }
+  @keyframes kGrowY { from { opacity:0; transform:scaleY(0); } }
+  @keyframes kDraw { from { stroke-dashoffset:1; opacity:0; } 15% { opacity:1; } }
+  .slide.active .slide-head { animation:kFade .45s ease-out both; }
+  .slide.active .slide-index { animation:kLeft .5s ease-out both; }
+  .slide.active .feat > section > * { animation:kUp .55s cubic-bezier(.2,.7,.2,1) both; }
+  .slide.active .feat > section:first-child > :nth-child(2) { animation-delay:.1s; }
+  .slide.active .feat > section:first-child > :nth-child(3) { animation-delay:.2s; }
+  .slide.active .feat > section:first-child > :nth-child(4) { animation-delay:.3s; }
+  .slide.active .feat > section:first-child > :nth-child(5) { animation-delay:.4s; }
+  .slide.active .feat > section:last-child > :nth-child(1) { animation-name:kFade; animation-delay:.05s; }
+  .slide.active .feat > section:last-child > :nth-child(2) { animation-delay:.55s; }
+  .slide.active .feat > section:last-child > :nth-child(3) { animation-delay:.7s; }
+  .slide.active .feat > section:last-child > :nth-child(4) { animation-delay:.85s; }
+  .slide.active .feat > section:last-child > :nth-child(5) { animation-delay:1s; }
+  .slide.active .a { animation:kUp .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:var(--d,0s); }
+  .slide.active .a.fade { animation-name:kFade; }
+  .slide.active .a.pop { animation-name:kPop; animation-duration:.5s; }
+  .slide.active .a.left { animation-name:kLeft; }
+  .slide.active .a.drop { animation-name:kDrop; animation-duration:.65s; }
+  .slide.active .a.growx { animation-name:kGrowX; animation-duration:.8s; }
+  .slide.active .a.growy { animation-name:kGrowY; animation-duration:.7s; }
+  .slide.active .a.draw { animation-name:kDraw; animation-duration:.7s; animation-timing-function:ease-out; }
+  svg .a { transform-box:fill-box; transform-origin:center; }
+  svg .a.growx { transform-origin:left center; }
+  svg .a.growy { transform-origin:center bottom; }
+  svg .draw { stroke-dasharray:1; }
+  /* Build-in order for the agenda, the matrix, and the closing cards */
+  .stg > :first-child { --i:0; } .stg > :nth-child(2) { --i:1; } .stg > :nth-child(3) { --i:2; } .stg > :nth-child(4) { --i:3; } .stg > :nth-child(5) { --i:4; }
+  .stg > :nth-child(6) { --i:5; } .stg > :nth-child(7) { --i:6; } .stg > :nth-child(8) { --i:7; } .stg > :nth-child(9) { --i:8; }
+  .stg > :nth-child(10) { --i:9; } .stg > :nth-child(11) { --i:10; } .stg > :nth-child(12) { --i:11; } .stg > :nth-child(13) { --i:12; }
+  .slide.active .agenda > .ag { --o:calc(var(--i,0) * .12s); animation:kUp .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:var(--o); }
+  .slide.active .ag li { animation:kLeft .5s ease-out both; animation-delay:calc(var(--o,0s) + .3s + var(--i,0) * .08s); }
+  .slide.active .ag-foot { animation:kFade .6s ease-out both; animation-delay:calc(var(--o,0s) + .7s); }
+  .slide.active .fourq > div { animation:kUp .5s ease-out both; animation-delay:calc(1s + var(--i,0) * .1s); }
+  .slide.active .mx thead { animation:kFade .4s ease-out both; }
+  .slide.active .mx tbody tr { animation:kLeft .45s ease-out both; animation-delay:calc(.15s + var(--i,0) * .06s); }
+  .slide.active .mx .dot { animation:kPop .4s ease-out both; animation-delay:calc(.5s + var(--i,0) * .06s); }
+  .slide.active .key-row { animation:kFade .5s ease-out both; animation-delay:1.3s; }
+  .slide.active .try > .card { animation:kUp .55s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(var(--i,0) * .1s); }
+  .slide.active .try > .links { animation:kFade .5s ease-out both; animation-delay:.9s; }
+  /* Looped flow: packets, flashes, and scan marks. JS adds packets and flashes. */
+  svg .pk circle:last-of-type { stroke:var(--bg); stroke-width:2; }
+  svg .pk .halo { fill-opacity:.3; }
+  svg .guide { fill:none; stroke:none; }
+  svg .flash { fill:var(--fg); fill-opacity:.12; stroke:var(--fg); stroke-width:3; pointer-events:none; }
+  svg .flash.b { fill:var(--blue); fill-opacity:.2; stroke:var(--blue); }
+  svg .flash.g { fill:var(--green); fill-opacity:.2; stroke:var(--green); }
+  svg .flash.p { fill:var(--purple); fill-opacity:.2; stroke:var(--purple); }
+  svg .flash.o { fill:var(--orange); fill-opacity:.2; stroke:var(--orange); }
+  svg .flash.r { fill:var(--red); fill-opacity:.2; stroke:var(--red); }
+  svg .ring { fill:none; stroke:var(--fg); stroke-width:3; pointer-events:none; }
+  svg .ring.b { stroke:var(--blue); } svg .ring.g { stroke:var(--green); } svg .ring.p { stroke:var(--purple); } svg .ring.o { stroke:var(--orange); } svg .ring.r { stroke:var(--red); }
+  svg .scanline { fill:var(--blue); }
+  .codebox .row { display:block; border-radius:4px; }
+  .slide.active .codebox .row[style] { animation:kRow 6s linear var(--t) infinite; }
+  @keyframes kRow { 0%,10% { background:color-mix(in srgb, var(--c) 28%, transparent); } 14%,100% { background:transparent; } }
+  @media (prefers-reduced-motion:reduce) { .fx { display:none !important; } }
+  @media print { *,*::before,*::after { animation:none !important; } .fx { display:none !important; } [data-show] { opacity:1 !important; } }
   /*SLIDE-CSS*/
 </style>
 </head>
@@ -274,52 +344,54 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
 <div id="stage">
   <header class="topbar">
     <span class="brand"><svg class="ico" aria-hidden="true"><use href="#i-copilot"/></svg>GitHub Copilot</span>
-    <span class="muted">Universe 2026 recap and Awesome Copilot</span>
+    <span class="muted">Universe 2026 recap, agents, and Awesome Copilot</span>
     <span class="legend" aria-label="Surface colors"><span class="sf">GitHub.com</span><span class="sf app">Copilot app</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span><span class="sf sec">Security</span></span>
     <time datetime="2026-11-30">30 November 2026</time>
   </header>
   <div class="progress" aria-hidden="true"></div>
   <main id="deck" aria-label="GitHub Copilot presentation">
     <section class="slide active" id="slide-1" aria-labelledby="title-1" data-title="Agenda">
-      <header class="slide-head"><span class="slide-index" aria-hidden="true">01</span><div><h1 id="title-1">Agenda</h1><p class="lead">Part 1: 13 announcements from Universe 2026. Part 2: an overview of reusable resources on the Awesome Copilot website.</p></div></header>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">01</span><div><h1 id="title-1">Agenda</h1><p class="lead">Part 1: 13 announcements from Universe 2026. Part 2: agent orchestration, agent skills, and the Awesome Copilot library.</p></div></header>
       <div class="content">
-        <div class="agenda">
+        <div class="agenda stg">
           <article class="ag"><h2>Platform<small>Universe 2026</small></h2>
-            <ol>
+            <ol class="stg">
               <li><b>03</b><div>Stacked PRs<span>Small linked pull requests</span></div></li>
               <li><b>04</b><div>Issue artifacts<span>Plans and links on the issue</span></div></li>
               <li><b>05</b><div>Attach from the CLI<span>Images and videos with gh</span></div></li>
               <li><b>06</b><div>PR inbox<span>PRs that need you</span></div></li>
             </ol>
-            <div class="ag-foot"><b>4</b><span>announcements to make pull requests and issues easier to review</span></div>
+            <div class="ag-foot"><b data-count="4" data-count-delay="0.80">4</b><span>announcements to make pull requests and issues easier to review</span></div>
           </article>
           <article class="ag p"><h2>Copilot<small>Universe 2026</small></h2>
-            <ol>
+            <ol class="stg">
               <li><b>07</b><div>Copilot Fusion<span>Pick effort, not models</span></div></li>
               <li><b>08</b><div>Copilot Projects<span>One goal, many sessions</span></div></li>
               <li><b>09</b><div>Automations<span>Saved tasks and triggers</span></div></li>
               <li><b>10</b><div>Connectors<span>Sign in once to tools</span></div></li>
             </ol>
-            <div class="ag-foot"><b>4</b><span>announcements to choose models, organize work, and connect tools</span></div>
+            <div class="ag-foot"><b data-count="4" data-count-delay="0.92">4</b><span>announcements to choose models, organize work, and connect tools</span></div>
           </article>
           <article class="ag r"><h2>Security<small>Universe 2026</small></h2>
-            <ol>
+            <ol class="stg">
               <li><b>11</b><div>Security canvas<span>Findings in the app</span></div></li>
               <li><b>12</b><div>AI Scan<span>Any language, on demand</span></div></li>
               <li><b>13</b><div>AI push protection<span>Block secrets at push</span></div></li>
               <li><b>14</b><div>Package firewall<span>Block risky npm packages</span></div></li>
               <li><b>15</b><div>Reachability<span>Fix what code calls</span></div></li>
             </ol>
-            <div class="ag-foot"><b>5</b><span>announcements to find, block, and fix risk while you build</span></div>
+            <div class="ag-foot"><b data-count="5" data-count-delay="1.04">5</b><span>announcements to find, block, and fix risk while you build</span></div>
           </article>
-          <article class="ag o"><h2>Awesome Copilot<small>Reusable resources</small></h2>
-            <ol>
-              <li><b>16</b><div>Overview<span>What is on the site</span></div></li>
+          <article class="ag o"><h2>Agents and resources<small>Beyond Universe</small></h2>
+            <ol class="stg">
+              <li><b>16</b><div>Agent orchestration<span>Sequential and parallel work</span></div></li>
+              <li><b>17</b><div>Agent skills<span>Steps that load when needed</span></div></li>
+              <li><b>18</b><div>Awesome Copilot<span>Reusable resources</span></div></li>
             </ol>
-            <div class="ag-foot"><b>1</b><span>overview of the Awesome Copilot library</span></div>
+            <div class="ag-foot"><b data-count="3" data-count-delay="1.16">3</b><span>topics to split work, reuse skills, and find resources</span></div>
           </article>
         </div>
-        <div class="fourq">
+        <div class="fourq stg">
           <div><span class="lab what">What</span><p>What the feature is.</p></div>
           <div><span class="lab why">Why</span><p>How it helps you.</p></div>
           <div><span class="lab how">How</span><p>Steps to set it up.</p></div>
@@ -334,7 +406,7 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
       <div class="content">
         <table class="mx">
           <thead><tr><th>Announcement</th><th class="c">github.com</th><th class="c">App</th><th class="c">CLI</th><th class="c">VS Code</th><th>Where to start</th></tr></thead>
-          <tbody>
+          <tbody class="stg">
             <tr class="platform"><td class="n"><b>03</b>Stacked PRs</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">gh stack init</td></tr>
             <tr class="platform"><td class="n"><b>04</b>Issue artifacts</td><td class="c"><span class="dot"></span></td><td class="c"><span class="dot app"></span></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">Issue → Artifacts</td></tr>
             <tr class="platform"><td class="n"><b>05</b>Attach from the CLI</td><td class="c"></td><td class="c"></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">gh pr create --attach</td></tr>
@@ -371,15 +443,18 @@ Sources checked on 19 November 2026. Product behavior can change. Each slide nam
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 290" role="img" aria-label="A stack of three pull requests. PR 3 targets PR 2, PR 2 targets PR 1, and PR 1 targets main.">
-                <rect class="boxo" x="0" y="6" width="390" height="54" rx="8"/><text class="tb" x="18" y="40">PR 3</text><text class="m" x="86" y="40">Sign-in page</text><text class="mono" x="372" y="40" text-anchor="end">base: PR 2</text>
-                <rect class="boxp" x="0" y="84" width="390" height="54" rx="8"/><text class="tb" x="18" y="118">PR 2</text><text class="m" x="86" y="118">Sign-in API</text><text class="mono" x="372" y="118" text-anchor="end">base: PR 1</text>
-                <rect class="boxb" x="0" y="162" width="390" height="54" rx="8"/><text class="tb" x="18" y="196">PR 1</text><text class="m" x="86" y="196">Database table</text><text class="mono" x="372" y="196" text-anchor="end">base: main</text>
-                <rect class="box" x="0" y="240" width="390" height="44" rx="8"/><text class="tb" x="18" y="269">main</text>
-                <path class="wire" d="M195 62V82" marker-end="url(#arrow)"/><path class="wire" d="M195 140V160" marker-end="url(#arrow)"/><path class="wire" d="M195 218V238" marker-end="url(#arrow)"/>
-                <circle class="fo" cx="440" cy="33" r="8"/><text class="tb" x="462" y="40">Review</text><text class="m" x="462" y="66">Each PR shows only</text><text class="m" x="462" y="88">its own changes</text>
-                <circle class="fp" cx="440" cy="125" r="8"/><text class="tb" x="462" y="132">Checks</text><text class="m" x="462" y="158">Rules and CI run</text><text class="m" x="462" y="180">on every layer</text>
-                <circle class="fb" cx="440" cy="217" r="8"/><text class="tb" x="462" y="224">Merge</text><text class="m" x="462" y="250">The top PR lands</text><text class="m" x="462" y="272">the whole stack</text>
+              <svg viewBox="0 0 700 290" role="img" aria-label="A stack of three pull requests. PR 3 targets PR 2, PR 2 targets PR 1, and PR 1 targets main." data-cycle="5.6">
+                <rect class="box" x="0" y="240" width="390" height="44" rx="8" data-fl="g" data-at="3.8 4.6"/><text class="tb" x="18" y="269">main</text>
+                <rect class="boxb" x="0" y="162" width="390" height="54" rx="8" data-fl="g" data-at="1.0 1.6"/><text class="tb" x="18" y="196">PR 1</text><text class="m" x="86" y="196">Database table</text><text class="mono" x="372" y="196" text-anchor="end">base: main</text>
+                <path class="wire" d="M195 218V238" marker-end="url(#arrow)"/>
+                <rect class="boxp" x="0" y="84" width="390" height="54" rx="8" data-fl="g" data-at="1.4 2.0"/><text class="tb" x="18" y="118">PR 2</text><text class="m" x="86" y="118">Sign-in API</text><text class="mono" x="372" y="118" text-anchor="end">base: PR 1</text>
+                <path class="wire" d="M195 140V160" marker-end="url(#arrow)"/>
+                <rect class="boxo" x="0" y="6" width="390" height="54" rx="8" data-fl="g" data-at="1.8 2.4"/><text class="tb" x="18" y="40">PR 3</text><text class="m" x="86" y="40">Sign-in page</text><text class="mono" x="372" y="40" text-anchor="end">base: PR 2</text>
+                <path class="wire" d="M195 62V82" marker-end="url(#arrow)"/>
+                <path class="guide" d="M412 33V262" data-pk="b" data-at="2.6 3.8"/>
+                <circle class="fo" cx="440" cy="33" r="8" data-ring="o" data-at="0.1 0.9"/><text class="tb" x="462" y="40">Review</text><text class="m" x="462" y="66">Each PR shows only</text><text class="m" x="462" y="88">its own changes</text>
+                <circle class="fp" cx="440" cy="125" r="8" data-ring="p" data-at="1.0 1.8"/><text class="tb" x="462" y="132">Checks</text><text class="m" x="462" y="158">Rules and CI run</text><text class="m" x="462" y="180">on every layer</text>
+                <circle class="fb" cx="440" cy="217" r="8" data-ring="b" data-at="2.6 3.4"/><text class="tb" x="462" y="224">Merge</text><text class="m" x="462" y="250">The top PR lands</text><text class="m" x="462" y="272">the whole stack</text>
               </svg>
             </div>
             <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh extension install github/gh-stack
@@ -409,11 +484,19 @@ gh stack merge</code></pre></div>
             <div class="chips"><span class="sf">github.com</span><span class="sf app">Copilot app</span><span class="sf cli">GitHub CLI</span></div>
           </section>
           <section>
-            <div class="cards">
-              <div class="card"><h3><code>generic</code></h3><p>Markdown note</p></div>
-              <div class="card p"><h3><code>plan</code></h3><p>Implementation plan</p></div>
-              <div class="card g"><h3><code>link</code></h3><p>URL to outside work</p></div>
-              <div class="card o"><h3><code>embedded_html</code></h3><p>Interactive HTML page</p></div>
+            <div class="fig">
+              <svg viewBox="0 0 700 230" role="img" aria-label="Issue 142 has four artifact types: generic, plan, link, and embedded HTML. The Copilot app writes the plan. You read it and add a link." data-cycle="5.4">
+                <rect class="box" x="0" y="0" width="420" height="230" rx="10" data-b="fade"/><text class="tb" x="18" y="34">Issue #142</text><text class="mono" x="402" y="34" text-anchor="end">Artifacts</text>
+                <rect class="boxb" x="14" y="50" width="392" height="38" rx="8" data-b="left"/><text class="code" x="30" y="75">generic</text><text class="m" x="392" y="75" text-anchor="end">Markdown note</text>
+                <rect class="boxp" x="14" y="94" width="392" height="38" rx="8" data-b="left" data-fl="p" data-at="1.1 1.8"/><text class="code" x="30" y="119">plan</text><text class="m" x="392" y="119" text-anchor="end">Implementation plan</text>
+                <rect class="boxg" x="14" y="138" width="392" height="38" rx="8" data-b="left" data-fl="g" data-at="3.6 4.3"/><text class="code" x="30" y="163">link</text><text class="m" x="392" y="163" text-anchor="end">URL to outside work</text>
+                <rect class="boxo" x="14" y="182" width="392" height="38" rx="8" data-b="left"/><text class="code" x="30" y="207">embedded_html</text><text class="m" x="392" y="207" text-anchor="end">Interactive HTML page</text>
+                <rect class="boxp" x="480" y="14" width="220" height="70" rx="10" data-fl="p" data-at="0.0 0.6"/><text class="tb" x="590" y="45" text-anchor="middle">Copilot app</text><text class="m" x="590" y="70" text-anchor="middle">writes the plan</text>
+                <path class="wire" d="M478 49C452 49 452 105 428 105" marker-end="url(#arrow)" data-pk="p" data-at="0.5 1.1"/>
+                <path class="wire" d="M428 121C452 121 452 170 476 170" marker-end="url(#arrow)" data-pk="b" data-at="1.8 2.4"/>
+                <rect class="boxb" x="480" y="146" width="220" height="70" rx="10" data-fl="b" data-at="2.4 3.0"/><text class="tb" x="590" y="177" text-anchor="middle">You</text><text class="m" x="590" y="202" text-anchor="middle">read and add a link</text>
+                <path class="wire" d="M478 194C452 194 452 157 428 157" marker-end="url(#arrow)" data-pk="g" data-at="3.0 3.6"/>
+              </svg>
             </div>
             <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh issue artifact create 142 signin-plan.md
 gh issue artifact list 142 --type link
@@ -443,12 +526,12 @@ gh issue artifact edit 142 2 --restore-version 5</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 150" role="img" aria-label="Flow. A local file goes through the attach flag. GitHub hosts it and puts a link in the body.">
-                <rect class="box" x="0" y="20" width="190" height="110" rx="10"/><text class="tb" x="95" y="62" text-anchor="middle">Local file</text><text class="mono" x="95" y="94" text-anchor="middle">./before.png</text>
-                <path class="wireb" d="M200 75H250" marker-end="url(#arrow)"/><text class="mono" x="225" y="58" text-anchor="middle">gh</text>
-                <rect class="boxb" x="260" y="20" width="190" height="110" rx="10"/><text class="tb" x="355" y="62" text-anchor="middle">--attach</text><text class="m" x="355" y="94" text-anchor="middle">upload</text>
-                <path class="wireg" d="M460 75H510" marker-end="url(#arrow)"/>
-                <rect class="boxg" x="520" y="20" width="180" height="110" rx="10"/><text class="tb" x="610" y="62" text-anchor="middle">Hosted link</text><text class="m" x="610" y="94" text-anchor="middle">in the body</text>
+              <svg viewBox="0 0 700 150" role="img" aria-label="Flow. A local file goes through the attach flag. GitHub hosts it and puts a link in the body." data-cycle="4.4">
+                <rect class="box" x="0" y="20" width="190" height="110" rx="10" data-fl="" data-at="0.0 0.6"/><text class="tb" x="95" y="62" text-anchor="middle">Local file</text><text class="mono" x="95" y="94" text-anchor="middle">./before.png</text>
+                <path class="wireb" d="M200 75H250" marker-end="url(#arrow)" data-pk="b" data-at="0.4 1.0"/><text class="mono" x="225" y="50" text-anchor="middle">gh</text>
+                <rect class="boxb" x="260" y="20" width="190" height="110" rx="10" data-fl="b" data-at="1.0 1.7"/><text class="tb" x="355" y="62" text-anchor="middle">--attach</text><text class="m" x="355" y="94" text-anchor="middle">upload</text>
+                <path class="wireg" d="M460 75H510" marker-end="url(#arrow)" data-pk="g" data-at="1.6 2.2"/>
+                <rect class="boxg" x="520" y="20" width="180" height="110" rx="10" data-fl="g" data-at="2.2 3.0"/><text class="tb" x="610" y="62" text-anchor="middle">Hosted link</text><text class="m" x="610" y="94" text-anchor="middle">in the body</text>
               </svg>
             </div>
             <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh pr create --title "Fix login" \
@@ -479,10 +562,10 @@ gh issue artifact edit 142 2 --restore-version 5</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 280" role="img" aria-label="Mock of PR inbox with three groups: review requests, needs fixing, and ready to merge.">
-                <rect class="boxb" x="0" y="0" width="700" height="84" rx="10"/><circle class="fb" cx="34" cy="42" r="10"/><text class="tb" x="60" y="38">Review requests</text><text class="m" x="60" y="64">Someone waits for you</text><rect class="fm" opacity=".4" x="430" y="20" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="48" width="180" height="14" rx="7"/>
-                <rect class="boxr" x="0" y="98" width="700" height="84" rx="10"/><circle class="fr" cx="34" cy="140" r="10"/><text class="tb" x="60" y="136">Needs fixing</text><text class="m" x="60" y="162">Your PRs that need changes</text><rect class="fm" opacity=".4" x="430" y="118" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="146" width="180" height="14" rx="7"/>
-                <rect class="boxg" x="0" y="196" width="700" height="84" rx="10"/><circle class="fg" cx="34" cy="238" r="10"/><text class="tb" x="60" y="234">Ready to merge</text><text class="m" x="60" y="260">PRs that can land now</text><rect class="fm" opacity=".4" x="430" y="216" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="244" width="180" height="14" rx="7"/>
+              <svg viewBox="0 0 700 280" role="img" aria-label="Mock of PR inbox with three groups: review requests, needs fixing, and ready to merge." data-cycle="4.2">
+                <rect class="boxb" x="0" y="0" width="700" height="84" rx="10" data-b="left" data-fl="b" data-at="0.1 0.9"/><circle class="fb" cx="34" cy="42" r="10" data-ring="b" data-at="0.1 0.9"/><text class="tb" x="60" y="38">Review requests</text><text class="m" x="60" y="64">Someone waits for you</text><rect class="fm" opacity=".4" x="430" y="20" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="48" width="180" height="14" rx="7"/>
+                <rect class="boxr" x="0" y="98" width="700" height="84" rx="10" data-b="left" data-fl="r" data-at="1.1 1.9"/><circle class="fr" cx="34" cy="140" r="10" data-ring="r" data-at="1.1 1.9"/><text class="tb" x="60" y="136">Needs fixing</text><text class="m" x="60" y="162">Your PRs that need changes</text><rect class="fm" opacity=".4" x="430" y="118" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="146" width="180" height="14" rx="7"/>
+                <rect class="boxg" x="0" y="196" width="700" height="84" rx="10" data-b="left" data-fl="g" data-at="2.1 2.9"/><circle class="fg" cx="34" cy="238" r="10" data-ring="g" data-at="2.1 2.9"/><text class="tb" x="60" y="234">Ready to merge</text><text class="m" x="60" y="260">PRs that can land now</text><rect class="fm" opacity=".4" x="430" y="216" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="244" width="180" height="14" rx="7"/>
               </svg>
             </div>
             <div class="codebox"><span class="file cmd">Filter examples</span><pre><code>author:@me
@@ -512,14 +595,19 @@ review-involves:@me
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 300" role="img" aria-label="Three effort levels: Standard, High, Max. Three execution patterns: Single, Cascade, Critique.">
-                <rect class="boxb" x="0" y="60" width="220" height="90" rx="10"/><text class="tb" x="110" y="96" text-anchor="middle">Standard</text><text class="m" x="110" y="124" text-anchor="middle">Everyday work</text>
-                <rect class="boxp" x="240" y="30" width="220" height="120" rx="10"/><text class="tb" x="350" y="70" text-anchor="middle">High</text><text class="m" x="350" y="98" text-anchor="middle">Bigger coding tasks</text>
-                <rect class="boxo" x="480" y="0" width="220" height="150" rx="10"/><text class="tb" x="590" y="44" text-anchor="middle">Max</text><text class="m" x="590" y="72" text-anchor="middle">Deepest reasoning</text>
-                <text class="mono" x="0" y="184">Pattern for each prompt</text>
-                <rect class="box" x="0" y="198" width="220" height="100" rx="10"/><text class="tb" x="110" y="232" text-anchor="middle">Single</text><text class="m" x="110" y="260" text-anchor="middle">One model</text><text class="m" x="110" y="282" text-anchor="middle">does the task</text>
-                <rect class="box" x="240" y="198" width="220" height="100" rx="10"/><text class="tb" x="350" y="232" text-anchor="middle">Cascade</text><text class="m" x="350" y="260" text-anchor="middle">Draft, then a judge</text><text class="m" x="350" y="282" text-anchor="middle">may escalate</text>
-                <rect class="box" x="480" y="198" width="220" height="100" rx="10"/><text class="tb" x="590" y="232" text-anchor="middle">Critique</text><text class="m" x="590" y="260" text-anchor="middle">Models critique</text><text class="m" x="590" y="282" text-anchor="middle">the draft</text>
+              <svg viewBox="0 0 700 320" role="img" aria-label="You pick an effort level: Standard, High, or Max. For each prompt, Fusion picks a pattern: Single, Cascade, or Critique. You get one answer." data-cycle="6.8">
+                <text class="mono" x="0" y="18">You pick the effort</text>
+                <rect class="boxb" x="0" y="30" width="220" height="80" rx="10" data-b="growy"/><text class="tb" x="110" y="64" text-anchor="middle">Standard</text><text class="m" x="110" y="92" text-anchor="middle">Everyday work</text>
+                <rect class="boxp" x="240" y="30" width="220" height="80" rx="10" data-b="growy" data-fl="p" data-at="0.0 0.7"/><text class="tb" x="350" y="64" text-anchor="middle">High</text><text class="m" x="350" y="92" text-anchor="middle">Bigger coding tasks</text>
+                <rect class="boxo" x="480" y="30" width="220" height="80" rx="10" data-b="growy"/><text class="tb" x="590" y="64" text-anchor="middle">Max</text><text class="m" x="590" y="92" text-anchor="middle">Deepest reasoning</text>
+                <text class="mono" x="0" y="142">Fusion picks a pattern for each prompt</text>
+                <rect class="box" x="0" y="154" width="220" height="94" rx="10" data-fl="b" data-at="0.8 1.4"/><text class="tb" x="110" y="186" text-anchor="middle">Single</text><text class="m" x="110" y="214" text-anchor="middle">One model</text><text class="m" x="110" y="236" text-anchor="middle">does the task</text>
+                <rect class="box" x="240" y="154" width="220" height="94" rx="10" data-fl="p" data-at="2.5 3.1"/><text class="tb" x="350" y="186" text-anchor="middle">Cascade</text><text class="m" x="350" y="214" text-anchor="middle">Draft, then a judge</text><text class="m" x="350" y="236" text-anchor="middle">may escalate</text>
+                <rect class="box" x="480" y="154" width="220" height="94" rx="10" data-fl="o" data-at="4.2 4.8"/><text class="tb" x="590" y="186" text-anchor="middle">Critique</text><text class="m" x="590" y="214" text-anchor="middle">Models critique</text><text class="m" x="590" y="236" text-anchor="middle">the draft</text>
+                <path class="wire" d="M110 250V272" marker-end="url(#arrow)" data-pk="b" data-at="1.4 1.8"/>
+                <path class="wire" d="M350 250V272" marker-end="url(#arrow)" data-pk="p" data-at="3.1 3.5"/>
+                <path class="wire" d="M590 250V272" marker-end="url(#arrow)" data-pk="o" data-at="4.8 5.2"/>
+                <rect class="boxg" x="0" y="276" width="700" height="44" rx="10" data-fl="g" data-at="1.8 2.3, 3.5 4.0, 5.2 5.7"/><text class="tb" x="350" y="305" text-anchor="middle">One answer</text>
               </svg>
             </div>
             <div class="codebox"><span class="file cmd">Copilot CLI</span><pre><code>copilot --model fusion \
@@ -549,10 +637,10 @@ review-involves:@me
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 330" role="img" aria-label="Mock of a project with three tabs: Overview, Library, Automations. Overview shows four status columns: Needs input, Open, Working, Done.">
-                <rect class="boxb" x="0" y="0" width="150" height="42" rx="8"/><text class="t" x="75" y="28" text-anchor="middle">Overview</text>
-                <rect class="box" x="162" y="0" width="150" height="42" rx="8"/><text class="t" x="237" y="28" text-anchor="middle">Library</text>
-                <rect class="box" x="324" y="0" width="170" height="42" rx="8"/><text class="t" x="409" y="28" text-anchor="middle">Automations</text>
+              <svg viewBox="0 0 700 330" role="img" aria-label="Mock of a project with three tabs: Overview, Library, Automations. Overview shows four status columns: Needs input, Open, Working, Done." data-cycle="6">
+                <rect class="boxb" x="0" y="0" width="150" height="42" rx="8" data-fl="b" data-at="0.0 0.6"/><text class="t" x="75" y="28" text-anchor="middle">Overview</text>
+                <rect class="box" x="162" y="0" width="150" height="42" rx="8" data-fl="" data-at="0.6 1.2"/><text class="t" x="237" y="28" text-anchor="middle">Library</text>
+                <rect class="box" x="324" y="0" width="170" height="42" rx="8" data-fl="" data-at="1.2 1.8"/><text class="t" x="409" y="28" text-anchor="middle">Automations</text>
                 <rect class="boxo" x="0" y="62" width="164" height="42" rx="8"/><text class="t" x="82" y="89" text-anchor="middle">Needs input</text>
                 <rect class="boxb" x="178" y="62" width="164" height="42" rx="8"/><text class="t" x="260" y="89" text-anchor="middle">Open</text>
                 <rect class="boxp" x="356" y="62" width="164" height="42" rx="8"/><text class="t" x="438" y="89" text-anchor="middle">Working</text>
@@ -563,10 +651,11 @@ review-involves:@me
                   <rect x="368" y="132" width="140" height="12" rx="6"/><rect x="368" y="156" width="100" height="12" rx="6"/><rect x="368" y="212" width="140" height="12" rx="6"/><rect x="368" y="236" width="100" height="12" rx="6"/><rect x="368" y="292" width="140" height="12" rx="6"/>
                   <rect x="546" y="132" width="140" height="12" rx="6"/><rect x="546" y="156" width="100" height="12" rx="6"/><rect x="546" y="212" width="140" height="12" rx="6"/><rect x="546" y="236" width="100" height="12" rx="6"/>
                 </g>
-                <rect class="box" x="0" y="116" width="164" height="64" rx="8" fill="none"/>
-                <rect class="box" x="178" y="116" width="164" height="64" rx="8" fill="none"/><rect class="box" x="178" y="196" width="164" height="64" rx="8" fill="none"/>
-                <rect class="box" x="356" y="116" width="164" height="64" rx="8" fill="none"/><rect class="box" x="356" y="196" width="164" height="64" rx="8" fill="none"/><rect class="box" x="356" y="276" width="164" height="48" rx="8" fill="none"/>
-                <rect class="box" x="534" y="116" width="166" height="64" rx="8" fill="none"/><rect class="box" x="534" y="196" width="166" height="64" rx="8" fill="none"/>
+                <rect class="box" x="0" y="116" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="o" data-at="2.0 2.8"/>
+                <rect class="box" x="178" y="116" width="164" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="178" y="196" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="b" data-at="2.9 3.6"/>
+                <rect class="box" x="356" y="116" width="164" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="356" y="196" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="p" data-at="3.6 4.3"/><rect class="box" x="356" y="276" width="164" height="48" rx="8" fill="none" data-b="fade"/>
+                <rect class="box" x="534" y="116" width="166" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="534" y="196" width="166" height="64" rx="8" fill="none" data-b="fade" data-fl="g" data-at="4.3 5.1"/>
+                <path class="guide" d="M260 228H438" data-pk="p" data-at="3.3 3.8"/><path class="guide" d="M438 228H617" data-pk="g" data-at="4.0 4.5"/>
               </svg>
             </div>
             <dl class="fields panel"><dt>Overview</dt><dd>Sessions by status</dd><dt>Library</dt><dd>Agent files and User files</dd><dt>Automations</dt><dd>Ask Copilot to set a schedule. Edit, pause, or delete it here</dd></dl>
@@ -594,18 +683,18 @@ Open one session for each repository.</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 250" role="img" aria-label="Triggers such as interval, issue_opened, and pull_request_opened start an automation. The automation starts a Copilot task.">
+              <svg viewBox="0 0 700 250" role="img" aria-label="Triggers such as interval, issue_opened, and pull_request_opened start an automation. The automation starts a Copilot task." data-cycle="5">
                 <g class="mono ctr">
-                  <rect class="box" x="0" y="0" width="230" height="40" rx="20"/><text x="115" y="26">interval</text>
+                  <rect class="box" x="0" y="0" width="230" height="40" rx="20" data-fl="b" data-at="0.0 0.6"/><text x="115" y="26">interval</text>
                   <rect class="box" x="0" y="52" width="230" height="40" rx="20"/><text x="115" y="78">issue_opened</text>
                   <rect class="box" x="0" y="104" width="230" height="40" rx="20"/><text x="115" y="130">pull_request_opened</text>
                   <rect class="box" x="0" y="156" width="230" height="40" rx="20"/><text x="115" y="182">workflow_run</text>
-                  <rect class="box" x="0" y="208" width="230" height="40" rx="20"/><text x="115" y="234">code_scanning_alert</text>
+                  <rect class="box" x="0" y="208" width="230" height="40" rx="20" data-fl="o" data-at="2.4 3.0"/><text x="115" y="234">code_scanning_alert</text>
                 </g>
-                <path class="wire" d="M232 20C268 20 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 72C268 72 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 124H294" marker-end="url(#arrow)"/><path class="wire" d="M232 176C268 176 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 228C268 228 262 124 296 124" marker-end="url(#arrow)"/>
-                <rect class="boxp" x="300" y="64" width="190" height="120" rx="10"/><text class="tb" x="395" y="104" text-anchor="middle">Automation</text><text class="m" x="395" y="132" text-anchor="middle">name + prompt</text><text class="m" x="395" y="156" text-anchor="middle">tools + model</text>
-                <path class="wireg" d="M492 124H538" marker-end="url(#arrow)"/>
-                <rect class="boxg" x="540" y="64" width="160" height="120" rx="10"/><text class="tb" x="620" y="114" text-anchor="middle">Copilot</text><text class="tb" x="620" y="142" text-anchor="middle">task</text>
+                <path class="wire" d="M232 20C268 20 262 124 296 124" marker-end="url(#arrow)" data-pk="b" data-at="0.3 0.9"/><path class="wire" d="M232 72C268 72 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 124H294" marker-end="url(#arrow)"/><path class="wire" d="M232 176C268 176 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 228C268 228 262 124 296 124" marker-end="url(#arrow)" data-pk="o" data-at="2.7 3.3"/>
+                <rect class="boxp" x="300" y="64" width="190" height="120" rx="10" data-fl="p" data-at="0.9 1.5, 3.3 3.9"/><text class="tb" x="395" y="104" text-anchor="middle">Automation</text><text class="m" x="395" y="132" text-anchor="middle">name + prompt</text><text class="m" x="395" y="156" text-anchor="middle">tools + model</text>
+                <path class="wireg" d="M492 124H538" marker-end="url(#arrow)" data-pk="g" data-at="1.3 1.7, 3.7 4.1"/>
+                <rect class="boxg" x="540" y="64" width="160" height="120" rx="10" data-fl="g" data-at="1.7 2.3, 4.1 4.7"/><text class="tb" x="620" y="114" text-anchor="middle">Copilot</text><text class="tb" x="620" y="142" text-anchor="middle">task</text>
               </svg>
             </div>
             <dl class="fields panel"><dt>name, prompt</dt><dd>Required</dd><dt>type</dt><dd><b>personal</b> or <b>shared</b>. Fixed after you create it</dd><dt>triggers</dt><dd>A schedule or GitHub events</dd><dt>tools, model</dt><dd>Optional. Also <code>reasoning_effort</code></dd></dl>
@@ -635,22 +724,29 @@ Open one session for each repository.</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 -12 700 262" role="img" aria-label="34 GitHub-verified connectors, for example Slack, Linear, Figma, Notion, Sentry, and Vercel.">
-                <text x="0" y="40" style="font:700 44px var(--sans);fill:var(--blue)">34</text><text class="tb" x="68" y="38" style="font-size:26px">GitHub-verified connectors</text>
+              <svg viewBox="0 -12 700 302" role="img" aria-label="34 GitHub-verified connectors, such as Slack, Linear, Figma, Notion, Sentry, Vercel, and Cloudflare. You sign in to a connector once. Then you use it in the Copilot app, the CLI, VS Code, and github.com." data-cycle="5.6">
+                <text x="0" y="40" style="font:700 44px var(--sans);fill:var(--blue)" data-count="34">34</text><text class="tb" x="68" y="38" style="font-size:26px">GitHub-verified connectors</text>
                 <g class="t ctr">
-                  <rect class="boxb" x="0" y="66" width="160" height="50" rx="10"/><text x="80" y="98">Slack</text>
-                  <rect class="boxp" x="180" y="66" width="160" height="50" rx="10"/><text x="260" y="98">Linear</text>
-                  <rect class="boxg" x="360" y="66" width="160" height="50" rx="10"/><text x="440" y="98">Figma</text>
-                  <rect class="boxo" x="540" y="66" width="160" height="50" rx="10"/><text x="620" y="98">Notion</text>
-                  <rect class="boxr" x="0" y="130" width="160" height="50" rx="10"/><text x="80" y="162">Sentry</text>
-                  <rect class="boxb" x="180" y="130" width="160" height="50" rx="10"/><text x="260" y="162">Vercel</text>
-                  <rect class="boxp" x="360" y="130" width="160" height="50" rx="10"/><text x="440" y="162">Cloudflare</text>
-                  <rect class="boxg" x="540" y="130" width="160" height="50" rx="10"/><text x="620" y="162">Supabase</text>
-                  <rect class="boxo" x="0" y="194" width="160" height="50" rx="10"/><text x="80" y="226">Postman</text>
-                  <rect class="boxr" x="180" y="194" width="160" height="50" rx="10"/><text x="260" y="226">Canva</text>
-                  <rect class="boxb" x="360" y="194" width="160" height="50" rx="10"/><text x="440" y="226">Netlify</text>
-                  <rect class="box" x="540" y="194" width="160" height="50" rx="10"/><text class="m" x="620" y="226">+ 23 more</text>
+                  <rect class="boxb" x="0" y="60" width="160" height="46" rx="10" data-fl="b" data-at="0.20 0.70"/><text x="80" y="90">Slack</text>
+                  <rect class="boxp" x="180" y="60" width="160" height="46" rx="10" data-fl="p" data-at="0.35 0.85"/><text x="260" y="90">Linear</text>
+                  <rect class="boxg" x="360" y="60" width="160" height="46" rx="10" data-fl="g" data-at="0.50 1.00"/><text x="440" y="90">Figma</text>
+                  <rect class="boxo" x="540" y="60" width="160" height="46" rx="10" data-fl="o" data-at="0.65 1.15"/><text x="620" y="90">Notion</text>
+                  <rect class="boxr" x="0" y="118" width="160" height="46" rx="10" data-fl="r" data-at="1.50 2.10"/><text x="80" y="148">Sentry</text>
+                  <rect class="boxb" x="180" y="118" width="160" height="46" rx="10" data-fl="b" data-at="0.80 1.30"/><text x="260" y="148">Vercel</text>
+                  <rect class="boxp" x="360" y="118" width="160" height="46" rx="10" data-fl="p" data-at="0.95 1.45"/><text x="440" y="148">Cloudflare</text>
+                  <rect class="box" x="540" y="118" width="160" height="46" rx="10"/><text class="m" x="620" y="148">+ 27 more</text>
                 </g>
+                <path class="wire" d="M80 166V194" marker-end="url(#arrow)" data-pk="r" data-at="2.0 2.4"/>
+                <rect class="boxg" x="0" y="198" width="200" height="80" rx="10" data-fl="g" data-at="2.4 3.0"/><text class="tb" x="100" y="232" text-anchor="middle">Sign in once</text><text class="m" x="100" y="260" text-anchor="middle">to Sentry</text>
+                <text class="m" x="700" y="200" text-anchor="end">Same sign-in in each surface</text>
+                <path class="wire" d="M202 214H285V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H387V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H502V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H636V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <rect class="boxp" x="240" y="232" width="90" height="44" rx="10" data-fl="p" data-at="3.6 4.3"/><text class="t" x="285" y="261" text-anchor="middle">App</text>
+                <rect class="boxg" x="342" y="232" width="90" height="44" rx="10" data-fl="g" data-at="3.6 4.3"/><text class="t" x="387" y="261" text-anchor="middle">CLI</text>
+                <rect class="boxo" x="444" y="232" width="116" height="44" rx="10" data-fl="o" data-at="3.6 4.3"/><text class="t" x="502" y="261" text-anchor="middle">VS Code</text>
+                <rect class="boxb" x="572" y="232" width="128" height="44" rx="10" data-fl="b" data-at="3.6 4.3"/><text class="t" x="636" y="261" text-anchor="middle">github.com</text>
               </svg>
             </div>
             <dl class="fields panel"><dt>Admin policies</dt><dd><b>Editor preview features</b> and <b>MCP servers in Copilot</b></dd><dt>Registry</dt><dd><b>Allow all</b>. If you set <code>allowedMcpServers</code>, add the connector URL</dd></dl>
@@ -679,15 +775,15 @@ Open one session for each repository.</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 300" role="img" aria-label="Mock of the Security canvas: two tabs, three findings with severity colors, and Explain and Fix buttons.">
-                <rect class="box" x="0" y="0" width="700" height="300" rx="12"/>
-                <rect class="boxb" x="14" y="14" width="300" height="44" rx="8"/><text class="t" x="164" y="43" text-anchor="middle">Code scanning findings</text>
+              <svg viewBox="0 0 700 300" role="img" aria-label="Mock of the Security canvas: two tabs, three findings with severity colors, and Explain and Fix buttons." data-cycle="4.6">
+                <rect class="box" x="0" y="0" width="700" height="300" rx="12" data-b="fade"/>
+                <rect class="boxb" x="14" y="14" width="300" height="44" rx="8" data-fl="b" data-at="0.0 0.5"/><text class="t" x="164" y="43" text-anchor="middle">Code scanning findings</text>
                 <rect class="box" x="326" y="14" width="200" height="44" rx="8"/><text class="t" x="426" y="43" text-anchor="middle">Security review</text>
-                <rect class="boxr" x="14" y="74" width="672" height="48" rx="8"/><circle class="fr" cx="42" cy="98" r="9"/><text class="tb" x="66" y="106">SQL injection</text><text class="m" x="670" y="106" text-anchor="end">src/db.js</text>
-                <rect class="boxo" x="14" y="132" width="672" height="48" rx="8"/><circle class="fo" cx="42" cy="156" r="9"/><text class="tb" x="66" y="164">Path traversal</text><text class="m" x="670" y="164" text-anchor="end">src/files.js</text>
-                <rect class="boxb" x="14" y="190" width="672" height="48" rx="8"/><circle class="fb" cx="42" cy="214" r="9"/><text class="tb" x="66" y="222">Weak hash</text><text class="m" x="670" y="222" text-anchor="end">src/auth.js</text>
-                <rect class="boxp" x="14" y="250" width="150" height="38" rx="8"/><text class="t" x="89" y="276" text-anchor="middle">Explain</text>
-                <rect class="boxg" x="176" y="250" width="150" height="38" rx="8"/><text class="t" x="251" y="276" text-anchor="middle">Fix</text>
+                <rect class="boxr" x="14" y="74" width="672" height="48" rx="8" data-b="left" data-fl="r" data-at="0.6 1.4"/><circle class="fr" cx="42" cy="98" r="9" data-ring="r" data-at="0.6 1.4"/><text class="tb" x="66" y="106">SQL injection</text><text class="m" x="670" y="106" text-anchor="end">src/db.js</text>
+                <rect class="boxo" x="14" y="132" width="672" height="48" rx="8" data-b="left"/><circle class="fo" cx="42" cy="156" r="9"/><text class="tb" x="66" y="164">Path traversal</text><text class="m" x="670" y="164" text-anchor="end">src/files.js</text>
+                <rect class="boxb" x="14" y="190" width="672" height="48" rx="8" data-b="left"/><circle class="fb" cx="42" cy="214" r="9"/><text class="tb" x="66" y="222">Weak hash</text><text class="m" x="670" y="222" text-anchor="end">src/auth.js</text>
+                <rect class="boxp" x="14" y="250" width="150" height="38" rx="8" data-fl="p" data-at="1.5 2.2"/><text class="t" x="89" y="276" text-anchor="middle">Explain</text>
+                <rect class="boxg" x="176" y="250" width="150" height="38" rx="8" data-fl="g" data-at="2.3 3.0"/><text class="t" x="251" y="276" text-anchor="middle">Fix</text>
               </svg>
             </div>
             <dl class="fields panel"><dt>Code scanning findings</dt><dd>GitHub alerts, with a filter</dd><dt>Security review</dt><dd>Your local changes. Or run <code>/security-review</code></dd></dl>
@@ -707,7 +803,7 @@ Open one session for each repository.</code></pre></div>
             <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
               <p>AI Scan adds findings to code scanning. It scans a whole repository on demand. It also scans pull requests in languages that CodeQL does not cover.</p></div>
             <div class="blk"><span class="lab why">Why</span>
-              <ul class="benefits"><li>More languages are covered.</li><li>Findings are normal alerts.</li><li>Assign alerts to Copilot for a fix.</li></ul></div>
+              <ul class="benefits"><li>It covers more languages.</li><li>Findings are normal alerts.</li><li>Assign alerts to Copilot for a fix.</li></ul></div>
             <div class="blk"><span class="lab how">How</span>
               <ol class="steps"><li>Admin: allow the <strong>AI Scan</strong> policy. It is off by default.</li><li>Repo: <strong>Security and quality</strong> → <strong>Code scanning</strong> → <strong>AI Scan</strong> → <strong>Standard scan</strong>.</li><li>Open an alert. Assign it to Copilot. You can select up to 25.</li></ol></div>
             <div class="blk"><span class="lab file">File</span><p>No YAML file. The REST API uses <code>repository_scan</code> and <code>pr_scan</code>.</p></div>
@@ -715,19 +811,19 @@ Open one session for each repository.</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 250" role="img" aria-label="Turn on: enterprise policy, organization settings, repositories inherit. Use: run a scan, review alerts, Copilot opens a draft pull request.">
+              <svg viewBox="0 0 700 250" role="img" aria-label="Turn on: enterprise policy, organization settings, repositories inherit. Use: run a scan, review alerts, Copilot opens a draft pull request." data-cycle="6">
                 <text class="mono" x="0" y="18">Turn on</text>
-                <rect class="boxb" x="0" y="28" width="200" height="76" rx="10"/><text class="tb" x="100" y="62" text-anchor="middle">Enterprise</text><text class="m" x="100" y="90" text-anchor="middle">AI Scan policy</text>
-                <path class="wire" d="M202 66H248" marker-end="url(#arrow)"/>
-                <rect class="boxb" x="250" y="28" width="200" height="76" rx="10"/><text class="tb" x="350" y="62" text-anchor="middle">Organization</text><text class="m" x="350" y="90" text-anchor="middle">Security settings</text>
-                <path class="wire" d="M452 66H498" marker-end="url(#arrow)"/>
-                <rect class="boxb" x="500" y="28" width="200" height="76" rx="10"/><text class="tb" x="600" y="62" text-anchor="middle">Repositories</text><text class="m" x="600" y="90" text-anchor="middle">Inherit it</text>
+                <rect class="boxb" x="0" y="28" width="200" height="76" rx="10" data-fl="b" data-at="0.0 0.5"/><text class="tb" x="100" y="62" text-anchor="middle">Enterprise</text><text class="m" x="100" y="90" text-anchor="middle">AI Scan policy</text>
+                <path class="wire" d="M202 66H248" marker-end="url(#arrow)" data-pk="b" data-at="0.3 0.7"/>
+                <rect class="boxb" x="250" y="28" width="200" height="76" rx="10" data-fl="b" data-at="0.7 1.2"/><text class="tb" x="350" y="62" text-anchor="middle">Organization</text><text class="m" x="350" y="90" text-anchor="middle">Security settings</text>
+                <path class="wire" d="M452 66H498" marker-end="url(#arrow)" data-pk="b" data-at="1.0 1.4"/>
+                <rect class="boxb" x="500" y="28" width="200" height="76" rx="10" data-fl="b" data-at="1.4 1.9"/><text class="tb" x="600" y="62" text-anchor="middle">Repositories</text><text class="m" x="600" y="90" text-anchor="middle">Inherit it</text>
                 <text class="mono" x="0" y="144">Use</text>
-                <rect class="boxp" x="0" y="154" width="200" height="76" rx="10"/><text class="tb" x="100" y="188" text-anchor="middle">Run a scan</text><text class="m" x="100" y="216" text-anchor="middle">Standard scan</text>
-                <path class="wirer" d="M202 192H248" marker-end="url(#arrow)"/>
-                <rect class="boxr" x="250" y="154" width="200" height="76" rx="10"/><text class="tb" x="350" y="188" text-anchor="middle">Alerts</text><text class="m" x="350" y="216" text-anchor="middle">Code scanning</text>
-                <path class="wireg" d="M452 192H498" marker-end="url(#arrow)"/>
-                <rect class="boxg" x="500" y="154" width="200" height="76" rx="10"/><text class="tb" x="600" y="188" text-anchor="middle">Copilot fix</text><text class="m" x="600" y="216" text-anchor="middle">Draft PR</text>
+                <rect class="boxp" x="0" y="154" width="200" height="76" rx="10" data-scan="" data-at="2.2 3.2"/><text class="tb" x="100" y="188" text-anchor="middle">Run a scan</text><text class="m" x="100" y="216" text-anchor="middle">Standard scan</text>
+                <path class="wirer" d="M202 192H248" marker-end="url(#arrow)" data-pk="r" data-at="3.2 3.6"/>
+                <rect class="boxr" x="250" y="154" width="200" height="76" rx="10" data-fl="r" data-at="3.6 4.2"/><text class="tb" x="350" y="188" text-anchor="middle">Alerts</text><text class="m" x="350" y="216" text-anchor="middle">Code scanning</text>
+                <path class="wireg" d="M452 192H498" marker-end="url(#arrow)" data-pk="g" data-at="4.0 4.4"/>
+                <rect class="boxg" x="500" y="154" width="200" height="76" rx="10" data-fl="g" data-at="4.4 5.1"/><text class="tb" x="600" y="188" text-anchor="middle">Copilot fix</text><text class="m" x="600" y="216" text-anchor="middle">Draft PR</text>
               </svg>
             </div>
             <div class="cards" style="--n:2">
@@ -758,14 +854,14 @@ Open one session for each repository.</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 260" role="img" aria-label="git push goes to an AI check. A clean push goes through. A push with a secret is blocked.">
-                <rect class="box" x="0" y="90" width="150" height="80" rx="10"/><text class="tb" x="75" y="138" text-anchor="middle">git push</text>
-                <path class="wire" d="M152 130H198" marker-end="url(#arrow)"/>
-                <rect class="boxp" x="200" y="90" width="170" height="80" rx="10"/><text class="tb" x="285" y="124" text-anchor="middle">AI check</text><text class="m" x="285" y="152" text-anchor="middle">Finds secrets</text>
-                <path class="wireg" d="M372 118C400 118 400 60 428 60" marker-end="url(#arrow)"/>
-                <path class="wirer" d="M372 142C400 142 400 200 428 200" marker-end="url(#arrow)"/>
-                <rect class="boxg" x="430" y="20" width="270" height="80" rx="10"/><text class="tb" x="565" y="54" text-anchor="middle">Clean</text><text class="m" x="565" y="82" text-anchor="middle">The push goes through</text>
-                <rect class="boxr" x="430" y="160" width="270" height="80" rx="10"/><text class="tb" x="565" y="194" text-anchor="middle">Secret found</text><text class="m" x="565" y="222" text-anchor="middle">The push is blocked</text>
+              <svg viewBox="0 0 700 260" role="img" aria-label="git push goes to an AI check. A clean push goes through. A push with a secret is blocked." data-cycle="6.2">
+                <rect class="box" x="0" y="90" width="150" height="80" rx="10" data-fl="" data-at="0.0 0.4, 3.0 3.4"/><text class="tb" x="75" y="138" text-anchor="middle">git push</text>
+                <path class="wire" d="M152 130H198" marker-end="url(#arrow)" data-pk="b" data-at="0.2 0.6, 3.2 3.6"/>
+                <rect class="boxp" x="200" y="90" width="170" height="80" rx="10" data-scan="" data-at="0.6 1.4, 3.6 4.4"/><text class="tb" x="285" y="124" text-anchor="middle">AI check</text><text class="m" x="285" y="152" text-anchor="middle">Finds secrets</text>
+                <path class="wireg" d="M372 118C400 118 400 60 428 60" marker-end="url(#arrow)" data-pk="g" data-at="1.4 1.9"/>
+                <path class="wirer" d="M372 142C400 142 400 200 428 200" marker-end="url(#arrow)" data-pk="r" data-at="4.4 4.9"/>
+                <rect class="boxg" x="430" y="20" width="270" height="80" rx="10" data-fl="g" data-at="1.9 2.6"/><text class="tb" x="565" y="54" text-anchor="middle">Clean</text><text class="m" x="565" y="82" text-anchor="middle">The push goes through</text>
+                <rect class="boxr" x="430" y="160" width="270" height="80" rx="10" data-fl="r" data-at="4.9 5.7"/><text class="tb" x="565" y="194" text-anchor="middle">Secret found</text><text class="m" x="565" y="222" text-anchor="middle">The push is blocked</text>
               </svg>
             </div>
             <dl class="fields panel"><dt>secret_scanning_generic_secrets</dt><dd>enabled</dd><dt>secret_scanning_push_protection</dt><dd>enabled</dd><dt>secret_scanning_generic_secrets_push_protection</dt><dd>enabled</dd></dl>
@@ -786,7 +882,7 @@ git push</code></pre></div>
             <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
               <p>A registry proxy for npm. It checks each package before <code>npm install</code>. It is for GitHub Enterprise Cloud.</p></div>
             <div class="blk"><span class="lab why">Why</span>
-              <ul class="benefits"><li>Malware is blocked early.</li><li>New and risky packages wait.</li><li>One rule set for the whole enterprise.</li></ul></div>
+              <ul class="benefits"><li>It blocks malware early.</li><li>New and risky packages wait.</li><li>One rule set for the whole enterprise.</li></ul></div>
             <div class="blk"><span class="lab how">How</span>
               <ol class="steps"><li>Admin: enterprise <strong>Policies</strong> → <strong>Package firewall</strong>. Set the rules.</li><li>Developers: point <code>.npmrc</code> to the firewall.</li><li>If a package is blocked, npm prints a URL to ask for an exception.</li></ol></div>
             <div class="blk"><span class="lab file">File</span><p><code>.npmrc</code>. Use your own user file. Do not commit the token.</p></div>
@@ -794,17 +890,17 @@ git push</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 280" role="img" aria-label="npm install goes through the package firewall with five checks, then to the npm registry.">
-                <rect class="box" x="0" y="100" width="150" height="80" rx="10"/><text class="tb" x="75" y="148" text-anchor="middle">npm install</text>
-                <path class="wire" d="M152 140H198" marker-end="url(#arrow)"/>
+              <svg viewBox="0 0 700 280" role="img" aria-label="npm install goes through the package firewall with five checks, then to the npm registry." data-cycle="7">
+                <rect class="box" x="0" y="100" width="150" height="80" rx="10" data-fl="r" data-at="5.6 6.4"/><text class="tb" x="75" y="148" text-anchor="middle">npm install</text>
+                <path class="wire" d="M152 140H198" marker-end="url(#arrow)" data-pk="b" data-at="0.2 0.6, 3.6 4.0"/>
                 <rect class="boxr" x="200" y="0" width="300" height="280" rx="12"/><text class="tb" x="350" y="30" text-anchor="middle">Package firewall</text>
-                <rect class="box" x="214" y="44" width="272" height="40" rx="20"/><text class="m" x="350" y="71" text-anchor="middle">Known malware: on</text>
-                <rect class="box" x="214" y="90" width="272" height="40" rx="20"/><text class="m" x="350" y="117" text-anchor="middle">Advisories: Critical</text>
-                <rect class="box" x="214" y="136" width="272" height="40" rx="20"/><text class="m" x="350" y="163" text-anchor="middle">Attestation downgrades</text>
-                <rect class="box" x="214" y="182" width="272" height="40" rx="20"/><text class="m" x="350" y="209" text-anchor="middle">New install scripts</text>
-                <rect class="box" x="214" y="228" width="272" height="40" rx="20"/><text class="m" x="350" y="255" text-anchor="middle">Minimum age: 1 day</text>
-                <path class="wireg" d="M502 140H548" marker-end="url(#arrow)"/>
-                <rect class="boxg" x="550" y="100" width="150" height="80" rx="10"/><text class="tb" x="625" y="134" text-anchor="middle">npm</text><text class="tb" x="625" y="162" text-anchor="middle">registry</text>
+                <rect class="box" x="214" y="44" width="272" height="40" rx="20" data-fl="g" data-at="0.6 1.0, 4.0 4.4"/><text class="m" x="350" y="71" text-anchor="middle">Known malware: on</text>
+                <rect class="box" x="214" y="90" width="272" height="40" rx="20" data-fl="g" data-at="0.8 1.2, 4.2 4.6"/><text class="m" x="350" y="117" text-anchor="middle">Advisories: Critical</text>
+                <rect class="box" x="214" y="136" width="272" height="40" rx="20" data-fl="g" data-at="1.0 1.4, 4.4 4.8"/><text class="m" x="350" y="163" text-anchor="middle">Attestation downgrades</text>
+                <rect class="box" x="214" y="182" width="272" height="40" rx="20" data-fl="g" data-at="1.2 1.6, 4.6 5.0"/><text class="m" x="350" y="209" text-anchor="middle">New install scripts</text>
+                <rect class="box" x="214" y="228" width="272" height="40" rx="20" data-fl="g" data-at="1.4 1.8, 4.8 5.8 r"/><text class="m" x="350" y="255" text-anchor="middle">Minimum age: 1 day</text>
+                <path class="wireg" d="M502 140H548" marker-end="url(#arrow)" data-pk="g" data-at="1.8 2.2"/>
+                <rect class="boxg" x="550" y="100" width="150" height="80" rx="10" data-fl="g" data-at="2.2 2.9"/><text class="tb" x="625" y="134" text-anchor="middle">npm</text><text class="tb" x="625" y="162" text-anchor="middle">registry</text>
               </svg>
             </div>
             <div class="codebox"><span class="file">.npmrc (ENT = your enterprise)</span><pre style="font-size:18px"><code>registry=https://package-firewall.githubapp.com/npm/enterprises/ENT
@@ -833,11 +929,12 @@ git push</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 284" role="img" aria-label="Four verdicts: Reachable, Potentially reachable, Unreachable, Reachability unavailable.">
-                <rect class="boxr" x="0" y="0" width="700" height="62" rx="10"/><text class="tb" x="20" y="40">Reachable</text><text class="m" x="680" y="40" text-anchor="end">Your code can call it</text>
-                <rect class="boxo" x="0" y="74" width="700" height="62" rx="10"/><text class="tb" x="20" y="114">Potentially reachable</text><text class="m" x="680" y="114" text-anchor="end">A call path may exist</text>
-                <rect class="boxg" x="0" y="148" width="700" height="62" rx="10"/><text class="tb" x="20" y="188">Unreachable</text><text class="m" x="680" y="188" text-anchor="end">No call path found</text>
-                <rect class="box" x="0" y="222" width="700" height="62" rx="10"/><text class="tb" x="20" y="262">Reachability unavailable</text><text class="m" x="680" y="262" text-anchor="end">No verdict</text>
+              <svg viewBox="0 0 700 284" role="img" aria-label="The analysis checks each alert. Each alert gets one of four verdicts: Reachable, Potentially reachable, Unreachable, or Reachability unavailable." data-cycle="5.6">
+                <rect class="boxr" x="0" y="0" width="700" height="62" rx="10" data-b="left" data-fl="r" data-at="0.9 1.6"/><text class="tb" x="20" y="40">Reachable</text><text class="m" x="680" y="40" text-anchor="end">Your code can call it</text>
+                <rect class="boxo" x="0" y="74" width="700" height="62" rx="10" data-b="left" data-fl="o" data-at="1.9 2.6"/><text class="tb" x="20" y="114">Potentially reachable</text><text class="m" x="680" y="114" text-anchor="end">A call path may exist</text>
+                <rect class="boxg" x="0" y="148" width="700" height="62" rx="10" data-b="left" data-fl="g" data-at="2.9 3.6"/><text class="tb" x="20" y="188">Unreachable</text><text class="m" x="680" y="188" text-anchor="end">No call path found</text>
+                <rect class="box" x="0" y="222" width="700" height="62" rx="10" data-b="left" data-fl="" data-at="3.9 4.6"/><text class="tb" x="20" y="262">Reachability unavailable</text><text class="m" x="680" y="262" text-anchor="end">No verdict</text>
+                <rect x="0" y="0" width="700" height="284" style="fill:none;stroke:none" data-b="none" data-scan="" data-at="0.2 4.2"/>
               </svg>
             </div>
             <div class="codebox"><span class="file">Dependabot alerts search box</span><pre><code>reachability:reachable,potentially-reachable</code></pre></div>
@@ -849,8 +946,108 @@ git push</code></pre></div>
       <footer class="sources"><span>Sources</span><a href="https://docs.github.com/code-security/concepts/supply-chain-security/about-reachability-analysis-for-dependabot-alerts">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
     </section>
 
-    <section class="slide" id="slide-16" aria-labelledby="title-16" data-title="Awesome Copilot" inert>
-      <header class="slide-head"><span class="slide-index" aria-hidden="true">16</span><div><h1 id="title-16">Awesome Copilot</h1><p class="lead">A community library of files that you can reuse with Copilot.</p></div></header>
+    <section class="slide" id="slide-16" aria-labelledby="title-16" data-title="Agent orchestration" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">16</span><div><h1 id="title-16">Agent orchestration</h1><p class="lead">One main agent splits the work. Subagents do the tasks in order or at the same time.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><span class="lab what">What</span>
+              <p>The main agent is the orchestrator. It splits a goal into tasks and finds the dependencies. It can give tasks to subagents. Each subagent has its own context window.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Independent tasks finish sooner.</li><li>The main context stays small.</li><li>A custom agent can do one type of task.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Run <code>/plan</code>. Check the plan.</li><li>Select <strong>Accept plan and continue in Autopilot execution mode + /fleet</strong>. Or type <code>/fleet</code> and a prompt.</li><li>Run <code>/tasks</code> to see, stop, or remove subagents.</li><li>VS Code: ask <strong>Use a subagent to …</strong> in chat.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>Optional. Add a custom agent in <code>.github/agents/NAME.agent.md</code> with <code>name</code>, <code>description</code>, and <code>tools</code>.</p></div>
+            <div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 262" role="img" aria-label="Three patterns. Sequential: Plan, then Build, then Test. Parallel: the main agent sends UI, API, and DB tasks at the same time, then combines them. Dependencies: Todo 1 and Todo 2 run first, then Todo 3, then Review." data-cycle="4.6">
+                <text class="mono" x="110" y="16" text-anchor="middle">Sequential</text>
+                <text class="mono" x="350" y="16" text-anchor="middle">Parallel</text>
+                <text class="mono" x="590" y="16" text-anchor="middle">Dependencies</text>
+                <rect class="boxb" x="20" y="28" width="180" height="50" rx="10" data-fl="b" data-at="0.0 0.6"/><text class="tb" x="110" y="61" text-anchor="middle">Plan</text>
+                <path class="wire" d="M110 80V112" marker-end="url(#arrow)" data-pk="b" data-at="0.5 0.9"/>
+                <rect class="boxb" x="20" y="118" width="180" height="50" rx="10" data-fl="b" data-at="0.9 1.5"/><text class="tb" x="110" y="151" text-anchor="middle">Build</text>
+                <path class="wire" d="M110 170V202" marker-end="url(#arrow)" data-pk="b" data-at="1.4 1.8"/>
+                <rect class="boxb" x="20" y="208" width="180" height="50" rx="10" data-fl="b" data-at="1.8 2.4"/><text class="tb" x="110" y="241" text-anchor="middle">Test</text>
+                <rect class="boxp" x="260" y="28" width="180" height="50" rx="10" data-fl="p" data-at="0.3 0.9"/><text class="tb" x="350" y="61" text-anchor="middle">Main agent</text>
+                <path class="wire" d="M330 80C330 98 278 96 278 112" marker-end="url(#arrow)" data-pk="p" data-at="0.8 1.2"/>
+                <path class="wire" d="M350 80V112" marker-end="url(#arrow)" data-pk="p" data-at="0.8 1.2"/>
+                <path class="wire" d="M370 80C370 98 422 96 422 112" marker-end="url(#arrow)" data-pk="p" data-at="0.8 1.2"/>
+                <rect class="boxp" x="246" y="118" width="64" height="50" rx="10" data-fl="p" data-at="1.2 1.8"/><text class="t" x="278" y="150" text-anchor="middle">UI</text>
+                <rect class="boxp" x="318" y="118" width="64" height="50" rx="10" data-fl="p" data-at="1.2 1.8"/><text class="t" x="350" y="150" text-anchor="middle">API</text>
+                <rect class="boxp" x="390" y="118" width="64" height="50" rx="10" data-fl="p" data-at="1.2 1.8"/><text class="t" x="422" y="150" text-anchor="middle">DB</text>
+                <path class="wire" d="M278 170C278 188 330 186 330 202" marker-end="url(#arrow)" data-pk="p" data-at="1.7 2.1"/>
+                <path class="wire" d="M350 170V202" marker-end="url(#arrow)" data-pk="p" data-at="1.7 2.1"/>
+                <path class="wire" d="M422 170C422 188 370 186 370 202" marker-end="url(#arrow)" data-pk="p" data-at="1.7 2.1"/>
+                <rect class="boxp" x="260" y="208" width="180" height="50" rx="10" data-fl="p" data-at="2.1 2.7"/><text class="tb" x="350" y="241" text-anchor="middle">Combine</text>
+                <rect class="boxo" x="480" y="28" width="104" height="50" rx="10" data-fl="o" data-at="0.6 1.2"/><text class="t" x="532" y="60" text-anchor="middle">Todo 1</text>
+                <rect class="boxo" x="596" y="28" width="104" height="50" rx="10" data-fl="o" data-at="0.6 1.2"/><text class="t" x="648" y="60" text-anchor="middle">Todo 2</text>
+                <path class="wire" d="M532 80C532 98 576 96 576 112" marker-end="url(#arrow)" data-pk="o" data-at="1.1 1.5"/>
+                <path class="wire" d="M648 80C648 98 604 96 604 112" marker-end="url(#arrow)" data-pk="o" data-at="1.1 1.5"/>
+                <rect class="boxo" x="500" y="118" width="180" height="50" rx="10" data-fl="o" data-at="1.5 2.1"/><text class="tb" x="590" y="151" text-anchor="middle">Todo 3</text>
+                <path class="wire" d="M590 170V202" marker-end="url(#arrow)" data-pk="o" data-at="2.0 2.4"/>
+                <rect class="boxg" x="500" y="208" width="180" height="50" rx="10" data-fl="g" data-at="2.4 3.1"/><text class="tb" x="590" y="241" text-anchor="middle">Review</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file">Copilot app or CLI</span><pre><code><span class="k">/plan</span> Add sign-in with unit tests
+<span class="k">/fleet</span> implement the plan
+<span class="k">/tasks</span>
+<span class="k">copilot --fleet</span> -p "Update the tests"</code></pre></div>
+            <dl class="fields panel"><dt>Sequential</dt><dd>Steps run in order. Each step needs the one before</dd><dt>Parallel</dt><dd>Independent tasks run at the same time</dd><dt>Dependencies</dt><dd>A task waits for the tasks that it needs</dd></dl>
+            <p class="note warn"><strong>Cost:</strong> Each subagent uses AI Credits. Steps that depend on each other do not get faster.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/choosing-and-delegating-agent-work/delegating-and-parallelizing-work-with-agents">GitHub Docs: delegate work</a><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/speed-up-task-completion">GitHub Docs: /fleet</a><a href="https://code.visualstudio.com/docs/agents/run/subagents">VS Code subagents</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-17" aria-labelledby="title-17" data-title="Agent skills" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">17</span><div><h1 id="title-17">Agent skills</h1><p class="lead">Teach Copilot a task one time. It loads the skill only when the task needs it.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><span class="lab what">What</span>
+              <p>A skill is a folder with a <code>SKILL.md</code> file. It can also hold scripts and other resources. Copilot reads the skill only when it is relevant.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Long steps stay out of every prompt.</li><li>Scripts and resources stay with the steps.</li><li>Open standard. Many agents can use it.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Make a folder in <code>.github/skills/</code>. Use a lowercase name with hyphens.</li><li>Add <code>SKILL.md</code>. Add scripts if you need them.</li><li>CLI: run <code>/skills reload</code>. Then ask for the task, or type <code style="white-space:nowrap">/image-convert</code>.</li><li>Shared skills: <code>gh skill install OWNER/REPO SKILL</code>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>Project: <code>.github/skills/</code>, <code>.claude/skills/</code>, or <code>.agents/skills/</code>. Personal, on your computer: <code>~/.copilot/skills/</code> or <code>~/.agents/skills/</code>.</p></div>
+            <div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf">Cloud agent</span><span class="sf vsc">VS Code</span><span class="sf jb">JetBrains</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 206" role="img" aria-label="A prompt asks to convert a logo to PNG. Copilot reads three skill descriptions and finds image-convert. It loads that SKILL.md into the context. Then it runs the skill script." data-cycle="6" data-start="1.4">
+                <rect class="box" x="0" y="60" width="170" height="110" rx="10" data-fl="b" data-at="0.0 0.6"/><text class="tb" x="85" y="98" text-anchor="middle">Prompt</text><text class="m" x="85" y="128" text-anchor="middle">Convert the</text><text class="m" x="85" y="152" text-anchor="middle">logo to PNG</text>
+                <path class="wireb" d="M172 115H226" marker-end="url(#arrow)" data-pk="b" data-at="0.4 0.8"/>
+                <text class="mono" x="350" y="16" text-anchor="middle">Skill descriptions</text>
+                <rect class="box" x="230" y="28" width="240" height="54" rx="10" data-fl="" data-at="0.8 1.2"/><text class="mono" x="248" y="51">release-notes</text><text class="m" x="248" y="73">Writes release notes</text>
+                <rect class="box" x="230" y="88" width="240" height="54" rx="10" data-fl="g" data-at="1.2 2.0"/><text class="mono" x="248" y="111">image-convert</text><text class="m" x="248" y="133">Converts SVG to PNG</text>
+                <rect class="box" x="230" y="148" width="240" height="54" rx="10" data-fl="" data-at="1.0 1.4"/><text class="mono" x="248" y="171">api-tests</text><text class="m" x="248" y="193">Writes API tests</text>
+                <path class="wireg" d="M472 115H516" marker-end="url(#arrow)" data-pk="g" data-at="2.0 2.4"/>
+                <rect class="boxp" x="520" y="28" width="180" height="174" rx="10" data-fl="g" data-at="2.4 3.1"/><text class="tb" x="610" y="60" text-anchor="middle">Context</text>
+                <rect class="box" x="536" y="74" width="148" height="36" rx="18"/><text class="t" x="610" y="99" text-anchor="middle">Prompt</text>
+                <g data-show="2.4 5.8"><rect class="boxg" x="536" y="120" width="148" height="36" rx="18"/><text class="t" x="610" y="145" text-anchor="middle">SKILL.md</text></g>
+                <text class="m" x="610" y="186" text-anchor="middle" data-show="3.2 5.8">Runs the script</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file">.github/skills/image-convert/SKILL.md</span><pre><code><span class="c">---</span>
+<span class="k">name</span>: <span class="s">image-convert</span>
+<span class="k">description</span>: <span class="s">Converts SVG files to PNG. Use it when asked.</span>
+<span class="c">---</span>
+Run convert-svg-to-png.sh for each file.</code></pre></div>
+            <dl class="fields panel"><dt>name</dt><dd><b>Required.</b> Lowercase with hyphens</dd><dt>description</dt><dd><b>Required.</b> What it does and when to use it</dd><dt>license</dt><dd>Optional. The license of the skill</dd><dt>allowed-tools</dt><dd>Optional. Tools that run without asking</dd></dl>
+            <p class="note warn"><strong>Safety:</strong> GitHub does not verify shared skills. Run <code>gh skill preview</code> first.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/concepts/customizations/agent-skills">GitHub Docs: skills</a><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills">GitHub Docs: CLI skills</a><a href="https://awesome-copilot.github.com/skills/">Awesome Copilot skills</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-18" aria-labelledby="title-18" data-title="Awesome Copilot" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">18</span><div><h1 id="title-18">Awesome Copilot</h1><p class="lead">A community library of files that you can reuse with Copilot.</p></div></header>
       <div class="content">
         <div class="feat">
           <section>
@@ -865,22 +1062,16 @@ git push</code></pre></div>
           </section>
           <section>
             <div class="fig">
-              <svg viewBox="0 0 700 230" role="img" aria-label="Number of items on the Awesome Copilot site: Agents 229, Instructions 195, Skills 464, Plugins 227, Extensions 66, Learning Hub 409.">
-                <rect class="boxb" x="0" y="0" width="220" height="105" rx="10"/><text class="big tb2" x="110" y="52" text-anchor="middle">229</text><text class="t" x="110" y="86" text-anchor="middle">Agents</text>
-                <rect class="boxp" x="240" y="0" width="220" height="105" rx="10"/><text class="big tp" x="350" y="52" text-anchor="middle">195</text><text class="t" x="350" y="86" text-anchor="middle">Instructions</text>
-                <rect class="boxg" x="480" y="0" width="220" height="105" rx="10"/><text class="big tg" x="590" y="52" text-anchor="middle">464</text><text class="t" x="590" y="86" text-anchor="middle">Skills</text>
-                <rect class="boxo" x="0" y="125" width="220" height="105" rx="10"/><text class="big to" x="110" y="177" text-anchor="middle">227</text><text class="t" x="110" y="211" text-anchor="middle">Plugins</text>
-                <rect class="boxr" x="240" y="125" width="220" height="105" rx="10"/><text class="big tr" x="350" y="177" text-anchor="middle">66</text><text class="t" x="350" y="211" text-anchor="middle">Extensions</text>
-                <rect class="boxb" x="480" y="125" width="220" height="105" rx="10"/><text class="big tb2" x="590" y="177" text-anchor="middle">409</text><text class="t" x="590" y="211" text-anchor="middle">Learning Hub</text>
+              <svg data-cycle="6" data-start="1.6" viewBox="0 0 700 230" role="img" aria-label="Number of items on the Awesome Copilot site: Agents 229, Instructions 195, Skills 464, Plugins 227, Extensions 66, Learning Hub 409.">
+                <rect class="boxb" x="0" y="0" width="220" height="105" rx="10" data-fl="b" data-at="0.30 1.00"/><text class="big tb2" x="110" y="52" text-anchor="middle" data-count="229">229</text><text class="t" x="110" y="86" text-anchor="middle">Agents</text>
+                <rect class="boxp" x="240" y="0" width="220" height="105" rx="10" data-fl="p" data-at="0.65 1.35"/><text class="big tp" x="350" y="52" text-anchor="middle" data-count="195">195</text><text class="t" x="350" y="86" text-anchor="middle">Instructions</text>
+                <rect class="boxg" x="480" y="0" width="220" height="105" rx="10" data-fl="g" data-at="1.00 1.70"/><text class="big tg" x="590" y="52" text-anchor="middle" data-count="464">464</text><text class="t" x="590" y="86" text-anchor="middle">Skills</text>
+                <rect class="boxo" x="0" y="125" width="220" height="105" rx="10" data-fl="o" data-at="1.35 2.05"/><text class="big to" x="110" y="177" text-anchor="middle" data-count="227">227</text><text class="t" x="110" y="211" text-anchor="middle">Plugins</text>
+                <rect class="boxr" x="240" y="125" width="220" height="105" rx="10" data-fl="r" data-at="1.70 2.40"/><text class="big tr" x="350" y="177" text-anchor="middle" data-count="66">66</text><text class="t" x="350" y="211" text-anchor="middle">Extensions</text>
+                <rect class="boxb" x="480" y="125" width="220" height="105" rx="10" data-fl="b" data-at="2.05 2.75"/><text class="big tb2" x="590" y="177" text-anchor="middle" data-count="409">409</text><text class="t" x="590" y="211" text-anchor="middle">Learning Hub</text>
               </svg>
             </div>
-            <div class="codebox"><span class="file">Where each file goes</span><pre><code><span class="v">.github/</span>
-  copilot-instructions.md         <span class="c">Instructions</span>
-  instructions/*.instructions.md  <span class="c">Instructions</span>
-  agents/*.agent.md               <span class="c">Agents</span>
-  skills/NAME/SKILL.md            <span class="c">Skills</span>
-  extensions/ID/                  <span class="c">Extensions</span>
-<span class="v">~/.copilot/installed-plugins/</span>     <span class="c">Plugins</span></code></pre></div>
+            <div class="codebox"><span class="file">Where each file goes</span><pre><code><span class="row"><span class="v">.github/</span></span><span class="row" style="--t:2.25s;--c:var(--purple)">  copilot-instructions.md         <span class="c">Instructions</span></span><span class="row" style="--t:2.25s;--c:var(--purple)">  instructions/*.instructions.md  <span class="c">Instructions</span></span><span class="row" style="--t:1.9s;--c:var(--blue)">  agents/*.agent.md               <span class="c">Agents</span></span><span class="row" style="--t:2.6s;--c:var(--green)">  skills/NAME/SKILL.md            <span class="c">Skills</span></span><span class="row" style="--t:3.3s;--c:var(--red)">  extensions/ID/                  <span class="c">Extensions</span></span><span class="row" style="--t:2.95s;--c:var(--orange)"><span class="v">~/.copilot/installed-plugins/</span>     <span class="c">Plugins</span></span></code></pre></div>
             <p class="note"><strong>Note:</strong> Counts are from the site on 19 Nov 2026. They change often.</p>
           </section>
         </div>
@@ -888,16 +1079,18 @@ git push</code></pre></div>
       <footer class="sources"><span>Sources</span><a href="https://awesome-copilot.github.com">Awesome Copilot</a><a href="https://github.com/github/awesome-copilot">GitHub repository</a><span>Checked 19 Nov 2026</span></footer>
     </section>
 
-    <section class="slide" id="slide-17" aria-labelledby="title-17" data-title="Try first" inert>
-      <header class="slide-head"><span class="slide-index" aria-hidden="true">17</span><div><h1 id="title-17">What to try first</h1><p class="lead">Six small steps. Pick one and start today.</p></div></header>
+    <section class="slide" id="slide-19" aria-labelledby="title-19" data-title="First steps" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">19</span><div><h1 id="title-19">First steps</h1><p class="lead">Eight small steps. Pick one and start today.</p></div></header>
       <div class="content">
-        <div class="try">
+        <div class="try four stg">
           <div class="card"><span class="n">Slide 06</span><h3>Open PR inbox</h3><p>Go to <code>github.com/pulls/inbox</code>.</p><div class="chips"><span class="sf">github.com</span></div></div>
           <div class="card p"><span class="n">Slide 07</span><h3>Pick Fusion</h3><p>Select <strong>Copilot Fusion</strong> in the model picker.</p><div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div></div>
           <div class="card g"><span class="n">Slide 08</span><h3>Start a Project</h3><p>Create a Copilot Project for one goal.</p><div class="chips"><span class="sf app">App</span></div></div>
           <div class="card o"><span class="n">Slide 10</span><h3>Connect one tool</h3><p>In the app: <strong>Customize</strong> → <strong>MCP</strong> → <strong>GitHub verified</strong> → <strong>Connect</strong>.</p><div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div></div>
           <div class="card r"><span class="n">Slides 11 and 13</span><h3>Add a security check</h3><p>Install <code>github-security</code>. Turn on push protection.</p><div class="chips"><span class="sf app">App</span><span class="sf">github.com</span></div></div>
-          <div class="card"><span class="n">Slide 16</span><h3>Browse the library</h3><p>Choose a reusable resource on <strong>Awesome Copilot</strong>.</p><div class="chips"><span class="sf">Web</span></div></div>
+          <div class="card p"><span class="n">Slide 16</span><h3>Run a fleet</h3><p>Run <code>/plan</code>. Then select <strong>Autopilot + /fleet</strong>.</p><div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span></div></div>
+          <div class="card g"><span class="n">Slide 17</span><h3>Add a skill</h3><p>Put a <code>SKILL.md</code> file in <code>.github/skills/NAME/</code>.</p><div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div></div>
+          <div class="card"><span class="n">Slide 18</span><h3>Browse the library</h3><p>Choose a reusable resource on <strong>Awesome Copilot</strong>.</p><div class="chips"><span class="sf">Web</span></div></div>
           <div class="links"><span>Recap: <code>github.com/events/universe/recap</code></span><span>Library: <code>awesome-copilot.github.com</code></span></div>
         </div>
       </div>
@@ -961,6 +1154,176 @@ git push</code></pre></div>
     stage.style.top = `${offsetY}px`;
   }
 
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reduceMotion = motionQuery.matches;
+  const figures = Array.from(document.querySelectorAll(".slide .fig svg"));
+  const counters = new WeakMap();
+  let shown = -1;
+
+  function make(name, attrs, parent) {
+    const element = document.createElementNS(SVG_NS, name);
+    Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (parent) parent.append(element);
+    return element;
+  }
+
+  // Seconds in the cycle -> SMIL keyTimes (0 to 1, never decreasing).
+  function keyTimes(points, length) {
+    let last = 0;
+    return points.map((point, i) => {
+      if (i === 0) return "0";
+      if (i === points.length - 1) return "1";
+      last = Math.max(last, Math.min(length, point));
+      return (last / length).toFixed(4);
+    }).join(";");
+  }
+
+  function windowsOf(element) {
+    return (element.dataset.at || "").split(",")
+      .map(part => part.trim().split(/\s+/))
+      .filter(part => part.length >= 2)
+      .map(([a, b, color]) => ({ a: Number(a), b: Number(b), color }));
+  }
+
+  function loop(parent, attrs, timing) {
+    return make("animate", { ...attrs, dur: `${timing.length}s`, begin: `${timing.start}s`, repeatCount: "indefinite" }, parent);
+  }
+
+  function packet(path, color, w, timing) {
+    const group = make("g", { class: "fx pk", opacity: 0 });
+    make("circle", { r: 14, class: `halo f${color}` }, group);
+    make("circle", { r: 8, class: `f${color}` }, group);
+    make("animateMotion", {
+      path: path.getAttribute("d"), keyPoints: "0;0;1;1", calcMode: "linear",
+      keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length),
+      dur: `${timing.length}s`, begin: `${timing.start}s`, repeatCount: "indefinite"
+    }, group);
+    loop(group, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, w.b + .12, timing.length], timing.length) }, timing);
+    path.ownerSVGElement.append(group);
+  }
+
+  function flash(shape, color, w, timing) {
+    const attrs = { class: `fx flash${color ? ` ${color}` : ""}`, opacity: 0 };
+    ["x", "y", "width", "height", "rx"].forEach(name => { if (shape.hasAttribute(name)) attrs[name] = shape.getAttribute(name); });
+    const copy = make("rect", attrs);
+    loop(copy, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .12, w.b - .2, w.b, timing.length], timing.length) }, timing);
+    shape.after(copy);
+  }
+
+  function ring(circle, color, w, timing) {
+    const r = Number(circle.getAttribute("r"));
+    const copy = make("circle", { class: `fx ring ${color}`, cx: circle.getAttribute("cx"), cy: circle.getAttribute("cy"), r, opacity: 0 });
+    loop(copy, { attributeName: "r", values: `${r};${r};${r * 2.5};${r * 2.5}`, keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length) }, timing);
+    loop(copy, { attributeName: "opacity", values: "0;0;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, timing.length], timing.length) }, timing);
+    circle.after(copy);
+  }
+
+  function scan(rect, w, timing) {
+    const x = Number(rect.getAttribute("x")), y = Number(rect.getAttribute("y"));
+    const width = Number(rect.getAttribute("width")), height = Number(rect.getAttribute("height"));
+    const line = make("rect", { class: "fx scanline", x: x + 6, y: y + 4, width: width - 12, height: 4, rx: 2, opacity: 0 });
+    loop(line, { attributeName: "y", values: `${y + 4};${y + 4};${y + height - 8};${y + height - 8}`, keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length) }, timing);
+    loop(line, { attributeName: "opacity", values: "0;0;.9;.9;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, w.b + .05, timing.length], timing.length) }, timing);
+    rect.after(line);
+  }
+
+  function appear(element, timing) {
+    const [a, b] = (element.dataset.show || "").split(/\s+/).map(Number);
+    make("set", { attributeName: "opacity", to: 0, begin: "0s", dur: `${timing.start}s` }, element);
+    loop(element, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, a, a + .15, b - .15, b, timing.length], timing.length) }, timing);
+  }
+
+  // Build-in: each part of a figure comes in after the part before it.
+  function build(svg) {
+    const items = [];
+    const walk = parent => {
+      Array.from(parent.children).forEach(element => {
+        const tag = element.tagName.toLowerCase();
+        if (element.matches(".fx,.guide,[data-show],[data-b=none]")) return;
+        if (tag === "g" && !element.dataset.b) { walk(element); return; }
+        if (["text", "rect", "circle", "path", "g", "line", "ellipse", "polygon", "polyline"].includes(tag)) items.push(element);
+      });
+    };
+    walk(svg);
+    const shapes = items.filter(element => element.tagName.toLowerCase() !== "text").length || 1;
+    const step = Math.min(.11, 1.5 / shapes);
+    let count = 0, shapeDelay = .3, last = 0;
+    items.forEach(element => {
+      const tag = element.tagName.toLowerCase();
+      let kind = element.dataset.b;
+      let delay;
+      if (tag === "text") {
+        kind = kind || "fade";
+        delay = shapeDelay + .08;
+      } else {
+        if (!kind) {
+          if (element.matches(".wire,.wireb,.wireg")) kind = "draw";
+          else if (element.matches(".wirer")) kind = "fade";
+          else if (tag === "rect" && (element.hasAttribute("opacity") || element.closest("g[opacity]"))) kind = "growx";
+          else if (tag === "rect" || tag === "circle") kind = "pop";
+          else kind = "fade";
+        }
+        delay = .3 + count * step;
+        shapeDelay = delay;
+        count += 1;
+      }
+      if (kind === "draw") element.setAttribute("pathLength", "1");
+      element.classList.add("a", kind);
+      element.style.setProperty("--d", `${delay.toFixed(2)}s`);
+      last = Math.max(last, delay);
+    });
+    return last;
+  }
+
+  function addEffects() {
+    figures.forEach(svg => {
+      const length = Number(svg.dataset.cycle);
+      if (!length) return;
+      const timing = { length, start: Number(svg.dataset.start) || Math.max(1.6, Number(svg.dataset.built) + .8) };
+      svg.querySelectorAll("[data-pk]").forEach(path => windowsOf(path).forEach(w => packet(path, w.color || path.dataset.pk || "b", w, timing)));
+      svg.querySelectorAll("[data-fl]").forEach(shape => windowsOf(shape).forEach(w => flash(shape, w.color || shape.dataset.fl, w, timing)));
+      svg.querySelectorAll("[data-ring]").forEach(circle => windowsOf(circle).forEach(w => ring(circle, w.color || circle.dataset.ring, w, timing)));
+      svg.querySelectorAll("[data-scan]").forEach(rect => windowsOf(rect).forEach(w => scan(rect, w, timing)));
+      svg.querySelectorAll("[data-show]").forEach(element => appear(element, timing));
+    });
+  }
+
+  function removeEffects() {
+    figures.forEach(svg => svg.querySelectorAll(".fx, [data-show] > animate, [data-show] > set").forEach(element => element.remove()));
+  }
+
+  function prepareFigures() {
+    figures.forEach(svg => { svg.dataset.built = build(svg).toFixed(2); });
+    if (!reduceMotion) addEffects();
+  }
+
+  function countUp(slide) {
+    slide.querySelectorAll("[data-count]").forEach(element => {
+      const target = Number(element.dataset.count);
+      cancelAnimationFrame(counters.get(element));
+      if (reduceMotion) { element.textContent = String(target); return; }
+      const begin = performance.now() + Number(element.dataset.countDelay || .4) * 1000;
+      element.textContent = "0";
+      const tick = now => {
+        const progress = Math.min(1, Math.max(0, (now - begin) / 1100));
+        element.textContent = String(Math.round(target * (1 - Math.pow(1 - progress, 3))));
+        if (progress < 1) counters.set(element, requestAnimationFrame(tick));
+      };
+      counters.set(element, requestAnimationFrame(tick));
+    });
+  }
+
+  // Restart the figures on the open slide. Pause the others.
+  function playFigures(index) {
+    figures.forEach(svg => {
+      if (typeof svg.pauseAnimations !== "function") return;
+      if (slides[index].contains(svg)) { svg.setCurrentTime(0); svg.unpauseAnimations(); }
+      else svg.pauseAnimations();
+    });
+    countUp(slides[index]);
+  }
+
   function show(index, updateHash = true) {
     current = Math.max(0, Math.min(slides.length - 1, index));
     if (slides.some(slide => slide.contains(document.activeElement))) document.activeElement.blur();
@@ -977,6 +1340,7 @@ git push</code></pre></div>
     jump.value = String(current);
     document.title = `${slides[current].dataset.title} | GitHub Copilot`;
     if (updateHash) window.location.hash = `slide-${current + 1}`;
+    if (current !== shown) { shown = current; playFigures(current); }
   }
 
   function readHash() {
@@ -1038,6 +1402,14 @@ git push</code></pre></div>
     link.rel = "noopener noreferrer";
   });
 
+  prepareFigures();
+  // Follow a change of the reduced-motion setting while the deck is open.
+  motionQuery.addEventListener("change", event => {
+    reduceMotion = event.matches;
+    removeEffects();
+    if (!reduceMotion) addEffects();
+    playFigures(current);
+  });
   fit();
   readHash();
 })();
