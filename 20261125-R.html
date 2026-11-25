@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Copilot Features | Merative | 24 November 2026</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #151b23; --raised: #212830; --line: #3d444d;
+    --fg: #f0f6fc; --muted: #b1bac4; --codebg: #010409;
+    --blue: #4493f8; --green: #3fb950; --purple: #ab7df8; --orange: #f0883e; --red: #ff7b72; --yellow: #d29922;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff; --panel: #f6f8fa; --raised: #ffffff; --line: #d1d9e0;
+    --fg: #1f2328; --muted: #59636e; --codebg: #ffffff;
+    --blue: #0969da; --green: #1a7f37; --purple: #8250df; --orange: #bc4c00; --red: #d1242f; --yellow: #9a6700;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--sans); }
+  #stage { position: fixed; left: 0; top: 0; transform-origin: 0 0; display: flex; flex-direction: column; background: var(--bg); }
+
+  .topbar { height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 48px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 22px; font-weight: 600; }
+  .topbar svg { width: 32px; height: 32px; fill: var(--fg); }
+  .topbar .sub { color: var(--muted); font-weight: 400; }
+  .progress { position: absolute; left: 0; top: 56px; height: 4px; width: 100%; background: var(--blue); transform-origin: 0 0; z-index: 2; }
+
+  #deck { flex: 1; min-height: 0; position: relative; }
+  .slide { position: absolute; inset: 0; display: none; flex-direction: column; gap: 18px; padding: 28px 48px 8px; }
+  .slide.active { display: flex; }
+  .foot { height: 64px; flex: none; display: flex; align-items: center; margin: 0 -48px -8px; padding: 0 380px 0 48px; font-size: 18px; color: var(--muted); border-top: 1px solid var(--line); }
+  .foot a { color: var(--muted); text-decoration: none; }
+
+  .sh { display: flex; align-items: center; gap: 22px; flex: none; }
+  .sh .n { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-size: 30px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); }
+  .sh h1 { font-size: 54px; line-height: 1.1; font-weight: 700; letter-spacing: -.5px; }
+  .body { flex: 1; min-height: 0; display: grid; gap: 20px; }
+
+  .c-blue { --c: var(--blue); } .c-green { --c: var(--green); } .c-purple { --c: var(--purple); }
+  .c-orange { --c: var(--orange); } .c-red { --c: var(--red); } .c-yellow { --c: var(--yellow); }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 24px; min-height: 0; overflow: hidden; }
+  .stack { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+  .stack > .card { flex: 1 1 auto; }
+  .lbl { font-size: 19px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--c, var(--blue)); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .t { font-size: 25px; line-height: 1.38; }
+  ul.b { list-style: none; }
+  ul.b li { font-size: 24px; line-height: 1.34; padding-left: 26px; position: relative; margin-top: 8px; }
+  ul.b li:first-child { margin-top: 0; }
+  ul.b li::before { content: ""; position: absolute; left: 4px; top: .6em; width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--blue)); }
+  b, strong { font-weight: 700; }
+  code { overflow-wrap: anywhere; font-family: var(--mono); font-size: .88em; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; color: var(--blue); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  [data-theme="light"] code { background: #eff2f5; }
+  .ui { font-weight: 700; color: var(--fg); }
+  .tag { display: inline-block; font-size: 17px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; color: var(--c, var(--blue)); border: 1px solid color-mix(in srgb, var(--c, var(--blue)) 60%, transparent); background: color-mix(in srgb, var(--c, var(--blue)) 14%, transparent); vertical-align: middle; }
+  .muted { color: var(--muted); }
+
+  .ic { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .cfg .row { display: grid; grid-template-columns: 210px 1fr; gap: 20px; padding: 9px 0; border-top: 1px solid var(--line); align-items: start; }
+  .cfg .row:first-of-type { border-top: 0; padding-top: 0; }
+  .cfg .k { font-size: 24px; font-weight: 700; color: var(--c, var(--fg)); line-height: 1.34; }
+  .cfg .v { font-size: 22px; line-height: 1.5; }
+
+  .flow { display: flex; align-items: stretch; }
+  .node { flex: 1 1 0; min-width: 0; position: relative; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 16px 16px 12px; }
+  .node::before { content: ""; position: absolute; left: 14px; top: -1px; width: 40px; height: 4px; border-radius: 0 0 4px 4px; background: var(--c, var(--blue)); }
+  .node.opt { border-style: dashed; }
+  .node .nt { font-size: 23px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: var(--fg); line-height: 1.25; }
+  .node .nt .ic { color: var(--c, var(--blue)); }
+  .node .ns { font-size: 20px; color: var(--muted); line-height: 1.35; margin-top: 4px; }
+  .arr { width: 36px; flex: none; display: grid; place-items: center; color: var(--muted); }
+  .arr .ic { width: 28px; height: 28px; }
+
+  .code { font-family: var(--mono); font-size: 21px; line-height: 1.5; background: var(--codebg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; white-space: pre; overflow: hidden; color: var(--fg); }
+  .code .k { color: var(--blue); } .code .s { color: var(--green); } .code .c { color: var(--muted); } .code .p { color: var(--purple); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+  .chips code { font-size: 21px; padding: 2px 10px; }
+  .grow { flex: 1 1 auto; }
+
+  /* Agenda */
+  .agenda { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); }
+  .ag { position: relative; display: flex; flex-direction: column; gap: 14px; padding-top: 26px; }
+  .ag::before { content: ""; position: absolute; left: 24px; top: -1px; width: 64px; height: 5px; border-radius: 0 0 5px 5px; background: var(--c); }
+  .ag .an { font-size: 64px; font-weight: 800; line-height: 1; color: var(--c); }
+  .ag .at { font-size: 34px; font-weight: 700; line-height: 1.2; }
+  .ag ul { list-style: none; margin-top: auto; }
+  .ag li { font-size: 22px; color: var(--muted); line-height: 1.5; }
+  .ag li::before { content: "\203A  "; color: var(--c); font-weight: 700; }
+
+  /* Slide-specific grids */
+  .g1 { grid-template-columns: 560px 1fr; grid-template-rows: 1fr auto; }
+  .g1 .full { grid-column: 1 / -1; }
+  .g1 .t { font-size: 29px; }
+  .g1 ul.b li { font-size: 28px; margin-top: 12px; }
+  .g1 .cfg .row { padding: 15px 0; grid-template-columns: 230px 1fr; }
+  .g1 .cfg .k { font-size: 28px; }
+  .g1 .cfg .v { font-size: 25px; line-height: 1.55; }
+  .g2 { grid-template-columns: repeat(3, 1fr); }
+  .col2 { display: flex; flex-direction: column; gap: 12px; }
+  .col2 .hd { display: flex; align-items: center; gap: 12px; font-size: 36px; font-weight: 700; color: var(--c); }
+  .col2 .hd .ic { width: 42px; height: 42px; }
+  .col2 .sec .lbl { margin-bottom: 5px; font-size: 19px; }
+  .col2 .sec .t { font-size: 26px; line-height: 1.36; }
+  .col2 .sec ul.b li { font-size: 25px; margin-top: 6px; padding-right: 10px; }
+  .diag { background: var(--codebg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .diag svg:not(.ic) { display: block; width: 100%; height: auto; }
+  .diag svg text { font-family: var(--sans); fill: var(--fg); font-size: 20px; }
+  .diag svg .mt { fill: var(--muted); font-size: 18px; }
+  .diag svg .bx { fill: var(--raised); stroke: var(--line); stroke-width: 1.5; }
+  .diag svg .ln { stroke: var(--muted); stroke-width: 2; fill: none; }
+  .lane { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .lane:first-child { margin-top: 0; }
+  .lane .lt { width: 160px; flex: none; font-size: 20px; font-family: var(--mono); color: var(--fg); display: flex; align-items: center; gap: 6px; }
+  .lane .lt .ic { color: var(--c); }
+  .lane .bar { flex: 1; height: 32px; border-radius: 6px; background: var(--raised); border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .lane .bar i { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--c) 70%, transparent); }
+  .lane .ls { width: 100px; flex: none; font-size: 20px; color: var(--muted); }
+
+  .g3 { grid-template-columns: 560px 1fr; grid-template-rows: 1fr auto; }
+  .g3 > .flowcard { grid-column: 1 / -1; }
+  .ladder { display: flex; align-items: flex-end; gap: 12px; flex: 1 1 auto; min-height: 150px; }
+  .ladder .bar { flex: 1; min-height: 100px; border-radius: 10px 10px 0 0; padding: 10px 12px; background: color-mix(in srgb, var(--c) 18%, var(--raised)); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); border-bottom: 0; }
+  .ladder .bn { font-size: 24px; font-weight: 700; color: var(--c); }
+  .ladder .bs { font-size: 19px; color: var(--fg); line-height: 1.3; }
+  .ladder .bc { font-size: 19px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+  .g4 { grid-template-rows: auto 1fr; }
+  .pipe { display: grid; grid-template-columns: 2fr 2fr 1.25fr; gap: 20px; }
+  .grp { border: 1.5px dashed var(--line); border-radius: 14px; padding: 10px 14px 14px; }
+  .grp .gl { font-size: 19px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c); margin-bottom: 8px; }
+  .grp .flow { gap: 12px; }
+  .when { font-size: 17px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--c); margin-bottom: 4px; }
+  .tbl { display: grid; grid-template-columns: 290px 1fr 1fr 1.3fr; align-content: stretch; }
+  .tbl > div { padding: 10px 18px 10px 0; border-top: 1px solid var(--line); font-size: 25px; line-height: 1.4; display: flex; flex-direction: column; justify-content: center; }
+  .tbl > div > p { margin: 0; }
+  .tbl > .th { border-top: 0; font-size: 19px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--blue); padding-top: 0; padding-bottom: 8px; }
+  .tbl > .tk { font-size: 30px; font-weight: 700; color: var(--c); }
+
+  .g5 { grid-template-columns: 540px 1fr 600px; }
+  .g5 .t { font-size: 28px; }
+  .g5 ul.b li { font-size: 26px; margin-top: 12px; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 1fr); gap: 14px; height: calc(100% - 38px); }
+  .tile { background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-height: 0; overflow: hidden; }
+  .tile .tt { font-size: 25px; font-weight: 700; display: flex; align-items: center; gap: 8px; line-height: 1.25; }
+  .tile .tt .ic { color: var(--c); }
+  .tile .td { font-size: 22px; color: var(--muted); line-height: 1.35; margin-top: 4px; }
+  .cmp .r { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding: 8px 0; border-top: 1px solid var(--line); align-items: start; }
+  .cmp .r:first-of-type { border-top: 0; padding-top: 0; }
+  .cmp .r .w { font-size: 24px; font-weight: 700; color: var(--c); }
+  .cmp .r .d { font-size: 23px; line-height: 1.4; }
+
+  .g6 { grid-template-columns: 520px 1fr 640px; }
+  .grpl { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; padding: 6px 0; border-top: 1px solid var(--line); }
+  .grpl:first-of-type { border-top: 0; padding-top: 0; }
+  .grpl .gn { font-size: 20px; font-weight: 700; color: var(--c); padding-top: 4px; }
+  .kv { display: grid; grid-template-columns: 230px 1fr; gap: 12px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 21px; line-height: 1.4; align-items: start; }
+  .kv:first-of-type { border-top: 0; padding-top: 0; }
+
+  .g7 { grid-template-columns: 640px 1fr; grid-template-rows: auto 1fr; }
+  .g7 ul.b li { font-size: 26px; margin-top: 12px; }
+  .g7 .code { font-size: 20px; }
+  .g7 .flow .node { padding: 10px 12px; }
+  .g7 .flow .node .nt { font-size: 20px; font-family: var(--mono); }
+  .g7 .flow .node .ns { font-size: 18px; }
+  .g7 .flow .arr { width: 26px; }
+  .g7 .flow .arr .ic { width: 22px; height: 22px; }
+  .cmdt .row { display: grid; grid-template-columns: 290px 1fr; gap: 16px; padding: 13px 0; border-top: 1px solid var(--line); align-items: start; }
+  .cmdt .row:first-of-type { border-top: 0; padding-top: 0; }
+  .cmdt .row .k { font-size: 22px; line-height: 1.5; }
+  .cmdt .row .v { font-size: 24px; line-height: 1.42; }
+
+  .g8 { grid-template-columns: repeat(3, 1fr); }
+  .stk { position: relative; }
+  .stk .sb { height: 34px; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; font-size: 19px; font-weight: 700; margin-top: 6px; border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 18%, var(--raised)); color: var(--fg); }
+  .stk .sb span { color: var(--muted); font-weight: 400; margin-left: auto; font-family: var(--mono); font-size: 17px; }
+
+  /* Navigation: bottom-right, small */
+  .nav { position: fixed; right: 12px; bottom: 10px; z-index: 10; display: flex; align-items: center; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px 4px; font-size: 12px; color: var(--muted); }
+  .nav button { all: unset; cursor: pointer; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 5px; color: var(--fg); font-size: 14px; }
+  .nav button:hover { background: var(--raised); }
+  .nav .count { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* Keep the official logo on a white plate in both presentation themes. */
+  .topbar { height: 76px; }
+  .topbar .session-date { margin-left: auto; color: var(--muted); font-size: 19px; font-weight: 400; }
+  .brand { display: flex; padding: 6px 12px; background: #fff; border-radius: 4px; }
+  .topbar .brand svg { width: 136px; height: 48px; fill: #000; }
+  .progress { top: 76px; }
+  .slide { gap: 16px; padding-top: 24px; }
+  .slide:first-child { display: flex; }
+  .js .slide:first-child:not(.active) { display: none; }
+  .g1 .cfg .row { padding: 11px 0; }
+  .g1 .cfg .v { font-size: 24px; line-height: 1.4; }
+  .g1 .full .flow { gap: 20px; }
+  .g3 .cfg .v { font-size: 21px; line-height: 1.4; }
+  .g3 .cfg .row { padding: 8px 0; }
+  .review-note { margin-top: 10px; font-size: 21px; line-height: 1.3; }
+  .ladder { min-height: 120px; }
+  .ladder .bn { font-size: 23px; }
+  .g5 .t { font-size: 26px; }
+  .g5 ul.b li { font-size: 25px; }
+  .g5 .tile .td { font-size: 21px; }
+  .g2 .diag svg:not(.ic) { max-height: 218px; }
+  .g6 .grpl { grid-template-columns: 135px 1fr; gap: 10px; }
+  .g6 .chips { gap: 7px 8px; }
+  .g6 .chips code { font-size: 20px; }
+  .g6 .kv { grid-template-columns: 220px 1fr; font-size: 20px; padding: 5px 0; }
+  .g6 .stack:last-child ul.b li { font-size: 22px; line-height: 1.3; }
+  .g6 .stack:last-child > .card { padding: 14px 20px; }
+  .g6 .stack:last-child > .card:last-child { flex: none; }
+  .g7 .code { font-size: 19px; }
+  .g7 .cmdt .row { padding: 10px 0; }
+  .g8 .hd { font-size: 32px; }
+  .g8 .sec .t { font-size: 25px; }
+  .g8 .sec ul.b li { font-size: 23px; }
+  .nav button:focus-visible, .brand:focus-visible, .foot a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  .nav button:disabled { opacity: .4; cursor: default; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media print {
+    html, body { height: auto; overflow: visible; }
+    #stage { position: static; width: 1920px !important; height: auto !important; transform: none !important; }
+    .slide, .js .slide:first-child:not(.active) { display: flex; position: relative; height: 1000px; break-after: page; }
+    .nav, .progress { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M5 2h8l5 5v15H5z"/><path d="M13 2v5h5"/><path d="M8 13h7M8 17h7"/></symbol>
+    <symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2.2"/><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="8" r="2.2"/><path d="M6 7.2v9.6M18 10.2c0 4-4 5-10.5 7.2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V5"/><circle cx="12" cy="3.6" r="1.2"/><circle cx="9" cy="13.5" r="1.1"/><circle cx="15" cy="13.5" r="1.1"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h10M18 12v4M21 12v3"/></symbol>
+    <symbol id="i-term" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 9l3 3-3 3M12 16h6"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h2M9 6h11M4 12h2M9 12h11M4 18h2M9 18h11"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></symbol>
+    <symbol id="i-pkg" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
+    <symbol id="i-win" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></symbol>
+    <symbol id="i-merge" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2.2"/><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="15" r="2.2"/><path d="M6 7.2v9.6M6 9c0 5 12 1 12 4"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12L3 7M12 12v10"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c3 0 4.5 2 4.5 5"/></symbol>
+  </defs>
+</svg>
+
+<div id="stage">
+  <div class="topbar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.08c-3.12.68-3.78-1.33-3.78-1.33-.51-1.3-1.25-1.64-1.25-1.64-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.15 1.72 1.15 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.71-1.5-2.49-.28-5.11-1.25-5.11-5.54 0-1.22.44-2.22 1.15-3-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.54.23 2.68.11 2.96.72.78 1.15 1.78 1.15 3 0 4.3-2.62 5.25-5.12 5.53.4.35.76 1.03.76 2.08v3.09c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"/></svg>
+    <span>GitHub Copilot</span><span class="sub">Features</span>
+    <time class="session-date" datetime="2026-11-24">24 November 2026</time>
+    <a class="brand" href="https://www.resmed.com/" aria-label="Resmed website">
+      <!-- Official Resmed artwork from https://brand.resmed.com/logo; embedded for offline use. -->
+      <svg viewBox="0 0 283.46 58.94" role="img" aria-labelledby="resmed-title" xmlns="http://www.w3.org/2000/svg">
+        <title id="resmed-title">Resmed</title>
+        <defs>
+          <style>
+            .resmed-magenta { fill: #bc299b; }
+            .resmed-blue { fill: #006dff; }
+            .resmed-red { fill: #e6004a; }
+            .resmed-purple { fill: #7957ff; }
+          </style>
+        </defs>
+        <g>
+          <path class="resmed-red" d="M46.48,49.09H0v9.16h46.48v-9.16Z"/>
+          <path class="resmed-magenta" d="M0,44.12v-7.74c10.82-3.97,17.03-5.96,23.24-5.96,6.21,0,12.43,1.99,23.24,5.96v7.74c-5.84-2.17-16.57-6.51-23.24-6.51-6.67,0-17.4,4.34-23.24,6.51Z"/>
+          <path class="resmed-purple" d="M23.24,14.16c6.21,0,12.41,2.99,23.24,8.96v6.16c-11.66-6.49-17.7-9.75-23.24-9.75-5.54,0-11.58,3.26-23.24,9.75v-6.16c10.83-5.97,17.04-8.96,23.24-8.96Z"/>
+          <path class="resmed-blue" d="M23.24,4.19c8.82,0,17.44,4.02,23.24,10.67v-6.1C40.53,3.09,31.58.16,23.24,0,14.91.16,5.95,3.09,0,8.76v6.1C5.81,8.21,14.42,4.19,23.24,4.19Z"/>
+        </g>
+        <path d="M94.41,36.11c1.49-2.13,2.24-4.7,2.24-7.69,0-2.83-.63-5.27-1.89-7.31-1.26-2.04-3-3.59-5.21-4.66-2.21-1.07-4.77-1.6-7.69-1.6h-15.78v43.38h6.87v-16.3h8.46l9.18,16.3h7.8l-10.02-17.47c2.52-.97,4.53-2.52,6.03-4.66ZM86.11,34.89c-1.17.62-2.54.93-4.13.93h-9.02v-14.85h9.02c1.59,0,2.97.3,4.13.9,1.17.6,2.07,1.45,2.71,2.56.64,1.11.96,2.42.96,3.93s-.32,2.82-.96,3.93c-.64,1.11-1.54,1.97-2.71,2.59ZM126.31,30.61c-1.28-1.42-2.86-2.53-4.72-3.35-1.86-.81-3.98-1.22-6.35-1.22-2.96,0-5.6.71-7.93,2.12-2.33,1.42-4.18,3.35-5.56,5.79-1.38,2.45-2.07,5.26-2.07,8.44s.68,5.91,2.04,8.41c1.36,2.5,3.25,4.48,5.68,5.94,2.43,1.45,5.21,2.18,8.36,2.18,2.15,0,4.12-.34,5.92-1.02,1.8-.68,3.36-1.61,4.66-2.79,1.3-1.18,2.26-2.51,2.88-3.99l-5.38-2.62c-.78,1.36-1.83,2.47-3.17,3.32-1.34.85-2.96,1.28-4.85,1.28-1.86,0-3.51-.45-4.97-1.34-1.46-.89-2.58-2.14-3.38-3.73-.55-1.09-.84-2.32-.92-3.67h23.43c.12-.47.19-.97.23-1.51.04-.54.06-1.07.06-1.57,0-2.06-.34-4-1.02-5.82-.68-1.82-1.66-3.44-2.94-4.86ZM106.7,39.14c.15-.92.39-1.77.74-2.53.74-1.61,1.78-2.85,3.14-3.73,1.36-.87,2.91-1.31,4.65-1.31,1.74,0,3.26.44,4.56,1.31,1.3.87,2.27,2.06,2.91,3.55.36.84.54,1.74.57,2.71h-16.58ZM242.27,30.61c-1.28-1.42-2.86-2.53-4.72-3.35-1.86-.81-3.98-1.22-6.35-1.22-2.96,0-5.6.71-7.93,2.12-2.33,1.42-4.18,3.35-5.56,5.79-1.38,2.45-2.07,5.26-2.07,8.44s.68,5.91,2.04,8.41c1.36,2.5,3.25,4.48,5.68,5.94,2.43,1.45,5.21,2.18,8.36,2.18,2.15,0,4.12-.34,5.92-1.02,1.8-.68,3.36-1.61,4.66-2.79,1.3-1.18,2.26-2.51,2.88-3.99l-5.38-2.62c-.78,1.36-1.83,2.47-3.17,3.32-1.34.85-2.96,1.28-4.85,1.28-1.86,0-3.51-.45-4.97-1.34-1.46-.89-2.58-2.14-3.38-3.73-.55-1.09-.84-2.32-.92-3.67h23.43c.12-.47.19-.97.23-1.51.04-.54.06-1.07.06-1.57,0-2.06-.34-4-1.02-5.82-.68-1.82-1.66-3.44-2.94-4.86ZM222.66,39.14c.15-.92.39-1.77.74-2.53.74-1.61,1.78-2.85,3.14-3.73,1.36-.87,2.91-1.31,4.65-1.31,1.74,0,3.26.44,4.56,1.31,1.3.87,2.27,2.06,2.91,3.55.36.84.54,1.74.57,2.71h-16.58ZM276.93,14.86v15.53c-.98-1.15-2.18-2.1-3.59-2.84-1.94-1.01-4.17-1.51-6.7-1.51-3,0-5.68.72-8.05,2.15-2.37,1.44-4.25,3.4-5.65,5.88-1.4,2.49-2.1,5.28-2.1,8.38s.69,5.9,2.07,8.39c1.38,2.49,3.26,4.46,5.65,5.91,2.39,1.45,5.09,2.18,8.13,2.18,2.42,0,4.63-.51,6.65-1.51,1.58-.79,2.87-1.87,3.88-3.21l.02,4.03h6.23V14.86h-6.54ZM275.67,47.79c-.83,1.57-1.98,2.81-3.44,3.7-1.45.89-3.09,1.34-4.91,1.34-1.86,0-3.52-.45-4.97-1.34-1.46-.89-2.59-2.13-3.41-3.7-.81-1.57-1.22-3.35-1.22-5.33s.41-3.74,1.22-5.3c.82-1.55,1.96-2.77,3.44-3.67,1.47-.89,3.12-1.34,4.94-1.34,1.82,0,3.46.45,4.91,1.34,1.46.89,2.6,2.12,3.44,3.67.84,1.55,1.25,3.32,1.25,5.3s-.42,3.76-1.25,5.33ZM208.97,31.75c1.05,1.79,1.57,3.82,1.57,6.11l-.02,20.38h-6.56l-.02-18.57c0-1.59-.28-2.94-.84-4.05-.56-1.11-1.34-1.96-2.33-2.56-.99-.6-2.14-.9-3.45-.9-1.32,0-2.48.3-3.48.9-1.01.6-1.81,1.47-2.39,2.59-.58,1.13-.87,2.47-.87,4.02v18.57h-6.52l-.02-18.57c0-1.59-.28-2.94-.85-4.05-.56-1.11-1.34-1.96-2.33-2.56-.99-.6-2.16-.9-3.51-.9-1.32,0-2.48.3-3.48.9-1.01.6-1.8,1.47-2.36,2.59-.56,1.13-.84,2.47-.84,4.02v18.57h-6.6v-31.5h6.29l.02,3.87c.68-1.21,1.59-2.21,2.78-2.94,1.75-1.09,3.75-1.63,6.01-1.63,2.53,0,4.78.67,6.74,2.01,1.33.91,2.34,2.04,3.08,3.36.85-1.47,1.93-2.65,3.25-3.51,1.92-1.24,4.12-1.86,6.62-1.86,2.18,0,4.15.5,5.92,1.51,1.77,1.01,3.17,2.41,4.22,4.19ZM141.72,35.18c0,.74.2,1.35.58,1.83.39.49.89.87,1.51,1.16.62.29,1.26.54,1.92.73l5.12,1.51c2.6.74,4.6,1.89,6,3.47,1.4,1.57,2.1,3.44,2.1,5.62,0,1.86-.49,3.5-1.49,4.92-.99,1.42-2.36,2.52-4.1,3.32-1.75.79-3.79,1.19-6.12,1.19-3.23,0-6.06-.79-8.48-2.39-2.43-1.59-4.12-3.73-5.09-6.41l5.08-2.39c.85,1.78,2.03,3.2,3.52,4.25,1.49,1.05,3.15,1.57,4.97,1.57,1.55,0,2.81-.35,3.78-1.05.97-.7,1.46-1.65,1.46-2.85,0-.77-.21-1.41-.64-1.89-.43-.48-.96-.88-1.6-1.19-.64-.31-1.29-.54-1.95-.7l-4.95-1.4c-2.72-.77-4.75-1.95-6.08-3.52-1.34-1.57-2.01-3.41-2.01-5.5,0-1.9.49-3.56,1.46-4.98.97-1.42,2.31-2.51,4.02-3.29,1.71-.78,3.63-1.16,5.77-1.16,2.88,0,5.44.71,7.7,2.12,2.25,1.42,3.84,3.39,4.77,5.91l-5.09,2.39c-.62-1.51-1.6-2.72-2.94-3.61-1.34-.89-2.84-1.34-4.5-1.34-1.43,0-2.58.34-3.43,1.02-.85.68-1.28,1.56-1.28,2.65Z"/>
+      </svg>
+    </a>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <div id="deck">
+
+    <!-- 0 AGENDA -->
+    <section class="slide" data-title="Agenda">
+      <div class="sh c-blue"><div class="n">A</div><h1>Agenda</h1></div>
+      <div class="body agenda">
+        <div class="card ag c-blue"><div class="an">1</div><div class="at">Customization in VS Code</div>
+          <ul><li>Instructions</li><li>Prompts and skills</li><li>Plugins</li><li>MCP servers and tools</li></ul></div>
+        <div class="card ag c-purple"><div class="an">2</div><div class="at">Custom Agents and Parallel Sessions</div>
+          <ul><li>Custom agents</li><li>Parallel sessions</li><li>Subagents</li></ul></div>
+        <div class="card ag c-green"><div class="an">3</div><div class="at">Copilot Code Review</div>
+          <ul><li>Effort levels</li><li>Automatic review</li><li>Instructions and YAML</li><li>Firewall and allowlist</li></ul></div>
+        <div class="card ag c-red"><div class="an">4</div><div class="at">GitHub Advanced Security</div>
+          <ul><li>Code scanning and CodeQL</li><li>Secret scanning</li><li>Push protection</li><li>Dependabot</li></ul></div>
+        <div class="card ag c-blue"><div class="an">5</div><div class="at">GitHub Copilot App</div>
+          <ul><li>Feature tour</li><li>Why use it</li><li>Compared to VS Code</li></ul></div>
+        <div class="card ag c-green"><div class="an">6</div><div class="at">GitHub Copilot CLI</div>
+          <ul><li>Commands</li><li>Attach context</li><li>GitHub Actions</li></ul></div>
+        <div class="card ag c-purple"><div class="an">7</div><div class="at">Spec-Driven Development</div>
+          <ul><li>Why</li><li>Install</li><li>Commands and flow</li></ul></div>
+        <div class="card ag c-orange"><div class="an">8</div><div class="at">Automations, Agentic Workflows, Stacked PRs</div>
+          <ul><li>Copilot app Automations</li><li>Agentic workflows</li><li>Stacked PRs</li></ul></div>
+      </div>
+      <div class="foot">Merative session · 24 November 2026</div>
+    </section>
+
+    <!-- 1 VS CODE CUSTOMIZATION -->
+    <section class="slide" data-title="Customization in VS Code">
+      <div class="sh c-blue"><div class="n">1</div><h1>Customization in VS Code</h1></div>
+      <div class="body g1">
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">What it is</div>
+            <p class="t">Files and settings that teach Copilot your project rules, tasks and tools.</p></div>
+          <div class="card c-green"><div class="lbl">How it is useful</div>
+            <ul class="b">
+              <li>Same rules for every developer</li>
+              <li>Repeat a task with one command</li>
+              <li>Connect Copilot to outside tools and data</li>
+              <li>Share with the team through Git</li>
+            </ul></div>
+        </div>
+        <div class="card cfg c-purple"><div class="lbl">Configure with</div>
+          <div class="row"><div class="k">Instructions</div><div class="v"><code>.github/copilot-instructions.md</code> <code>AGENTS.md</code> <code>.github/instructions/*.instructions.md</code> with <code>applyTo</code> glob</div></div>
+          <div class="row"><div class="k">Prompt files</div><div class="v"><code>.github/prompts/*.prompt.md</code> <code>/name</code> — for the Local harness. Prefer skills for reuse across clients.</div></div>
+          <div class="row"><div class="k">Skills</div><div class="v"><code>.github/skills/NAME/SKILL.md</code> — personal: <code>~/.copilot/skills/</code></div></div>
+          <div class="row"><div class="k">MCP servers</div><div class="v"><span class="ui">MCP: Add Server</span> — choose the destination for the selected harness. Copilot workspace: <code>.mcp.json</code> (<code>mcpServers</code>).</div></div>
+          <div class="row"><div class="k">Plugins</div><div class="v">Bundle of skills, agents, hooks and MCP servers — <span class="ui">Chat: Install Plugin from Source</span> — setting <code>chat.plugins.enabled</code></div></div>
+          <div class="row"><div class="k">Tools</div><div class="v"><span class="ui">Tools</span> tab in the customizations editor — <code>#tool</code> in chat — <code>tools:</code> list in an agent file</div></div>
+          <div class="row"><div class="k">Editor</div><div class="v"><span class="ui">Chat: Open Customizations</span> — select the session first. Verify each customization with a small task.</div></div>
+        </div>
+        <div class="card full c-blue">
+          <div class="flow">
+            <div class="node c-blue"><div class="nt"><svg class="ic"><use href="#i-doc"/></svg>Instructions</div><div class="ns">Project and file rules</div></div>
+            <div class="node c-purple"><div class="nt"><svg class="ic"><use href="#i-spark"/></svg>Skills and prompts</div><div class="ns">Loaded for a task</div></div>
+            <div class="node c-green"><div class="nt"><svg class="ic"><use href="#i-plug"/></svg>Tools and MCP</div><div class="ns">Actions and checks</div></div>
+            <div class="node c-orange"><div class="nt"><svg class="ic"><use href="#i-pkg"/></svg>Plugins</div><div class="ns">Bundle and share</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://code.visualstudio.com/docs/copilot/customization/overview">Source: code.visualstudio.com/docs/copilot</a></div>
+    </section>
+
+    <!-- 2 CUSTOM AGENTS, PARALLEL SESSIONS, SUBAGENTS -->
+    <section class="slide" data-title="Custom Agents and Parallel Sessions">
+      <div class="sh c-purple"><div class="n">2</div><h1>Custom Agents and Parallel Sessions</h1></div>
+      <div class="body g2">
+
+        <div class="card col2 c-purple">
+          <div class="hd"><svg class="ic"><use href="#i-bot"/></svg>Custom agents</div>
+          <div class="diag"><div class="code" style="border:0;padding:0;background:transparent;font-size:20px"><span class="c">.github/agents/reviewer.agent.md</span>
+<span class="k">---</span>
+<span class="k">name:</span> reviewer
+<span class="k">description:</span> Review code
+<span class="k">tools:</span> ['read', 'search']
+<span class="k">---</span>
+Check security first.</div></div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">A saved AI role with its own instructions, tools and model.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div><p class="t">Same expert behavior each time: planner, reviewer, tester.</p></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li><code>.github/agents/NAME.agent.md</code></li>
+              <li>Fields: <code>name</code> <code>description</code> <code>tools</code> <code>model</code> <code>skills</code></li>
+              <li>Local harness only: <code>agents</code> <code>handoffs</code></li>
+              <li>Body text = instructions</li></ul></div>
+        </div>
+
+        <div class="card col2 c-green">
+          <div class="hd"><svg class="ic"><use href="#i-branch"/></svg>Parallel sessions</div>
+          <div class="diag">
+            <div class="lane c-green"><div class="lt"><svg class="ic"><use href="#i-branch"/></svg>worktree-a</div><div class="bar"><i style="width:82%"></i></div><div class="ls">fix bug</div></div>
+            <div class="lane c-blue"><div class="lt"><svg class="ic"><use href="#i-branch"/></svg>worktree-b</div><div class="bar"><i style="width:55%"></i></div><div class="ls">add tests</div></div>
+            <div class="lane c-purple"><div class="lt"><svg class="ic"><use href="#i-branch"/></svg>worktree-c</div><div class="bar"><i style="width:30%"></i></div><div class="ls">update docs</div></div>
+            <div class="lane c-orange"><div class="lt"><svg class="ic"><use href="#i-cube"/></svg>Cloud</div><div class="bar"><i style="width:68%"></i></div><div class="ls">refactor</div></div>
+          </div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">Many agent sessions run at the same time. Each session has its own task.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div><p class="t">Do many tasks at once. A worktree keeps the files of each task apart.</p></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li><span class="ui">Open in Agents</span> or <code>code --agents</code></li>
+              <li>Isolation: <span class="ui">New Worktree</span> or <span class="ui">Branch</span></li>
+              <li>Harness: Copilot, Claude or Codex — or run in Cloud</li>
+              <li><code>Alt+Enter</code> starts a background session</li></ul></div>
+        </div>
+
+        <div class="card col2 c-orange">
+          <div class="hd"><svg class="ic"><use href="#i-layers"/></svg>Subagents</div>
+          <div class="diag">
+            <svg viewBox="0 0 560 218" role="img" aria-label="Coordinator agent delegates to three subagents">
+              <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b1bac4"/></marker></defs>
+              <rect class="bx" x="165" y="6" width="230" height="52" rx="10" style="stroke:var(--orange)"/>
+              <text x="280" y="39" text-anchor="middle" style="font-weight:700">Coordinator agent</text>
+              <path class="ln" d="M280 58 V84 H90 V132" marker-end="url(#ah)"/>
+              <path class="ln" d="M280 58 V132" marker-end="url(#ah)"/>
+              <path class="ln" d="M280 58 V84 H470 V132" marker-end="url(#ah)"/>
+              <text class="mt" x="292" y="108">delegate</text>
+              <rect class="bx" x="10" y="136" width="160" height="50" rx="10"/><text x="90" y="168" text-anchor="middle">Research</text>
+              <rect class="bx" x="200" y="136" width="160" height="50" rx="10"/><text x="280" y="168" text-anchor="middle">Review</text>
+              <rect class="bx" x="390" y="136" width="160" height="50" rx="10"/><text x="470" y="168" text-anchor="middle">Test</text>
+              <text class="mt" x="280" y="209" text-anchor="middle">own context · short result</text>
+            </svg>
+          </div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">A helper agent. It works in its own context and returns a short result.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div><p class="t">Keeps the main chat small. Good for research, comparison and review. Not for small edits.</p></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li>Ask for a subagent in the prompt, or let the main agent choose</li>
+              <li>Agent file: <code>user-invocable</code><br><code>disable-model-invocation</code></li>
+              <li>Local harness: <code>tools: ['agent']</code> and <code>agents: [...]</code></li></ul></div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://code.visualstudio.com/docs/copilot/agents/overview">Source: code.visualstudio.com/docs/copilot/agents</a></div>
+    </section>
+
+    <!-- 3 CODE REVIEW -->
+    <section class="slide" data-title="Copilot Code Review">
+      <div class="sh c-green"><div class="n">3</div><h1>Copilot Code Review</h1></div>
+      <div class="body g3">
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">What it is</div>
+            <p class="t">Copilot reviews a pull request and writes comments. Each comment has a severity: High, Medium or Low.</p></div>
+          <div class="card c-green"><div class="lbl">How it is useful</div>
+            <ul class="b">
+              <li>Fast first review before a human</li>
+              <li>Finds bugs, security issues and style errors</li>
+              <li>Apply a suggested fix in a few clicks</li>
+            </ul></div>
+          <div class="card c-green" style="display:flex;flex-direction:column"><div class="lbl">Effort levels</div>
+          <div class="ladder">
+            <div class="bar c-blue" style="height:56%"><div class="bn">Lite</div><div class="bs">Fast, targeted</div><div class="bc">~$0.25</div></div>
+            <div class="bar c-purple" style="height:78%"><div class="bn">Balanced</div><div class="bs">Default.</div><div class="bc">~$1.50</div></div>
+            <div class="bar c-orange" style="height:100%"><div class="bn">Max</div><div class="bs">Many models. Preview.</div><div class="bc">~$10</div></div>
+          </div>
+          <p class="review-note"><b>Adaptive (preview)</b> selects Lite, Balanced or Max within your configured limit.</p>
+        </div>
+        </div>
+        <div class="card cfg c-purple"><div class="lbl">Configure with</div>
+          <div class="row"><div class="k">Request</div><div class="v"><span class="ui">Reviewers → Copilot → Request</span><br><code>gh pr create --reviewer @copilot</code> <code>gh pr edit N --add-reviewer @copilot</code></div></div>
+          <div class="row"><div class="k">Effort level</div><div class="v">Choose Lite, Balanced, Max or Adaptive under <span class="ui">Reviewers</span>. Admins set the default and maximum.</div></div>
+          <div class="row"><div class="k">Automatic review</div><div class="v"><span class="ui">Settings → Rules → Rulesets → Automatically request Copilot code review</span> — options <span class="ui">Review new pushes</span> and <span class="ui">Review draft pull requests</span></div></div>
+          <div class="row"><div class="k">Instructions</div><div class="v"><code>.github/copilot-instructions.md</code> <code>AGENTS.md</code> <code>REVIEW.md</code> <code>CLAUDE.md</code> <code>GEMINI.md</code> <code>.github/instructions/**/*.instructions.md</code><br>YAML: <code>applyTo</code>, <code>excludeAgent: "code-review"</code> skips the file in review</div></div>
+          <div class="row"><div class="k">YAML setup file</div><div class="v"><code>.github/workflows/copilot-code-review.yml</code> — <code>runs-on</code> and setup steps. Fallback: <code>copilot-setup-steps.yml</code></div></div>
+          <div class="row"><div class="k">Firewall</div><div class="v"><span class="ui">Settings → Copilot → Internet access</span> (Code review section): <span class="ui">Enable firewall</span>, <span class="ui">Recommended allowlist</span>, <span class="ui">Custom allowlist</span></div></div>
+          <div class="row"><div class="k">Runner allowlist</div><div class="v">Self-hosted runners also allow<br><code>api.githubcopilot.com</code> <code>uploads.github.com</code> <code>user-images.githubusercontent.com</code></div></div>
+        </div>
+        <div class="card c-blue flowcard" style="display:flex;flex-direction:column"><div class="lbl">Review flow</div>
+          <div class="flow grow">
+            <div class="node c-blue"><div class="nt"><svg class="ic"><use href="#i-merge"/></svg>Pull request</div><div class="ns">Opened or updated</div></div>
+            <div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-purple"><div class="nt"><svg class="ic"><use href="#i-gear"/></svg>Request</div><div class="ns">Manual, CLI or ruleset</div></div>
+            <div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-green"><div class="nt"><svg class="ic"><use href="#i-eye"/></svg>Review</div><div class="ns">Chosen or Adaptive effort</div></div>
+            <div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-orange"><div class="nt"><svg class="ic"><use href="#i-list"/></svg>Comments</div><div class="ns">High, Medium, Low</div></div>
+            <div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-red"><div class="nt"><svg class="ic"><use href="#i-check"/></svg>Fix</div><div class="ns">Apply or Fix with Copilot</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">Source: GitHub Docs · Estimated average USD per review; excludes Actions minutes. Max and Adaptive: preview.</a></div>
+    </section>
+
+    <!-- 4 GHAS -->
+    <section class="slide" data-title="GitHub Advanced Security">
+      <div class="sh c-red"><div class="n">4</div><h1>GitHub Advanced Security</h1></div>
+      <div class="body g4">
+        <div class="pipe">
+          <div class="grp c-red"><div class="gl">GitHub Secret Protection</div>
+            <div class="flow">
+              <div class="node c-red"><div class="when">At push</div><div class="nt"><svg class="ic"><use href="#i-lock"/></svg>Push protection</div></div>
+              <div class="node c-orange"><div class="when">In repository</div><div class="nt"><svg class="ic"><use href="#i-key"/></svg>Secret scanning</div></div>
+            </div></div>
+          <div class="grp c-blue"><div class="gl">GitHub Code Security</div>
+            <div class="flow">
+              <div class="node c-blue"><div class="when">In code</div><div class="nt"><svg class="ic"><use href="#i-search"/></svg>Code scanning</div></div>
+              <div class="node c-purple"><div class="when">On an alert</div><div class="nt"><svg class="ic"><use href="#i-spark"/></svg>Copilot Autofix</div></div>
+            </div></div>
+          <div class="grp c-green"><div class="gl">Free for all repositories</div>
+            <div class="flow">
+              <div class="node c-green"><div class="when">In dependencies</div><div class="nt"><svg class="ic"><use href="#i-pkg"/></svg>Dependabot</div></div>
+            </div></div>
+        </div>
+        <div class="card" style="padding-top:14px;padding-bottom:6px">
+          <div class="tbl">
+            <div class="th"></div><div class="th">What it is</div><div class="th">How it is useful</div><div class="th">Configure with</div>
+            <div class="tk c-blue">Code scanning</div>
+            <div><p>Finds code flaws. Results show as alerts and PR comments.</p></div>
+            <div><p>Fix security bugs before merge. Copilot Autofix suggests the fix. It is on by default with CodeQL.</p></div>
+            <div><p><span class="ui">Settings → Advanced Security</span>: Default setup or Advanced setup (<code>.github/workflows/codeql.yml</code>)</p></div>
+            <div class="tk c-purple">CodeQL</div>
+            <div><p>GitHub's code analysis engine. It runs queries on your code.</p></div>
+            <div><p>Finds injection and unsafe data flow. Custom queries and CLI.</p></div>
+            <div><p><code>.github/codeql/codeql-config.yml</code> (<code>queries</code>, <code>paths</code>, <code>paths-ignore</code>) — set with <code>config-file</code> in <code>codeql-action/init</code></p></div>
+            <div class="tk c-orange">Secret scanning</div>
+            <div><p>Finds supported secret patterns in repository content and history.</p></div>
+            <div><p>Shows leaked secrets so you can revoke them.</p></div>
+            <div><p><code>.github/secret_scanning.yml</code> (<code>paths-ignore</code>) — custom patterns in settings</p></div>
+            <div class="tk c-red">Push protection</div>
+            <div><p>Blocks supported secrets when push protection detects them.</p></div>
+            <div><p>Helps stop leaks before the push. Detection has limits.</p></div>
+            <div><p><span class="ui">Settings → Advanced Security → Push protection</span> — delegated bypass</p></div>
+            <div class="tk c-green">Dependabot</div>
+            <div><p>Alerts on unsafe dependencies. Opens PRs to update them.</p></div>
+            <div><p>Keeps libraries secure and current.</p></div>
+            <div><p><span class="ui">Dependabot alerts</span> and <span class="ui">security updates</span> in settings — <code>.github/dependabot.yml</code> (<code>updates</code>, <code>schedule</code>)</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://docs.github.com/en/code-security">Source: docs.github.com/code-security. Code scanning and secret scanning are free on public repositories.</a></div>
+    </section>
+
+    <!-- 5 COPILOT APP -->
+    <section class="slide" data-title="GitHub Copilot App">
+      <div class="sh c-blue"><div class="n">5</div><h1>GitHub Copilot App</h1></div>
+      <div class="body g5">
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">What it is</div>
+            <p class="t">A desktop app to direct AI coding agents. Built on Copilot CLI. Runs on macOS, Linux and Windows.</p></div>
+          <div class="card c-green"><div class="lbl">Why use it</div>
+            <ul class="b">
+              <li>Use worktrees to keep parallel changes separate</li>
+              <li>Many repositories in one window</li>
+              <li>Issue, code, PR and merge in one place</li>
+              <li>Browser, terminal and diff next to the chat</li>
+            </ul></div>
+        </div>
+        <div class="card c-purple"><div class="lbl">Feature tour</div>
+          <div class="tiles">
+            <div class="tile c-blue"><div class="tt"><svg class="ic"><use href="#i-branch"/></svg>Sessions</div><div class="td">New worktree or current checkout. This computer or Cloud.</div></div>
+            <div class="tile c-purple"><div class="tt"><svg class="ic"><use href="#i-gear"/></svg>Modes</div><div class="td">Interactive, Plan and Autopilot.</div></div>
+            <div class="tile c-green"><div class="tt"><svg class="ic"><use href="#i-layers"/></svg>Projects</div><div class="td">Coordinate a goal across repositories and chats.</div></div>
+            <div class="tile c-orange"><div class="tt"><svg class="ic"><use href="#i-list"/></svg>Issues and PRs</div><div class="td">Start from an issue. Review PRs. Fix failing checks.</div></div>
+            <div class="tile c-red"><div class="tt"><svg class="ic"><use href="#i-merge"/></svg>Agent Merge</div><div class="td">Handles checks and feedback. Merges only when enabled and permitted.</div></div>
+            <div class="tile c-blue"><div class="tt"><svg class="ic"><use href="#i-win"/></svg>Panels</div><div class="td">Diff, terminal and browser.</div></div>
+            <div class="tile c-purple"><div class="tt"><svg class="ic"><use href="#i-cube"/></svg>Canvases</div><div class="td">A shared surface for you and the agent.</div></div>
+            <div class="tile c-green"><div class="tt"><svg class="ic"><use href="#i-plug"/></svg>Customize</div><div class="td">Plugins, skills, MCP servers. Connectors (preview).</div></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card cmp c-blue"><div class="lbl">Compared to VS Code and CLI</div>
+            <div class="r c-blue"><div class="w">App</div><div class="d">Parallel tasks, many repositories, PRs from create to merge</div></div>
+            <div class="r c-purple"><div class="w">VS Code</div><div class="d">Write and refine code interactively. It also has parallel sessions.</div></div>
+            <div class="r c-green"><div class="w">CLI</div><div class="d">Terminal work and repeatable commands</div></div>
+          </div>
+          <div class="card cfg c-orange"><div class="lbl">Configure with</div>
+            <div class="row" style="grid-template-columns:1fr;gap:4px"><div class="v"><code>.github/github-app.yml</code>: <code>instructions</code> <code>scripts</code> <code>server_ready_pattern</code> <code>auto_open_in_browser</code> <code>automation</code></div></div>
+            <div class="row" style="grid-template-columns:1fr;gap:4px"><div class="v"><span class="ui">Settings</span>: Sessions, Repositories, Model providers, Accounts</div></div>
+            <div class="row" style="grid-template-columns:1fr;gap:4px"><div class="v"><code>.github/skills/NAME/SKILL.md</code> — <code>managed-settings.json</code> for enterprise</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/github-copilot-app">Source: docs.github.com/copilot — Copilot app</a></div>
+    </section>
+
+    <!-- 6 COPILOT CLI -->
+    <section class="slide" data-title="GitHub Copilot CLI">
+      <div class="sh c-green"><div class="n">6</div><h1>GitHub Copilot CLI</h1></div>
+      <div class="body g6">
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">What it is</div>
+            <p class="t">An AI agent in your terminal. It reads files, runs commands and edits code.</p></div>
+          <div class="card c-green"><div class="lbl">How it is useful</div>
+            <ul class="b">
+              <li>Work without leaving the terminal</li>
+              <li>One-shot mode for scripts and CI</li>
+              <li>Plan, autopilot and fleet modes</li>
+              <li>Extend with skills, MCP servers and plugins</li>
+            </ul></div>
+          <div class="card c-purple"><div class="lbl">Install and start</div>
+            <div class="code">npm install -g @github/copilot
+copilot</div>
+            <p class="t" style="font-size:22px;margin-top:10px">Needs Node.js 22 or later.</p></div>
+        </div>
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">Commands</div>
+            <div class="chips" style="margin-bottom:10px"><code>copilot</code><code>copilot -p "PROMPT"</code><code>copilot --continue</code><code>copilot login</code><code>copilot mcp</code><code>copilot plugin</code><code>copilot skill</code><code>copilot update</code></div>
+            <div class="grpl c-green"><div class="gn">Plan and work</div><div class="chips"><code>/plan</code><code>/autopilot</code><code>/delegate</code><code>/fleet</code><code>/research</code></div></div>
+            <div class="grpl c-orange"><div class="gn">Review</div><div class="chips"><code>/review</code><code>/security-review</code><code>/pr</code><code>/diff</code></div></div>
+            <div class="grpl c-purple"><div class="gn">Customize</div><div class="chips"><code>/init</code><code>/agent</code><code>/skills</code><code>/mcp</code><code>/plugin</code><code>/model</code></div></div>
+            <div class="grpl c-blue"><div class="gn">Session</div><div class="chips"><code>/compact</code><code>/context</code><code>/resume</code><code>/share</code></div></div>
+          </div>
+          <div class="card c-orange"><div class="lbl">Attach context</div>
+            <div class="kv"><div><code>@path/to/file</code></div><div>Add file contents to the prompt</div></div>
+            <div class="kv"><div><code>--attachment PATH</code></div><div>Attach a file or image to a <code>-p</code> prompt</div></div>
+            <div class="kv"><div><code>/add-dir PATH</code></div><div>Give access to another folder</div></div>
+            <div class="kv"><div><code>Ctrl+V</code></div><div>Paste as an attachment</div></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card c-green"><div class="lbl">Use in GitHub Actions</div>
+            <div class="code" style="font-size:17px"><span class="k">on:</span> workflow_dispatch
+<span class="k">permissions:</span> { contents: read }
+<span class="k">jobs:</span>
+  <span class="k">summarize:</span>
+    <span class="k">runs-on:</span> ubuntu-latest
+    <span class="k">steps:</span>
+      - <span class="k">uses:</span> actions/checkout@v6
+        <span class="k">with:</span> { fetch-depth: 0 }
+      - <span class="k">uses:</span> actions/setup-node@v7
+        <span class="k">with:</span> { node-version: 22 }
+      - <span class="k">run:</span> npm install -g @github/copilot
+      - <span class="k">env:</span>
+          <span class="k">COPILOT_GITHUB_TOKEN:</span> <span class="s">${{ secrets.PAT }}</span>
+        <span class="k">run:</span> |
+          copilot -p "Summarize recent commits" \
+            --allow-tool='shell(git log)' \
+            --no-ask-user</div>
+            <ul class="b" style="margin-top:10px">
+              <li>Store a fine-grained PAT with <span class="ui">Copilot Requests</span> as the <code>PAT</code> Actions secret.</li>
+              <li>Alternative: <code>GITHUB_TOKEN</code> with <code>copilot-requests: write</code>, if policy permits.</li>
+            </ul>
+          </div>
+          <div class="card c-purple"><div class="lbl">Tool permissions</div>
+            <div class="chips"><code>--allow-tool</code><code>--deny-tool</code><code>--no-ask-user</code></div>
+            <p class="t" style="font-size:21px;margin-top:8px">Allow only required tools. No prompt does not mean permission.</p></div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/automate-copilot-cli/automate-with-actions">Source: docs.github.com/copilot — Copilot CLI</a></div>
+    </section>
+
+    <!-- 7 SPEC KIT -->
+    <section class="slide" data-title="Spec-Driven Development">
+      <div class="sh c-purple"><div class="n">7</div><h1>Spec-Driven Development</h1></div>
+      <div class="body g7">
+        <div class="card c-purple" style="grid-column:1/-1">
+          <div class="flow">
+            <div class="node c-blue"><div class="nt">constitution</div><div class="ns">once</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-purple"><div class="nt">specify</div><div class="ns">what, why</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-yellow opt"><div class="nt">clarify</div><div class="ns">optional</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-green"><div class="nt">plan</div><div class="ns">how</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-yellow opt"><div class="nt">checklist</div><div class="ns">optional</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-orange"><div class="nt">tasks</div><div class="ns">task list</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-yellow opt"><div class="nt">analyze</div><div class="ns">optional</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-red"><div class="nt">implement</div><div class="ns">build</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-blue"><div class="nt">converge</div><div class="ns">repeat</div></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card c-blue"><div class="lbl">What it is and why</div>
+            <ul class="b">
+              <li>Spec Kit: an open-source toolkit from GitHub</li>
+              <li>The spec records the agreed requirements.</li>
+              <li>Resolve known gaps before coding</li>
+              <li>Plan and tasks stay in line with the spec</li>
+            </ul></div>
+          <div class="card c-green"><div class="lbl">Install</div>
+            <div class="code">uv tool install specify-cli
+specify init my-project --integration copilot
+cd my-project</div>
+            <p class="t muted" style="font-size:21px;margin-top:10px">Needs Python 3.11+ and uv. Copilot syntax: <code>/speckit-*</code></p></div>
+        </div>
+        <div class="card cmdt c-orange"><div class="lbl">Commands and when to use them</div>
+          <div class="row"><div class="k"><code>/speckit-constitution</code></div><div class="v">Once, at project start. Set the project principles.</div></div>
+          <div class="row"><div class="k"><code>/speckit-specify</code></div><div class="v">Describe what and why. No tech stack. Creates the spec.</div></div>
+          <div class="row"><div class="k"><code>/speckit-clarify</code></div><div class="v">The spec has gaps. Up to 5 questions. Run before plan.</div></div>
+          <div class="row"><div class="k"><code>/speckit-plan</code></div><div class="v">Choose the tech stack and architecture.</div></div>
+          <div class="row"><div class="k"><code>/speckit-checklist</code></div><div class="v">Check the quality of the requirements.</div></div>
+          <div class="row"><div class="k"><code>/speckit-tasks</code></div><div class="v">Make an ordered task list: <code>tasks.md</code></div></div>
+          <div class="row"><div class="k"><code>/speckit-analyze</code></div><div class="v">Read-only check of spec, plan and tasks. Before implement.</div></div>
+          <div class="row"><div class="k"><code>/speckit-implement</code></div><div class="v">Run the tasks and build the feature.</div></div>
+          <div class="row"><div class="k"><code>/speckit-converge</code></div><div class="v">After implement. Adds missing tasks. Repeat until Converged.</div></div>
+        </div>
+      </div>
+      <div class="foot"><a href="https://github.github.io/spec-kit/">Source: Spec Kit · Core flow: Specify → Plan → Tasks → Implement → Converge. Command syntax depends on the integration.</a></div>
+    </section>
+
+    <!-- 8 AUTOMATIONS, AGENTIC WORKFLOWS, STACKED PRS -->
+    <section class="slide" data-title="Automations, Agentic Workflows, Stacked PRs">
+      <div class="sh c-orange"><div class="n">8</div><h1>Automations, Agentic Workflows, Stacked PRs</h1></div>
+      <div class="body g8">
+
+        <div class="card col2 c-blue">
+          <div class="hd"><svg class="ic"><use href="#i-clock"/></svg>Copilot app Automations</div>
+          <div class="diag"><div class="flow">
+            <div class="node c-blue"><div class="nt">Trigger</div><div class="ns">Schedule or event</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-purple"><div class="nt">Session</div><div class="ns">Runs your prompt</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-green"><div class="nt">Result</div><div class="ns">You review</div></div>
+          </div></div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">Saved agent tasks. They run on a schedule, on a GitHub event or on demand.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div>
+            <ul class="b"><li>Daily issue triage and PR checks</li><li>Local: runs on your computer</li><li>Cloud: runs even when your computer is off</li></ul></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li><span class="ui">Automations → Create automation</span></li>
+              <li>Trigger, type, tools, prompt, model, repo</li>
+              <li>Cloud triggers: schedule, issue created, PR opened, PR synchronized</li>
+              <li>Do not put secrets in prompts or logs</li></ul></div>
+        </div>
+
+        <div class="card col2 c-purple">
+          <div class="hd"><svg class="ic"><use href="#i-bolt"/></svg>Agentic workflows</div>
+          <div class="diag"><div class="flow">
+            <div class="node c-purple"><div class="nt">NAME.md</div><div class="ns">You write</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-orange"><div class="nt">compile</div><div class="ns">gh aw</div></div><div class="arr"><svg class="ic"><use href="#i-arrow"/></svg></div>
+            <div class="node c-green"><div class="nt">Actions</div><div class="ns">Runs it</div></div>
+          </div></div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">AI automation written in Markdown. It compiles to GitHub Actions YAML.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div>
+            <ul class="b"><li>Issue triage, CI failure checks, docs updates</li><li>Read-only by default. Configure GitHub writes with <code>safe-outputs</code></li><li>Review the generated changes</li></ul></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li><code>.github/workflows/NAME.md</code> and <code>NAME.lock.yml</code></li>
+              <li>Frontmatter: <code>on</code> <code>permissions</code> <code>engine</code> <code>network</code> <code>tools</code> <code>safe-outputs</code></li>
+              <li><code>gh extension install github/gh-aw</code></li>
+              <li><code>gh aw init</code> <code>new</code> <code>compile</code> <code>run</code></li></ul></div>
+        </div>
+
+        <div class="card col2 c-green">
+          <div class="hd"><svg class="ic"><use href="#i-layers"/></svg>Stacked PRs</div>
+          <div class="diag"><div class="stk c-purple">
+            <div class="sb" style="margin-left:48px;margin-top:0">PR 3<span>→ PR 2</span></div>
+            <div class="sb c-blue" style="margin-left:24px">PR 2<span>→ PR 1</span></div>
+            <div class="sb c-green">PR 1<span>→ main</span></div>
+          </div></div>
+          <div class="sec"><div class="lbl">What it is</div><p class="t">A chain of small PRs. Each PR targets the branch below it.</p></div>
+          <div class="sec"><div class="lbl">How it is useful</div>
+            <ul class="b"><li>Each PR shows only its own diff</li><li>Merge from the bottom up</li><li>The next PR retargets after a merge</li></ul></div>
+          <div class="sec"><div class="lbl">Configure with</div>
+            <ul class="b"><li><code>gh extension install github/gh-stack</code></li>
+              <li><code>gh stack init</code> <code>add</code> <code>push</code> <code>submit</code> <code>sync</code></li>
+              <li><span class="ui">Rebase stack</span> in the PR UI</li>
+              <li>Copilot app: <code>/pr-stack</code> skill</li></ul></div>
+        </div>
+      </div>
+      <div class="foot"><span>Sources: <a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/using-automations">Automations</a> · <a href="https://github.github.com/gh-aw/">Agentic Workflows</a> · <a href="https://docs.github.com/en/pull-requests/how-tos/stacked-pull-requests">Stacked PRs</a></span></div>
+    </section>
+
+  </div>
+</div>
+
+<div class="nav" role="navigation" aria-label="Slide navigation">
+  <button id="prev" title="Previous (←)" aria-label="Previous slide">&#8249;</button>
+  <span class="count" id="count">1 / 9</span>
+  <button id="next" title="Next (→)" aria-label="Next slide">&#8250;</button>
+  <button id="theme" title="Theme (T)" aria-label="Toggle theme">&#9680;</button>
+  <button id="fs" title="Full screen (F)" aria-label="Full screen">&#9974;</button>
+</div>
+<div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+<noscript><p style="position:fixed;bottom:12px;left:12px;background:var(--panel);padding:8px">Enable JavaScript to use slide navigation.</p></noscript>
+
+<script>
+(function () {
+  document.documentElement.classList.add('js');
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var count = document.getElementById('count');
+  var progress = document.getElementById('progress');
+  var cur = 0;
+  var announcement = document.getElementById('announcement');
+  slides.forEach(function (slide, i) {
+    slide.setAttribute('role', 'region');
+    slide.setAttribute('aria-label', 'Slide ' + (i + 1) + ': ' + slide.dataset.title);
+  });
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.width = (window.innerWidth / s) + 'px';
+    stage.style.height = (window.innerHeight / s) + 'px';
+    stage.style.transform = 'scale(' + s + ')';
+  }
+
+  function show(i, keepHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) {
+      el.classList.toggle('active', k === cur);
+      el.setAttribute('aria-hidden', String(k !== cur));
+      el.inert = k !== cur;
+    });
+    count.textContent = (cur + 1) + ' / ' + slides.length;
+    progress.style.transform = 'scaleX(' + ((cur + 1) / slides.length) + ')';
+    document.title = 'Merative | GitHub Copilot — ' + slides[cur].getAttribute('data-title');
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+    if (!keepHash) { history.replaceState(null, '', '#slide-' + (cur + 1)); }
+    announcement.textContent = 'Slide ' + (cur + 1) + ': ' + slides[cur].dataset.title;
+  }
+
+  function fromHash() {
+    var m = /^#slide-(\d+)$/.exec(location.hash);
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('ghcp-theme', t); }
+    catch (e) { console.warn('Theme cannot be saved in this browser.', e); }
+  }
+
+  async function toggleFs() {
+    try {
+      if (document.fullscreenElement) { await document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); }
+      else { announcement.textContent = 'Full screen is not available in this browser.'; }
+    } catch (e) {
+      console.warn('Full screen could not start.', e);
+      announcement.textContent = 'Full screen could not start. Use your browser full-screen command.';
+    }
+  }
+
+  document.getElementById('prev').onclick = function () { show(cur - 1); };
+  document.getElementById('next').onclick = function () { show(cur + 1); };
+  document.getElementById('theme').onclick = function () {
+    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  };
+  document.getElementById('fs').onclick = toggleFs;
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    if (e.target.closest('button, a, input, textarea, select, [contenteditable]')) { return; }
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Enter': e.preventDefault(); show(cur + 1); break;
+      case 'ArrowLeft': case 'PageUp': case 'Backspace': e.preventDefault(); show(cur - 1); break;
+      case 'Home': show(0); break;
+      case 'End': show(slides.length - 1); break;
+      case 'f': case 'F': toggleFs(); break;
+      case 't': case 'T': document.getElementById('theme').click(); break;
+    }
+  });
+  window.addEventListener('hashchange', function () { show(fromHash(), true); });
+  window.addEventListener('resize', fit);
+
+  try {
+    var t = localStorage.getItem('ghcp-theme');
+    if (t === 'dark' || t === 'light') { document.documentElement.setAttribute('data-theme', t); }
+  } catch (e) { console.warn('Saved theme is not available in this browser.', e); }
+  if (/theme=light/.test(location.search)) { setTheme('light'); }
+  fit();
+  show(fromHash(), true);
+})();
+</script>
+</body>
+</html>
