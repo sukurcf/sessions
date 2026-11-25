@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="GitHub Universe 2026 recap and the Awesome Copilot library. Each topic explains what it is, why it helps, how to set it up, and which file to change.">
+<title>Universe 2026 recap and Awesome Copilot | 30 November 2026</title>
+<!--
+THESIS: Give every Universe 2026 announcement its own slide, then show one overview of the Awesome Copilot library.
+STYLE: GitHub dark and light colors, system type, small bottom-right navigation. Same stage logic as the previous Copilot decks.
+FORM: Each slide fits the viewport without scrolling. The stage adapts between 20:13 (MacBook display) and 16:9.
+Sources checked on 19 November 2026. Product behavior can change. Each slide names its source.
+-->
+<style>
+  :root {
+    --bg:#0d1117; --panel:#151b23; --raised:#212830; --code:#010409;
+    --fg:#f0f6fc; --muted:#b1bac4; --line:#3d444d;
+    --blue:#79c0ff; --green:#7ee787; --purple:#d2a8ff; --orange:#ffa657; --red:#ff7b72; --yellow:#e3b341;
+    --blue-soft:#152b44; --green-soft:#152e22; --purple-soft:#2a203e; --orange-soft:#352719; --red-soft:#3b1d20;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --deck-scale:1; --deck-offset-x:0px; --deck-offset-y:0px;
+  }
+  [data-theme="light"] {
+    --bg:#fff; --panel:#f6f8fa; --raised:#eaeef2; --code:#f6f8fa;
+    --fg:#1f2328; --muted:#59636e; --line:#d1d9e0;
+    --blue:#0550ae; --green:#116329; --purple:#6639ba; --orange:#953800; --red:#a40e26; --yellow:#7d4e00;
+    --blue-soft:#ddf4ff; --green-soft:#dafbe1; --purple-soft:#fbefff; --orange-soft:#fff1e5; --red-soft:#ffebe9;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
+  body { font-family:var(--sans); }
+  button,select { font:inherit; }
+  button,a,select { -webkit-tap-highlight-color:transparent; }
+  button,a,select,[tabindex] { outline-offset:4px; }
+  :focus-visible { outline:3px solid var(--blue); }
+  button { cursor:pointer; }
+  a { color:var(--blue); text-underline-offset:4px; }
+  a:hover { text-decoration-thickness:2px; }
+  h1,h2,h3,p,pre,figure,dl,dd,ol,ul { margin:0; }
+  h1 { font-size:52px; letter-spacing:-1.1px; line-height:1.12; font-weight:700; }
+  h2 { font-size:30px; letter-spacing:-.3px; line-height:1.2; }
+  h3 { font-size:25px; line-height:1.25; }
+  p,li,dd { font-size:23px; line-height:1.4; }
+  strong { font-weight:650; }
+  .small { font-size:21px; line-height:1.4; }
+  .tiny { font-size:19px; line-height:1.38; }
+  .muted { color:var(--muted); }
+  .blue { color:var(--blue); } .green { color:var(--green); } .purple { color:var(--purple); } .orange { color:var(--orange); } .red { color:var(--red); }
+  code,kbd { font-family:var(--mono); font-size:.88em; }
+  p code,li code,dd code,td code,h3 code,.inline-code { color:var(--blue); background:var(--raised); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere; }
+  pre { font-family:var(--mono); font-size:20px; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:2; color:var(--fg); }
+  pre code { font-size:1em; }
+  .k { color:var(--blue); } .s { color:var(--green); } .c { color:var(--muted); } .v { color:var(--purple); } pre .o, code .o { color:var(--orange); }
+  .codebox { padding:12px 16px; background:var(--code); border:1px solid var(--line); border-radius:8px; min-width:0; }
+  .file { display:block; font-family:var(--mono); color:var(--orange); font-size:19px; line-height:1.4; margin-bottom:8px; overflow-wrap:anywhere; }
+  .file::before { content:""; display:inline-block; width:10px; height:13px; border:1.5px solid currentColor; margin-right:10px; vertical-align:-1px; border-radius:1px; }
+  .badge { display:inline-block; color:var(--muted); border:1px solid var(--line); border-radius:5px; font-size:17px; font-weight:600; padding:2px 8px; vertical-align:4px; white-space:nowrap; font-family:var(--sans); letter-spacing:0; }
+  .badge.warn { color:var(--orange); background:var(--orange-soft); border-color:var(--orange); }
+  .panel { padding:14px 20px; border:1px solid var(--line); background:var(--panel); border-radius:10px; min-width:0; min-height:0; }
+  .note { padding:9px 14px; background:var(--blue-soft); border:1px solid var(--line); border-radius:7px; font-size:20px; line-height:1.38; }
+  .note.warn { background:var(--orange-soft); }
+  .note strong { color:var(--blue); }
+  .note.warn strong { color:var(--orange); }
+  .rule { border-top:1px solid var(--line); padding-top:11px; }
+  .stack { display:flex; flex-direction:column; gap:12px; min-width:0; min-height:0; }
+  .grid { display:grid; gap:24px; min-width:0; min-height:0; }
+  .grow { flex:1; min-height:0; }
+  .spread { justify-content:space-between; }
+  .ico { width:27px; height:27px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* Stage and chrome */
+  #stage { position:absolute; width:1800px; height:1170px; transform-origin:0 0; background:var(--bg); display:flex; flex-direction:column; }
+  .topbar { height:54px; flex:none; display:flex; align-items:center; gap:13px; padding:0 42px; border-bottom:1px solid var(--line); font-size:21px; }
+  .topbar .brand { display:flex; align-items:center; gap:11px; font-weight:650; }
+  .topbar .legend { margin-left:auto; display:flex; gap:20px; color:var(--muted); font-size:18px; }
+  .topbar time { margin-left:8px; font-size:19px; color:var(--muted); white-space:nowrap; }
+  .progress { position:absolute; top:53px; left:0; width:100%; height:3px; background:var(--blue); transform:scaleX(.05); transform-origin:left; transition:transform .2s ease-out; }
+  main { flex:1; position:relative; min-height:0; }
+  .slide { position:absolute; inset:0; display:none; padding:22px 42px 0; flex-direction:column; }
+  .slide.active { display:flex; }
+  .slide-head { display:flex; align-items:flex-start; gap:22px; margin-bottom:16px; flex:none; }
+  .slide-index { color:var(--muted); font-family:var(--mono); font-size:24px; padding-top:11px; border-top:3px solid var(--blue); width:44px; flex:none; text-align:center; }
+  .lead { font-size:25px; color:var(--muted); line-height:1.38; margin-top:7px; }
+  .content { flex:1; min-height:0; display:flex; flex-direction:column; gap:14px; padding-bottom:14px; }
+  .sources { flex:none; height:48px; border-top:1px solid var(--line); display:flex; align-items:center; gap:21px; padding-right:420px; font-size:18px; color:var(--muted); white-space:nowrap; overflow:hidden; }
+  .sources a { color:var(--muted); text-decoration:none; }
+  .sources a:hover { color:var(--blue); text-decoration:underline; }
+
+  /* Surface legend and chips */
+  .sf { display:inline-flex; align-items:center; gap:8px; font-size:19px; color:var(--fg); white-space:nowrap; }
+  .sf::before { content:""; width:11px; height:11px; border-radius:50%; background:var(--blue); flex:none; }
+  .sf.app::before { background:var(--purple); } .sf.cli::before { background:var(--green); } .sf.vsc::before { background:var(--orange); } .sf.sec::before { background:var(--red); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px 10px; }
+  .chips .sf { border:1px solid var(--line); border-radius:999px; padding:3px 13px 3px 10px; background:var(--panel); }
+
+  /* Section labels: WHAT / WHY / HOW / FILE */
+  .lab { display:inline-flex; align-items:center; font:700 16px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:5px; border:1px solid currentColor; margin-bottom:8px; }
+  .lab.what { color:var(--blue); background:var(--blue-soft); } .lab.why { color:var(--green); background:var(--green-soft); }
+  .lab.how { color:var(--purple); background:var(--purple-soft); } .lab.file { color:var(--orange); background:var(--orange-soft); }
+  .lab.warn { color:var(--red); background:var(--red-soft); }
+
+  /* Feature slide layout */
+  .feat { flex:1; min-height:0; display:grid; grid-template-columns:.94fr 1.06fr; gap:32px; }
+  .feat > section { display:flex; flex-direction:column; gap:12px; min-width:0; min-height:0; }
+  .feat.wide-left { grid-template-columns:1.06fr .94fr; }
+  .feat.even { grid-template-columns:1fr 1fr; }
+  .fig { border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:8px 10px; min-width:0; }
+  .fig svg { width:100%; height:auto; display:block; }
+  .benefits { list-style:none; padding:0; display:grid; gap:7px; }
+  .benefits li { position:relative; padding-left:34px; font-size:22px; line-height:1.36; }
+  .benefits li::before { content:"✓"; position:absolute; left:0; top:0; color:var(--green); font-weight:700; }
+  .steps { list-style:none; padding:0; counter-reset:step; display:grid; gap:7px; }
+  .steps li { counter-increment:step; position:relative; padding-left:44px; font-size:22px; line-height:1.36; min-height:30px; }
+  .steps li::before { content:counter(step); position:absolute; left:0; top:2px; width:28px; height:28px; border-radius:50%; background:var(--purple-soft); color:var(--purple); border:1px solid var(--purple); display:grid; place-items:center; font:700 17px var(--mono); }
+  .fields { display:grid; grid-template-columns:max-content 1fr; gap:5px 16px; }
+  .fields dt { font:20px/1.4 var(--mono); color:var(--blue); }
+  .fields dd { font-size:21px; line-height:1.36; color:var(--muted); }
+  .fields dd b { color:var(--fg); font-weight:600; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:18px; min-width:0; }
+  .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; min-width:0; }
+
+  /* Infographic text */
+  svg .t { font:600 20px var(--sans); fill:var(--fg); }
+  svg .tb { font:700 22px var(--sans); fill:var(--fg); }
+  svg .m { font:18px var(--sans); fill:var(--muted); }
+  svg .mono { font:600 18px var(--mono); fill:var(--blue); }
+  svg .box { fill:var(--raised); stroke:var(--line); stroke-width:1.5; }
+  svg .boxb { fill:var(--blue-soft); stroke:var(--blue); stroke-width:1.5; }
+  svg .boxg { fill:var(--green-soft); stroke:var(--green); stroke-width:1.5; }
+  svg .boxp { fill:var(--purple-soft); stroke:var(--purple); stroke-width:1.5; }
+  svg .boxo { fill:var(--orange-soft); stroke:var(--orange); stroke-width:1.5; }
+  svg .boxr { fill:var(--red-soft); stroke:var(--red); stroke-width:1.5; }
+  svg .wire { fill:none; stroke:var(--muted); stroke-width:2; }
+  svg .wireb { fill:none; stroke:var(--blue); stroke-width:2.5; }
+  svg .wireg { fill:none; stroke:var(--green); stroke-width:2.5; }
+  svg .wirer { fill:none; stroke:var(--red); stroke-width:2.5; stroke-dasharray:6 5; }
+  svg .fb { fill:var(--blue); } svg .fg { fill:var(--green); } svg .fp { fill:var(--purple); } svg .fo { fill:var(--orange); } svg .fr { fill:var(--red); } svg .fm { fill:var(--muted); }
+  svg .tb2 { fill:var(--blue); } svg .tg { fill:var(--green); } svg .tp { fill:var(--purple); } svg .to { fill:var(--orange); } svg .tr { fill:var(--red); }
+  svg .ctr { text-anchor:middle; }
+
+  /* Navigation */
+  .navigation { position:fixed; right:calc(var(--deck-offset-x) + 16px * var(--deck-scale)); bottom:calc(var(--deck-offset-y) + 4px * var(--deck-scale)); transform:scale(var(--deck-scale)); transform-origin:bottom right; display:flex; align-items:center; gap:4px; z-index:20; background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:3px; color:var(--fg); font-size:16px; }
+  .navigation button { width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:4px; background:none; color:inherit; padding:3px; }
+  .navigation button:hover { background:var(--raised); }
+  .navigation button:disabled { opacity:.35; cursor:default; }
+  .navigation .ico { width:20px; height:20px; }
+  .navigation select { width:188px; border:0; border-radius:4px; padding:4px 2px; background:var(--panel); color:var(--fg); font-size:16px; cursor:pointer; }
+  .navigation .count { font-variant-numeric:tabular-nums; min-width:54px; text-align:center; color:var(--muted); }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  #notice { position:fixed; bottom:52px; right:12px; max-width:330px; padding:8px 12px; color:var(--fg); background:var(--panel); border:1px solid var(--line); border-radius:6px; font-size:14px; z-index:21; }
+  #notice:empty { display:none; }
+  .orientation-hint { display:none; }
+  @media (max-width:600px) and (orientation:portrait) {
+    .orientation-hint { display:block; position:fixed; left:0; right:0; bottom:60px; text-align:center; color:var(--muted); font-size:12px; }
+    .navigation { right:6px; bottom:8px; transform:none; font-size:12px; }
+    .navigation select { width:141px; font-size:12px; }
+    .navigation .count { min-width:40px; }
+  }
+  @media (pointer:coarse) {
+    .navigation button { width:38px; height:38px; }
+    .navigation select { height:38px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *,*::before,*::after { transition:none !important; animation:none !important; }
+  }
+  @media print {
+    @page { size:20in 11.25in; margin:0; }
+    html,body { width:auto; height:auto; overflow:visible; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    #stage { position:static; width:1920px !important; height:auto !important; transform:none !important; }
+    .topbar,.progress,.navigation,.orientation-hint,#notice,.sr-only { display:none; }
+    main { position:static; }
+    .slide,.slide.active { position:relative; display:flex !important; width:1920px; height:1080px; padding-top:35px; break-after:page; }
+    .slide:last-child { break-after:auto; }
+    .sources { padding-right:0; }
+  }
+  /* Agenda */
+  .agenda { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .ag { --accent:var(--blue); display:flex; flex-direction:column; gap:12px; padding:22px 20px 16px; background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 6px 0 var(--accent); border-radius:10px; min-width:0; }
+  .ag.p { --accent:var(--purple); } .ag.r { --accent:var(--red); } .ag.o { --accent:var(--orange); }
+  .ag h2 { font-size:34px; }
+  .ag h2 small { display:block; font-size:21px; font-weight:400; color:var(--muted); margin-top:3px; }
+  .ag ol { list-style:none; padding:0; display:grid; gap:14px; }
+  .ag li { display:grid; grid-template-columns:48px 1fr; align-items:baseline; font-size:27px; line-height:1.25; font-weight:600; }
+  .ag li b { font:600 19px var(--mono); color:var(--muted); }
+  .ag li span { display:block; font-size:21px; color:var(--muted); font-weight:400; margin-top:2px; }
+  .ag-foot { margin-top:auto; display:flex; align-items:baseline; gap:14px; padding-top:12px; border-top:1px solid var(--line); }
+  .ag-foot b { font-size:64px; line-height:1; letter-spacing:-2px; color:var(--accent); }
+  .ag-foot span { font-size:22px; color:var(--muted); line-height:1.3; }
+  .fourq { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; flex:none; }
+  .fourq > div { padding:12px 16px; background:var(--panel); border:1px solid var(--line); border-radius:10px; min-width:0; }
+  .fourq .lab { margin-bottom:6px; }
+  .fourq p { font-size:21px; line-height:1.35; }
+
+  /* Overview matrix */
+  .mx { width:100%; border-collapse:collapse; font-size:25px; }
+  .mx th { text-align:left; font:600 18px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); padding:8px 14px; border-bottom:2px solid var(--line); }
+  .mx th.c,.mx td.c { text-align:center; width:130px; }
+  .mx td { padding:10px 14px; border-bottom:1px solid var(--line); line-height:1.25; }
+  .mx td.n { font-weight:600; white-space:nowrap; width:34%; }
+  .mx td.n b { font:600 19px var(--mono); color:var(--muted); margin-right:12px; }
+  .mx td.f { font:21px var(--mono); color:var(--orange); }
+  .mx tr.platform td:first-child { box-shadow:inset 6px 0 var(--blue); }
+  .mx tr.copilot td:first-child { box-shadow:inset 6px 0 var(--purple); }
+  .mx tr.security td:first-child { box-shadow:inset 6px 0 var(--red); }
+  .dot { display:inline-block; width:21px; height:21px; border-radius:50%; background:var(--blue); vertical-align:middle; }
+  .dot.app { background:var(--purple); } .dot.cli { background:var(--green); } .dot.vsc { background:var(--orange); }
+  .key-row { display:flex; gap:26px; align-items:center; flex-wrap:wrap; color:var(--muted); font-size:20px; flex:none; }
+
+  /* Numbers */
+  .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; flex:none; }
+  .stat { --accent:var(--blue); padding:19px 18px 16px; background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 5px 0 var(--accent); border-radius:10px; min-width:0; }
+  .stat.g { --accent:var(--green); } .stat.p { --accent:var(--purple); } .stat.o { --accent:var(--orange); } .stat.r { --accent:var(--red); }
+  .stat b { display:block; font-size:76px; letter-spacing:-2px; line-height:1.08; font-weight:700; }
+  .stat span { display:block; font-size:25px; color:var(--muted); margin-top:4px; line-height:1.3; }
+  .link-list { list-style:none; padding:0; display:grid; gap:14px; flex:1; grid-template-rows:repeat(3,1fr); }
+  .link-list li { display:grid; grid-template-columns:1fr 40px 1.25fr; gap:12px; align-items:center; font-size:26px; line-height:1.3; padding:10px 16px; background:var(--raised); border-radius:8px; }
+  .link-list li i { font-style:normal; color:var(--blue); font-size:32px; text-align:center; }
+  /* Feature helpers */
+  .lr { display:flex; align-items:flex-start; gap:12px; }
+  .lr .badge { margin-top:1px; vertical-align:initial; }
+  .file.cmd::before { content:"$"; width:auto; height:auto; border:0; margin-right:10px; vertical-align:baseline; }
+  .cards { display:grid; grid-template-columns:repeat(var(--n,2),1fr); gap:12px; min-width:0; }
+  .card { --accent:var(--blue); padding:10px 14px 10px 20px; background:var(--panel); border:1px solid var(--line); box-shadow:inset 6px 0 var(--accent); border-radius:8px; min-width:0; }
+  .card.g { --accent:var(--green); } .card.p { --accent:var(--purple); } .card.o { --accent:var(--orange); } .card.r { --accent:var(--red); }
+  .card h3 { font-size:24px; }
+  .card p { font-size:20px; line-height:1.3; color:var(--muted); margin-top:2px; }
+  .card code { font-size:.9em; }
+  /* Larger type on feature slides */
+  .feat p, .feat li, .feat dd { font-size:26px; line-height:1.34; }
+  .feat .small { font-size:24px; }
+  .feat .benefits li, .feat .steps li { padding-left:42px; }
+  .feat .benefits { gap:9px; } .feat .steps { gap:9px; }
+  .feat .steps li::before { width:32px; height:32px; font-size:19px; top:3px; }
+  .feat .lab { font-size:18px; padding:6px 11px; margin-bottom:10px; }
+  .feat .badge { font-size:19px; padding:3px 10px; }
+  .feat .sf { font-size:22px; }
+  .feat pre { font-size:23px; }
+  .feat .file { font-size:21px; margin-bottom:10px; }
+  .feat .fields { gap:7px 18px; }
+  .feat .fields dt { font-size:23px; } .feat .fields dd { font-size:24px; }
+  .feat .note { font-size:23px; padding:11px 16px; }
+  .feat .card h3 { font-size:28px; } .feat .card p { font-size:23px; }
+  .feat .codebox { padding:14px 18px; }
+  .sf.jb::before { background:var(--yellow); }
+  svg .code { font:600 18px var(--mono); fill:var(--fg); }
+  svg .codem { font:18px var(--mono); fill:var(--muted); }
+  svg .big { font:700 44px var(--sans); }
+  .try { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:1fr 1fr auto; gap:18px; height:100%; min-height:0; }
+  .try .card { padding:26px 30px 22px 36px; display:flex; flex-direction:column; justify-content:flex-start; gap:12px; }
+  .try .card .n { font:700 24px var(--mono); color:var(--accent); }
+  .try .card .chips { margin-top:auto; }
+  .try .card .sf { font-size:24px; }
+  .try .card h3 { font-size:44px; line-height:1.15; }
+  .try .card p { font-size:32px; line-height:1.3; margin:0; color:var(--fg); }
+  .try .links { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:10px 36px; font-size:26px; align-items:center; }
+  .try .links code { font-size:.9em; }
+  .try.four { grid-template-columns:repeat(4,1fr); }
+  .try.four .card { padding:22px 24px 18px 30px; gap:10px; }
+  .try.four .card h3 { font-size:40px; }
+  .try.four .card p { font-size:30px; }
+  .try.four .card .sf { font-size:22px; }
+
+  /* Motion: build-in when a slide opens, looped flow in the figures */
+  @keyframes kUp { from { opacity:0; transform:translateY(18px); } }
+  @keyframes kFade { from { opacity:0; } }
+  @keyframes kPop { from { opacity:0; transform:scale(.5); } 70% { opacity:1; transform:scale(1.05); } }
+  @keyframes kLeft { from { opacity:0; transform:translateX(-32px); } }
+  @keyframes kDrop { from { opacity:0; transform:translateY(-48px); } 75% { opacity:1; transform:translateY(4px); } }
+  @keyframes kGrowX { from { opacity:0; transform:scaleX(0); } }
+  @keyframes kGrowY { from { opacity:0; transform:scaleY(0); } }
+  @keyframes kDraw { from { stroke-dashoffset:1; opacity:0; } 15% { opacity:1; } }
+  .slide.active .slide-head { animation:kFade .45s ease-out both; }
+  .slide.active .slide-index { animation:kLeft .5s ease-out both; }
+  .slide.active .feat > section > * { animation:kUp .55s cubic-bezier(.2,.7,.2,1) both; }
+  .slide.active .feat > section:first-child > :nth-child(2) { animation-delay:.1s; }
+  .slide.active .feat > section:first-child > :nth-child(3) { animation-delay:.2s; }
+  .slide.active .feat > section:first-child > :nth-child(4) { animation-delay:.3s; }
+  .slide.active .feat > section:first-child > :nth-child(5) { animation-delay:.4s; }
+  .slide.active .feat > section:last-child > :nth-child(1) { animation-name:kFade; animation-delay:.05s; }
+  .slide.active .feat > section:last-child > :nth-child(2) { animation-delay:.55s; }
+  .slide.active .feat > section:last-child > :nth-child(3) { animation-delay:.7s; }
+  .slide.active .feat > section:last-child > :nth-child(4) { animation-delay:.85s; }
+  .slide.active .feat > section:last-child > :nth-child(5) { animation-delay:1s; }
+  .slide.active .a { animation:kUp .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:var(--d,0s); }
+  .slide.active .a.fade { animation-name:kFade; }
+  .slide.active .a.pop { animation-name:kPop; animation-duration:.5s; }
+  .slide.active .a.left { animation-name:kLeft; }
+  .slide.active .a.drop { animation-name:kDrop; animation-duration:.65s; }
+  .slide.active .a.growx { animation-name:kGrowX; animation-duration:.8s; }
+  .slide.active .a.growy { animation-name:kGrowY; animation-duration:.7s; }
+  .slide.active .a.draw { animation-name:kDraw; animation-duration:.7s; animation-timing-function:ease-out; }
+  svg .a { transform-box:fill-box; transform-origin:center; }
+  svg .a.growx { transform-origin:left center; }
+  svg .a.growy { transform-origin:center bottom; }
+  svg .draw { stroke-dasharray:1; }
+  /* Build-in order for the agenda, the matrix, and the closing cards */
+  .stg > :first-child { --i:0; } .stg > :nth-child(2) { --i:1; } .stg > :nth-child(3) { --i:2; } .stg > :nth-child(4) { --i:3; } .stg > :nth-child(5) { --i:4; }
+  .stg > :nth-child(6) { --i:5; } .stg > :nth-child(7) { --i:6; } .stg > :nth-child(8) { --i:7; } .stg > :nth-child(9) { --i:8; }
+  .stg > :nth-child(10) { --i:9; } .stg > :nth-child(11) { --i:10; } .stg > :nth-child(12) { --i:11; } .stg > :nth-child(13) { --i:12; }
+  .slide.active .agenda > .ag { --o:calc(var(--i,0) * .12s); animation:kUp .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:var(--o); }
+  .slide.active .ag li { animation:kLeft .5s ease-out both; animation-delay:calc(var(--o,0s) + .3s + var(--i,0) * .08s); }
+  .slide.active .ag-foot { animation:kFade .6s ease-out both; animation-delay:calc(var(--o,0s) + .7s); }
+  .slide.active .fourq > div { animation:kUp .5s ease-out both; animation-delay:calc(1s + var(--i,0) * .1s); }
+  .slide.active .mx thead { animation:kFade .4s ease-out both; }
+  .slide.active .mx tbody tr { animation:kLeft .45s ease-out both; animation-delay:calc(.15s + var(--i,0) * .06s); }
+  .slide.active .mx .dot { animation:kPop .4s ease-out both; animation-delay:calc(.5s + var(--i,0) * .06s); }
+  .slide.active .key-row { animation:kFade .5s ease-out both; animation-delay:1.3s; }
+  .slide.active .try > .card { animation:kUp .55s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(var(--i,0) * .1s); }
+  .slide.active .try > .links { animation:kFade .5s ease-out both; animation-delay:.9s; }
+  /* Looped flow: packets, flashes, and scan marks. JS adds packets and flashes. */
+  svg .pk circle:last-of-type { stroke:var(--bg); stroke-width:2; }
+  svg .pk .halo { fill-opacity:.3; }
+  svg .guide { fill:none; stroke:none; }
+  svg .flash { fill:var(--fg); fill-opacity:.12; stroke:var(--fg); stroke-width:3; pointer-events:none; }
+  svg .flash.b { fill:var(--blue); fill-opacity:.2; stroke:var(--blue); }
+  svg .flash.g { fill:var(--green); fill-opacity:.2; stroke:var(--green); }
+  svg .flash.p { fill:var(--purple); fill-opacity:.2; stroke:var(--purple); }
+  svg .flash.o { fill:var(--orange); fill-opacity:.2; stroke:var(--orange); }
+  svg .flash.r { fill:var(--red); fill-opacity:.2; stroke:var(--red); }
+  svg .ring { fill:none; stroke:var(--fg); stroke-width:3; pointer-events:none; }
+  svg .ring.b { stroke:var(--blue); } svg .ring.g { stroke:var(--green); } svg .ring.p { stroke:var(--purple); } svg .ring.o { stroke:var(--orange); } svg .ring.r { stroke:var(--red); }
+  svg .scanline { fill:var(--blue); }
+  .codebox .row { display:block; border-radius:4px; }
+  .slide.active .codebox .row[style] { animation:kRow 6s linear var(--t) infinite; }
+  @keyframes kRow { 0%,10% { background:color-mix(in srgb, var(--c) 28%, transparent); } 14%,100% { background:transparent; } }
+  @media (prefers-reduced-motion:reduce) { .fx { display:none !important; } }
+  @media print { *,*::before,*::after { animation:none !important; } .fx { display:none !important; } [data-show] { opacity:1 !important; } }
+  /*SLIDE-CSS*/
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-copilot" viewBox="0 0 24 24"><path d="M4 13v6c4 3 12 3 16 0v-6M2 14v4M22 14v4"/><rect x="3" y="4" width="8" height="8" rx="3"/><rect x="13" y="4" width="8" height="8" rx="3"/><path d="M11 7h2M9 16v2M15 16v2"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-full" viewBox="0 0 24 24"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></symbol>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1l8 4-8 4z" fill="context-stroke"/></marker>
+  </defs>
+</svg>
+<div id="stage">
+  <header class="topbar">
+    <span class="brand"><svg class="ico" aria-hidden="true"><use href="#i-copilot"/></svg>GitHub Copilot</span>
+    <span class="muted">Universe 2026 recap and Awesome Copilot</span>
+    <span class="legend" aria-label="Surface colors"><span class="sf">GitHub.com</span><span class="sf app">Copilot app</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span><span class="sf sec">Security</span></span>
+    <time datetime="2026-11-30">30 November 2026</time>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main id="deck" aria-label="GitHub Copilot presentation">
+    <section class="slide active" id="slide-1" aria-labelledby="title-1" data-title="Agenda">
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">01</span><div><h1 id="title-1">Agenda</h1><p class="lead">13 announcements from Universe 2026, followed by the Awesome Copilot library.</p></div></header>
+      <div class="content">
+        <div class="agenda stg">
+          <article class="ag"><h2>Platform<small>Universe 2026</small></h2>
+            <ol class="stg">
+              <li><b>03</b><div>Stacked PRs<span>Small linked pull requests</span></div></li>
+              <li><b>04</b><div>Issue artifacts<span>Plans and links on the issue</span></div></li>
+              <li><b>05</b><div>Attach from the CLI<span>Images and videos with gh</span></div></li>
+              <li><b>06</b><div>PR inbox<span>PRs that need you</span></div></li>
+            </ol>
+            <div class="ag-foot"><b data-count="4" data-count-delay="0.80">4</b><span>announcements to make pull requests and issues easier to review</span></div>
+          </article>
+          <article class="ag p"><h2>Copilot<small>Universe 2026</small></h2>
+            <ol class="stg">
+              <li><b>07</b><div>Copilot Fusion<span>Pick effort, not models</span></div></li>
+              <li><b>08</b><div>Copilot Projects<span>One goal, many sessions</span></div></li>
+              <li><b>09</b><div>Automations<span>Saved tasks and triggers</span></div></li>
+              <li><b>10</b><div>Connectors<span>Sign in once to tools</span></div></li>
+            </ol>
+            <div class="ag-foot"><b data-count="4" data-count-delay="0.92">4</b><span>announcements to choose models, organize work, and connect tools</span></div>
+          </article>
+          <article class="ag r"><h2>Security<small>Universe 2026</small></h2>
+            <ol class="stg">
+              <li><b>11</b><div>Security canvas<span>Findings in the app</span></div></li>
+              <li><b>12</b><div>AI Scan<span>Any language, on demand</span></div></li>
+              <li><b>13</b><div>AI push protection<span>Block secrets at push</span></div></li>
+              <li><b>14</b><div>Package firewall<span>Block risky npm packages</span></div></li>
+              <li><b>15</b><div>Reachability<span>Fix what code calls</span></div></li>
+            </ol>
+            <div class="ag-foot"><b data-count="5" data-count-delay="1.04">5</b><span>announcements to find, block, and fix risk while you build</span></div>
+          </article>
+          <article class="ag o"><h2>Resources<small>Beyond Universe</small></h2>
+            <ol class="stg">
+              <li><b>16</b><div>Awesome Copilot<span>Reusable resources</span></div></li>
+            </ol>
+            <div class="ag-foot"><b data-count="1" data-count-delay="1.16">1</b><span>library of reusable resources</span></div>
+          </article>
+        </div>
+        <div class="fourq stg">
+          <div><span class="lab what">What</span><p>What the feature is.</p></div>
+          <div><span class="lab why">Why</span><p>How it helps you.</p></div>
+          <div><span class="lab how">How</span><p>Steps to set it up.</p></div>
+          <div><span class="lab file">File</span><p>The file or setting to change.</p></div>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.com/events/universe/recap">Universe recap</a><a href="https://awesome-copilot.github.com">Awesome Copilot</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-2" aria-labelledby="title-2" data-title="Universe 2026 at a glance" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">02</span><div><h1 id="title-2">Universe 2026 at a glance</h1><p class="lead">13 announcements. Where you use each one, and where you set it up.</p></div></header>
+      <div class="content">
+        <table class="mx">
+          <thead><tr><th>Announcement</th><th class="c">github.com</th><th class="c">App</th><th class="c">CLI</th><th class="c">VS Code</th><th>Where to start</th></tr></thead>
+          <tbody class="stg">
+            <tr class="platform"><td class="n"><b>03</b>Stacked PRs</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">gh stack init</td></tr>
+            <tr class="platform"><td class="n"><b>04</b>Issue artifacts</td><td class="c"><span class="dot"></span></td><td class="c"><span class="dot app"></span></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">Issue → Artifacts</td></tr>
+            <tr class="platform"><td class="n"><b>05</b>Attach from the CLI</td><td class="c"></td><td class="c"></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">gh pr create --attach</td></tr>
+            <tr class="platform"><td class="n"><b>06</b>PR inbox</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="f">github.com/pulls/inbox</td></tr>
+            <tr class="copilot"><td class="n"><b>07</b>Copilot Fusion</td><td class="c"><span class="dot"></span></td><td class="c"><span class="dot app"></span></td><td class="c"><span class="dot cli"></span></td><td class="c"><span class="dot vsc"></span></td><td class="f">Model picker</td></tr>
+            <tr class="copilot"><td class="n"><b>08</b>Copilot Projects</td><td class="c"></td><td class="c"><span class="dot app"></span></td><td class="c"></td><td class="c"></td><td class="f">App sidebar → Projects</td></tr>
+            <tr class="copilot"><td class="n"><b>09</b>Automations</td><td class="c"><span class="dot"></span></td><td class="c"><span class="dot app"></span></td><td class="c"></td><td class="c"><span class="dot vsc"></span></td><td class="f">Repo → Agents → Automations</td></tr>
+            <tr class="copilot"><td class="n"><b>10</b>Connectors</td><td class="c"><span class="dot"></span></td><td class="c"><span class="dot app"></span></td><td class="c"><span class="dot cli"></span></td><td class="c"><span class="dot vsc"></span></td><td class="f">Customize → MCP</td></tr>
+            <tr class="security"><td class="n"><b>11</b>Security canvas</td><td class="c"></td><td class="c"><span class="dot app"></span></td><td class="c"></td><td class="c"></td><td class="f">github-security plugin</td></tr>
+            <tr class="security"><td class="n"><b>12</b>AI Scan</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="f">Code scanning → AI Scan</td></tr>
+            <tr class="security"><td class="n"><b>13</b>AI push protection</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="f">Settings → Secret Protection</td></tr>
+            <tr class="security"><td class="n"><b>14</b>Package firewall</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"><span class="dot cli"></span></td><td class="c"></td><td class="f">.npmrc</td></tr>
+            <tr class="security"><td class="n"><b>15</b>Reachability</td><td class="c"><span class="dot"></span></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="f">Settings → Advanced Security</td></tr>
+          </tbody>
+        </table>
+        <div class="key-row"><span class="sf">github.com</span><span class="sf app">Copilot app</span><span class="sf cli">CLI = gh, Copilot CLI, npm</span><span class="sf vsc">VS Code</span><span>Left bar colors: blue Platform, purple Copilot, red Security</span></div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.com/events/universe/recap">Universe recap</a><a href="https://docs.github.com/en/copilot">GitHub Docs</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-3" aria-labelledby="title-3" data-title="Stacked PRs" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">03</span><div><h1 id="title-3">Stacked PRs</h1><p class="lead">Split a big change into small pull requests that build on each other.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge">GA 6 Oct 2026</span></div>
+              <p>A stack is a chain of small pull requests. The bottom PR targets <code>main</code>. Each next PR targets the PR below it. Each PR shows only its own changes.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Small PRs get reviews faster.</li><li>Rules and CI run on every layer.</li><li>Merge the top PR to land the whole stack.</li><li>Merge queue works with stacks.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Install the <code>gh-stack</code> extension once.</li><li>Run <code>init</code>, then <code>add</code> for each layer.</li><li>Run <code>submit</code>. GitHub pushes the branches and opens linked PRs.</li><li>Merge on the PR page, or run <code>gh stack merge</code>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No config file. Your branch protection rules and rulesets apply to every layer.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf cli">GitHub CLI</span><span class="sf">Git 2.36+</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 290" role="img" aria-label="A stack of three pull requests. PR 3 targets PR 2, PR 2 targets PR 1, and PR 1 targets main." data-cycle="5.6">
+                <rect class="box" x="0" y="240" width="390" height="44" rx="8" data-fl="g" data-at="3.8 4.6"/><text class="tb" x="18" y="269">main</text>
+                <rect class="boxb" x="0" y="162" width="390" height="54" rx="8" data-fl="g" data-at="1.0 1.6"/><text class="tb" x="18" y="196">PR 1</text><text class="m" x="86" y="196">Database table</text><text class="mono" x="372" y="196" text-anchor="end">base: main</text>
+                <path class="wire" d="M195 218V238" marker-end="url(#arrow)"/>
+                <rect class="boxp" x="0" y="84" width="390" height="54" rx="8" data-fl="g" data-at="1.4 2.0"/><text class="tb" x="18" y="118">PR 2</text><text class="m" x="86" y="118">Sign-in API</text><text class="mono" x="372" y="118" text-anchor="end">base: PR 1</text>
+                <path class="wire" d="M195 140V160" marker-end="url(#arrow)"/>
+                <rect class="boxo" x="0" y="6" width="390" height="54" rx="8" data-fl="g" data-at="1.8 2.4"/><text class="tb" x="18" y="40">PR 3</text><text class="m" x="86" y="40">Sign-in page</text><text class="mono" x="372" y="40" text-anchor="end">base: PR 2</text>
+                <path class="wire" d="M195 62V82" marker-end="url(#arrow)"/>
+                <path class="guide" d="M412 33V262" data-pk="b" data-at="2.6 3.8"/>
+                <circle class="fo" cx="440" cy="33" r="8" data-ring="o" data-at="0.1 0.9"/><text class="tb" x="462" y="40">Review</text><text class="m" x="462" y="66">Each PR shows only</text><text class="m" x="462" y="88">its own changes</text>
+                <circle class="fp" cx="440" cy="125" r="8" data-ring="p" data-at="1.0 1.8"/><text class="tb" x="462" y="132">Checks</text><text class="m" x="462" y="158">Rules and CI run</text><text class="m" x="462" y="180">on every layer</text>
+                <circle class="fb" cx="440" cy="217" r="8" data-ring="b" data-at="2.6 3.4"/><text class="tb" x="462" y="224">Merge</text><text class="m" x="462" y="250">The top PR lands</text><text class="m" x="462" y="272">the whole stack</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh extension install github/gh-stack
+gh stack init
+gh stack add -Am "Add sign-in API"
+gh stack submit
+gh stack merge</code></pre></div>
+            <p class="note warn"><strong>Limits:</strong> No stacks across forks. GitHub Desktop does not support stacks. A middle PR cannot merge alone.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/pull-requests/how-tos/stacked-pull-requests">GitHub Docs</a><a href="https://github.github.com/gh-stack/">gh-stack guide</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-4" aria-labelledby="title-4" data-title="Issue artifacts" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">04</span><div><h1 id="title-4">Issue artifacts</h1><p class="lead">Keep plans, notes, and links on the issue. Each artifact keeps its versions.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>An artifact is a document that you attach to an issue. It can be a plan, a Markdown note, a link, or an HTML page.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Plans stay with the issue, not in a chat.</li><li>People and agents read the same document.</li><li>Restore an older version with the <code>gh</code> CLI.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open an issue. Select <strong>Artifacts</strong>.</li><li>Select <strong>+</strong>. Choose <strong>Add link</strong>, <strong>Create artifact</strong>, or <strong>Create HTML artifact</strong>.</li><li>Or run <code>gh issue artifact create</code>.</li><li>The Copilot app can attach its plans for you.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No file in the repository. Artifacts live on the issue. Use the page, the <code>gh</code> CLI, or the REST API.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf app">Copilot app</span><span class="sf cli">GitHub CLI</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 230" role="img" aria-label="Issue 142 has four artifact types: generic, plan, link, and embedded HTML. The Copilot app writes the plan. You read it and add a link." data-cycle="5.4">
+                <rect class="box" x="0" y="0" width="420" height="230" rx="10" data-b="fade"/><text class="tb" x="18" y="34">Issue #142</text><text class="mono" x="402" y="34" text-anchor="end">Artifacts</text>
+                <rect class="boxb" x="14" y="50" width="392" height="38" rx="8" data-b="left"/><text class="code" x="30" y="75">generic</text><text class="m" x="392" y="75" text-anchor="end">Markdown note</text>
+                <rect class="boxp" x="14" y="94" width="392" height="38" rx="8" data-b="left" data-fl="p" data-at="1.1 1.8"/><text class="code" x="30" y="119">plan</text><text class="m" x="392" y="119" text-anchor="end">Implementation plan</text>
+                <rect class="boxg" x="14" y="138" width="392" height="38" rx="8" data-b="left" data-fl="g" data-at="3.6 4.3"/><text class="code" x="30" y="163">link</text><text class="m" x="392" y="163" text-anchor="end">URL to outside work</text>
+                <rect class="boxo" x="14" y="182" width="392" height="38" rx="8" data-b="left"/><text class="code" x="30" y="207">embedded_html</text><text class="m" x="392" y="207" text-anchor="end">Interactive HTML page</text>
+                <rect class="boxp" x="480" y="14" width="220" height="70" rx="10" data-fl="p" data-at="0.0 0.6"/><text class="tb" x="590" y="45" text-anchor="middle">Copilot app</text><text class="m" x="590" y="70" text-anchor="middle">writes the plan</text>
+                <path class="wire" d="M478 49C452 49 452 105 428 105" marker-end="url(#arrow)" data-pk="p" data-at="0.5 1.1"/>
+                <path class="wire" d="M428 121C452 121 452 170 476 170" marker-end="url(#arrow)" data-pk="b" data-at="1.8 2.4"/>
+                <rect class="boxb" x="480" y="146" width="220" height="70" rx="10" data-fl="b" data-at="2.4 3.0"/><text class="tb" x="590" y="177" text-anchor="middle">You</text><text class="m" x="590" y="202" text-anchor="middle">read and add a link</text>
+                <path class="wire" d="M478 194C452 194 452 157 428 157" marker-end="url(#arrow)" data-pk="g" data-at="3.0 3.6"/>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh issue artifact create 142 signin-plan.md
+gh issue artifact list 142 --type link
+gh issue artifact edit 142 2 --restore-version 5</code></pre></div>
+            <div class="panel stack" style="gap:8px"><p class="small"><strong>REST:</strong> <code>POST /repos/{owner}/{repo}/issues/{n}/artifacts</code></p>
+              <dl class="fields"><dt>type</dt><dd><b>generic</b>, <b>plan</b>, <b>link</b>, or <b>embedded_html</b></dd><dt>name</dt><dd>Title in the artifact list</dd><dt>body</dt><dd>Markdown, HTML, or the URL</dd></dl></div>
+            <p class="note warn"><strong>Careful:</strong> Deleting an artifact is permanent. These are not Actions artifacts. The <code>gh</code> artifact commands need version 2.103.0 or later.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/issues/tracking-your-work-with-issues/using-issues/using-artifacts-with-issues">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-5" aria-labelledby="title-5" data-title="Attach from the CLI" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">05</span><div><h1 id="title-5">Attach from the CLI</h1><p class="lead">Add screenshots and videos to issues and pull requests from the terminal.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge">GA 1 Sep 2026</span></div>
+              <p>The <code>--attach</code> flag uploads a local image or video. GitHub hosts the file and changes your local path to a link.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>No browser drag and drop.</li><li>Scripts and agents can add before and after screenshots.</li><li>A video on its own line shows a player.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Add <code>--attach ./file.png</code> to the command.</li><li>Write the file as a Markdown image: <code>![](./file.png)</code>.</li><li>Add <code>#text</code> after the path for alt text.</li><li>Repeat the flag for more files.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No config file. It is a flag on <code>gh issue</code> and <code>gh pr</code>: <code>create</code>, <code>edit</code>, and <code>comment</code>.</p></div>
+            <div class="chips"><span class="sf cli">GitHub CLI 2.99.0+</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 150" role="img" aria-label="Flow. A local file goes through the attach flag. GitHub hosts it and puts a link in the body." data-cycle="4.4">
+                <rect class="box" x="0" y="20" width="190" height="110" rx="10" data-fl="" data-at="0.0 0.6"/><text class="tb" x="95" y="62" text-anchor="middle">Local file</text><text class="mono" x="95" y="94" text-anchor="middle">./before.png</text>
+                <path class="wireb" d="M200 75H250" marker-end="url(#arrow)" data-pk="b" data-at="0.4 1.0"/><text class="mono" x="225" y="50" text-anchor="middle">gh</text>
+                <rect class="boxb" x="260" y="20" width="190" height="110" rx="10" data-fl="b" data-at="1.0 1.7"/><text class="tb" x="355" y="62" text-anchor="middle">--attach</text><text class="m" x="355" y="94" text-anchor="middle">upload</text>
+                <path class="wireg" d="M460 75H510" marker-end="url(#arrow)" data-pk="g" data-at="1.6 2.2"/>
+                <rect class="boxg" x="520" y="20" width="180" height="110" rx="10" data-fl="g" data-at="2.2 3.0"/><text class="tb" x="610" y="62" text-anchor="middle">Hosted link</text><text class="m" x="610" y="94" text-anchor="middle">in the body</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file cmd">Terminal</span><pre><code>gh pr create --title "Fix login" \
+  --body "Before: ![](./before.png)" \
+  --attach ./before.png \
+  --attach './login.png#Login page after fix'</code></pre></div>
+            <dl class="fields panel"><dt>Types</dt><dd>PNG, JPEG, GIF, WebP, SVG, MP4, MOV, WebM</dd><dt>Images</dt><dd>Up to <b>10 MB</b> each</dd><dt>Video</dt><dd><b>10 MB</b> on Free, <b>100 MB</b> on paid plans</dd><dt>Count</dt><dd>Up to <b>50 files</b> per command</dd></dl>
+            <p class="note warn"><strong>Limits:</strong> Images and video only. You need push access. GitHub Enterprise Server is not supported.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/attaching-files">GitHub Docs</a><a href="https://cli.github.com/manual/">GitHub CLI manual</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-6" aria-labelledby="title-6" data-title="PR inbox" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">06</span><div><h1 id="title-6">PR inbox</h1><p class="lead">One list of the pull requests that need you now.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge">GA 9 Jul 2026</span></div>
+              <p>PR inbox is a page at <code>github.com/pulls/inbox</code>. It sorts your pull requests into groups. It shows what to do next.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>See your next action, not every open PR.</li><li>Save the filters that you use each day.</li><li>Move through the list with the keyboard.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open <code>github.com/pulls/inbox</code>. No opt-in is needed.</li><li>Read the three groups.</li><li>Type a filter. Select <strong>+</strong> to save it as a view.</li><li>Press <kbd>j</kbd> and <kbd>k</kbd> to move.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No file. You change the filter in the search box.</p></div>
+            <div class="chips"><span class="sf">github.com</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 280" role="img" aria-label="Mock of PR inbox with three groups: review requests, needs fixing, and ready to merge." data-cycle="4.2">
+                <rect class="boxb" x="0" y="0" width="700" height="84" rx="10" data-b="left" data-fl="b" data-at="0.1 0.9"/><circle class="fb" cx="34" cy="42" r="10" data-ring="b" data-at="0.1 0.9"/><text class="tb" x="60" y="38">Review requests</text><text class="m" x="60" y="64">Someone waits for you</text><rect class="fm" opacity=".4" x="430" y="20" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="48" width="180" height="14" rx="7"/>
+                <rect class="boxr" x="0" y="98" width="700" height="84" rx="10" data-b="left" data-fl="r" data-at="1.1 1.9"/><circle class="fr" cx="34" cy="140" r="10" data-ring="r" data-at="1.1 1.9"/><text class="tb" x="60" y="136">Needs fixing</text><text class="m" x="60" y="162">Your PRs that need changes</text><rect class="fm" opacity=".4" x="430" y="118" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="146" width="180" height="14" rx="7"/>
+                <rect class="boxg" x="0" y="196" width="700" height="84" rx="10" data-b="left" data-fl="g" data-at="2.1 2.9"/><circle class="fg" cx="34" cy="238" r="10" data-ring="g" data-at="2.1 2.9"/><text class="tb" x="60" y="234">Ready to merge</text><text class="m" x="60" y="260">PRs that can land now</text><rect class="fm" opacity=".4" x="430" y="216" width="240" height="14" rx="7"/><rect class="fm" opacity=".4" x="430" y="244" width="180" height="14" rx="7"/>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file cmd">Filter examples</span><pre><code>author:@me
+review-involves:@me
+(author:@me OR review-involves:@me) AND repo:OWNER/REPO</code></pre></div>
+            <dl class="fields panel"><dt>author:@me</dt><dd>PRs that you opened</dd><dt>review-involves:@me</dt><dd>PRs that you review, or were asked to review</dd><dt>AND, OR, ( )</dt><dd>Combine filters in one view</dd></dl>
+            <p class="note"><strong>Tip:</strong> Save one view for each repository that you work in.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.com/pulls/inbox">PR inbox</a><a href="https://docs.github.com/en/pull-requests">GitHub Docs</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-7" aria-labelledby="title-7" data-title="Copilot Fusion" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">07</span><div><h1 id="title-7">Copilot Fusion</h1><p class="lead">Pick how much effort you want. Copilot picks the models and the steps.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge">GA 28 Oct 2026</span></div>
+              <p>Fusion is one choice in the model picker, not one model. For each prompt it picks the models and the steps. You get one answer.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>No manual model switching.</li><li>Easy tasks stay quick.</li><li>Hard tasks get a second look.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open the model picker. Select <strong>Copilot Fusion</strong>.</li><li>Choose <strong>Standard</strong>, <strong>High</strong>, or <strong>Max</strong>.</li><li>Admins: <strong>AI controls</strong> → <strong>Copilot</strong> → <strong>Models</strong> → <strong>Configure Copilot Fusion models</strong>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p><code>managed-settings.json</code> sets <code>model</code> and <code>fusionTier</code>. A fixed tier locks it. <code>overridable</code> lets users change it.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span><span class="sf jb">JetBrains</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 320" role="img" aria-label="You pick an effort level: Standard, High, or Max. For each prompt, Fusion picks a pattern: Single, Cascade, or Critique. You get one answer." data-cycle="6.8">
+                <text class="mono" x="0" y="18">You pick the effort</text>
+                <rect class="boxb" x="0" y="30" width="220" height="80" rx="10" data-b="growy"/><text class="tb" x="110" y="64" text-anchor="middle">Standard</text><text class="m" x="110" y="92" text-anchor="middle">Everyday work</text>
+                <rect class="boxp" x="240" y="30" width="220" height="80" rx="10" data-b="growy" data-fl="p" data-at="0.0 0.7"/><text class="tb" x="350" y="64" text-anchor="middle">High</text><text class="m" x="350" y="92" text-anchor="middle">Bigger coding tasks</text>
+                <rect class="boxo" x="480" y="30" width="220" height="80" rx="10" data-b="growy"/><text class="tb" x="590" y="64" text-anchor="middle">Max</text><text class="m" x="590" y="92" text-anchor="middle">Deepest reasoning</text>
+                <text class="mono" x="0" y="142">Fusion picks a pattern for each prompt</text>
+                <rect class="box" x="0" y="154" width="220" height="94" rx="10" data-fl="b" data-at="0.8 1.4"/><text class="tb" x="110" y="186" text-anchor="middle">Single</text><text class="m" x="110" y="214" text-anchor="middle">One model</text><text class="m" x="110" y="236" text-anchor="middle">does the task</text>
+                <rect class="box" x="240" y="154" width="220" height="94" rx="10" data-fl="p" data-at="2.5 3.1"/><text class="tb" x="350" y="186" text-anchor="middle">Cascade</text><text class="m" x="350" y="214" text-anchor="middle">Draft, then a judge</text><text class="m" x="350" y="236" text-anchor="middle">may escalate</text>
+                <rect class="box" x="480" y="154" width="220" height="94" rx="10" data-fl="o" data-at="4.2 4.8"/><text class="tb" x="590" y="186" text-anchor="middle">Critique</text><text class="m" x="590" y="214" text-anchor="middle">Models critique</text><text class="m" x="590" y="236" text-anchor="middle">the draft</text>
+                <path class="wire" d="M110 250V272" marker-end="url(#arrow)" data-pk="b" data-at="1.4 1.8"/>
+                <path class="wire" d="M350 250V272" marker-end="url(#arrow)" data-pk="p" data-at="3.1 3.5"/>
+                <path class="wire" d="M590 250V272" marker-end="url(#arrow)" data-pk="o" data-at="4.8 5.2"/>
+                <rect class="boxg" x="0" y="276" width="700" height="44" rx="10" data-fl="g" data-at="1.8 2.3, 3.5 4.0, 5.2 5.7"/><text class="tb" x="350" y="305" text-anchor="middle">One answer</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file cmd">Copilot CLI</span><pre><code>copilot --model fusion \
+  --fusion-tier high -p "Fix the test"</code></pre></div>
+            <div class="codebox"><span class="file">managed-settings.json</span><pre><code>{ "model": "fusion",
+  "fusionTier": { "overridable": "standard" } }</code></pre></div>
+            <p class="note"><strong>Billing:</strong> AI Credits. Paid plans get 30% off through 30 Nov 2026. Effort levels differ by plan.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/copilot/concepts/models/copilot-fusion">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-8" aria-labelledby="title-8" data-title="Copilot Projects" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">08</span><div><h1 id="title-8">Copilot Projects</h1><p class="lead">Keep the work for one goal in one place in the Copilot app.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>A project groups the sessions, files, and schedules for one goal. It lives in the Copilot app.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>See all sessions for a goal together.</li><li>Find the sessions that need your input.</li><li>Keep project files in one Library.</li><li>Run repeat work on a schedule.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>In the sidebar, select <strong>+</strong> next to <strong>Projects</strong>.</li><li>Add repositories if you want. Write the goal as a prompt.</li><li>Track sessions on <strong>Overview</strong>.</li><li>Use <strong>Library</strong> and <strong>Automations</strong>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No config file. You manage a project in the app tabs.</p></div>
+            <div class="chips"><span class="sf app">Copilot app only</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 330" role="img" aria-label="Mock of a project with three tabs: Overview, Library, Automations. Overview shows four status columns: Needs input, Open, Working, Done." data-cycle="6">
+                <rect class="boxb" x="0" y="0" width="150" height="42" rx="8" data-fl="b" data-at="0.0 0.6"/><text class="t" x="75" y="28" text-anchor="middle">Overview</text>
+                <rect class="box" x="162" y="0" width="150" height="42" rx="8" data-fl="" data-at="0.6 1.2"/><text class="t" x="237" y="28" text-anchor="middle">Library</text>
+                <rect class="box" x="324" y="0" width="170" height="42" rx="8" data-fl="" data-at="1.2 1.8"/><text class="t" x="409" y="28" text-anchor="middle">Automations</text>
+                <rect class="boxo" x="0" y="62" width="164" height="42" rx="8"/><text class="t" x="82" y="89" text-anchor="middle">Needs input</text>
+                <rect class="boxb" x="178" y="62" width="164" height="42" rx="8"/><text class="t" x="260" y="89" text-anchor="middle">Open</text>
+                <rect class="boxp" x="356" y="62" width="164" height="42" rx="8"/><text class="t" x="438" y="89" text-anchor="middle">Working</text>
+                <rect class="boxg" x="534" y="62" width="166" height="42" rx="8"/><text class="t" x="617" y="89" text-anchor="middle">Done</text>
+                <g fill="#8b949e" opacity=".4">
+                  <rect x="12" y="132" width="140" height="12" rx="6"/><rect x="12" y="156" width="100" height="12" rx="6"/>
+                  <rect x="190" y="132" width="140" height="12" rx="6"/><rect x="190" y="156" width="100" height="12" rx="6"/><rect x="190" y="212" width="140" height="12" rx="6"/><rect x="190" y="236" width="100" height="12" rx="6"/>
+                  <rect x="368" y="132" width="140" height="12" rx="6"/><rect x="368" y="156" width="100" height="12" rx="6"/><rect x="368" y="212" width="140" height="12" rx="6"/><rect x="368" y="236" width="100" height="12" rx="6"/><rect x="368" y="292" width="140" height="12" rx="6"/>
+                  <rect x="546" y="132" width="140" height="12" rx="6"/><rect x="546" y="156" width="100" height="12" rx="6"/><rect x="546" y="212" width="140" height="12" rx="6"/><rect x="546" y="236" width="100" height="12" rx="6"/>
+                </g>
+                <rect class="box" x="0" y="116" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="o" data-at="2.0 2.8"/>
+                <rect class="box" x="178" y="116" width="164" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="178" y="196" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="b" data-at="2.9 3.6"/>
+                <rect class="box" x="356" y="116" width="164" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="356" y="196" width="164" height="64" rx="8" fill="none" data-b="fade" data-fl="p" data-at="3.6 4.3"/><rect class="box" x="356" y="276" width="164" height="48" rx="8" fill="none" data-b="fade"/>
+                <rect class="box" x="534" y="116" width="166" height="64" rx="8" fill="none" data-b="fade"/><rect class="box" x="534" y="196" width="166" height="64" rx="8" fill="none" data-b="fade" data-fl="g" data-at="4.3 5.1"/>
+                <path class="guide" d="M260 228H438" data-pk="p" data-at="3.3 3.8"/><path class="guide" d="M438 228H617" data-pk="g" data-at="4.0 4.5"/>
+              </svg>
+            </div>
+            <dl class="fields panel"><dt>Overview</dt><dd>Sessions by status</dd><dt>Library</dt><dd>Agent files and User files</dd><dt>Automations</dt><dd>Ask Copilot to set a schedule. Edit, pause, or delete it here</dd></dl>
+            <div class="codebox"><span class="file">Goal prompt: plain text, no fields</span><pre><code>Move billing to the new payments API.
+Open one session for each repository.</code></pre></div>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/copilot/how-tos/github-copilot-app/working-with-projects">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-9" aria-labelledby="title-9" data-title="Automations" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">09</span><div><h1 id="title-9">Automations</h1><p class="lead">Save a task once. Copilot runs it on a schedule or when an event happens.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><span class="lab what">What</span>
+              <p>An automation is a saved prompt. It starts on a schedule or on a GitHub event, such as a new issue.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Repeat work runs without you.</li><li>Events start work at once.</li><li>You set AI-credit limits for each run, day, week, and month. A run limit is 30 credits or more.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open <strong>Agents</strong> → <strong>Automations</strong> in the repo. Or use the app tab.</li><li>Write a <code>name</code> and a <code>prompt</code>.</li><li>Choose a trigger, tools, and a model.</li><li>Save. Or use the REST API.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No file in Git. Use the UI or the API. For code-defined workflows, see GitHub Agentic Workflows.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf vsc">VS Code</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 250" role="img" aria-label="Triggers such as interval, issue_opened, and pull_request_opened start an automation. The automation starts a Copilot task." data-cycle="5">
+                <g class="mono ctr">
+                  <rect class="box" x="0" y="0" width="230" height="40" rx="20" data-fl="b" data-at="0.0 0.6"/><text x="115" y="26">interval</text>
+                  <rect class="box" x="0" y="52" width="230" height="40" rx="20"/><text x="115" y="78">issue_opened</text>
+                  <rect class="box" x="0" y="104" width="230" height="40" rx="20"/><text x="115" y="130">pull_request_opened</text>
+                  <rect class="box" x="0" y="156" width="230" height="40" rx="20"/><text x="115" y="182">workflow_run</text>
+                  <rect class="box" x="0" y="208" width="230" height="40" rx="20" data-fl="o" data-at="2.4 3.0"/><text x="115" y="234">code_scanning_alert</text>
+                </g>
+                <path class="wire" d="M232 20C268 20 262 124 296 124" marker-end="url(#arrow)" data-pk="b" data-at="0.3 0.9"/><path class="wire" d="M232 72C268 72 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 124H294" marker-end="url(#arrow)"/><path class="wire" d="M232 176C268 176 262 124 296 124" marker-end="url(#arrow)"/><path class="wire" d="M232 228C268 228 262 124 296 124" marker-end="url(#arrow)" data-pk="o" data-at="2.7 3.3"/>
+                <rect class="boxp" x="300" y="64" width="190" height="120" rx="10" data-fl="p" data-at="0.9 1.5, 3.3 3.9"/><text class="tb" x="395" y="104" text-anchor="middle">Automation</text><text class="m" x="395" y="132" text-anchor="middle">name + prompt</text><text class="m" x="395" y="156" text-anchor="middle">tools + model</text>
+                <path class="wireg" d="M492 124H538" marker-end="url(#arrow)" data-pk="g" data-at="1.3 1.7, 3.7 4.1"/>
+                <rect class="boxg" x="540" y="64" width="160" height="120" rx="10" data-fl="g" data-at="1.7 2.3, 4.1 4.7"/><text class="tb" x="620" y="114" text-anchor="middle">Copilot</text><text class="tb" x="620" y="142" text-anchor="middle">task</text>
+              </svg>
+            </div>
+            <dl class="fields panel"><dt>name, prompt</dt><dd>Required</dd><dt>type</dt><dd><b>personal</b> or <b>shared</b>. Fixed after you create it</dd><dt>triggers</dt><dd>A schedule or GitHub events</dd><dt>tools, model</dt><dd>Optional. Also <code>reasoning_effort</code></dd></dl>
+            <div class="codebox"><span class="file">POST /agents/repos/OWNER/REPO/automations</span><pre><code>{ "name": "Issue triage",
+  "prompt": "Label each new issue",
+  "triggers": { "issue_opened": { "query": "is:open" } } }</code></pre></div>
+            <p class="note warn"><strong>Limits:</strong> Private and internal repositories only. You need write access. Anyone with read access can read run logs. Keep secrets out of prompts.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/using-automations">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-10" aria-labelledby="title-10" data-title="Connectors" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">10</span><div><h1 id="title-10">Connectors</h1><p class="lead">Sign in once. Use GitHub-verified tools in many Copilot surfaces.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>Connectors are hosted MCP servers for other tools, such as Slack, Linear, and Sentry. GitHub hosts and verifies them.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>No server to install or run.</li><li>One sign-in for many surfaces.</li><li>Admins choose which servers are allowed.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>App: <strong>Customize</strong> → <strong>MCP</strong> → <strong>GitHub verified</strong> → <strong>Connect</strong>.</li><li>CLI: run <code>/mcp</code>, then <strong>Connectors</strong>.</li><li>VS Code: Agents window → <strong>Customizations</strong>.</li><li>Web: <code>github.com/copilot/customize</code>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>None for connectors. Your own MCP servers use <code>.mcp.json</code> or <code>.github/mcp.json</code>.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 -12 700 302" role="img" aria-label="34 GitHub-verified connectors, such as Slack, Linear, Figma, Notion, Sentry, Vercel, and Cloudflare. You sign in to a connector once. Then you use it in the Copilot app, the CLI, VS Code, and github.com." data-cycle="5.6">
+                <text x="0" y="40" style="font:700 44px var(--sans);fill:var(--blue)" data-count="34">34</text><text class="tb" x="68" y="38" style="font-size:26px">GitHub-verified connectors</text>
+                <g class="t ctr">
+                  <rect class="boxb" x="0" y="60" width="160" height="46" rx="10" data-fl="b" data-at="0.20 0.70"/><text x="80" y="90">Slack</text>
+                  <rect class="boxp" x="180" y="60" width="160" height="46" rx="10" data-fl="p" data-at="0.35 0.85"/><text x="260" y="90">Linear</text>
+                  <rect class="boxg" x="360" y="60" width="160" height="46" rx="10" data-fl="g" data-at="0.50 1.00"/><text x="440" y="90">Figma</text>
+                  <rect class="boxo" x="540" y="60" width="160" height="46" rx="10" data-fl="o" data-at="0.65 1.15"/><text x="620" y="90">Notion</text>
+                  <rect class="boxr" x="0" y="118" width="160" height="46" rx="10" data-fl="r" data-at="1.50 2.10"/><text x="80" y="148">Sentry</text>
+                  <rect class="boxb" x="180" y="118" width="160" height="46" rx="10" data-fl="b" data-at="0.80 1.30"/><text x="260" y="148">Vercel</text>
+                  <rect class="boxp" x="360" y="118" width="160" height="46" rx="10" data-fl="p" data-at="0.95 1.45"/><text x="440" y="148">Cloudflare</text>
+                  <rect class="box" x="540" y="118" width="160" height="46" rx="10"/><text class="m" x="620" y="148">+ 27 more</text>
+                </g>
+                <path class="wire" d="M80 166V194" marker-end="url(#arrow)" data-pk="r" data-at="2.0 2.4"/>
+                <rect class="boxg" x="0" y="198" width="200" height="80" rx="10" data-fl="g" data-at="2.4 3.0"/><text class="tb" x="100" y="232" text-anchor="middle">Sign in once</text><text class="m" x="100" y="260" text-anchor="middle">to Sentry</text>
+                <text class="m" x="700" y="200" text-anchor="end">Same sign-in in each surface</text>
+                <path class="wire" d="M202 214H285V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H387V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H502V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <path class="wire" d="M202 214H636V228" marker-end="url(#arrow)" data-pk="b" data-at="3.0 3.6"/>
+                <rect class="boxp" x="240" y="232" width="90" height="44" rx="10" data-fl="p" data-at="3.6 4.3"/><text class="t" x="285" y="261" text-anchor="middle">App</text>
+                <rect class="boxg" x="342" y="232" width="90" height="44" rx="10" data-fl="g" data-at="3.6 4.3"/><text class="t" x="387" y="261" text-anchor="middle">CLI</text>
+                <rect class="boxo" x="444" y="232" width="116" height="44" rx="10" data-fl="o" data-at="3.6 4.3"/><text class="t" x="502" y="261" text-anchor="middle">VS Code</text>
+                <rect class="boxb" x="572" y="232" width="128" height="44" rx="10" data-fl="b" data-at="3.6 4.3"/><text class="t" x="636" y="261" text-anchor="middle">github.com</text>
+              </svg>
+            </div>
+            <dl class="fields panel"><dt>Admin policies</dt><dd><b>Editor preview features</b> and <b>MCP servers in Copilot</b></dd><dt>Registry</dt><dd><b>Allow all</b>. If you set <code>allowedMcpServers</code>, add the connector URL</dd></dl>
+            <div class="codebox"><span class="file">managed-settings.json</span><pre style="font-size:21px"><code>"allowedMcpServers": [{ "serverUrl":
+  "https://api.github.com/copilot-connectors/api/v1/connectors/*/mcp" }]</code></pre></div>
+            <p class="note warn"><strong>Limits:</strong> No support for sessions that run on GitHub Actions. A deny rule wins over an allow rule.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/copilot/concepts/prompting-and-context/copilot-connectors">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-11" aria-labelledby="title-11" data-title="Security canvas" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">11</span><div><h1 id="title-11">Security canvas</h1><p class="lead">See security findings in a side panel. Ask Copilot to explain or fix them.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>A canvas in the Copilot app. It lists code-scanning findings and runs a security review of your local changes. It comes from the <code>github-security</code> plugin.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Findings sit next to your code.</li><li>Copilot explains a finding or fixes it.</li><li>Local review needs no code scanning.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li><strong>Customize</strong> → search <code>github-security</code> → <strong>Install</strong>.</li><li>In a session, select <strong>+</strong> → <strong>Canvas</strong> → <strong>Security</strong>.</li><li>Open <strong>Code scanning findings</strong>. Or select <strong>Security review</strong> → <strong>Start review</strong>.</li><li>Select findings. Choose <strong>Explain</strong> or <strong>Fix</strong>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No config file. The plugin manifest is <code>plugins/github-security/plugin.json</code>.</p></div>
+            <div class="chips"><span class="sf app">Copilot app only</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 300" role="img" aria-label="Mock of the Security canvas: two tabs, three findings with severity colors, and Explain and Fix buttons." data-cycle="4.6">
+                <rect class="box" x="0" y="0" width="700" height="300" rx="12" data-b="fade"/>
+                <rect class="boxb" x="14" y="14" width="300" height="44" rx="8" data-fl="b" data-at="0.0 0.5"/><text class="t" x="164" y="43" text-anchor="middle">Code scanning findings</text>
+                <rect class="box" x="326" y="14" width="200" height="44" rx="8"/><text class="t" x="426" y="43" text-anchor="middle">Security review</text>
+                <rect class="boxr" x="14" y="74" width="672" height="48" rx="8" data-b="left" data-fl="r" data-at="0.6 1.4"/><circle class="fr" cx="42" cy="98" r="9" data-ring="r" data-at="0.6 1.4"/><text class="tb" x="66" y="106">SQL injection</text><text class="m" x="670" y="106" text-anchor="end">src/db.js</text>
+                <rect class="boxo" x="14" y="132" width="672" height="48" rx="8" data-b="left"/><circle class="fo" cx="42" cy="156" r="9"/><text class="tb" x="66" y="164">Path traversal</text><text class="m" x="670" y="164" text-anchor="end">src/files.js</text>
+                <rect class="boxb" x="14" y="190" width="672" height="48" rx="8" data-b="left"/><circle class="fb" cx="42" cy="214" r="9"/><text class="tb" x="66" y="222">Weak hash</text><text class="m" x="670" y="222" text-anchor="end">src/auth.js</text>
+                <rect class="boxp" x="14" y="250" width="150" height="38" rx="8" data-fl="p" data-at="1.5 2.2"/><text class="t" x="89" y="276" text-anchor="middle">Explain</text>
+                <rect class="boxg" x="176" y="250" width="150" height="38" rx="8" data-fl="g" data-at="2.3 3.0"/><text class="t" x="251" y="276" text-anchor="middle">Fix</text>
+              </svg>
+            </div>
+            <dl class="fields panel"><dt>Code scanning findings</dt><dd>GitHub alerts, with a filter</dd><dt>Security review</dt><dd>Your local changes. Or run <code>/security-review</code></dd></dl>
+            <div class="codebox"><span class="file cmd">Terminal</span><pre><code>copilot plugin install github-security@awesome-copilot</code></pre></div>
+            <p class="note warn"><strong>Limits:</strong> The standalone CLI is not supported. No GitHub Enterprise Server. It shows code-scanning alerts only. A local fix does not close the GitHub alert.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/copilot/how-tos/github-copilot-app/view-and-fix-security-alerts">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-12" aria-labelledby="title-12" data-title="AI Scan" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">12</span><div><h1 id="title-12">AI Scan</h1><p class="lead">AI finds security problems that code scanning can miss.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>AI Scan adds findings to code scanning. It scans a whole repository on demand. It also scans pull requests in languages that CodeQL does not cover.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>It covers more languages.</li><li>Findings are normal alerts.</li><li>Assign alerts to Copilot for a fix.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Admin: allow the <strong>AI Scan</strong> policy. It is off by default.</li><li>Repo: <strong>Security and quality</strong> → <strong>Code scanning</strong> → <strong>AI Scan</strong> → <strong>Standard scan</strong>.</li><li>Open an alert. Assign it to Copilot. You can select up to 25.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No YAML file. The REST API uses <code>repository_scan</code> and <code>pr_scan</code>.</p></div>
+            <div class="chips"><span class="sf">github.com</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 250" role="img" aria-label="Turn on: enterprise policy, organization settings, repositories inherit. Use: run a scan, review alerts, Copilot opens a draft pull request." data-cycle="6">
+                <text class="mono" x="0" y="18">Turn on</text>
+                <rect class="boxb" x="0" y="28" width="200" height="76" rx="10" data-fl="b" data-at="0.0 0.5"/><text class="tb" x="100" y="62" text-anchor="middle">Enterprise</text><text class="m" x="100" y="90" text-anchor="middle">AI Scan policy</text>
+                <path class="wire" d="M202 66H248" marker-end="url(#arrow)" data-pk="b" data-at="0.3 0.7"/>
+                <rect class="boxb" x="250" y="28" width="200" height="76" rx="10" data-fl="b" data-at="0.7 1.2"/><text class="tb" x="350" y="62" text-anchor="middle">Organization</text><text class="m" x="350" y="90" text-anchor="middle">Security settings</text>
+                <path class="wire" d="M452 66H498" marker-end="url(#arrow)" data-pk="b" data-at="1.0 1.4"/>
+                <rect class="boxb" x="500" y="28" width="200" height="76" rx="10" data-fl="b" data-at="1.4 1.9"/><text class="tb" x="600" y="62" text-anchor="middle">Repositories</text><text class="m" x="600" y="90" text-anchor="middle">Inherit it</text>
+                <text class="mono" x="0" y="144">Use</text>
+                <rect class="boxp" x="0" y="154" width="200" height="76" rx="10" data-scan="" data-at="2.2 3.2"/><text class="tb" x="100" y="188" text-anchor="middle">Run a scan</text><text class="m" x="100" y="216" text-anchor="middle">Standard scan</text>
+                <path class="wirer" d="M202 192H248" marker-end="url(#arrow)" data-pk="r" data-at="3.2 3.6"/>
+                <rect class="boxr" x="250" y="154" width="200" height="76" rx="10" data-fl="r" data-at="3.6 4.2"/><text class="tb" x="350" y="188" text-anchor="middle">Alerts</text><text class="m" x="350" y="216" text-anchor="middle">Code scanning</text>
+                <path class="wireg" d="M452 192H498" marker-end="url(#arrow)" data-pk="g" data-at="4.0 4.4"/>
+                <rect class="boxg" x="500" y="154" width="200" height="76" rx="10" data-fl="g" data-at="4.4 5.1"/><text class="tb" x="600" y="188" text-anchor="middle">Copilot fix</text><text class="m" x="600" y="216" text-anchor="middle">Draft PR</text>
+              </svg>
+            </div>
+            <div class="cards" style="--n:2">
+              <div class="card"><h3>Repository scan</h3><p>On demand. Default branch. All languages.</p></div>
+              <div class="card p"><h3>Pull request scan</h3><p>PHP, Shell, Terraform, Dockerfile, and more.</p></div>
+            </div>
+            <dl class="fields panel"><dt>Billing</dt><dd>Code Security AI credits</dd><dt>License</dt><dd>No Copilot license is needed</dd><dt>Run</dt><dd>By hand. There is no schedule</dd></dl>
+            <p class="note warn"><strong>Limits:</strong> Findings are advice. They cannot block a merge. No scans on fork or Dependabot PRs.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/code-security/concepts/code-scanning/ai-scan">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-13" aria-labelledby="title-13" data-title="AI push protection" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">13</span><div><h1 id="title-13">AI push protection</h1><p class="lead">Block a push when AI finds a secret that has no fixed pattern.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>Push protection checks each push for secrets. With AI, it also finds generic secrets, such as passwords. It is off by default.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>A secret never reaches the repository.</li><li>You do not need to rotate it later.</li><li>Developers see the problem at once.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open <strong>Settings</strong> → <strong>Security and quality</strong> → <strong>Advanced Security</strong> → <strong>Secret Protection</strong>.</li><li>Turn on <strong>Push protection</strong> and <strong>Scan for AI-detected secrets</strong>.</li><li>Turn on <strong>Push protection for AI-detected secrets</strong>.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No file. For many repositories, use a custom security configuration. Needs Secret Protection. It uses AI credits.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf cli">git push</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 260" role="img" aria-label="git push goes to an AI check. A clean push goes through. A push with a secret is blocked." data-cycle="6.2">
+                <rect class="box" x="0" y="90" width="150" height="80" rx="10" data-fl="" data-at="0.0 0.4, 3.0 3.4"/><text class="tb" x="75" y="138" text-anchor="middle">git push</text>
+                <path class="wire" d="M152 130H198" marker-end="url(#arrow)" data-pk="b" data-at="0.2 0.6, 3.2 3.6"/>
+                <rect class="boxp" x="200" y="90" width="170" height="80" rx="10" data-scan="" data-at="0.6 1.4, 3.6 4.4"/><text class="tb" x="285" y="124" text-anchor="middle">AI check</text><text class="m" x="285" y="152" text-anchor="middle">Finds secrets</text>
+                <path class="wireg" d="M372 118C400 118 400 60 428 60" marker-end="url(#arrow)" data-pk="g" data-at="1.4 1.9"/>
+                <path class="wirer" d="M372 142C400 142 400 200 428 200" marker-end="url(#arrow)" data-pk="r" data-at="4.4 4.9"/>
+                <rect class="boxg" x="430" y="20" width="270" height="80" rx="10" data-fl="g" data-at="1.9 2.6"/><text class="tb" x="565" y="54" text-anchor="middle">Clean</text><text class="m" x="565" y="82" text-anchor="middle">The push goes through</text>
+                <rect class="boxr" x="430" y="160" width="270" height="80" rx="10" data-fl="r" data-at="4.9 5.7"/><text class="tb" x="565" y="194" text-anchor="middle">Secret found</text><text class="m" x="565" y="222" text-anchor="middle">The push is blocked</text>
+              </svg>
+            </div>
+            <dl class="fields panel"><dt>secret_scanning_generic_secrets</dt><dd>enabled</dd><dt>secret_scanning_push_protection</dt><dd>enabled</dd><dt>secret_scanning_generic_secrets_push_protection</dt><dd>enabled</dd></dl>
+            <div class="codebox"><span class="file cmd">Fix the commit, then push again</span><pre><code>git commit --amend --all
+git push</code></pre></div>
+            <p class="note warn"><strong>Bypass:</strong> Open the URL in the error. Pick a reason. Push again within 3 hours.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/code-security/how-tos/secure-your-secrets/prevent-future-leaks/enable-ai-push-protection">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-14" aria-labelledby="title-14" data-title="Package firewall" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">14</span><div><h1 id="title-14">Package firewall</h1><p class="lead">Block risky npm packages before they reach your machine.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>A registry proxy for npm. It checks each package before <code>npm install</code>. It is for GitHub Enterprise Cloud.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>It blocks malware early.</li><li>New and risky packages wait.</li><li>One rule set for the whole enterprise.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Admin: enterprise <strong>Policies</strong> → <strong>Package firewall</strong>. Set the rules.</li><li>Developers: point <code>.npmrc</code> to the firewall.</li><li>If a package is blocked, npm prints a URL to ask for an exception.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p><code>.npmrc</code>. Use your own user file. Do not commit the token.</p></div>
+            <div class="chips"><span class="sf cli">npm</span><span class="sf">Enterprise Cloud</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 280" role="img" aria-label="npm install goes through the package firewall with five checks, then to the npm registry." data-cycle="7">
+                <rect class="box" x="0" y="100" width="150" height="80" rx="10" data-fl="r" data-at="5.6 6.4"/><text class="tb" x="75" y="148" text-anchor="middle">npm install</text>
+                <path class="wire" d="M152 140H198" marker-end="url(#arrow)" data-pk="b" data-at="0.2 0.6, 3.6 4.0"/>
+                <rect class="boxr" x="200" y="0" width="300" height="280" rx="12"/><text class="tb" x="350" y="30" text-anchor="middle">Package firewall</text>
+                <rect class="box" x="214" y="44" width="272" height="40" rx="20" data-fl="g" data-at="0.6 1.0, 4.0 4.4"/><text class="m" x="350" y="71" text-anchor="middle">Known malware: on</text>
+                <rect class="box" x="214" y="90" width="272" height="40" rx="20" data-fl="g" data-at="0.8 1.2, 4.2 4.6"/><text class="m" x="350" y="117" text-anchor="middle">Advisories: Critical</text>
+                <rect class="box" x="214" y="136" width="272" height="40" rx="20" data-fl="g" data-at="1.0 1.4, 4.4 4.8"/><text class="m" x="350" y="163" text-anchor="middle">Attestation downgrades</text>
+                <rect class="box" x="214" y="182" width="272" height="40" rx="20" data-fl="g" data-at="1.2 1.6, 4.6 5.0"/><text class="m" x="350" y="209" text-anchor="middle">New install scripts</text>
+                <rect class="box" x="214" y="228" width="272" height="40" rx="20" data-fl="g" data-at="1.4 1.8, 4.8 5.8 r"/><text class="m" x="350" y="255" text-anchor="middle">Minimum age: 1 day</text>
+                <path class="wireg" d="M502 140H548" marker-end="url(#arrow)" data-pk="g" data-at="1.8 2.2"/>
+                <rect class="boxg" x="550" y="100" width="150" height="80" rx="10" data-fl="g" data-at="2.2 2.9"/><text class="tb" x="625" y="134" text-anchor="middle">npm</text><text class="tb" x="625" y="162" text-anchor="middle">registry</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file">.npmrc (ENT = your enterprise)</span><pre style="font-size:18px"><code>registry=https://package-firewall.githubapp.com/npm/enterprises/ENT
+//package-firewall.githubapp.com/npm/enterprises/ENT/:_authToken=${GITHUB_TOKEN}</code></pre></div>
+            <dl class="fields panel"><dt>GITHUB_TOKEN</dt><dd>Token with access to your enterprise. Keep it out of Git</dd><dt>Minimum age</dt><dd>1 to 365 days. Use 0 to turn it off</dd></dl>
+            <p class="note warn"><strong>Limits:</strong> npm only. Local caches can hide the firewall.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/protecting-endpoints-with-package-firewall">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-15" aria-labelledby="title-15" data-title="Dependabot reachability" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">15</span><div><h1 id="title-15">Dependabot reachability</h1><p class="lead">Fix the alerts that your code can actually reach first.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><div class="lr"><span class="lab what">What</span><span class="badge warn">Public preview</span></div>
+              <p>Reachability analysis checks if your code can call the weak part of a dependency. Each Dependabot alert gets a verdict. It is for JavaScript and TypeScript with a lockfile.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Less noise from alerts.</li><li>You fix the risky alerts first.</li><li>Free in preview.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Open <strong>Settings</strong> → <strong>Advanced Security</strong>.</li><li>Turn on <strong>Dependabot alerts</strong>.</li><li>Turn on <strong>Reachability analysis</strong>.</li><li>Filter your alerts.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>No <code>dependabot.yml</code> change.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf">Enterprise Cloud</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg viewBox="0 0 700 284" role="img" aria-label="The analysis checks each alert. Each alert gets one of four verdicts: Reachable, Potentially reachable, Unreachable, or Reachability unavailable." data-cycle="5.6">
+                <rect class="boxr" x="0" y="0" width="700" height="62" rx="10" data-b="left" data-fl="r" data-at="0.9 1.6"/><text class="tb" x="20" y="40">Reachable</text><text class="m" x="680" y="40" text-anchor="end">Your code can call it</text>
+                <rect class="boxo" x="0" y="74" width="700" height="62" rx="10" data-b="left" data-fl="o" data-at="1.9 2.6"/><text class="tb" x="20" y="114">Potentially reachable</text><text class="m" x="680" y="114" text-anchor="end">A call path may exist</text>
+                <rect class="boxg" x="0" y="148" width="700" height="62" rx="10" data-b="left" data-fl="g" data-at="2.9 3.6"/><text class="tb" x="20" y="188">Unreachable</text><text class="m" x="680" y="188" text-anchor="end">No call path found</text>
+                <rect class="box" x="0" y="222" width="700" height="62" rx="10" data-b="left" data-fl="" data-at="3.9 4.6"/><text class="tb" x="20" y="262">Reachability unavailable</text><text class="m" x="680" y="262" text-anchor="end">No verdict</text>
+                <rect x="0" y="0" width="700" height="284" style="fill:none;stroke:none" data-b="none" data-scan="" data-at="0.2 4.2"/>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file">Dependabot alerts search box</span><pre><code>reachability:reachable,potentially-reachable</code></pre></div>
+            <dl class="fields panel"><dt>Languages</dt><dd>JavaScript and TypeScript</dd><dt>Package managers</dt><dd>npm, pnpm, or Yarn. A lockfile is required</dd><dt>Runners</dt><dd>GitHub-hosted only</dd></dl>
+            <p class="note warn"><strong>Limits:</strong> Reachable does not mean exploitable. GitHub rescans every 24 hours. A scan stops after 3 hours. Each alert shows up to 5 sample call paths.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://docs.github.com/code-security/concepts/supply-chain-security/about-reachability-analysis-for-dependabot-alerts">GitHub Docs</a><a href="https://github.com/events/universe/recap">Universe recap</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-16" aria-labelledby="title-16" data-title="Awesome Copilot" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">16</span><div><h1 id="title-16">Awesome Copilot</h1><p class="lead">A community library of files that you can reuse with Copilot.</p></div></header>
+      <div class="content">
+        <div class="feat">
+          <section>
+            <div class="blk"><span class="lab what">What</span>
+              <p>Awesome Copilot is an open collection of Copilot files. Browse it at <code>awesome-copilot.github.com</code>. The source is the <code>github/awesome-copilot</code> repository.</p></div>
+            <div class="blk"><span class="lab why">Why</span>
+              <ul class="benefits"><li>Start from an example, not a blank page.</li><li>One site for each file type.</li><li>Open source. You can add your own.</li></ul></div>
+            <div class="blk"><span class="lab how">How</span>
+              <ol class="steps"><li>Pick a type on the site.</li><li>Read the files.</li><li>Copy the files into your repository. Or install the plugin.</li></ol></div>
+            <div class="blk"><span class="lab file">File</span><p>Each type has its own path. See the list on the right.</p></div>
+            <div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div>
+          </section>
+          <section>
+            <div class="fig">
+              <svg data-cycle="6" data-start="1.6" viewBox="0 0 700 230" role="img" aria-label="Number of items on the Awesome Copilot site: Agents 229, Instructions 195, Plugins 227, Extensions 66, Learning Hub 409.">
+                <rect class="boxb" x="120" y="0" width="220" height="105" rx="10" data-fl="b" data-at="0.30 1.00"/><text class="big tb2" x="230" y="52" text-anchor="middle" data-count="229">229</text><text class="t" x="230" y="86" text-anchor="middle">Agents</text>
+                <rect class="boxp" x="360" y="0" width="220" height="105" rx="10" data-fl="p" data-at="0.65 1.35"/><text class="big tp" x="470" y="52" text-anchor="middle" data-count="195">195</text><text class="t" x="470" y="86" text-anchor="middle">Instructions</text>
+                <rect class="boxo" x="0" y="125" width="220" height="105" rx="10" data-fl="o" data-at="1.35 2.05"/><text class="big to" x="110" y="177" text-anchor="middle" data-count="227">227</text><text class="t" x="110" y="211" text-anchor="middle">Plugins</text>
+                <rect class="boxr" x="240" y="125" width="220" height="105" rx="10" data-fl="r" data-at="1.70 2.40"/><text class="big tr" x="350" y="177" text-anchor="middle" data-count="66">66</text><text class="t" x="350" y="211" text-anchor="middle">Extensions</text>
+                <rect class="boxb" x="480" y="125" width="220" height="105" rx="10" data-fl="b" data-at="2.05 2.75"/><text class="big tb2" x="590" y="177" text-anchor="middle" data-count="409">409</text><text class="t" x="590" y="211" text-anchor="middle">Learning Hub</text>
+              </svg>
+            </div>
+            <div class="codebox"><span class="file">Where each file goes</span><pre><code><span class="row"><span class="v">.github/</span></span><span class="row" style="--t:2.25s;--c:var(--purple)">  copilot-instructions.md         <span class="c">Instructions</span></span><span class="row" style="--t:2.25s;--c:var(--purple)">  instructions/*.instructions.md  <span class="c">Instructions</span></span><span class="row" style="--t:1.9s;--c:var(--blue)">  agents/*.agent.md               <span class="c">Agents</span></span><span class="row" style="--t:3.3s;--c:var(--red)">  extensions/ID/                  <span class="c">Extensions</span></span><span class="row" style="--t:2.95s;--c:var(--orange)"><span class="v">~/.copilot/installed-plugins/</span>     <span class="c">Plugins</span></span></code></pre></div>
+            <p class="note"><strong>Note:</strong> Counts are from the site on 19 Nov 2026. They change often.</p>
+          </section>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://awesome-copilot.github.com">Awesome Copilot</a><a href="https://github.com/github/awesome-copilot">GitHub repository</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+    <section class="slide" id="slide-17" aria-labelledby="title-17" data-title="First steps" inert>
+      <header class="slide-head"><span class="slide-index" aria-hidden="true">17</span><div><h1 id="title-17">First steps</h1><p class="lead">Six small steps. Pick one and start today.</p></div></header>
+      <div class="content">
+        <div class="try four stg">
+          <div class="card"><span class="n">Slide 06</span><h3>Open PR inbox</h3><p>Go to <code>github.com/pulls/inbox</code>.</p><div class="chips"><span class="sf">github.com</span></div></div>
+          <div class="card p"><span class="n">Slide 07</span><h3>Pick Fusion</h3><p>Select <strong>Copilot Fusion</strong> in the model picker.</p><div class="chips"><span class="sf">github.com</span><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div></div>
+          <div class="card g"><span class="n">Slide 08</span><h3>Start a Project</h3><p>Create a Copilot Project for one goal.</p><div class="chips"><span class="sf app">App</span></div></div>
+          <div class="card o"><span class="n">Slide 10</span><h3>Connect one tool</h3><p>In the app: <strong>Customize</strong> → <strong>MCP</strong> → <strong>GitHub verified</strong> → <strong>Connect</strong>.</p><div class="chips"><span class="sf app">App</span><span class="sf cli">CLI</span><span class="sf vsc">VS Code</span></div></div>
+          <div class="card r"><span class="n">Slides 11 and 13</span><h3>Add a security check</h3><p>Install <code>github-security</code>. Turn on push protection.</p><div class="chips"><span class="sf app">App</span><span class="sf">github.com</span></div></div>
+          <div class="card"><span class="n">Slide 16</span><h3>Browse the library</h3><p>Choose a reusable resource on <strong>Awesome Copilot</strong>.</p><div class="chips"><span class="sf">Web</span></div></div>
+          <div class="links"><span>Recap: <code>github.com/events/universe/recap</code></span><span>Library: <code>awesome-copilot.github.com</code></span></div>
+        </div>
+      </div>
+      <footer class="sources"><span>Sources</span><a href="https://github.com/events/universe/recap">Universe recap</a><a href="https://awesome-copilot.github.com">Awesome Copilot</a><span>Checked 19 Nov 2026</span></footer>
+    </section>
+
+<!--SLIDES-->
+  </main>
+</div>
+<nav class="navigation" aria-label="Slide navigation">
+  <button type="button" id="previous" title="Previous slide (Left arrow)" aria-label="Previous slide"><svg class="ico" aria-hidden="true"><use href="#i-left"/></svg></button>
+  <span class="count" id="count" aria-hidden="true">1 / 1</span>
+  <button type="button" id="next" title="Next slide (Right arrow)" aria-label="Next slide"><svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+  <label for="jump" class="sr-only">Choose a slide</label><select id="jump" title="Choose a slide"></select>
+  <button type="button" id="theme" title="Change theme (T)" aria-label="Use light theme"><svg class="ico" aria-hidden="true"><use href="#i-theme"/></svg></button>
+  <button type="button" id="fullscreen" title="Full screen (F)" aria-label="Enter full screen"><svg class="ico" aria-hidden="true"><use href="#i-full"/></svg></button>
+</nav>
+<p class="orientation-hint">Use landscape for larger slide text.</p>
+<p id="slide-announcement" class="sr-only" aria-live="polite"></p>
+<p id="notice" role="status"></p>
+<noscript><p style="position:fixed;bottom:55px;left:15px;background:#0d1117;color:#f0f6fc;padding:12px;z-index:30">Enable JavaScript to fit and navigate this standalone deck.</p></noscript>
+<script>
+(() => {
+  "use strict";
+  const stage = document.getElementById("stage");
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const previous = document.getElementById("previous");
+  const next = document.getElementById("next");
+  const jump = document.getElementById("jump");
+  const theme = document.getElementById("theme");
+  const fullscreen = document.getElementById("fullscreen");
+  const notice = document.getElementById("notice");
+  let current = 0;
+  let noticeTimer;
+
+  slides.forEach((slide, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${index + 1}. ${slide.dataset.title}`;
+    jump.append(option);
+  });
+
+  function fit() {
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
+    // Fit CSS pixels, not hardware pixels, so Retina scaling and browser chrome are respected.
+    const aspect = Math.max(20 / 13, Math.min(16 / 9, width / height));
+    const tallLayout = (16 / 9 - aspect) / (16 / 9 - 20 / 13);
+    const deckWidth = 1920 - 120 * tallLayout;
+    const deckHeight = deckWidth / aspect;
+    const scale = Math.min(width / deckWidth, height / deckHeight);
+    const offsetX = (width - deckWidth * scale) / 2;
+    const offsetY = (height - deckHeight * scale) / 2;
+    document.documentElement.style.setProperty("--deck-scale", String(scale));
+    document.documentElement.style.setProperty("--deck-offset-x", `${offsetX}px`);
+    document.documentElement.style.setProperty("--deck-offset-y", `${offsetY}px`);
+    stage.style.width = `${deckWidth}px`;
+    stage.style.height = `${deckHeight}px`;
+    stage.style.transform = `scale(${scale})`;
+    stage.style.left = `${offsetX}px`;
+    stage.style.top = `${offsetY}px`;
+  }
+
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reduceMotion = motionQuery.matches;
+  const figures = Array.from(document.querySelectorAll(".slide .fig svg"));
+  const counters = new WeakMap();
+  let shown = -1;
+
+  function make(name, attrs, parent) {
+    const element = document.createElementNS(SVG_NS, name);
+    Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (parent) parent.append(element);
+    return element;
+  }
+
+  // Seconds in the cycle -> SMIL keyTimes (0 to 1, never decreasing).
+  function keyTimes(points, length) {
+    let last = 0;
+    return points.map((point, i) => {
+      if (i === 0) return "0";
+      if (i === points.length - 1) return "1";
+      last = Math.max(last, Math.min(length, point));
+      return (last / length).toFixed(4);
+    }).join(";");
+  }
+
+  function windowsOf(element) {
+    return (element.dataset.at || "").split(",")
+      .map(part => part.trim().split(/\s+/))
+      .filter(part => part.length >= 2)
+      .map(([a, b, color]) => ({ a: Number(a), b: Number(b), color }));
+  }
+
+  function loop(parent, attrs, timing) {
+    return make("animate", { ...attrs, dur: `${timing.length}s`, begin: `${timing.start}s`, repeatCount: "indefinite" }, parent);
+  }
+
+  function packet(path, color, w, timing) {
+    const group = make("g", { class: "fx pk", opacity: 0 });
+    make("circle", { r: 14, class: `halo f${color}` }, group);
+    make("circle", { r: 8, class: `f${color}` }, group);
+    make("animateMotion", {
+      path: path.getAttribute("d"), keyPoints: "0;0;1;1", calcMode: "linear",
+      keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length),
+      dur: `${timing.length}s`, begin: `${timing.start}s`, repeatCount: "indefinite"
+    }, group);
+    loop(group, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, w.b + .12, timing.length], timing.length) }, timing);
+    path.ownerSVGElement.append(group);
+  }
+
+  function flash(shape, color, w, timing) {
+    const attrs = { class: `fx flash${color ? ` ${color}` : ""}`, opacity: 0 };
+    ["x", "y", "width", "height", "rx"].forEach(name => { if (shape.hasAttribute(name)) attrs[name] = shape.getAttribute(name); });
+    const copy = make("rect", attrs);
+    loop(copy, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .12, w.b - .2, w.b, timing.length], timing.length) }, timing);
+    shape.after(copy);
+  }
+
+  function ring(circle, color, w, timing) {
+    const r = Number(circle.getAttribute("r"));
+    const copy = make("circle", { class: `fx ring ${color}`, cx: circle.getAttribute("cx"), cy: circle.getAttribute("cy"), r, opacity: 0 });
+    loop(copy, { attributeName: "r", values: `${r};${r};${r * 2.5};${r * 2.5}`, keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length) }, timing);
+    loop(copy, { attributeName: "opacity", values: "0;0;1;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, timing.length], timing.length) }, timing);
+    circle.after(copy);
+  }
+
+  function scan(rect, w, timing) {
+    const x = Number(rect.getAttribute("x")), y = Number(rect.getAttribute("y"));
+    const width = Number(rect.getAttribute("width")), height = Number(rect.getAttribute("height"));
+    const line = make("rect", { class: "fx scanline", x: x + 6, y: y + 4, width: width - 12, height: 4, rx: 2, opacity: 0 });
+    loop(line, { attributeName: "y", values: `${y + 4};${y + 4};${y + height - 8};${y + height - 8}`, keyTimes: keyTimes([0, w.a, w.b, timing.length], timing.length) }, timing);
+    loop(line, { attributeName: "opacity", values: "0;0;.9;.9;0;0", keyTimes: keyTimes([0, w.a, w.a + .05, w.b, w.b + .05, timing.length], timing.length) }, timing);
+    rect.after(line);
+  }
+
+  function appear(element, timing) {
+    const [a, b] = (element.dataset.show || "").split(/\s+/).map(Number);
+    make("set", { attributeName: "opacity", to: 0, begin: "0s", dur: `${timing.start}s` }, element);
+    loop(element, { attributeName: "opacity", values: "0;0;1;1;0;0", keyTimes: keyTimes([0, a, a + .15, b - .15, b, timing.length], timing.length) }, timing);
+  }
+
+  // Build-in: each part of a figure comes in after the part before it.
+  function build(svg) {
+    const items = [];
+    const walk = parent => {
+      Array.from(parent.children).forEach(element => {
+        const tag = element.tagName.toLowerCase();
+        if (element.matches(".fx,.guide,[data-show],[data-b=none]")) return;
+        if (tag === "g" && !element.dataset.b) { walk(element); return; }
+        if (["text", "rect", "circle", "path", "g", "line", "ellipse", "polygon", "polyline"].includes(tag)) items.push(element);
+      });
+    };
+    walk(svg);
+    const shapes = items.filter(element => element.tagName.toLowerCase() !== "text").length || 1;
+    const step = Math.min(.11, 1.5 / shapes);
+    let count = 0, shapeDelay = .3, last = 0;
+    items.forEach(element => {
+      const tag = element.tagName.toLowerCase();
+      let kind = element.dataset.b;
+      let delay;
+      if (tag === "text") {
+        kind = kind || "fade";
+        delay = shapeDelay + .08;
+      } else {
+        if (!kind) {
+          if (element.matches(".wire,.wireb,.wireg")) kind = "draw";
+          else if (element.matches(".wirer")) kind = "fade";
+          else if (tag === "rect" && (element.hasAttribute("opacity") || element.closest("g[opacity]"))) kind = "growx";
+          else if (tag === "rect" || tag === "circle") kind = "pop";
+          else kind = "fade";
+        }
+        delay = .3 + count * step;
+        shapeDelay = delay;
+        count += 1;
+      }
+      if (kind === "draw") element.setAttribute("pathLength", "1");
+      element.classList.add("a", kind);
+      element.style.setProperty("--d", `${delay.toFixed(2)}s`);
+      last = Math.max(last, delay);
+    });
+    return last;
+  }
+
+  function addEffects() {
+    figures.forEach(svg => {
+      const length = Number(svg.dataset.cycle);
+      if (!length) return;
+      const timing = { length, start: Number(svg.dataset.start) || Math.max(1.6, Number(svg.dataset.built) + .8) };
+      svg.querySelectorAll("[data-pk]").forEach(path => windowsOf(path).forEach(w => packet(path, w.color || path.dataset.pk || "b", w, timing)));
+      svg.querySelectorAll("[data-fl]").forEach(shape => windowsOf(shape).forEach(w => flash(shape, w.color || shape.dataset.fl, w, timing)));
+      svg.querySelectorAll("[data-ring]").forEach(circle => windowsOf(circle).forEach(w => ring(circle, w.color || circle.dataset.ring, w, timing)));
+      svg.querySelectorAll("[data-scan]").forEach(rect => windowsOf(rect).forEach(w => scan(rect, w, timing)));
+      svg.querySelectorAll("[data-show]").forEach(element => appear(element, timing));
+    });
+  }
+
+  function removeEffects() {
+    figures.forEach(svg => svg.querySelectorAll(".fx, [data-show] > animate, [data-show] > set").forEach(element => element.remove()));
+  }
+
+  function prepareFigures() {
+    figures.forEach(svg => { svg.dataset.built = build(svg).toFixed(2); });
+    if (!reduceMotion) addEffects();
+  }
+
+  function countUp(slide) {
+    slide.querySelectorAll("[data-count]").forEach(element => {
+      const target = Number(element.dataset.count);
+      cancelAnimationFrame(counters.get(element));
+      if (reduceMotion) { element.textContent = String(target); return; }
+      const begin = performance.now() + Number(element.dataset.countDelay || .4) * 1000;
+      element.textContent = "0";
+      const tick = now => {
+        const progress = Math.min(1, Math.max(0, (now - begin) / 1100));
+        element.textContent = String(Math.round(target * (1 - Math.pow(1 - progress, 3))));
+        if (progress < 1) counters.set(element, requestAnimationFrame(tick));
+      };
+      counters.set(element, requestAnimationFrame(tick));
+    });
+  }
+
+  // Restart the figures on the open slide. Pause the others.
+  function playFigures(index) {
+    figures.forEach(svg => {
+      if (typeof svg.pauseAnimations !== "function") return;
+      if (slides[index].contains(svg)) { svg.setCurrentTime(0); svg.unpauseAnimations(); }
+      else svg.pauseAnimations();
+    });
+    countUp(slides[index]);
+  }
+
+  function show(index, updateHash = true) {
+    current = Math.max(0, Math.min(slides.length - 1, index));
+    if (slides.some(slide => slide.contains(document.activeElement))) document.activeElement.blur();
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("active", i === current);
+      slide.inert = i !== current;
+      slide.setAttribute("aria-hidden", String(i !== current));
+    });
+    document.getElementById("count").textContent = `${current + 1} / ${slides.length}`;
+    document.getElementById("slide-announcement").textContent = `Slide ${current + 1} of ${slides.length}: ${slides[current].dataset.title}`;
+    document.querySelector(".progress").style.transform = `scaleX(${(current + 1) / slides.length})`;
+    previous.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    jump.value = String(current);
+    document.title = `${slides[current].dataset.title} | GitHub Copilot`;
+    if (updateHash) window.location.hash = `slide-${current + 1}`;
+    if (current !== shown) { shown = current; playFigures(current); }
+  }
+
+  function readHash() {
+    const match = /^#slide-(\d+)$/.exec(window.location.hash);
+    show(match ? Number(match[1]) - 1 : 0, false);
+  }
+
+  function toggleTheme() {
+    const isLight = document.documentElement.dataset.theme !== "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    theme.setAttribute("aria-label", isLight ? "Use dark theme" : "Use light theme");
+  }
+
+  function report(message) {
+    clearTimeout(noticeTimer);
+    notice.textContent = message;
+    noticeTimer = setTimeout(() => { notice.textContent = ""; }, 6000);
+  }
+
+  async function toggleFullscreen() {
+    if (!document.fullscreenEnabled) {
+      report("Full screen is not available here. Open this HTML file in a browser.");
+      return;
+    }
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch (error) {
+      report(`Full screen could not start: ${error.message}`);
+    }
+  }
+
+  previous.addEventListener("click", () => show(current - 1));
+  next.addEventListener("click", () => show(current + 1));
+  jump.addEventListener("change", () => show(Number(jump.value)));
+  theme.addEventListener("click", toggleTheme);
+  fullscreen.addEventListener("click", toggleFullscreen);
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", readHash);
+  document.addEventListener("fullscreenchange", () => {
+    fullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Enter full screen");
+    fit();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest("input,textarea,select,[contenteditable=true]")) return;
+    if (event.key === " " && event.target.closest("button,a")) return;
+    const actions = {
+      ArrowRight: () => show(current + 1), ArrowDown: () => show(current + 1),
+      PageDown: () => show(current + 1), " ": () => show(current + 1),
+      ArrowLeft: () => show(current - 1), ArrowUp: () => show(current - 1),
+      PageUp: () => show(current - 1), Home: () => show(0), End: () => show(slides.length - 1),
+      t: toggleTheme, T: toggleTheme, f: toggleFullscreen, F: toggleFullscreen
+    };
+    if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
+    else if (/^\d$/.test(event.key)) { event.preventDefault(); show(event.key === "0" ? slides.length - 1 : Number(event.key) - 1); }
+  });
+  document.querySelectorAll(".sources a").forEach(link => {
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+  });
+
+  prepareFigures();
+  // Follow a change of the reduced-motion setting while the deck is open.
+  motionQuery.addEventListener("change", event => {
+    reduceMotion = event.matches;
+    removeEffects();
+    if (!reduceMotion) addEffects();
+    playFigures(current);
+  });
+  fit();
+  readHash();
+})();
+</script>
+</body>
+</html>
